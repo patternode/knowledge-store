@@ -1,0 +1,36 @@
+BRIEFING NOTE: NEW HORIZONS
+Prepared for internal circulation, knowledge-store demo corpus
+
+OVERVIEW
+New Horizons is a NASA mission, managed by the Johns Hopkins University Applied Physics
+Laboratory (APL) with Alan Stern of the Southwest Research Institute as principal
+investigator, sent to make the first close flyby of Pluto and later the Kuiper Belt. It
+launched on January 19, 2006, from Cape Canaveral on an Atlas V 551 rocket, the same class of
+vehicle later used to launch Juno.
+
+TRAJECTORY
+The spacecraft left Earth faster than any previous probe, and it still took nine and a half
+years to reach Pluto. It received a gravity assist at Jupiter in February 2007, which also let
+it study the giant planet's atmosphere and its moon Io in passing, echoing observations Galileo
+and Voyager had made decades earlier.
+
+PLUTO FLYBY
+New Horizons flew past Pluto on July 14, 2015, at a distance of about 12,500 kilometers,
+returning the first detailed images of the dwarf planet and its largest moon, Charon. The
+flyby revealed a young, geologically active surface, including a heart-shaped plain of nitrogen
+ice informally named Tombaugh Regio after Pluto's discoverer, Clyde Tombaugh, and mountain
+ranges made of water ice. Instruments included the Long Range Reconnaissance Imager (LORRI)
+and the Ralph visible and infrared imager.
+
+ARROKOTH AND THE KUIPER BELT
+On January 1, 2019, New Horizons flew past a small Kuiper Belt object nicknamed Ultima Thule
+and later formally named Arrokoth, the most distant object ever explored up close at the time.
+The flyby showed Arrokoth to be a gently fused pair of lobes, evidence for a slow, gentle
+process of planet-building in the outer solar system rather than violent collisions.
+
+STATUS
+New Horizons remains active and continues to return data from the outer solar system, with its
+team studying possible future targets as it heads toward interstellar space, following a path
+distinct from either Voyager probe.
+
+END OF NOTE

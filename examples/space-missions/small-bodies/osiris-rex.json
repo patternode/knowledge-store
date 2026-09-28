@@ -1,0 +1,33 @@
+{
+  "title": "OSIRIS-REx",
+  "fullName": "Origins, Spectral Interpretation, Resource Identification, Security, Regolith Explorer",
+  "agency": "National Aeronautics and Space Administration (NASA)",
+  "operator": "University of Arizona (science lead), with spacecraft built by Lockheed Martin and managed by NASA Goddard Space Flight Center",
+  "principalInvestigator": "Dante Lauretta, University of Arizona",
+  "target": "Asteroid Bennu",
+  "launchDate": "2016-09-08",
+  "launchVehicle": "Atlas V 411",
+  "launchSite": "Cape Canaveral Air Force Station",
+  "summary": "OSIRIS-REx was NASA's first mission to return a sample from an asteroid, targeting Bennu, a small, carbon-rich near-Earth asteroid chosen partly because its orbit makes it a slight long-term impact concern and worth understanding well. The mission's approach and mapping strategy drew on techniques ESA's Rosetta had used at comet 67P a few years earlier. OSIRIS-REx spent nearly two years surveying Bennu before attempting to collect a sample, discovering that the asteroid's surface behaved almost like a fluid, occasionally ejecting small particles into space.",
+  "instruments": [
+    { "name": "OCAMS (OSIRIS-REx Camera Suite)", "purpose": "Wide-angle, close-range, and mapping cameras for surface imaging" },
+    { "name": "OLA (OSIRIS-REx Laser Altimeter)", "purpose": "Built with the Canadian Space Agency to map Bennu's shape in fine detail" },
+    { "name": "OVIRS (Visible and Infrared Spectrometer)", "purpose": "Identifies mineral and organic composition across the surface" },
+    { "name": "TAGSAM (Touch-and-Go Sample Acquisition Mechanism)", "purpose": "Robotic arm that briefly touched the surface and released nitrogen gas to stir up and capture loose material" }
+  ],
+  "timeline": [
+    { "date": "2016-09-08", "event": "Launch from Cape Canaveral" },
+    { "date": "2017-09-22", "event": "Earth gravity-assist flyby" },
+    { "date": "2018-12-03", "event": "Arrival at asteroid Bennu" },
+    { "date": "2020-10-20", "event": "TAGSAM touch-and-go sample collection" },
+    { "date": "2021-05-10", "event": "Departure from Bennu for the return cruise" },
+    { "date": "2023-09-24", "event": "Sample capsule lands in the Utah desert" },
+    { "date": "2023-09-24", "event": "Spacecraft renamed OSIRIS-APEX and retargeted toward asteroid Apophis" }
+  ],
+  "discoveries": [
+    "Bennu is a loosely bound rubble pile with surprisingly low surface strength",
+    "Returned sample contained a diversity of organic molecules and hydrated minerals",
+    "Bennu occasionally ejects small particles from its surface for reasons still under study"
+  ],
+  "notes": "After dropping its sample capsule near the Great Salt Lake, the still-functional spacecraft was renamed OSIRIS-APEX and sent on an extended mission to study the asteroid Apophis following that asteroid's close 2029 approach to Earth."
+}

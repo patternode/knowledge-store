@@ -1,0 +1,9 @@
+Knowledge Store
+Copyright 2026 Dermot O'Brien
+
+This product includes software developed by Dermot O'Brien (Patternode), licensed under the
+Apache License 2.0 by its copyright holder.
+
+examples/sherlock-holmes/fetch.py downloads public-domain texts from Project Gutenberg;
+the texts themselves are not part of this distribution.
+examples/space-missions/ is an original sample corpus dedicated to the public domain (CC0).

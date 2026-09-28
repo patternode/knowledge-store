@@ -1,0 +1,32 @@
+@prefix ks:   <https://w3id.org/knowledge-store/core#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+# The provenance gate every deployment shares. A document's graph is rejected if any
+# assertion lacks its passage or run, so the record only ever holds traceable facts.
+
+ks:AssertionShape a sh:NodeShape ;
+    sh:targetClass ks:Assertion ;
+    sh:property [ sh:path ks:extractedFrom ; sh:minCount 1 ; sh:class ks:Passage ;
+                  sh:message "An assertion cites no passage."@en ] ;
+    sh:property [ sh:path ks:extractedBy ; sh:minCount 1 ; sh:maxCount 1 ; sh:class ks:ExtractionRun ;
+                  sh:message "An assertion must name exactly one extraction run."@en ] ;
+    sh:property [ sh:path rdf:subject ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path rdf:predicate ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path rdf:object ; sh:minCount 1 ; sh:maxCount 1 ] .
+
+ks:MentionShape a sh:NodeShape ;
+    sh:targetSubjectsOf ks:mentionedIn ;
+    sh:property [ sh:path rdfs:label ; sh:minCount 1 ; sh:message "An extracted entity has no name."@en ] ;
+    sh:property [ sh:path ks:mentionedIn ; sh:class ks:Passage ] .
+
+ks:PassageShape a sh:NodeShape ;
+    sh:targetClass ks:Passage ;
+    sh:property [ sh:path ks:partOf ; sh:minCount 1 ; sh:maxCount 1 ; sh:class ks:Document ] .
+
+ks:RunShape a sh:NodeShape ;
+    sh:targetClass ks:ExtractionRun ;
+    sh:property [ sh:path ks:modelId ; sh:minCount 1 ] ;
+    sh:property [ sh:path ks:ontologyVersion ; sh:minCount 1 ] .

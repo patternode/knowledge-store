@@ -1,0 +1,191 @@
+[
+  {
+    "name": "list_collections",
+    "description": "The collections (corpora) in this deployment, each with its own ontology.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "describe_ontology",
+    "description": "The released ontology of a collection, as its compact agent rendition: types, relations, attributes and synonyms. Read it before querying a collection.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": [
+        "collection"
+      ]
+    }
+  },
+  {
+    "name": "search_entities",
+    "description": "Find entities by name, optionally of one type (subtypes included).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "query": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": [
+        "collection",
+        "query"
+      ]
+    }
+  },
+  {
+    "name": "list_entities",
+    "description": "The best-connected entities of a type.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": [
+        "collection",
+        "type"
+      ]
+    }
+  },
+  {
+    "name": "get_entity",
+    "description": "An entity's types, names, attributes and relations, each with the passages it is stated in.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": [
+        "collection",
+        "id"
+      ]
+    }
+  },
+  {
+    "name": "neighbourhood",
+    "description": "The entities directly related to one entity, and the relations among them.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": [
+        "collection",
+        "id"
+      ]
+    }
+  },
+  {
+    "name": "search_passages",
+    "description": "Keyword search over the source passages; returns text with passage ids.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "query": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": [
+        "collection",
+        "query"
+      ]
+    }
+  },
+  {
+    "name": "read_passages",
+    "description": "The full text of passages by id, with the title of the document each comes from.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": [
+        "collection",
+        "ids"
+      ]
+    }
+  }
+]

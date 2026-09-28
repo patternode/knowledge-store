@@ -1,0 +1,4 @@
+{
+  "mode": "local",
+  "apiBase": "http://localhost:8765/api"
+}

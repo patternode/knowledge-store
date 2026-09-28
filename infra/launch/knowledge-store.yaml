@@ -1,0 +1,299 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Knowledge Store: documents in S3 to an ontology-typed knowledge graph, with a portal. This stack runs
+  the project's Terraform inside your account with CodeBuild; the stack completes when Terraform
+  has. Deleting the stack destroys what Terraform created and keeps the data lake unless
+  DeleteDataOnStackDelete is true.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label: { default: "Required" }
+        Parameters: [AdminEmail]
+      - Label: { default: "Collections" }
+        Parameters: [CollectionsJson, OntologyMode, ModelId]
+      - Label: { default: "Example agent (AgentCore), optional" }
+        Parameters: [EnableAgent, EnableAgentRuntime, EnableTransactionSearch]
+      - Label: { default: "Deployment" }
+        Parameters: [DeploymentName, DeleteDataOnStackDelete, SourceUrl, SourceSha256, TerraformVersion]
+    ParameterLabels:
+      AdminEmail: { default: "Admin email (receives the portal's temporary password)" }
+      CollectionsJson: { default: "Collections (JSON)" }
+      EnableTransactionSearch: { default: "Turn on CloudWatch Transaction Search (account-wide)" }
+
+Parameters:
+  AdminEmail:
+    Type: String
+    AllowedPattern: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+    ConstraintDescription: an email address
+  DeploymentName:
+    Type: String
+    Default: knowledge-store
+    AllowedPattern: "^[a-z][a-z0-9-]{2,24}$"
+    Description: Prefix for every resource and bucket name.
+  CollectionsJson:
+    Type: String
+    Default: '{"default": {}}'
+    Description: >-
+      One entry per corpus, each with its own ontology; upload to landing/<id>/ in the lake. For
+      example {"holmes": {"profile": {"name": "Sherlock Holmes", "description": "..."}}}.
+  OntologyMode:
+    Type: String
+    Default: curated
+    AllowedValues: [curated, auto]
+    Description: curated waits for a person to publish each ontology version; auto publishes the first draft unreviewed.
+  ModelId:
+    Type: String
+    Default: us.anthropic.claude-sonnet-4-5-20250929-v1:0
+    Description: Amazon Bedrock model for discovery, extraction and chat. Enable access to it in the Bedrock console first.
+  EnableAgent:
+    Type: String
+    Default: "false"
+    AllowedValues: ["true", "false"]
+    Description: Deploy the example AgentCore agent's Gateway, tools, Memory and Identity, and build its image.
+  EnableAgentRuntime:
+    Type: String
+    Default: "false"
+    AllowedValues: ["true", "false"]
+    Description: Create the agent Runtime. Update the stack to true once the agent image has been built (a few minutes after EnableAgent).
+  EnableTransactionSearch:
+    Type: String
+    Default: "false"
+    AllowedValues: ["true", "false"]
+    Description: >-
+      ACCOUNT-WIDE: send X-Ray spans to CloudWatch Logs, which online evaluation of the agent needs.
+      Leave false if anything else in the account relies on the current setting.
+  DeleteDataOnStackDelete:
+    Type: String
+    Default: "false"
+    AllowedValues: ["true", "false"]
+    Description: When false, deleting the stack keeps the data lake bucket and everything in it.
+  SourceUrl:
+    Type: String
+    Default: https://github.com/patternode/knowledge-store/archive/refs/tags/v0.1.0.zip
+    Description: The release to deploy, as an https:// or s3:// URL of a zip of the repository.
+  SourceSha256:
+    Type: String
+    Default: ""
+    AllowedPattern: "^([0-9a-f]{64})?$"
+    Description: Optional sha256 of the release zip; the build refuses a zip that does not match.
+  TerraformVersion:
+    Type: String
+    Default: 1.14.3
+    AllowedPattern: "^\\d+\\.\\d+\\.\\d+$"
+
+Resources:
+  StateBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      VersioningConfiguration: { Status: Enabled }
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: { SSEAlgorithm: AES256 }
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules: [{ ObjectOwnership: BucketOwnerEnforced }]
+
+  StateBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref StateBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: "*"
+            Action: "s3:*"
+            Resource: [!GetAtt StateBucket.Arn, !Sub "${StateBucket.Arn}/*"]
+            Condition: { Bool: { "aws:SecureTransport": "false" } }
+
+  # Terraform creates IAM roles, buckets, CloudFront, Cognito, Lambda, ECS, CodeBuild and AgentCore
+  # resources, so the role that runs it needs broad rights. It is used only by this project's build.
+  DeployerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: codebuild.amazonaws.com }
+            Action: sts:AssumeRole
+            Condition: { StringEquals: { "aws:SourceAccount": !Ref AWS::AccountId } }
+      ManagedPolicyArns: [arn:aws:iam::aws:policy/AdministratorAccess]
+      Description: Runs Knowledge Store's Terraform from the launch stack's CodeBuild project
+
+  DeployLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /codebuild/${DeploymentName}-deploy
+      RetentionInDays: 90
+
+  Deployer:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${DeploymentName}-deploy
+      Description: Applies or destroys Knowledge Store's Terraform for this CloudFormation stack
+      ServiceRole: !GetAtt DeployerRole.Arn
+      TimeoutInMinutes: 60
+      Artifacts: { Type: NO_ARTIFACTS }
+      LogsConfig:
+        CloudWatchLogs: { Status: ENABLED, GroupName: !Ref DeployLogs }
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux-x86_64-standard:5.0
+        EnvironmentVariables:
+          - { Name: STATE_BUCKET, Value: !Ref StateBucket }
+      Source:
+        Type: NO_SOURCE
+        BuildSpec: |
+          version: 0.2
+          env:
+            shell: bash
+          phases:
+            # Everything that can fail runs in build, so post_build always runs and always reports.
+            build:
+              commands:
+                - set -euo pipefail
+                - cd /tmp
+                - curl -fsSLo tf.zip "https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip"
+                - curl -fsSLo tf.sums "https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_SHA256SUMS"
+                - awk -v f="terraform_${TF_VERSION}_linux_amd64.zip" '$2==f {print $1"  tf.zip"}' tf.sums | sha256sum -c -
+                - unzip -o -q tf.zip -d /usr/local/bin && terraform version
+                - if [[ "$SOURCE_URL" == s3://* ]]; then aws s3 cp "$SOURCE_URL" source.zip; else curl -fsSLo source.zip "$SOURCE_URL"; fi
+                - if [ -n "${SOURCE_SHA256:-}" ]; then echo "$SOURCE_SHA256  source.zip" | sha256sum -c -; fi
+                - rm -rf src && mkdir src && unzip -q source.zip -d src
+                - STACK_DIR=$(dirname "$(find src -path '*/infra/stack/versions.tf' | head -1)") && test -n "$STACK_DIR" && echo "$STACK_DIR" > /tmp/stackdir
+                - cd "$STACK_DIR"
+                - printf 'bucket = "%s"\nregion = "%s"\n' "$STATE_BUCKET" "$AWS_REGION" > backend.hcl
+                - python3 ../launch/write_tfvars.py
+                - terraform init -input=false -backend-config=backend.hcl
+                - |
+                  if [ "$ACTION" = "destroy" ]; then
+                    if [ "${DELETE_DATA:-false}" != "true" ]; then
+                      terraform state list | grep '^module\.lake\.' | xargs -r terraform state rm
+                    fi
+                    terraform destroy -auto-approve -input=false
+                  else
+                    terraform apply -auto-approve -input=false
+                    terraform output -json > /tmp/outputs.json
+                  fi
+            post_build:
+              commands:
+                - |
+                  RESPONDER="$(cat /tmp/stackdir 2>/dev/null)/../launch/cfn_response.py"
+                  if [ -f "$RESPONDER" ]; then
+                    python3 "$RESPONDER" /tmp/outputs.json
+                  else
+                    # the source never unpacked: report the failure without it
+                    python3 -c 'import json,os,urllib.request as u; e=os.environ; b=json.dumps({"Status":"FAILED","Reason":"the build failed before the source was unpacked; see "+e.get("CODEBUILD_BUILD_URL",""),"PhysicalResourceId":e.get("CFN_PHYSICAL_ID","knowledge-store-deployment"),"StackId":e["CFN_STACK_ID"],"RequestId":e["CFN_REQUEST_ID"],"LogicalResourceId":e["CFN_LOGICAL_ID"]}).encode(); u.urlopen(u.Request(e["CFN_RESPONSE_URL"],data=b,method="PUT",headers={"Content-Type":""}),timeout=30)'
+                  fi
+
+  # Starts the build for each CloudFormation request; the build itself reports the result back
+  # (cfn_response.py), so the stack waits for Terraform, up to ServiceTimeout.
+  StarterRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns: [arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole]
+      Policies:
+        - PolicyName: start-build
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: codebuild:StartBuild
+                Resource: !GetAtt Deployer.Arn
+
+  Starter:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Starts Knowledge Store's Terraform build for a CloudFormation request
+      Runtime: python3.12
+      Handler: index.handler
+      Timeout: 60
+      Role: !GetAtt StarterRole.Arn
+      Environment:
+        Variables: { PROJECT: !Ref Deployer }
+      Code:
+        ZipFile: |
+          import json, os, urllib.request
+          import boto3
+
+          PASS = ["AdminEmail", "DeploymentName", "CollectionsJson", "OntologyMode", "ModelId", "EnableAgent",
+                  "EnableAgentRuntime", "EnableTransactionSearch", "DeleteDataOnStackDelete", "SourceUrl",
+                  "SourceSha256", "TerraformVersion"]
+          ENV = {"AdminEmail": "ADMIN_EMAIL", "DeploymentName": "DEPLOYMENT_NAME", "CollectionsJson": "COLLECTIONS_JSON",
+                 "OntologyMode": "ONTOLOGY_MODE", "ModelId": "MODEL_ID", "EnableAgent": "ENABLE_AGENT",
+                 "EnableAgentRuntime": "AGENT_RUNTIME", "EnableTransactionSearch": "TRANSACTION_SEARCH",
+                 "DeleteDataOnStackDelete": "DELETE_DATA", "SourceUrl": "SOURCE_URL", "SourceSha256": "SOURCE_SHA256",
+                 "TerraformVersion": "TF_VERSION"}
+
+          def respond(event, status, reason):
+              body = json.dumps({"Status": status, "Reason": reason[:1000], "StackId": event["StackId"],
+                                 "PhysicalResourceId": event.get("PhysicalResourceId", "knowledge-store-deployment"),
+                                 "RequestId": event["RequestId"], "LogicalResourceId": event["LogicalResourceId"]}).encode()
+              req = urllib.request.Request(event["ResponseURL"], data=body, method="PUT", headers={"Content-Type": ""})
+              urllib.request.urlopen(req, timeout=30)
+
+          def handler(event, context):
+              try:
+                  props = event["ResourceProperties"]
+                  env = {ENV[k]: str(props.get(k, "")) for k in PASS}
+                  env.update({"ACTION": "destroy" if event["RequestType"] == "Delete" else "apply",
+                              "CFN_RESPONSE_URL": event["ResponseURL"], "CFN_STACK_ID": event["StackId"],
+                              "CFN_REQUEST_ID": event["RequestId"], "CFN_LOGICAL_ID": event["LogicalResourceId"],
+                              "CFN_PHYSICAL_ID": event.get("PhysicalResourceId", "knowledge-store-deployment")})
+                  boto3.client("codebuild").start_build(projectName=os.environ["PROJECT"], environmentVariablesOverride=[
+                      {"name": k, "value": v, "type": "PLAINTEXT"} for k, v in env.items()])
+              except Exception as e:
+                  respond(event, "FAILED", f"could not start the Terraform build: {e}")
+
+  Deployment:
+    Type: Custom::KnowledgeStoreTerraform
+    DependsOn: [StateBucketPolicy, DeployLogs]
+    Properties:
+      ServiceToken: !GetAtt Starter.Arn
+      ServiceTimeout: 3600
+      AdminEmail: !Ref AdminEmail
+      DeploymentName: !Ref DeploymentName
+      CollectionsJson: !Ref CollectionsJson
+      OntologyMode: !Ref OntologyMode
+      ModelId: !Ref ModelId
+      EnableAgent: !Ref EnableAgent
+      EnableAgentRuntime: !Ref EnableAgentRuntime
+      EnableTransactionSearch: !Ref EnableTransactionSearch
+      DeleteDataOnStackDelete: !Ref DeleteDataOnStackDelete
+      SourceUrl: !Ref SourceUrl
+      SourceSha256: !Ref SourceSha256
+      TerraformVersion: !Ref TerraformVersion
+
+Outputs:
+  PortalUrl:
+    Description: Open this and sign in with the admin email; Cognito emails a temporary password.
+    Value: !GetAtt Deployment.PortalUrl
+  UploadTo:
+    Description: Where each collection's documents go (JSON map of collection id to S3 URL).
+    Value: !GetAtt Deployment.UploadTo
+  LakeBucket:
+    Value: !GetAtt Deployment.LakeBucket
+  PipelineLogs:
+    Value: !GetAtt Deployment.PipelineLogs
+  DeployLogs:
+    Description: The Terraform runs behind this stack.
+    Value: !Ref DeployLogs
+  StateBucket:
+    Description: Terraform state. Kept when the stack is deleted.
+    Value: !Ref StateBucket

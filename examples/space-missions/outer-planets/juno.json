@@ -1,0 +1,33 @@
+{
+  "title": "Juno",
+  "agency": "National Aeronautics and Space Administration (NASA)",
+  "partnerAgencies": ["Italian Space Agency (ASI)"],
+  "operator": "Jet Propulsion Laboratory (JPL)",
+  "principalInvestigator": "Scott Bolton, Southwest Research Institute",
+  "target": "Jupiter",
+  "launchDate": "2011-08-05",
+  "launchVehicle": "Atlas V 551",
+  "launchSite": "Cape Canaveral Air Force Station",
+  "jupiterOrbitInsertion": "2016-07-04",
+  "summary": "Juno is a solar-powered orbiter sent to study Jupiter's composition, gravity field, magnetic field, and polar magnetosphere from a highly elliptical, near-polar orbit. It followed Galileo as only the second dedicated orbiter mission to Jupiter, and it is the first outer-planet mission to rely on solar panels rather than a nuclear power source, made possible by three large solar arrays that also give the spacecraft its distinctive windmill-like shape. Juno reached Jupiter after an Earth flyby gravity assist that boosted its speed on the way out.",
+  "instruments": [
+    { "name": "Microwave Radiometer (MWR)", "purpose": "Probes below the visible cloud tops to measure water abundance and atmospheric structure" },
+    { "name": "Jovian Infrared Auroral Mapper (JIRAM)", "purpose": "Images auroras and atmospheric heat in infrared wavelengths" },
+    { "name": "Magnetometer (MAG)", "purpose": "Maps the planet's magnetic field in fine detail" },
+    { "name": "JunoCam", "purpose": "Visible-light camera that returns wide-angle images, including many chosen with public input" }
+  ],
+  "timeline": [
+    { "date": "2011-08-05", "event": "Launch from Cape Canaveral aboard an Atlas V rocket" },
+    { "date": "2013-10-09", "event": "Earth gravity-assist flyby on the outbound trajectory" },
+    { "date": "2016-07-04", "event": "Jupiter orbit insertion burn" },
+    { "date": "2017-08-27", "event": "Close flyby of the Great Red Spot" },
+    { "date": "2021", "event": "Mission extended to include flybys of Ganymede, Europa, and Io" },
+    { "date": "2023-12-30", "event": "Close flyby of the volcanic moon Io" }
+  ],
+  "discoveries": [
+    "Jupiter's interior mixes heavy elements more evenly than earlier models predicted",
+    "Massive polar cyclones arranged in geometric clusters at each pole",
+    "The Great Red Spot extends far deeper into the atmosphere than previously known"
+  ],
+  "notes": "Juno carries three small LEGO figurines (Galileo Galilei, and the Roman gods Jupiter and Juno) as a public-outreach feature riding alongside the science payload. The mission has been repeatedly extended past its original end date."
+}

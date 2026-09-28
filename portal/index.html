@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https: http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Knowledge Store</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231b202c'/%3E%3Cpolyline points='8,44 20,30 30,38 44,16 56,24' fill='none' stroke='%2300b8e6' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='20' cy='30' r='3.5' fill='%23fff'/%3E%3Ccircle cx='44' cy='16' r='3.5' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script defer src="app.js"></script>
+</head>
+<body>
+<header class="header">
+  <div class="brand">
+    <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="12" fill="currentColor" opacity="0.12"/><circle cx="20" cy="22" r="6" fill="currentColor"/><circle cx="44" cy="22" r="6" fill="currentColor"/><circle cx="32" cy="44" r="6" fill="currentColor"/><path d="M20 22 L44 22 L32 44 Z" fill="none" stroke="currentColor" stroke-width="3"/></svg>
+    <h1><span class="word" id="brand-name">Knowledge Store</span><span class="sep" aria-hidden="true"></span><span class="coll" id="coll-name">Knowledge Store</span></h1>
+  </div>
+  <div class="who">
+    <span id="coll-switch" hidden><label class="sr-only" for="coll-select">Collection</label><select id="coll-select"></select></span>
+    <span class="pill" id="stage-pill" hidden></span>
+    <span class="pill" id="version-pill" hidden></span>
+    <span id="user" class="small"></span>
+    <button class="btn small" id="signout" type="button" hidden>Sign out</button>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Views" id="tabs" hidden>
+  <button role="tab" id="tab-overview" aria-controls="panel-overview" aria-selected="true" data-tab="overview">Overview</button>
+  <button role="tab" id="tab-ontology" aria-controls="panel-ontology" aria-selected="false" tabindex="-1" data-tab="ontology">Ontology</button>
+  <button role="tab" id="tab-explore" aria-controls="panel-explore" aria-selected="false" tabindex="-1" data-tab="explore">Explore</button>
+  <button role="tab" id="tab-graph" aria-controls="panel-graph" aria-selected="false" tabindex="-1" data-tab="graph">Graph</button>
+  <button role="tab" id="tab-terms" aria-controls="panel-terms" aria-selected="false" tabindex="-1" data-tab="terms">Emerging terms</button>
+  <button role="tab" id="tab-chat" aria-controls="panel-chat" aria-selected="false" tabindex="-1" data-tab="chat">Chat</button>
+</nav>
+
+<main id="main">
+  <div id="boot" class="signin" aria-live="polite"><p class="muted">Loading.</p></div>
+
+  <section role="tabpanel" id="panel-overview" aria-labelledby="tab-overview" tabindex="-1" hidden></section>
+
+  <section role="tabpanel" id="panel-ontology" aria-labelledby="tab-ontology" tabindex="-1" hidden></section>
+
+  <section role="tabpanel" id="panel-explore" aria-labelledby="tab-explore" tabindex="-1" hidden>
+    <div class="split">
+      <div>
+        <div class="toolbar" role="search">
+          <label class="sr-only" for="ex-q">Search entities</label>
+          <input type="search" id="ex-q" placeholder="Search by name or alias" autocomplete="off">
+          <label class="sr-only" for="ex-type">Type</label>
+          <select id="ex-type"></select>
+        </div>
+        <p class="small muted" id="ex-count" aria-live="polite"></p>
+        <ul class="results" id="ex-results"></ul>
+        <button class="btn small" id="ex-more" type="button" hidden>Show more</button>
+      </div>
+      <div class="detail" id="ex-detail" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section role="tabpanel" id="panel-graph" aria-labelledby="tab-graph" tabindex="-1" hidden>
+    <div class="toolbar">
+      <label class="small muted" for="g-type">Type</label>
+      <select id="g-type"></select>
+      <label class="small muted" for="g-limit">Nodes</label>
+      <select id="g-limit"><option>50</option><option selected>150</option><option>250</option><option>400</option></select>
+      <span class="chip" id="g-focus" hidden></span>
+      <span class="small muted" id="g-meta" aria-live="polite"></span>
+    </div>
+    <div class="legend" id="g-legend" aria-label="Types shown in the graph"></div>
+    <div class="graph-layout">
+      <div class="graph-box" id="g-box"><div class="overlay" id="g-overlay"></div></div>
+      <div id="g-detail" aria-live="polite">
+        <div class="card"><p class="muted small">Click a node to see its entity. Double-click, or use Refocus, to centre the graph on its neighbourhood. Drag to move a node, scroll or pinch to zoom. Nodes can also be reached with Tab and opened with Enter.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section role="tabpanel" id="panel-terms" aria-labelledby="tab-terms" tabindex="-1" hidden></section>
+
+  <section role="tabpanel" id="panel-chat" aria-labelledby="tab-chat" tabindex="-1" hidden>
+    <div class="chat">
+      <p class="muted small">Ask about the documents. The assistant answers from the knowledge graph and the source passages, and cites the passages it used. Select a numbered citation to read the passage.</p>
+      <div class="chat-log" id="chat-log" aria-live="polite"></div>
+      <form id="chat-form">
+        <label class="sr-only" for="chat-q">Question</label>
+        <textarea id="chat-q" maxlength="2000" placeholder="Ask a question about the collection"></textarea>
+        <div class="row mt8">
+          <button class="btn primary" type="submit" id="chat-send">Ask</button>
+          <button class="btn" type="button" id="chat-new">New conversation</button>
+          <span class="small muted" id="chat-hint"></span>
+        </div>
+      </form>
+      <div id="chat-examples" class="mt12"></div>
+    </div>
+  </section>
+</main>
+
+<dialog id="dlg" aria-labelledby="dlg-title">
+  <div class="row spread"><h3 id="dlg-title"></h3><button class="btn small" type="button" id="dlg-close">Close</button></div>
+  <div id="dlg-body" class="mt12"></div>
+</dialog>
+</body>
+</html>

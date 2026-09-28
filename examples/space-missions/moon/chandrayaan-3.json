@@ -1,0 +1,31 @@
+{
+  "title": "Chandrayaan-3",
+  "agency": "Indian Space Research Organisation (ISRO)",
+  "target": "Moon, south polar region",
+  "launchDate": "2023-07-14",
+  "launchVehicle": "LVM3 (Launch Vehicle Mark-3)",
+  "launchSite": "Satish Dhawan Space Centre, Sriharikota",
+  "landingDate": "2023-08-23",
+  "landingSite": "Near the lunar south pole",
+  "summary": "Chandrayaan-3 was India's third lunar exploration mission and the first to achieve a soft landing on the Moon, following an earlier attempt, Chandrayaan-2, whose lander crashed in 2019 after a software issue during final descent. Chandrayaan-3 reused the successful orbiter design from Chandrayaan-2 but replaced the lander and added new sensors and stronger legs intended to tolerate a harder touchdown. The mission consisted of a propulsion module, a lander named Vikram (after Vikram Sarabhai, regarded as the founder of the Indian space programme), and a small rover named Pragyan.",
+  "instruments": [
+    { "name": "ChaSTE (Chandra's Surface Thermophysical Experiment)", "purpose": "Measures temperature just below the lunar surface near the south pole" },
+    { "name": "ILSA (Instrument for Lunar Seismic Activity)", "purpose": "Detects moonquakes and other surface vibrations" },
+    { "name": "RAMBHA (Langmuir Probe)", "purpose": "Studies the thin plasma environment near the lunar surface" },
+    { "name": "APXS and LIBS (on Pragyan rover)", "purpose": "Determine the elemental composition of lunar soil and rock" }
+  ],
+  "timeline": [
+    { "date": "2023-07-14", "event": "Launch from Sriharikota aboard the LVM3 rocket" },
+    { "date": "2023-08-05", "event": "Lunar orbit insertion" },
+    { "date": "2023-08-17", "event": "Lander module separates from the propulsion module" },
+    { "date": "2023-08-23", "event": "Vikram lander performs a soft landing near the lunar south pole" },
+    { "date": "2023-08-23", "event": "Pragyan rover rolls out to begin surface operations" },
+    { "date": "2023-09-02", "event": "Lander and rover placed into sleep mode ahead of the lunar night" }
+  ],
+  "discoveries": [
+    "Confirmed variation in subsurface temperature close to the lunar south pole",
+    "Detected sulfur and other elements in the soil at the landing site",
+    "Made India the fourth country to achieve a soft lunar landing and the first to land this close to the south pole"
+  ],
+  "notes": "The success of Chandrayaan-3 was widely seen in India as redemption for the Chandrayaan-2 lander crash, and the landing site was later named Shiv Shakti Point. Both the lander and rover completed their planned one lunar-day mission and were not designed to survive the extreme cold of the lunar night."
+}

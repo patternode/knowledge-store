@@ -1,0 +1,7 @@
+infra
+portal
+tests
+examples
+docs
+**/__pycache__
+*.egg-info

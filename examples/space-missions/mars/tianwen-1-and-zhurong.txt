@@ -1,0 +1,37 @@
+BRIEFING NOTE: TIANWEN-1 AND ZHURONG
+Prepared for internal circulation, knowledge-store demo corpus
+
+OVERVIEW
+Tianwen-1 is the China National Space Administration's (CNSA) first independent interplanetary
+mission, combining an orbiter, a lander, and a small rover named Zhurong in a single launch to
+Mars, an ambitious approach that no other agency had attempted on a first Mars mission.
+"Tianwen" translates roughly as "questions to heaven." The mission launched on July 23, 2020,
+from the Wenchang Spacecraft Launch Site on Hainan Island aboard a Long March 5 rocket, one of
+China's most powerful launch vehicles.
+
+ARRIVAL AND LANDING
+Tianwen-1 entered orbit around Mars in February 2021, arriving in the same general window as
+Perseverance, though the two missions were unrelated. After several months surveying candidate
+landing sites from orbit, the lander and rover descended to Utopia Planitia, a large plain in
+Mars's northern hemisphere, touching down on May 15, 2021. This made China the second country,
+after the United States, to successfully operate a rover on the Martian surface.
+
+ZHURONG
+The rover was named Zhurong after a fire god in Chinese mythology, chosen through a public
+naming process. Solar-powered and roughly the size of a golf cart, Zhurong carried cameras, a
+ground-penetrating radar, and instruments to study surface composition and the Martian
+magnetic environment. It far outlasted its planned ninety-day mission, but entered a planned
+hibernation for the Martian winter in May 2022 and did not wake as expected, leaving its status
+uncertain in the following years even as the orbiter continued operating.
+
+ORBITER
+The Tianwen-1 orbiter carried its own science payload, including a high-resolution camera and a
+subsurface radar, and continued mapping Mars and relaying communications after the landing,
+extending the mission's science return well beyond the rover's own activities.
+
+CONTEXT
+Tianwen-1 arrived at Mars alongside the United Arab Emirates' Hope orbiter and NASA's
+Perseverance rover, making early 2021 an unusually crowded period for Mars arrivals from three
+different space programs within about two weeks of each other.
+
+END OF NOTE

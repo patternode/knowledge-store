@@ -1,0 +1,37 @@
+BRIEFING NOTE: EUROPA CLIPPER
+Prepared for internal circulation, knowledge-store demo corpus
+
+OVERVIEW
+Europa Clipper is a NASA mission built and managed by the Jet Propulsion Laboratory, with the
+Applied Physics Laboratory contributing to spacecraft development, sent to conduct detailed
+reconnaissance of Jupiter's icy moon Europa. It launched on October 14, 2024, from Kennedy
+Space Center aboard a Falcon Heavy rocket, making it one of the larger planetary spacecraft
+NASA has built, with solar arrays wide enough to span a basketball court, a necessity given how
+little sunlight reaches Jupiter's distance from the Sun.
+
+WHY EUROPA
+Interest in Europa dates back to the Galileo mission of the 1990s, which found strong
+circumstantial evidence, based on magnetic field measurements, for a global liquid water ocean
+beneath Europa's ice shell. Europa Clipper does not land or search for life directly; instead
+it is designed to determine whether the ocean's environment could plausibly support it, by
+studying the ice shell's thickness, the ocean beneath, and the moon's composition and geology.
+
+TRAJECTORY AND INSTRUMENTS
+Rather than orbit Europa directly, which would expose the spacecraft to Jupiter's intense
+radiation belts, Europa Clipper is designed to orbit Jupiter and make dozens of close flybys of
+Europa, ducking in and out of the radiation environment. The mission uses gravity assists,
+including a flyby of Mars, on its way to Jupiter, arriving in 2030. Instruments include an
+ice-penetrating radar (REASON), a magnetometer to characterize the ocean, thermal and mapping
+cameras, and a mass spectrometer to analyze any thin atmosphere or plume material.
+
+RELATION TO OTHER MISSIONS
+Europa Clipper follows in the footsteps of Galileo's flybys and complements ESA's earlier
+JUICE mission (Jupiter Icy Moons Explorer), launched in 2023, which focuses on Ganymede and
+Callisto as well as Europa. Between the two missions, Jupiter's three large icy moons are all
+under close study for the first time.
+
+STATUS
+Europa Clipper is in transit as of the mid-2020s, with Europa flybys expected to begin after
+Jupiter orbit insertion later in the decade.
+
+END OF NOTE
