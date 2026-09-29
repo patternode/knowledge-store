@@ -81,10 +81,13 @@ data "archive_file" "source" {
 }
 
 resource "aws_s3_object" "source" {
-  bucket     = aws_s3_bucket.artifacts.id
-  key        = "source/${data.archive_file.source.output_sha256}.zip"
-  source     = data.archive_file.source.output_path
-  depends_on = [aws_s3_bucket_notification.artifacts, aws_cloudwatch_event_target.build]
+  bucket = aws_s3_bucket.artifacts.id
+  key    = "source/${data.archive_file.source.output_sha256}.zip"
+  source = data.archive_file.source.output_path
+  # The upload starts the builds, so everything StartBuild needs must exist first, including the
+  # trigger role's policy: without it the first builds fail and nothing retries them.
+  depends_on = [aws_s3_bucket_notification.artifacts, aws_cloudwatch_event_target.build,
+  aws_cloudwatch_event_target.agent_build, aws_iam_role_policy.events]
 }
 
 resource "aws_iam_role" "codebuild" {
