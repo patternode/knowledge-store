@@ -3,13 +3,14 @@
 #
 #   upload to landing/ or a new ontology/active.json
 #     -> S3 event -> EventBridge rule -> SQS queue
-#     -> EventBridge Pipe (batching window) -> ECS RunTask
+#     -> EventBridge Pipe -> ECS RunTask
 #   EventBridge Scheduler (every schedule_expression) -> ECS RunTask   the safety net
 #
-# The queue and the Pipe's batching window debounce: a bulk upload of thousands of files
-# starts one task per window, not one per file. The task takes an S3 lock, so a second task
-# started while one runs exits at once, and the running one keeps sweeping until nothing new
-# arrives. Because the sweep is idempotent, the schedule catches anything an event missed.
+# Pipes allows a batch of only one message for an ECS target, so each upload starts a task.
+# The task takes an S3 lock, so a task started while one runs exits at once, and the running
+# one keeps sweeping until nothing new arrives. Because the sweep is idempotent, the schedule
+# catches anything an event missed. A bulk upload therefore starts many short-lived tasks;
+# upload large sets in few files, or lean on the schedule.
 
 terraform {
   required_providers {
@@ -265,7 +266,7 @@ resource "aws_pipes_pipe" "uploads" {
   target   = aws_ecs_cluster.this.arn
   source_parameters {
     sqs_queue_parameters {
-      batch_size                         = 1000
+      batch_size                         = 1 # the most Pipes allows for an ECS target
       maximum_batching_window_in_seconds = var.batching_window_s
     }
   }

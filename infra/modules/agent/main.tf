@@ -334,7 +334,13 @@ resource "aws_bedrockagentcore_policy" "permit_tools" {
 }
 
 # The interceptor marks a call private from the token; this refuses a private call unless the
-# token itself carries the entitlement, whatever the interceptor decided.
+# token itself carries the entitlement, whatever the interceptor decided. context.input exists
+# only on the per-tool actions (<target>___<tool>), not on the target's action group, so the
+# policy names each tool in the schema.
+locals {
+  tool_actions = join(", ", [for t in jsondecode(file(var.tool_schema_path)) : "AgentCore::Action::\"${local.target}___${t.name}\""])
+}
+
 resource "aws_bedrockagentcore_policy" "forbid_unentitled_private" {
   name             = "forbid_unentitled_private"
   policy_engine_id = aws_bedrockagentcore_policy_engine.this.policy_engine_id
@@ -342,7 +348,7 @@ resource "aws_bedrockagentcore_policy" "forbid_unentitled_private" {
   definition {
     cedar {
       statement = <<-CEDAR
-        forbid(principal is AgentCore::OAuthUser, action in AgentCore::Action::"${local.target}", resource == ${local.gateway_resource})
+        forbid(principal is AgentCore::OAuthUser, action in [${local.tool_actions}], resource == ${local.gateway_resource})
         when { context.input has caller_private && context.input.caller_private == true }
         unless {
           (principal.hasTag("cognito:groups") && principal.getTag("cognito:groups") like "*${var.private_group}*") ||
@@ -445,7 +451,9 @@ resource "aws_bedrockagentcore_browser" "this" {
       prefix = "agentcore/browser-recordings/"
     }
   }
-  tags = var.tags
+  # CreateBrowser checks that the role can already write the recordings.
+  depends_on = [aws_iam_role_policy.tools_exec]
+  tags       = var.tags
 }
 
 # --- Runtime ---------------------------------------------------------------------------------
@@ -486,7 +494,7 @@ resource "aws_iam_role_policy" "runtime" {
         "arn:aws:bedrock-agentcore:${local.region}:${local.account}:token-vault/default",
     "arn:aws:bedrock-agentcore:${local.region}:${local.account}:token-vault/default/oauth2credentialprovider/${aws_bedrockagentcore_oauth2_credential_provider.agent.name}"] },
     { Sid = "IdentitySecret", Effect = "Allow", Action = "secretsmanager:GetSecretValue",
-    Resource = aws_bedrockagentcore_oauth2_credential_provider.agent.client_secret_arn },
+    Resource = aws_bedrockagentcore_oauth2_credential_provider.agent.client_secret_arn[0].secret_arn },
     ], var.browser_enabled ? [
     { Sid = "Browser", Effect = "Allow", Action = [
       "bedrock-agentcore:StartBrowserSession", "bedrock-agentcore:StopBrowserSession", "bedrock-agentcore:GetBrowserSession",
@@ -667,6 +675,9 @@ resource "aws_bedrockagentcore_harness" "dossier" {
   execution_role_arn = aws_iam_role.runtime.arn
   max_iterations     = 24
   timeout_seconds    = 600
+  # Explicit, because the API returns an empty map and a null here fails the apply with
+  # "inconsistent values for sensitive attribute".
+  environment_variables = {}
   model {
     bedrock_model_config {
       model_id    = var.agent_model_id

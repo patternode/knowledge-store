@@ -76,8 +76,8 @@ data "archive_file" "source" {
   source_dir  = var.source_dir
   output_path = "${path.root}/.build/${var.name}-source.zip"
   # Only what the image needs: Dockerfile, pyproject.toml, README, LICENSE and src/.
-  excludes = flatten([for d in ["infra", "portal", "tests", "examples", "docs", "build", ".git", ".pytest_cache",
-  "src/knowledge_store.egg-info"] : [d, "${d}/**"]])
+  excludes = concat(flatten([for d in ["infra", "portal", "tests", "examples", "docs", "build", ".git", ".pytest_cache",
+  "src/knowledge_store.egg-info"] : [d, "${d}/**"]]), ["**/__pycache__/**"])
 }
 
 resource "aws_s3_object" "source" {
