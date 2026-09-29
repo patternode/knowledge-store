@@ -95,12 +95,13 @@ it into what each consumer needs, under `ontology/versions/<v>/renditions/`:
 
 ## Deploy
 
-See [QUICKSTART.md](QUICKSTART.md). Two routes, one Terraform:
+See [QUICKSTART.md](QUICKSTART.md). Three routes, one Terraform module ([`infra/modules/knowledge-store`](infra/modules/knowledge-store)):
 
 | Route | You need | What happens |
 |---|---|---|
 | CloudFormation launch stack ([`infra/launch/knowledge-store.yaml`](infra/launch/knowledge-store.yaml)) | An AWS console and an email address | A CodeBuild project in your account runs the Terraform; the stack completes when it has, and its outputs give the portal URL |
 | Terraform ([`infra/stack`](infra/stack)) | Terraform 1.10+ and AWS credentials | You run it; the only required variable is `admin_email` |
+| Your own deployment repository ([`examples/deployment`](examples/deployment)) | Terraform 1.10+, AWS credentials and a repository of your own | Your configuration and curated ontologies live in your repository, and the module is pinned to a release of this one |
 
 Either way the pipeline image is built by CodeBuild inside your account from this repository's source, so nothing is pulled from a registry you do not own apart from the Python base image on ECR Public. Model calls go to Amazon Bedrock unless you choose the Anthropic API.
 

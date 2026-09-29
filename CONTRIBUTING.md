@@ -17,6 +17,8 @@ pytest
 cd infra/stack && terraform init -backend=false && terraform validate
 ```
 
+The stack itself is the module in `infra/modules/knowledge-store`; `infra/stack` and `examples/deployment` are roots that call it. When you move or rename a resource inside the module, add a `moved` block so existing deployments plan cleanly.
+
 The tests run offline with a fake model (`tests/fake_llm.py`). Please add a test with every change in behaviour.
 
 ## Pull requests

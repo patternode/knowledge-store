@@ -1,0 +1,41 @@
+# Plan on every pull request; apply from main when you run the workflow by hand.
+# Needs an IAM role that trusts GitHub's OIDC provider for this repository (AWS_ROLE_ARN), and
+# backend.hcl committed. Protect the "production" environment so an apply waits for a reviewer.
+name: terraform
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+concurrency: terraform
+jobs:
+  plan:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.14.3"
+      - run: terraform init -input=false -backend-config=backend.hcl
+      - run: terraform plan -input=false -lock=false
+  apply:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.14.3"
+      - run: terraform init -input=false -backend-config=backend.hcl
+      - run: terraform apply -input=false -auto-approve

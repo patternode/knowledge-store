@@ -22,9 +22,16 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.14.3"
-      - run: terraform fmt -check -recursive infra
+      - run: terraform fmt -check -recursive infra && terraform fmt -check -recursive examples/deployment
       - working-directory: infra/stack
         run: terraform init -backend=false -input=false && terraform validate
+      # The deployment template, against this checkout's module instead of the release it pins.
+      - name: validate examples/deployment
+        run: |
+          cp -r examples/deployment .ci-deployment
+          sed -i 's#"git::https://github.com/patternode/knowledge-store.git//infra/modules/knowledge-store?ref=[^"]*"#"../infra/modules/knowledge-store"#' .ci-deployment/main.tf
+          grep -q '"../infra/modules/knowledge-store"' .ci-deployment/main.tf
+          cd .ci-deployment && terraform init -backend=false -input=false && terraform validate
   cloudformation:
     runs-on: ubuntu-latest
     steps:

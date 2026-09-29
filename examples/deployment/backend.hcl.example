@@ -1,0 +1,5 @@
+# Copy to backend.hcl. In a private deployment repository it is fine to commit it.
+# infra/bootstrap in the Knowledge Store repository creates a state bucket and prints this file.
+bucket = "my-terraform-state-bucket"
+region = "us-east-1"
+# profile = "my-profile"   # prefer AWS_PROFILE in the environment; see README.md
