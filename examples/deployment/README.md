@@ -52,6 +52,47 @@ If you need something the module does not offer, such as an existing VPC or user
 upstream as an input with a default that keeps today's behaviour, rather than patching a copy.
 Then everyone can use it, and your deployment keeps following releases.
 
+## Adopting a deployment made from infra/stack
+
+If you already applied `infra/stack` (with the same state key and the same `name`), point
+`backend.hcl` at that state and add these to `main.tf` before the first plan. Without them the
+plan destroys everything and creates it again under the new addresses. Resources already under
+`module.knowledge_store` need nothing.
+
+```hcl
+moved {
+  from = module.lake
+  to   = module.knowledge_store.module.lake
+}
+moved {
+  from = module.build
+  to   = module.knowledge_store.module.build
+}
+moved {
+  from = module.network
+  to   = module.knowledge_store.module.network
+}
+moved {
+  from = module.pipeline
+  to   = module.knowledge_store.module.pipeline
+}
+moved {
+  from = module.identity
+  to   = module.knowledge_store.module.identity
+}
+moved {
+  from = module.portal
+  to   = module.knowledge_store.module.portal
+}
+moved {
+  from = module.agent
+  to   = module.knowledge_store.module.agent
+}
+```
+
+The plan should then show no changes, or only the difference in `default_tags`. Check it before
+you apply.
+
 ## Upgrade
 
 Read the release notes, change `ref` in `main.tf` to the new tag, and plan. Refactors inside the
