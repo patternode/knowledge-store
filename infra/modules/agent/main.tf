@@ -494,7 +494,7 @@ resource "aws_iam_role_policy" "runtime" {
         "arn:aws:bedrock-agentcore:${local.region}:${local.account}:token-vault/default",
     "arn:aws:bedrock-agentcore:${local.region}:${local.account}:token-vault/default/oauth2credentialprovider/${aws_bedrockagentcore_oauth2_credential_provider.agent.name}"] },
     { Sid = "IdentitySecret", Effect = "Allow", Action = "secretsmanager:GetSecretValue",
-    Resource = aws_bedrockagentcore_oauth2_credential_provider.agent.client_secret_arn },
+    Resource = aws_bedrockagentcore_oauth2_credential_provider.agent.client_secret_arn[0].secret_arn },
     ], var.browser_enabled ? [
     { Sid = "Browser", Effect = "Allow", Action = [
       "bedrock-agentcore:StartBrowserSession", "bedrock-agentcore:StopBrowserSession", "bedrock-agentcore:GetBrowserSession",
