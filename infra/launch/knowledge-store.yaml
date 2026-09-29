@@ -178,7 +178,7 @@ Resources:
                 - |
                   if [ "$ACTION" = "destroy" ]; then
                     if [ "${DELETE_DATA:-false}" != "true" ]; then
-                      terraform state list | grep '^module\.lake\.' | xargs -r terraform state rm
+                      terraform state list | grep -E '^(module\.knowledge_store\.)?module\.lake\.' | xargs -r terraform state rm
                     fi
                     terraform destroy -auto-approve -input=false
                   else

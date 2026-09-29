@@ -87,3 +87,16 @@ def test_response_on_failure_has_no_outputs(tmp_path):
     body = cfn.body({**ENV, "CODEBUILD_BUILD_SUCCEEDING": "0", "CODEBUILD_BUILD_URL": "https://logs"}, {"PortalUrl": "x"})
     assert body["Status"] == "FAILED" and body["Data"] == {} and "https://logs" in body["Reason"]
     assert cfn.attributes(str(tmp_path / "missing.json")) == {}
+
+
+def test_stack_root_passes_every_module_input():
+    module_vars = set(re.findall(r'^variable "([a-z_]+)"', (ROOT / "infra/modules/knowledge-store/variables.tf").read_text(), re.M))
+    root = (ROOT / "infra/stack/main.tf").read_text()
+    call = root[root.index('module "knowledge_store"'):root.index("\n}\n", root.index('module "knowledge_store"'))]
+    wired = set(re.findall(r"^\s+([a-z_]+)\s+= var\.\1$", call, re.M))
+    assert wired == module_vars
+    assert module_vars <= stack_variables()
+    module_outputs = set(re.findall(r'^output "([a-z_]+)"', (ROOT / "infra/modules/knowledge-store/outputs.tf").read_text(), re.M))
+    for root_dir in ("infra/stack", "examples/deployment"):
+        outputs = set(re.findall(r'^output "([a-z_]+)"', (ROOT / root_dir / "outputs.tf").read_text(), re.M))
+        assert outputs == module_outputs, root_dir

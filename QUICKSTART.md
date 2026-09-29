@@ -30,6 +30,10 @@ terraform init -backend-config=backend.hcl
 terraform apply
 ```
 
+## Option 3: from a deployment repository of your own
+
+To run it for real, keep your configuration and curated ontologies in a private repository of your own, with this repository as a pinned module. Copy [`examples/deployment`](examples/deployment) and follow its README.
+
 ## Then
 
 1. Upload documents to the `upload_to` location, `s3://<name>-lake-<account>/landing/<collection>/`.
