@@ -218,3 +218,23 @@ def test_release_renders_every_target(lake, tmp_path):
     assert {t["name"] for t in agent["types"]} == {"Mission", "SpaceAgency", "TargetBody"}
     tool = json.loads(lake.get(f"{pre}/extraction/tool.json"))
     assert tool["toolSpec"]["name"] == "record_knowledge"
+
+
+class StringifyingClient(FakeClient):
+    """Answers proposals the way models sometimes do: each list sent as a string of its JSON,
+    with a stray non-object item in it."""
+
+    def converse(self, **kw):
+        resp = super().converse(**kw)
+        if kw["toolConfig"]["tools"][0]["toolSpec"]["name"] == "propose_types":
+            tu = resp["output"]["message"]["content"][0]["toolUse"]
+            tu["input"] = {k: json.dumps((v or []) + ["stray"]) for k, v in tu["input"].items()}
+        return resp
+
+
+def test_discovery_survives_json_encoded_proposals(lake):
+    ingest_source(lake, DEFAULT_SOURCES[0])
+    refine.refine_all(lake)
+    rep = discover.discover(StringifyingClient(), "fake", lake, PROFILE, sample=5, resamples=2)
+    spec = model.load(data=lake.get(f"{layout.ONTOLOGY_DRAFTS}/{rep['draft_id']}/ontology.ttl").decode())
+    assert set(spec.classes) == {"Mission", "SpaceAgency", "TargetBody"}

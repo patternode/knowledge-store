@@ -17,6 +17,7 @@ named by ANTHROPIC_API_KEY_SECRET (how the deployed jobs, proxy and agent get it
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import re
@@ -273,3 +274,24 @@ def strands_model(model_id: str, temperature: float = 0, max_tokens: int | None 
                               params={} if rejects_sampling(name) else {"temperature": temperature})
     from strands.models import BedrockModel
     return BedrockModel(model_id=model_id, temperature=temperature, **({"max_tokens": max_tokens} if max_tokens else {}))
+
+
+def decode_tool_input(value, schema: dict):
+    """A tool call's input with JSON-encoded strings decoded where the schema wants an array or an
+    object. Models sometimes send a nested array as a string holding its JSON; left as is, code
+    that iterates it walks the characters. Anything that does not decode is left for the caller's
+    own checks."""
+    want = schema.get("type") if isinstance(schema, dict) else None
+    if isinstance(value, str) and want in ("array", "object"):
+        try:
+            decoded = json.loads(value)
+        except ValueError:
+            return value
+        if isinstance(decoded, list if want == "array" else dict):
+            value = decoded
+    if isinstance(value, dict) and want == "object":
+        props = schema.get("properties") or {}
+        return {k: decode_tool_input(v, props.get(k, {})) for k, v in value.items()}
+    if isinstance(value, list) and want == "array":
+        return [decode_tool_input(v, schema.get("items") or {}) for v in value]
+    return value
