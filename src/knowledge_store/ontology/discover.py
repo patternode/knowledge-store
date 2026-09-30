@@ -30,6 +30,7 @@ from collections import defaultdict
 
 from .. import layout
 from ..config import Profile
+from ..llm import decode_tool_input
 from ..pipeline.refine import load_doc, load_passages, silver_doc_ids
 from ..store import Store, put_json
 from . import model, writer
@@ -117,7 +118,7 @@ def _call(client, model_id: str, system: str, user: str, tool: dict, max_tokens:
                            inferenceConfig={"maxTokens": max_tokens, "temperature": 0})
     for block in resp["output"]["message"]["content"]:
         if "toolUse" in block:
-            return block["toolUse"]["input"], resp.get("usage", {})
+            return decode_tool_input(block["toolUse"]["input"], tool["toolSpec"]["inputSchema"]["json"]), resp.get("usage", {})
     raise RuntimeError(f"model did not call {tool['toolSpec']['name']} (stopReason {resp.get('stopReason')})")
 
 
@@ -168,8 +169,10 @@ def propose(client, model_id: str, lake: Store, doc_ids: list[str], profile: Pro
         for kind in KINDS:
             kept = []
             for t in res.get(kind) or []:
-                exs = [x for x in t.get("examples") or []
-                       if " ".join(str(x.get("text", "")).lower().split()) in text.get(x.get("passage_id"), "")]
+                if not isinstance(t, dict):
+                    continue
+                exs = [x for x in t.get("examples") or [] if isinstance(x, dict)
+                       and " ".join(str(x.get("text", "")).lower().split()) in text.get(x.get("passage_id"), "")]
                 if exs and str(t.get("name") or "").strip():
                     kept.append({**t, "examples": exs})
             res[kind] = kept
