@@ -133,7 +133,10 @@ resource "aws_codebuild_project" "image" {
         pre_build:
           commands:
             - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $${REPO%%/*}
-            - TAG=$(basename "$CODEBUILD_SOURCE_VERSION" .zip | cut -c1-12)
+            # The bundle's name is the hash of its contents. CODEBUILD_SOURCE_VERSION is empty for an
+            # S3 source in an unversioned bucket, so the tag comes from the source URL.
+            - TAG=$(basename "$CODEBUILD_SOURCE_REPO_URL" .zip | cut -c1-12)
+            - test -n "$TAG" || TAG=$(echo "$${CODEBUILD_BUILD_ID##*:}" | cut -c1-12)
         build:
           commands:
             - docker build -t $REPO:latest -t $REPO:$TAG .
@@ -235,7 +238,10 @@ resource "aws_codebuild_project" "agent" {
         pre_build:
           commands:
             - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $${REPO%%/*}
-            - TAG=$(basename "$CODEBUILD_SOURCE_VERSION" .zip | cut -c1-12)
+            # The bundle's name is the hash of its contents. CODEBUILD_SOURCE_VERSION is empty for an
+            # S3 source in an unversioned bucket, so the tag comes from the source URL.
+            - TAG=$(basename "$CODEBUILD_SOURCE_REPO_URL" .zip | cut -c1-12)
+            - test -n "$TAG" || TAG=$(echo "$${CODEBUILD_BUILD_ID##*:}" | cut -c1-12)
         build:
           commands:
             - docker build -f Dockerfile.agent -t $REPO:latest -t $REPO:$TAG .
