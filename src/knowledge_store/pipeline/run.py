@@ -1,4 +1,4 @@
-"""The pipeline sweep: ingest -> refine -> (discover) -> extract -> candidates -> project.
+"""The pipeline sweep: ingest -> refine -> (discover) -> extract -> candidates -> project -> load.
 
 One entry point for every trigger: an upload (S3 event -> EventBridge -> SQS -> Pipe -> ECS
 task), the schedule (EventBridge Scheduler, the safety net for missed events) and a person
@@ -37,6 +37,7 @@ from ..ontology import candidates, discover, versions
 from ..store import Store, put_json
 from .extract import extract_all
 from .ingest import ingest_source
+from .load import load_documents, load_graph
 from .project import project
 from .refine import refine_all, silver_doc_ids
 
@@ -134,6 +135,14 @@ def sweep_once(lake: Store, client_factory, model_id: str, cfg: dict) -> dict:
     if rows or not lake.exists(layout.index_key(versions.active_version(lake), "summary")):
         candidates.build_register(lake, versions.active_version(lake))
         stats["projection"] = project(lake)
+    for name, step in (("graph", load_graph), ("documents", load_documents)):
+        try:
+            loaded = step(lake)
+            if loaded:
+                stats[name] = {"key": loaded["key"], **loaded["counts"]}
+        except Exception as e:  # the portal answers from memory until a load succeeds; the next sweep retries
+            log.exception("%s load failed", name)
+            stats[f"{name}_error"] = repr(e)[:300]
     write_status(lake, "ready", {"last_run": stats})
     return stats
 

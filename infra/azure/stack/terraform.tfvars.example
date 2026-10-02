@@ -1,0 +1,33 @@
+# The minimum. Copy to terraform.tfvars (gitignored). See docs/architectures/azure-setup.md.
+subscription_id     = "<subscription id>"   # az account show --query id -o tsv
+admin_principal_ids = ["<your object id>"] # az ad signed-in-user show --query id -o tsv
+publisher_email     = "you@example.org"
+foundry = {
+  resource_name       = "my-foundry-resource"
+  resource_group_name = "rg-foundry"
+  # extraction_model  = "claude-sonnet-5"   # deployment names
+  # chat_model        = "claude-sonnet-5"
+}
+
+# Everything below is optional.
+
+# location = "eastus2"
+# name     = "knowledge-store"
+
+# Profile native (the default): Cosmos DB for MongoDB, and with graph = true, PostgreSQL + AGE.
+# graph               = true
+# document_projection = true
+
+# Profile common: your MongoDB and, with graph = true, your Neo4j.
+# profile        = "common"
+# mongodb_uri    = "mongodb+srv://..."          # sensitive: keep it in this gitignored file or TF_VAR_mongodb_uri
+# graph          = true
+# neo4j          = { uri = "neo4j+s://<id>.databases.neo4j.io" }
+# neo4j_password = "..."
+
+# Collections, as on AWS. Upload to landing/<id>/ in the lake.
+# collections = {
+#   missions = { profile = { name = "Robotic space missions" } }
+# }
+
+# python_command = "python3"   # if python is not Python 3.12+ where Terraform runs

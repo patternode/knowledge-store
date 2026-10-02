@@ -8,6 +8,8 @@
     GET  /api/entity?id=
     GET  /api/passage?id=
     GET  /api/graph?type=&focus=&limit=
+    GET  /api/neighbourhood?id=&hops=&limit=
+    GET  /api/paths?from=&to=&hops=&limit=
     GET  /api/drafts                 discovery and revision drafts awaiting curation
     POST /api/chat {question, history}   -> {id}; answered asynchronously
     GET  /api/chat?id=               -> {status, answer, citations, trace}
@@ -15,9 +17,10 @@
 Every route but /api/collections takes ?c=<collection id> (default: the first collection).
 
 API Gateway validates the Cognito JWT before the Lambda runs; the handler reads the caller's
-id and groups from the claims. Members of the group named by PRIVATE_GROUP see private-scope
-content. A question is limited per caller per day (DAILY_QUESTIONS), counted in DynamoDB with a
-conditional update, so the limit holds across concurrent requests.
+id and groups from the claims (knowledge_store.claims). Members of the group named by
+PRIVATE_GROUP see private-scope content. A question is limited per caller per day
+(DAILY_QUESTIONS), counted with a conditional write in the chat state (state.py: DynamoDB, or
+the MongoDB API on Azure and Google Cloud), so the limit holds across concurrent requests.
 
 API Gateway gives an integration 30 seconds, less than a multi-step tool loop can take, so POST
 /api/chat stores the question and invokes this function again asynchronously to answer it; the
@@ -30,34 +33,45 @@ import datetime as dt
 import json
 import logging
 import os
-import time
 import uuid
 
 from .. import collections, layout
+from ..claims import private_reader, subject
 from ..config import load_profile
-from ..store import S3Store
-from . import chat, index
+from ..store import S3Store, store_from_uri
+from . import chat, index, state as chat_state
 
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
 _lake = None
-_ddb = None
+_state = None
 
 
 def lake():
     global _lake
     if _lake is None:
-        _lake = S3Store(os.environ["LAKE_BUCKET"])
+        _lake = store_from_uri(os.environ["LAKE_URI"]) if os.environ.get("LAKE_URI") else S3Store(os.environ["LAKE_BUCKET"])
     return _lake
 
 
-def table():
-    global _ddb
-    if _ddb is None:
-        import boto3
-        _ddb = boto3.resource("dynamodb").Table(os.environ["CHAT_TABLE"])
-    return _ddb
+def _invoke_self(job: dict, context) -> None:
+    """On Lambda: answer asynchronously by invoking this function again."""
+    import boto3
+    boto3.client("lambda").invoke(FunctionName=context.function_name, InvocationType="Event",
+                                  Payload=json.dumps({"chat_job": job}).encode())
+
+
+# How a question is handed to the asynchronous half. Another host replaces it: on Azure a queue
+# message that a queue-triggered function answers with answer_job().
+dispatch = _invoke_self
+
+
+def state() -> chat_state.ChatState:
+    global _state
+    if _state is None:
+        _state = chat_state.from_env()
+    return _state
 
 
 def reply(status: int, body) -> dict:
@@ -67,11 +81,7 @@ def reply(status: int, body) -> dict:
 
 def caller(event: dict) -> tuple[str, bool]:
     claims = ((event.get("requestContext") or {}).get("authorizer") or {}).get("jwt", {}).get("claims", {})
-    groups = claims.get("cognito:groups") or ""
-    if isinstance(groups, str):
-        groups = groups.strip("[]").replace(",", " ").split()
-    private_group = os.environ.get("PRIVATE_GROUP", "private-readers")
-    return claims.get("sub") or "anonymous", private_group in groups
+    return subject(claims), private_reader(claims)
 
 
 def _json(lake_, key, default=None):
@@ -79,20 +89,7 @@ def _json(lake_, key, default=None):
 
 
 def take_quota(sub: str) -> bool:
-    limit = int(os.environ.get("DAILY_QUESTIONS", "30"))
-    from botocore.exceptions import ClientError
-    day = dt.date.today().isoformat()
-    try:
-        table().update_item(
-            Key={"pk": f"quota#{sub}#{day}"},
-            UpdateExpression="ADD n :one SET expires_at = :exp",
-            ConditionExpression="attribute_not_exists(n) OR n < :limit",
-            ExpressionAttributeValues={":one": 1, ":limit": limit, ":exp": int(time.time()) + 3 * 86400})
-        return True
-    except ClientError as e:
-        if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
-            return False
-        raise
+    return state().take_quota(sub, dt.date.today().isoformat(), int(os.environ.get("DAILY_QUESTIONS", "30")))
 
 
 def answer_job(job: dict) -> None:
@@ -107,8 +104,7 @@ def answer_job(job: dict) -> None:
     except Exception as e:
         log.exception("chat failed")
         item = {"status": "failed", "error": str(e)[:500]}
-    table().put_item(Item={"pk": f"chat#{job['id']}", "sub": job["sub"],
-                           "body": json.dumps(item, default=str), "expires_at": int(time.time()) + 86400})
+    state().put_chat(job["id"], job["sub"], item)
 
 
 def handler(event, context):
@@ -158,10 +154,10 @@ def handler(event, context):
                 return reply(404, {"error": "no such draft"})
             return reply(200, {"id": qs["id"], "ttl": lk.get(key).decode()})
         if path == "/chat" and method == "GET":
-            item = table().get_item(Key={"pk": f"chat#{qs.get('id', '')}"}).get("Item")
+            item = state().get_chat(qs.get("id", ""))
             if not item or item.get("sub") != sub:
                 return reply(404, {"error": "no such question"})
-            return reply(200, json.loads(item["body"]))
+            return reply(200, item["body"])
         idx = index.load(lk, cid)
         if idx is None:
             return reply(409, {"error": "The knowledge graph is not built yet.",
@@ -191,6 +187,12 @@ def handler(event, context):
         if path == "/graph":
             return reply(200, idx.graph(qs.get("type") or None, private=private, focus=qs.get("focus") or None,
                                         limit=min(int(qs.get("limit", 150)), 400)))
+        if path == "/neighbourhood":
+            return reply(200, idx.neighbourhood(qs.get("id", ""), hops=int(qs.get("hops", 1)), private=private,
+                                                limit=min(int(qs.get("limit", 150)), 200)))
+        if path == "/paths":
+            return reply(200, idx.paths(qs.get("from", ""), qs.get("to", ""), max_hops=int(qs.get("hops", 3)),
+                                        private=private, limit=int(qs.get("limit", 10))))
         if path == "/chat" and method == "POST":
             body = json.loads(event.get("body") or "{}")
             q = str(body.get("question") or "").strip()
@@ -200,11 +202,8 @@ def handler(event, context):
                 return reply(429, {"error": "You have reached today's question limit."})
             job = {"id": uuid.uuid4().hex, "sub": sub, "private": private, "question": q, "collection": cid,
                    "history": [h for h in (body.get("history") or [])[-6:] if isinstance(h, dict)]}
-            table().put_item(Item={"pk": f"chat#{job['id']}", "sub": sub, "body": json.dumps({"status": "pending"}),
-                                   "expires_at": int(time.time()) + 86400})
-            import boto3
-            boto3.client("lambda").invoke(FunctionName=context.function_name, InvocationType="Event",
-                                          Payload=json.dumps({"chat_job": job}).encode())
+            state().put_chat(job["id"], sub, {"status": "pending"})
+            dispatch(job, context)
             return reply(202, {"id": job["id"]})
         return reply(404, {"error": f"no route {method} {path}"})
     except Exception as e:

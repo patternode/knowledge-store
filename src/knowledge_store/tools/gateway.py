@@ -45,9 +45,17 @@ TOOLS = {
                       ["collection", "type"]),
     "get_entity": ("An entity's types, names, attributes and relations, each with the passages it is stated in.",
                    {"collection": {"type": "string"}, "id": {"type": "string"}}, ["collection", "id"]),
-    "neighbourhood": ("The entities directly related to one entity, and the relations among them.",
-                      {"collection": {"type": "string"}, "id": {"type": "string"}, "limit": {"type": "integer"}},
+    "neighbourhood": ("The entities within 1 to 3 relations of one entity (default 1), nearest and best connected "
+                      "first, and the relations among them.",
+                      {"collection": {"type": "string"}, "id": {"type": "string"}, "hops": {"type": "integer"},
+                       "limit": {"type": "integer"}},
                       ["collection", "id"]),
+    "find_paths": ("How two entities are connected: every shortest chain of relations between them, up to max_hops "
+                   "(1 to 4, default 3) long, each relation with its direction. Cite the passages of each relation "
+                   "(get_entity) before stating it.",
+                   {"collection": {"type": "string"}, "from": {"type": "string"}, "to": {"type": "string"},
+                    "max_hops": {"type": "integer"}, "limit": {"type": "integer"}},
+                   ["collection", "from", "to"]),
     "search_passages": ("Keyword search over the source passages; returns text with passage ids.",
                         {"collection": {"type": "string"}, "query": {"type": "string"}, "limit": {"type": "integer"}},
                         ["collection", "query"]),
@@ -103,7 +111,11 @@ def call(root, name: str, args: dict) -> dict:
     if idx is None:
         return {"error": f"collection {cid!r} has no knowledge graph yet"}
     if name == "neighbourhood":
-        return idx.graph(None, private=private, focus=args.get("id"), limit=min(int(args.get("limit") or 40), 100))
+        return idx.neighbourhood(args.get("id") or "", hops=int(args.get("hops") or 1), private=private,
+                                 limit=min(int(args.get("limit") or 40), 100))
+    if name == "find_paths":
+        return idx.paths(args.get("from") or "", args.get("to") or "", max_hops=int(args.get("max_hops") or 3),
+                         private=private, limit=int(args.get("limit") or 10))
     return {"ontology_version": idx.version, **chat.run_tool(idx, name, args, private=private)}
 
 

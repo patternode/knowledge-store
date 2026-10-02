@@ -6,7 +6,8 @@ every answer cites passage ids, which the portal turns into links to the source 
 
 The model call goes to Bedrock (boto3's bedrock-runtime) or, with LLM_PROVIDER=anthropic, to the
 Anthropic Messages API over HTTPS with the request converted by knowledge_store.llm, so the
-Lambda needs no SDK beyond boto3.
+Lambda needs no SDK beyond boto3. With foundry or vertex (Azure Functions, Cloud Run, which
+package their dependencies) it goes through the Anthropic SDK's client for that provider.
 """
 
 from __future__ import annotations
@@ -125,8 +126,11 @@ class _Anthropic:
 
 
 def client():
-    if llm.provider() == llm.ANTHROPIC:
+    p = llm.provider()
+    if p == llm.ANTHROPIC:
         return _Anthropic(llm.api_key())
+    if p in (llm.FOUNDRY, llm.VERTEX):
+        return llm.AnthropicConverse(client=llm.sdk_client(p, timeout=120, max_retries=3))
     import boto3
     from botocore.config import Config
     return boto3.client("bedrock-runtime", config=Config(read_timeout=120, retries={"max_attempts": 3}))

@@ -88,6 +88,7 @@ it into what each consumer needs, under `ontology/versions/<v>/renditions/`:
 | owl/ontology.ttl, owl/shapes.ttl | SPARQL stores (Neptune), SHACL validation, the pipeline |
 | agent/ontology.md, agent/ontology.json | an agent's prompt or tools: compact types, relations, attributes and synonyms |
 | neo4j/schema.cypher, neo4j/mapping.json, neo4j/schema.md | a property-graph projection: constraints, the class-to-label and property-to-relationship mapping, and the schema for Cypher agents |
+| age/schema.sql, spanner/schema.sql | the same projection in PostgreSQL with Apache AGE, and in Spanner Graph |
 | extraction/tool.json | the extraction tool's JSON Schema |
 | jsonld/context.jsonld | JSON-LD over the same terms |
 
@@ -104,6 +105,8 @@ See [QUICKSTART.md](QUICKSTART.md). Three routes, one Terraform module ([`infra/
 | Your own deployment repository ([`examples/deployment`](examples/deployment)) | Terraform 1.10+, AWS credentials and a repository of your own | Your configuration and curated ontologies live in your repository, and the module is pinned to a release of this one |
 
 Either way the pipeline image is built by CodeBuild inside your account from this repository's source, so nothing is pulled from a registry you do not own apart from the Python base image on ECR Public. Model calls go to Amazon Bedrock unless you choose the Anthropic API.
+
+On Azure, [`infra/azure/stack`](infra/azure/stack) deploys the same system with Claude in Microsoft Foundry, Entra ID sign-in and an MCP endpoint behind API Management: see [docs/architectures/azure-setup.md](docs/architectures/azure-setup.md).
 
 ## Use
 
@@ -162,7 +165,9 @@ python -m knowledge_store.portal_api.local --lake ./build/lake
 ```
 
 Model calls need `LLM_PROVIDER=bedrock` (and AWS credentials) or `LLM_PROVIDER=anthropic` (and
-`ANTHROPIC_API_KEY`), plus `EXTRACTION_MODEL_ID`.
+`ANTHROPIC_API_KEY`), plus `EXTRACTION_MODEL_ID`. `foundry` (Claude in Microsoft Foundry) and
+`vertex` (Claude on Vertex AI) are there for the [Azure and Google Cloud designs](docs/architectures/README.md);
+see `llm.py` for their settings.
 
 ## Costs
 
@@ -177,10 +182,11 @@ version. Chat is limited by `daily_questions` per user.
 - Entity resolution is naive. An entity's IRI is its root type plus its normalised name, so
   "NASA" and "National Aeronautics and Space Administration" are two nodes unless a document
   gives one as the other's alias.
-- The portal's projection is held in memory by one Lambda. That is right for tens of
-  thousands of entities and wrong beyond it. For more, load the same N-Quads into a SPARQL
-  store (Oxigraph in a container, or Neptune) or a property graph (using the Neo4j mapping)
-  behind the same API.
+- The portal's projection is held in memory by one Lambda by default. That is right for tens of
+  thousands of entities and wrong beyond it. For more, the pipeline can load the same projection
+  into a document store and a graph database (`PROJECTION_STORE`, `GRAPH_BACKEND`; see
+  [docs/architectures](docs/architectures/README.md#new-the-graph-and-document-backends)), behind
+  the same API. The AWS stack does not deploy either yet.
 - Delta selection is a heuristic (see above).
 - Scanned PDFs need OCR, which is not built in.
 - Extraction is synchronous (one model call per document). Batch inference (50% cheaper, for

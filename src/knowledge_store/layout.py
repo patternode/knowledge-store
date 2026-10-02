@@ -47,6 +47,8 @@ CONFIG_SOURCES = "config/sources.json"
 CONFIG_PROFILE = "config/profile.json"
 CONFIG_SETTINGS = "config/settings.json"
 STATUS = "portal/status.json"
+GRAPH_POINTER = "gold/graph.json"
+DOCUMENTS_POINTER = "gold/documents.json"
 PIPELINE_LOCK = "locks/pipeline.json"
 MANIFESTS = "manifests"
 

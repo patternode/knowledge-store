@@ -112,7 +112,7 @@
   },
   {
     "name": "neighbourhood",
-    "description": "The entities directly related to one entity, and the relations among them.",
+    "description": "The entities within 1 to 3 relations of one entity (default 1), nearest and best connected first, and the relations among them.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -121,6 +121,9 @@
         },
         "id": {
           "type": "string"
+        },
+        "hops": {
+          "type": "integer"
         },
         "limit": {
           "type": "integer"
@@ -133,6 +136,39 @@
       "required": [
         "collection",
         "id"
+      ]
+    }
+  },
+  {
+    "name": "find_paths",
+    "description": "How two entities are connected: every shortest chain of relations between them, up to max_hops (1 to 4, default 3) long, each relation with its direction. Cite the passages of each relation (get_entity) before stating it.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "max_hops": {
+          "type": "integer"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": [
+        "collection",
+        "from",
+        "to"
       ]
     }
   },

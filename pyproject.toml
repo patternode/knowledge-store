@@ -13,7 +13,13 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "moto>=5"]
+# One extra per cloud and backend, so no image carries another cloud's SDKs.
+azure = ["azure-storage-blob>=12.20", "azure-storage-queue>=12.10", "azure-identity>=1.17", "pyjwt[crypto]>=2.8"]
+gcp = ["google-cloud-storage>=2.18", "google-auth>=2.30", "pyjwt[crypto]>=2.8"]
+mongo = ["pymongo>=4.8"]
+neo4j = ["neo4j>=5.20"]
+age = ["psycopg[binary]>=3.2"]
+dev = ["pytest>=8", "moto>=5", "azure-functions>=1.21", "knowledge-store[azure,gcp,mongo,neo4j,age]"]
 
 [project.scripts]
 knowledge-store = "knowledge_store.cli:main"

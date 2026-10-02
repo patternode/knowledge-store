@@ -57,7 +57,7 @@ PRICES = {
     "claude-sonnet-4-5": (3.0, 15.0, 3.75, 0.30),
     "claude-haiku-4-5": (1.0, 5.0, 1.25, 0.10),
 }
-_DATE = re.compile(r"-\d{8}$")
+_DATE = re.compile(r"[-@]\d{8}$")
 _REGIONAL = re.compile(r"^(?:us|eu|apac|jp|au)\.anthropic\.")
 
 _job = contextvars.ContextVar("ledger_job", default=os.environ.get("LEDGER_JOB", ""))
