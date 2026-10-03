@@ -34,6 +34,7 @@ def store(request, tmp_path, monkeypatch):
     if kind == "local":
         yield LocalStore(tmp_path)
     elif kind == "s3":
+        pytest.importorskip("moto", reason="the aws extra is not installed")
         import boto3
         from moto import mock_aws
         monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
@@ -103,6 +104,8 @@ def test_prefix_store_over_each_adapter(store):
 
 
 def test_store_from_uri(monkeypatch, tmp_path):
+    pytest.importorskip("azure.storage.blob", reason="the azure extra is not installed")
+    pytest.importorskip("google.cloud.storage", reason="the gcp extra is not installed")
     monkeypatch.setenv("AZURE_STORAGE_CONNECTION_STRING", azurite_connection("http://127.0.0.1:10000/devstoreaccount1"))
     monkeypatch.setenv("STORAGE_EMULATOR_HOST", "http://127.0.0.1:4443")
     b = store_from_uri("az://devstoreaccount1/lake")
@@ -118,6 +121,7 @@ def test_store_from_uri(monkeypatch, tmp_path):
 
 
 def test_foundry_client_with_key_and_with_entra(monkeypatch):
+    pytest.importorskip("azure.identity", reason="the azure extra is not installed")
     monkeypatch.setenv("ANTHROPIC_FOUNDRY_RESOURCE", "ks-test")
     monkeypatch.setenv("ANTHROPIC_FOUNDRY_API_KEY", "test-key")
     c = llm.sdk_client(llm.FOUNDRY)
@@ -190,6 +194,7 @@ def chat(request, monkeypatch):
     if kind == "memory":
         yield state.MemoryState()
     elif kind == "dynamodb":
+        pytest.importorskip("moto", reason="the aws extra is not installed")
         import boto3
         from moto import mock_aws
         monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")

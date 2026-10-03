@@ -1,7 +1,7 @@
 """The Azure Function App: the portal API, the knowledge tools over MCP, and the chat worker.
 
 Thin on purpose: each function hands its request to knowledge_store.hosts.azure, which holds the
-logic and its tests. infra/azure/package_function.py puts this file, host.json and the package
+logic and its tests. deploy/azure/package_function.py puts this file, host.json and the package
 together with its dependencies into the zip Terraform deploys.
 
     GET|POST /api/{*path}   the portal API, called by the portal page with the person's token

@@ -15,3 +15,9 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 - A Terraform stack whose only required input is the admin email, and a CloudFormation launch stack that runs it from the AWS console.
 - AgentCore Gateway tools and an example task agent.
 - Sample corpora: an original space-missions set (CC0) and a fetch script for the public-domain Sherlock Holmes stories.
+
+### Changed
+
+- Azure's deployment code moved from `infra/azure/` and `functions/azure/` to `deploy/azure/`. AWS stays in `infra/`, so pinned AWS module paths do not change.
+- boto3 is now the `aws` extra instead of a core dependency. Install with `pip install ".[aws]"` to use S3 lakes, Bedrock or DynamoDB. The pipeline image installs it by default.
+- The README describes the core and links a guide per cloud.

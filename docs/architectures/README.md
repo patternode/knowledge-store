@@ -1,8 +1,10 @@
 # Reference architectures for Azure and Google Cloud
 
 The AWS stack in [`infra/`](../../infra) is the reference implementation. These documents design
-the same system for Azure and Google Cloud. They are designs, not yet code: each names the
-components, what replaces what, and the changes the Python package needs.
+the same system for Azure and Google Cloud: each names the components, what replaces what, and the
+changes the Python package needs. Azure is built, in [`deploy/azure/`](../../deploy/azure)
+([azure-setup.md](azure-setup.md)). Google Cloud is a design; its storage and model provider are
+built, its deployment is not.
 
 | Architecture | Graph projection | Documents (chat, quota, read model) | Agent for people (low code) | Agent for software (high code) |
 |---|---|---|---|---|
@@ -50,7 +52,7 @@ Vertex clients take the same Messages request. A provider for non-Claude models 
 Gemini) would need a second translation for tool calls, and the extraction prompts are tuned and
 tested on Claude, so it is deferred.
 
-Cloud SDKs go in optional extras (`[azure]`, `[gcp]`, `[neo4j]`, `[age]`, `[mongo]`), so no image
+Cloud SDKs go in optional extras (`[aws]`, `[azure]`, `[gcp]`, `[neo4j]`, `[age]`, `[mongo]`), so no image
 carries another cloud's libraries.
 
 ## New: the graph and document backends
@@ -145,10 +147,11 @@ agent service. Both call the same MCP tools, so the tools are still one implemen
 | | AWS | Azure | Google Cloud |
 |---|---|---|---|
 | One-click route | CloudFormation stack runs Terraform in CodeBuild | Deploy to Azure button: a template whose deployment script runs the Terraform | Infrastructure Manager runs the Terraform |
-| Terraform route | `infra/stack` | `infra/azure/stack` | `infra/gcp/stack` |
+| Terraform route | `infra/stack` | `deploy/azure/stack` | `deploy/gcp/stack` |
 | Images built in your account from this source | CodeBuild, ECR | ACR Tasks, Azure Container Registry | Cloud Build, Artifact Registry |
 
-The existing `infra/stack` and `infra/modules` stay where they are, so nobody's AWS paths move.
+The existing `infra/stack` and `infra/modules` stay where they are, so nobody's AWS paths move. Every
+other cloud's deployment code goes under `deploy/<cloud>/`.
 
 ## Build order
 

@@ -1,7 +1,7 @@
 # Azure reference architecture
 
-Built: [`infra/azure/modules/knowledge-store`](../../infra/azure/modules/knowledge-store) is the
-module, [`infra/azure/stack`](../../infra/azure/stack) the reference root, and
+Built: [`deploy/azure/modules/knowledge-store`](../../deploy/azure/modules/knowledge-store) is the
+module, [`deploy/azure/stack`](../../deploy/azure/stack) the reference root, and
 [azure-setup.md](azure-setup.md) the way to deploy it from scratch. The Copilot Studio agent and
 the Foundry task agent (below) are designed and not yet built.
 
@@ -48,7 +48,7 @@ Foundry task agent   ──MCP──▶ (token check, rate limit)
 | Tools for agents | AgentCore Gateway, interceptor, Cedar, Lambda | API Management (token check, rate limit per caller) in front of the Function App's `/mcp`, which checks the token again and sets the caller's scope |
 | Secrets | Secrets Manager | Key Vault (RBAC), read by managed identities and Key Vault references |
 | Logs and traces | CloudWatch, X-Ray | Log Analytics, Application Insights |
-| State | S3 (bootstrap) | a storage account with Entra auth and versioning (`infra/azure/bootstrap`) |
+| State | S3 (bootstrap) | a storage account with Entra auth and versioning (`deploy/azure/bootstrap`) |
 
 Choices where the design had options:
 

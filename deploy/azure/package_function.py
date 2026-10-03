@@ -1,4 +1,4 @@
-"""Build the Function App's zip: functions/azure, the knowledge_store package, and its
+"""Build the Function App's zip: deploy/azure/function, the knowledge_store package, and its
 dependencies as Linux wheels under .python_packages (what Flex Consumption runs without a
 remote build). Works from Windows, macOS or Linux, because pip is told the target platform.
 
@@ -6,7 +6,7 @@ Terraform runs it as an external data source: it reads {"repo_root", "out_dir"} 
 prints {"path", "sha256"}. The zip is named by a hash of everything that goes into it, so an
 unchanged source is not rebuilt and an apply redeploys only when something changed.
 
-    python infra/azure/package_function.py < <(echo '{"repo_root": ".", "out_dir": "build"}')
+    python deploy/azure/package_function.py < <(echo '{"repo_root": ".", "out_dir": "build"}')
 """
 
 from __future__ import annotations
@@ -34,7 +34,7 @@ def main() -> None:
     q = json.load(sys.stdin)
     repo = Path(q["repo_root"]).resolve()
     out = Path(q["out_dir"]).resolve()
-    app, pkg = repo / "functions" / "azure", repo / "src" / "knowledge_store"
+    app, pkg = repo / "deploy" / "azure" / "function", repo / "src" / "knowledge_store"
     sources = [*files(app, app), *((p, "knowledge_store/" + r) for p, r in files(pkg, pkg))]
     h = hashlib.sha256()
     for p, arc in sources:

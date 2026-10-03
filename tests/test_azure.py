@@ -25,6 +25,7 @@ ISSUER = f"https://login.microsoftonline.com/{TENANT}/v2.0"
 
 @pytest.fixture(scope="module")
 def key():
+    pytest.importorskip("jwt", reason="the azure extra is not installed")
     from cryptography.hazmat.primitives.asymmetric import rsa
     return rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
@@ -180,17 +181,17 @@ def _variables(path: Path) -> set[str]:
 
 
 def test_azure_stack_root_passes_every_module_input():
-    module = _variables(ROOT / "infra/azure/modules/knowledge-store")
-    stack = (ROOT / "infra/azure/stack/main.tf").read_text()
+    module = _variables(ROOT / "deploy/azure/modules/knowledge-store")
+    stack = (ROOT / "deploy/azure/stack/main.tf").read_text()
     passed = set(re.findall(r"^\s+(\w+)\s+= var\.\1$", stack, re.M))
     assert module == passed
-    assert module | {"subscription_id"} == _variables(ROOT / "infra/azure/stack")
+    assert module | {"subscription_id"} == _variables(ROOT / "deploy/azure/stack")
 
 
 def test_function_app_registers_its_functions():
     pytest.importorskip("azure.functions")
     import importlib.util
-    spec = importlib.util.spec_from_file_location("function_app", ROOT / "functions/azure/function_app.py")
+    spec = importlib.util.spec_from_file_location("function_app", ROOT / "deploy/azure/function/function_app.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     names = {f.get_function_name() for f in mod.app.get_functions()}

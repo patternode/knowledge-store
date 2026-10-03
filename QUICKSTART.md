@@ -1,6 +1,8 @@
-# Quick start
+# Quick start on AWS
 
-Two ways to install. Both deploy the same Terraform into your own AWS account, and need access to an Anthropic Claude model in Amazon Bedrock (Bedrock console, Model access) in the region you deploy to.
+For Azure, see [docs/architectures/azure-setup.md](docs/architectures/azure-setup.md).
+
+Three ways to install. All three deploy the same Terraform into your own AWS account, and need access to an Anthropic Claude model in Amazon Bedrock (Bedrock console, Model access) in the region you deploy to.
 
 ## Option 1: from the AWS console (CloudFormation)
 
@@ -37,10 +39,12 @@ To run it for real, keep your configuration and curated ontologies in a private 
 ## Then
 
 1. Upload documents to the `upload_to` location, `s3://<name>-lake-<account>/landing/<collection>/`.
+   The upload starts the pipeline within about a minute (S3 event, EventBridge, SQS, an
+   EventBridge Pipe, then an ECS Fargate task).
 2. The first run proposes an ontology and waits for you (curated mode). The portal's Overview shows the draft; curate and publish it:
 
    ```bash
-   pip install .
+   pip install ".[aws]"
    export LAKE_URI=s3://<lake bucket>
    knowledge-store -c default ontology pull <draft id> ontology/
    # edit ontology/ontology.ttl, set owl:versionInfo "1.0.0"
@@ -55,3 +59,7 @@ To try it with sample content, run `python examples/sherlock-holmes/fetch.py` an
 ## The example agent
 
 Set EnableAgent to true (or `agent = { enabled = true }`), wait for the agent image to build, then set EnableAgentRuntime to true. See [examples/agent](examples/agent/README.md).
+
+## What it costs idle
+
+Close to nothing. The stack has no NAT gateway, no database server and no always-on compute: S3, CloudFront, Lambda, DynamoDB on demand, and Fargate only while a sweep runs. Model calls in Bedrock are the cost that matters.

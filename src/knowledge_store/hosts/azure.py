@@ -1,5 +1,5 @@
 """Azure glue: what the Function App's functions and the pipeline job do, kept apart from the
-azure.functions decorators (functions/azure/function_app.py) so it can be tested without them.
+azure.functions decorators (deploy/azure/function/function_app.py) so it can be tested without them.
 
     portal()   GET/POST /api/...  the portal API (portal_api/handler.py), after verifying the token
     mcp()      POST /mcp          the knowledge tools over MCP (tools/mcp.py), behind API Management

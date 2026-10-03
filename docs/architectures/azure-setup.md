@@ -15,7 +15,7 @@ is built is described in [azure.md](azure.md).
 | Models | Claude Sonnet 5 for extraction and chat, deployment name `claude-sonnet-5` | The prompts are tested on it; it accepts forced tool use, which extraction needs |
 | Who deploys | You, signed in with the Azure CLI | Simplest for a first deployment; move to a CI pipeline with workload identity federation later |
 | Curators | Your own user, by object id | App role assignment to groups needs Entra ID P1; users work on every tenant |
-| Terraform state | A storage account made by `infra/azure/bootstrap` | Entra auth, no keys, every state version kept |
+| Terraform state | A storage account made by `deploy/azure/bootstrap` | Entra auth, no keys, every state version kept |
 | Graph | Off at first, then `graph = true` | Proves the pipeline before adding a database with a monthly floor |
 
 ## 1. Prepare the subscription (once)
@@ -67,7 +67,7 @@ outputs. Read the terms in the catalog before you send it anything sensitive.
 ## 4. Create the state storage
 
 ```bash
-cd infra/azure/bootstrap
+cd deploy/azure/bootstrap
 terraform init
 terraform apply -var subscription_id=$(az account show --query id -o tsv)
 terraform output -raw backend_hcl > ../stack/backend.hcl
@@ -117,7 +117,7 @@ With `ontology_mode = "curated"` (the default) the first run stops after discove
 Curate and publish it from your machine, signed in with the Azure CLI:
 
 ```bash
-export LAKE_URI=$(terraform output -raw lake_uri)   # in infra/azure/stack
+export LAKE_URI=$(terraform output -raw lake_uri)   # in deploy/azure/stack
 cd ../../..                                          # the repository root
 pip install -e ".[azure]"
 knowledge-store ontology pull <draft id> ontology/

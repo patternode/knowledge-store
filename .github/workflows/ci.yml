@@ -15,6 +15,16 @@ jobs:
           python-version: "3.12"
       - run: pip install -e ".[dev]" pydantic
       - run: pytest -q
+  core:
+    # The core with no cloud's SDK: every cloud test skips, everything else must pass.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e . pytest
+      - run: pytest -q -rs
   ports:
     # The port contracts against Azurite, fake-gcs-server, MongoDB, Neo4j and Apache AGE.
     runs-on: ubuntu-latest
@@ -44,12 +54,12 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.14.3"
-      - run: terraform fmt -check -recursive infra && terraform fmt -check -recursive examples/deployment
+      - run: terraform fmt -check -recursive infra && terraform fmt -check -recursive deploy && terraform fmt -check -recursive examples/deployment
       - working-directory: infra/stack
         run: terraform init -backend=false -input=false && terraform validate
-      - working-directory: infra/azure/stack
+      - working-directory: deploy/azure/stack
         run: terraform init -backend=false -input=false && terraform validate
-      - working-directory: infra/azure/bootstrap
+      - working-directory: deploy/azure/bootstrap
         run: terraform init -backend=false -input=false && terraform validate
       # The deployment template, against this checkout's module instead of the release it pins.
       - name: validate examples/deployment

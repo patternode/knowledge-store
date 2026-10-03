@@ -1,5 +1,5 @@
 # The Knowledge Store on Azure: everything, in one apply. A root calls it with its own provider
-# and backend: infra/azure/stack is the reference root.
+# and backend: deploy/azure/stack is the reference root.
 #
 #   main.tf      naming, the resource group, identities, monitoring, Key Vault
 #   entra.tf     app registrations: the API, the portal, the Copilot Studio connector

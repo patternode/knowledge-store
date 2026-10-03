@@ -1,6 +1,6 @@
 # The Knowledge Store module for Azure. Required: admin_principal_ids, publisher_email and the
 # Foundry resource. Everything else has a default that works. Where it deploys (subscription,
-# tenant, credentials) is the caller's provider configuration; see infra/azure/stack.
+# tenant, credentials) is the caller's provider configuration; see deploy/azure/stack.
 
 variable "name" {
   type        = string

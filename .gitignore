@@ -12,4 +12,4 @@ terraform.tfvars
 .build/
 examples/sherlock-holmes/stories/
 !infra/stack/.terraform.lock.hcl
-!infra/azure/stack/.terraform.lock.hcl
+!deploy/azure/stack/.terraform.lock.hcl

@@ -34,8 +34,6 @@ def serve(lake_dir: str, portal_dir: str, port: int) -> None:
     def run_job(job):
         threading.Thread(target=handler.answer_job, args=(job,), daemon=True).start()
 
-    import boto3  # noqa: F401  the handler imports it for the async invoke; replace that path
-
     class H(BaseHTTPRequestHandler):
         def _api(self, method: str):
             u = urlparse(self.path)

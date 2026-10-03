@@ -1,6 +1,6 @@
 # The Function App (Flex Consumption: scales to zero, per-execution billing): the portal API,
-# the knowledge tools over MCP, and the chat worker. The code is functions/azure with the
-# package and its Linux wheels, zipped by infra/azure/package_function.py and deployed by
+# the knowledge tools over MCP, and the chat worker. The code is deploy/azure/function with the
+# package and its Linux wheels, zipped by deploy/azure/package_function.py and deployed by
 # Terraform. Every HTTP route verifies the caller's Entra token itself (knowledge_store.authn).
 
 resource "azurerm_storage_account" "func" {
@@ -30,7 +30,7 @@ resource "azurerm_role_assignment" "func_host" {
 }
 
 data "external" "function_package" {
-  program = [var.python_command, "${local.repo_root}/infra/azure/package_function.py"]
+  program = [var.python_command, "${local.repo_root}/deploy/azure/package_function.py"]
   query   = { repo_root = local.repo_root, out_dir = "${abspath(path.root)}/.build" }
 }
 

@@ -1,11 +1,10 @@
 [project]
 name = "knowledge-store"
 version = "0.1.0"
-description = "Domain-agnostic ontology discovery and extraction from unstructured content on AWS: a Patternode experiment"
+description = "Domain-agnostic ontology discovery and extraction from unstructured content: a Patternode experiment"
 requires-python = ">=3.12"
 license = "Apache-2.0"
 dependencies = [
-  "boto3>=1.40",
   "anthropic>=0.78,<1",
   "rdflib>=7.1",
   "pyshacl>=0.30",
@@ -13,13 +12,15 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# One extra per cloud and backend, so no image carries another cloud's SDKs.
+# One extra per cloud and backend, so no image carries another cloud's SDKs. The core needs none
+# of them: it runs on a local lake with the Anthropic API.
+aws = ["boto3>=1.40"]
 azure = ["azure-storage-blob>=12.20", "azure-storage-queue>=12.10", "azure-identity>=1.17", "pyjwt[crypto]>=2.8"]
 gcp = ["google-cloud-storage>=2.18", "google-auth>=2.30", "pyjwt[crypto]>=2.8"]
 mongo = ["pymongo>=4.8"]
 neo4j = ["neo4j>=5.20"]
 age = ["psycopg[binary]>=3.2"]
-dev = ["pytest>=8", "moto>=5", "azure-functions>=1.21", "knowledge-store[azure,gcp,mongo,neo4j,age]"]
+dev = ["pytest>=8", "moto>=5", "azure-functions>=1.21", "knowledge-store[aws,azure,gcp,mongo,neo4j,age]"]
 
 [project.scripts]
 knowledge-store = "knowledge_store.cli:main"
