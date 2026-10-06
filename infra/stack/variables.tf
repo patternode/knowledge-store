@@ -136,6 +136,16 @@ variable "daily_questions" {
   type    = number
   default = 30
 }
+variable "waf" {
+  type        = any
+  default     = {}
+  description = "an AWS WAF web ACL on the portal, off by default: { enabled = true } and the options in infra/modules/knowledge-store/README.md"
+}
+variable "web_acl_arn" {
+  type        = string
+  default     = ""
+  description = "an existing CLOUDFRONT-scope web ACL to attach to the portal instead"
+}
 variable "force_destroy_lake" {
   type    = bool
   default = false

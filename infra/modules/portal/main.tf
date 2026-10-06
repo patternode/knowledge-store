@@ -61,6 +61,14 @@ variable "daily_questions" {
   type    = number
   default = 30
 }
+variable "api_throttle" {
+  description = "the HTTP API stage's default route throttling: steady requests per second and burst"
+  type = object({
+    rate_limit  = optional(number, 20)
+    burst_limit = optional(number, 50)
+  })
+  default = {}
+}
 variable "log_retention_days" {
   type    = number
   default = 30
@@ -194,7 +202,8 @@ resource "aws_cloudfront_distribution" "this" {
     geo_restriction { restriction_type = "none" }
   }
   viewer_certificate { cloudfront_default_certificate = true }
-  tags = var.tags
+  web_acl_id = local.web_acl_arn # waf.tf; null leaves the distribution without one
+  tags       = var.tags
 }
 
 resource "aws_s3_bucket_policy" "site" {
@@ -294,6 +303,12 @@ resource "aws_lambda_function" "api" {
   tags       = var.tags
 }
 
+# The default execute-api endpoint stays enabled, because it is CloudFront's origin for /api/*:
+# disabling it would break the portal. (Disabling it needs a custom domain name on the API, with
+# its own certificate, as the origin instead.) So the API is reachable directly as well as through
+# CloudFront, where the web ACL does not apply. What bounds a direct
+# request is the JWT authorizer (no valid Cognito token, no Lambda run) and the stage throttling
+# in api_throttle, which caps the rate for the whole API.
 resource "aws_apigatewayv2_api" "this" {
   name          = "${var.name}-portal"
   protocol_type = "HTTP"
@@ -332,8 +347,8 @@ resource "aws_apigatewayv2_stage" "default" {
   name        = "$default"
   auto_deploy = true
   default_route_settings {
-    throttling_burst_limit = 50
-    throttling_rate_limit  = 20
+    throttling_burst_limit = var.api_throttle.burst_limit
+    throttling_rate_limit  = var.api_throttle.rate_limit
   }
   tags = var.tags
 }

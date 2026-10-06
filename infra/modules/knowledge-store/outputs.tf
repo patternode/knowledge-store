@@ -1,4 +1,12 @@
 output "portal_url" { value = module.portal.url }
+output "portal_distribution_id" {
+  value       = module.portal.distribution_id
+  description = "the portal's CloudFront distribution, for subscribing it to a pricing plan in the console"
+}
+output "portal_web_acl_arn" {
+  value       = module.portal.web_acl_arn
+  description = "the web ACL on the portal's distribution, or null when there is none"
+}
 output "lake_bucket" { value = module.lake.bucket }
 output "upload_to" {
   value       = { for id, c in local.collections : id => "s3://${module.lake.bucket}/landing/${id}/" }

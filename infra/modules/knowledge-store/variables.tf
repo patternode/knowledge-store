@@ -117,6 +117,44 @@ variable "daily_questions" {
   type    = number
   default = 30
 }
+
+# --- edge protection (optional) ------------------------------------------------------------------
+
+variable "waf" {
+  description = <<-EOT
+    An AWS WAF web ACL on the portal's CloudFront distribution, created in us-east-1. Off by
+    default. All optional:
+      enabled                        create and attach the web ACL
+      managed_rules_action           block (default) or count, for the AWS managed common rule set
+      managed_rules_count_overrides  rules of that set that only count; default SizeRestrictions_BODY
+      rate_limit                     requests per IP per 5 minutes, any path; default 500
+      api_rate_limit                 requests per IP per 5 minutes to /api/*; default 300
+      allowed_methods                default GET, HEAD, POST, OPTIONS; any other method is blocked
+  EOT
+  type = object({
+    enabled                       = optional(bool, false)
+    managed_rules_action          = optional(string, "block")
+    managed_rules_count_overrides = optional(list(string), ["SizeRestrictions_BODY"])
+    rate_limit                    = optional(number, 500)
+    api_rate_limit                = optional(number, 300)
+    allowed_methods               = optional(list(string), ["GET", "HEAD", "POST", "OPTIONS"])
+  })
+  default = {}
+}
+variable "web_acl_arn" {
+  type        = string
+  default     = ""
+  description = "an existing CLOUDFRONT-scope web ACL to attach to the portal instead of creating one (takes precedence over waf.enabled)"
+}
+variable "api_throttle" {
+  description = "the portal API's stage throttling, for the whole API: steady requests per second and burst"
+  type = object({
+    rate_limit  = optional(number, 20)
+    burst_limit = optional(number, 50)
+  })
+  default = {}
+}
+
 variable "force_destroy_lake" {
   type    = bool
   default = false

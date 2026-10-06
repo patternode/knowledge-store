@@ -109,6 +109,9 @@ module "portal" {
   chat_model_id                = var.chat_model_id
   daily_questions              = var.daily_questions
   brand_name                   = var.portal_title
+  waf                          = var.waf
+  web_acl_arn                  = var.web_acl_arn
+  api_throttle                 = var.api_throttle
 }
 
 module "agent" {

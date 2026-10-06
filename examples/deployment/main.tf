@@ -52,6 +52,12 @@ module "knowledge_store" {
   # chat_model_id       = "us.anthropic.claude-sonnet-5"
   # portal_title        = "Knowledge Store"
 
+  # Edge protection for a public portal: an AWS WAF web ACL on its CloudFront distribution. No
+  # provider alias is needed; the module creates it in us-east-1 itself. Or attach one you already
+  # have with web_acl_arn. See the module's README, including CloudFront's flat-rate pricing plans.
+  # waf = { enabled = true }
+  # web_acl_arn = "arn:aws:wafv2:us-east-1:123456789012:global/webacl/..."
+
   # The example agent. First apply with enabled = true; once CodeBuild has pushed the agent image,
   # set runtime = true and apply again. See examples/agent in the Knowledge Store repository.
   # agent = { enabled = true, runtime = false }

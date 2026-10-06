@@ -1,4 +1,8 @@
 output "portal_url" { value = module.knowledge_store.portal_url }
+output "portal_distribution_id" {
+  value       = module.knowledge_store.portal_distribution_id
+  description = "the portal's CloudFront distribution, for subscribing it to a pricing plan in the console"
+}
 output "lake_bucket" { value = module.knowledge_store.lake_bucket }
 output "upload_to" {
   value       = module.knowledge_store.upload_to

@@ -6,6 +6,8 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 ### Added
 
+- Edge protection for the portal, off by default: an optional AWS WAF web ACL on its CloudFront distribution (`waf`: the AWS managed common rule set, per-IP rate limits for all paths and for `/api/*`, and a method allow list), or an existing one (`web_acl_arn`); the API stage's throttling as a variable (`api_throttle`); and the `portal_distribution_id` and `portal_web_acl_arn` outputs. The module README covers CloudFront's flat-rate pricing plans, which only the console can subscribe.
+
 - Source adapters (S3 landing, HTTPS URLs, local directory) and an entry-point registry.
 - A layered, content-addressed lake: landing, bronze, silver, and gold per ontology version.
 - Ontology discovery (resampled, with a stability score), curated immutable releases with change classification and semver checks, candidate capture, revision drafts and delta extraction over a version chain.

@@ -172,6 +172,11 @@ calls are the cost that matters. Discovery reads `discovery.sample` x `discovery
 documents, whatever the collection's size. Extraction reads every document once per full
 version. Chat is limited by `daily_questions` per user.
 
+CloudFront, API Gateway and Lambda bill per request, so a request flood against a public portal
+costs money. For a public deployment, turn on the module's web ACL (`waf = { enabled = true }`)
+and subscribe the portal's distribution to a CloudFront flat-rate pricing plan in the console;
+see [the module's README](infra/modules/knowledge-store/README.md#edge-protection).
+
 ## Limits (read before relying on it)
 
 - Entity resolution is naive. An entity's IRI is its root type plus its normalised name, so

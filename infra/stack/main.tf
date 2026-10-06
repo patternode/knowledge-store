@@ -22,6 +22,8 @@ module "knowledge_store" {
   admin_private                = var.admin_private
   daily_questions              = var.daily_questions
   force_destroy_lake           = var.force_destroy_lake
+  waf                          = var.waf
+  web_acl_arn                  = var.web_acl_arn
   agent                        = var.agent
 }
 

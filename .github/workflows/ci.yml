@@ -25,6 +25,9 @@ jobs:
       - run: terraform fmt -check -recursive infra && terraform fmt -check -recursive examples/deployment
       - working-directory: infra/stack
         run: terraform init -backend=false -input=false && terraform validate
+      # Offline tests against a mocked AWS provider (the portal's edge protection).
+      - working-directory: infra/modules/portal
+        run: terraform init -backend=false -input=false && terraform test
       # The deployment template, against this checkout's module instead of the release it pins.
       - name: validate examples/deployment
         run: |
