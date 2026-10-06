@@ -146,6 +146,11 @@ variable "web_acl_arn" {
   default     = ""
   description = "an existing CLOUDFRONT-scope web ACL to attach to the portal instead"
 }
+variable "api_throttle" {
+  type        = any
+  default     = {}
+  description = "the portal API's stage throttling: { rate_limit = 20, burst_limit = 50 } per second"
+}
 variable "force_destroy_lake" {
   type    = bool
   default = false

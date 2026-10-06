@@ -3,6 +3,10 @@ output "portal_distribution_id" {
   value       = module.knowledge_store.portal_distribution_id
   description = "the portal's CloudFront distribution, for subscribing it to a pricing plan in the console"
 }
+output "portal_web_acl_arn" {
+  value       = module.knowledge_store.portal_web_acl_arn
+  description = "the web ACL on the portal's distribution, or null when there is none"
+}
 output "lake_bucket" { value = module.knowledge_store.lake_bucket }
 output "upload_to" {
   value       = module.knowledge_store.upload_to

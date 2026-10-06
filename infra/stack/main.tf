@@ -24,6 +24,7 @@ module "knowledge_store" {
   force_destroy_lake           = var.force_destroy_lake
   waf                          = var.waf
   web_acl_arn                  = var.web_acl_arn
+  api_throttle                 = var.api_throttle
   agent                        = var.agent
 }
 
