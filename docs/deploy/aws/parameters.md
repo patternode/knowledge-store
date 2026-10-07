@@ -54,7 +54,7 @@ Copy this table, fill in the right-hand column, and keep it with the deployment'
 | Parameter | Default | Description |
 |---|---|---|
 | `network.cidr` | `10.42.0.0/16` | The range of the VPC the stack creates. Choose one that does not overlap networks you peer or route to. |
-| `network.az_count` | `2` | Availability zones the VPC spans (2 to 6). Neptune needs two. |
+| `network.az_count` | `2` | Availability zones the VPC spans (2 to 6), the first zones AWS lists for the account (in practice a, b, c, ...). Neptune needs two, and needs capacity for its instance class in one of them; if the first apply reports no capacity and names a zone, raise this until that zone is included. |
 | `network.enable_nat` | `false` | A NAT gateway (about 33 USD a month). The pipeline's tasks then run in private subnets with no public IP. Without it, they run in public subnets with a public IP and only egress allowed. |
 | `network.existing` | none | Use a VPC you already have instead of creating one. Its fields are below. Set it, and the cidr, az_count and enable_nat fields are ignored. |
 | `network.existing.vpc_id` | | The VPC. |
