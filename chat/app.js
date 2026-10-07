@@ -233,14 +233,13 @@
     });
     $('#coll-select').addEventListener('change', (e) => switchCollection(e.target.value));
   }
-  function signedOut(message) {
-    $('#signin').hidden = false;
-    notice(h('h2', { text: message ? 'Sign-in did not complete' : 'Sign in to ask questions' }),
-      h('p', { text: message || 'This collection is private to its readers. Sign in to continue.' }),
-      h('button', { class: 'btn primary', type: 'button', onclick: () => auth.login() }, 'Sign in'));
+  function signedOut(started) {
+    $('#signin').hidden = started.cfg.mode === 'site';
+    notice(window.KS.signedOutNotice(started, 'Sign in to ask questions'));
   }
   async function boot() {
-    const { cfg, error, signedIn, claims } = await window.KS.start();
+    const started = await window.KS.start();
+    const { cfg, error, signedIn, claims } = started;
     const brand = window.KS.brandName();
     $('#brand-name').textContent = brand; document.title = brand;
     wire();
@@ -248,10 +247,14 @@
       if (!cfg.oidc || !cfg.oidc.clientId) return notice(h('p', { class: 'error', text: error }));
       $('#signin').addEventListener('click', () => auth.login());
       $('#signout').addEventListener('click', () => auth.logout());
-      if (error) return signedOut(error);
-      if (!signedIn) return signedOut();
+      if (!signedIn) return signedOut(started);
       $('#user').textContent = str(claims.email || claims.preferred_username || claims['cognito:username'] || '');
       $('#signout').hidden = false;
+    }
+    if (cfg.mode === 'site') { // signed in on the website, which frames this page
+      if (error) return notice(h('p', { class: 'error', text: error }));
+      if (!signedIn) return signedOut(started);
+      $('#user').textContent = str(claims.name || claims.email || '');
     }
     notice(h('p', { class: 'muted', text: 'Loading.' }));
     try {

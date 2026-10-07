@@ -19,13 +19,18 @@ Every route but /api/collections takes ?c=<collection id> (default: the first co
 
 API Gateway validates the Cognito JWT before the Lambda runs; the handler reads the caller's
 id and groups from the claims (knowledge_store.claims). Members of the group named by
-PRIVATE_GROUP see private-scope content. A question is limited per caller per day
+PRIVATE_GROUP see private-scope content. With SITE_GRANT_ISSUER set, people sign in on a host
+website instead, which frames the portal: API Gateway lets requests through, and the handler
+verifies the site's grant (header X-Site-Grant, knowledge_store.site_grant) on every request,
+its roles deciding who may read and who may read private-scope content. A question is limited per caller per day
 (DAILY_QUESTIONS), counted with a conditional write in the chat state (state.py: DynamoDB, or
 the MongoDB API on Azure and Google Cloud), so the limit holds across concurrent requests.
 
 With AGENT_RUNTIME_ARN set, the question goes to the chat agent on AgentCore Runtime with the
 person's own access token (agent_client.py), and the answer is the agent's: grounded claims with
-their sources. Without it, the portal's own tool loop answers (chat.py), as on other clouds.
+their sources. A person signed in through the website has no token the agent accepts, so the
+portal asks as one of its two service clients, the public or the private one, by the person's
+access (agent_client.service_token). Without it, the portal's own tool loop answers (chat.py), as on other clouds.
 
 API Gateway gives an integration 30 seconds, less than a multi-step tool loop can take, so POST
 /api/chat stores the question and invokes this function again asynchronously to answer it; the
@@ -40,7 +45,7 @@ import logging
 import os
 import uuid
 
-from .. import collections, layout
+from .. import collections, layout, site_grant
 from ..claims import private_reader, subject
 from ..config import load_profile
 from ..store import S3Store, store_from_uri
@@ -85,6 +90,12 @@ def reply(status: int, body) -> dict:
 
 
 def caller(event: dict) -> tuple[str, bool]:
+    """Who is asking and whether they may read private-scope content. Refused (site_grant) when
+    sign-in is through the website and the request carries no grant this lab accepts."""
+    if site_grant.enabled():
+        h = {k.lower(): v for k, v in (event.get("headers") or {}).items()}
+        who = site_grant.caller((h.get("x-site-grant") or "").strip())
+        return who["sub"], who["private"]
     claims = ((event.get("requestContext") or {}).get("authorizer") or {}).get("jwt", {}).get("claims", {})
     return subject(claims), private_reader(claims)
 
@@ -134,8 +145,9 @@ def answer_job(job: dict) -> None:
     cid = job.get("collection", collections.DEFAULT_ID)
     try:
         if agent_client.configured():
-            out = agent_client.ask(job.pop("token", ""), {"question": job["question"], "collection": cid,
-                                                          "history": job.get("history")})
+            token = job.pop("token", "") or agent_client.service_token(job["private"])
+            out = agent_client.ask(token, {"question": job["question"], "collection": cid,
+                                           "history": job.get("history")})
             if out.get("error") and not out.get("answer"):
                 raise RuntimeError(out["error"])
         else:
@@ -158,7 +170,10 @@ def handler(event, context):
     path = event.get("rawPath") or event.get("requestContext", {}).get("http", {}).get("path", "")
     path = path[len("/api"):] if path.startswith("/api") else path
     qs = event.get("queryStringParameters") or {}
-    sub, private = caller(event)
+    try:
+        sub, private = caller(event)
+    except site_grant.Refused as e:
+        return reply(e.status, {"error": str(e)})
     root = lake()
     try:
         cids = collections.ids(root)
@@ -248,8 +263,8 @@ def handler(event, context):
                 return reply(429, {"error": "You have reached today's question limit."})
             job = {"id": uuid.uuid4().hex, "sub": sub, "private": private, "question": q, "collection": cid,
                    "history": [h for h in (body.get("history") or [])[-6:] if isinstance(h, dict)]}
-            if agent_client.configured():  # the agent acts as this person: it gets their token, never stored
-                job["token"] = bearer(event)
+            if agent_client.configured() and not site_grant.enabled():
+                job["token"] = bearer(event)  # the agent acts as this person: it gets their token, never stored
             state().put_chat(job["id"], sub, {"status": "pending"})
             dispatch(job, context)
             return reply(202, {"id": job["id"]})

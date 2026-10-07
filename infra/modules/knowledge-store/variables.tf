@@ -281,6 +281,38 @@ variable "portal_domain" {
   }
 }
 
+variable "site_sign_in" {
+  description = <<-EOT
+    Sign people in on a host website instead of the stack's own Cognito sign-in. The website frames
+    the portal and hands each signed-in person's page a short ES256 grant for this lab (the embed
+    protocol's pn:grant message); the portal API verifies it on every request. issuer is the
+    website's origin, jwks its public grant keys (a JWKS document), lab the name a grant's audience
+    must carry (lab:<lab>). roles may read; private_roles may also read private-scope content. The
+    portal then asks the agent as one of two service clients the stack creates. Null (the default)
+    keeps Cognito sign-in.
+  EOT
+  type = object({
+    issuer        = string
+    jwks          = string
+    lab           = optional(string, "knowledge")
+    roles         = optional(list(string), ["owner", "team", "preview"])
+    private_roles = optional(list(string), ["owner"])
+  })
+  default = null
+  validation {
+    condition     = var.site_sign_in == null || can(regex("^https://[^/]+$", var.site_sign_in.issuer))
+    error_message = "site_sign_in.issuer must be the website's origin, https://host with no path."
+  }
+  validation {
+    condition     = var.site_sign_in == null || can(regex("^[a-z][a-z0-9-]{0,39}$", var.site_sign_in.lab))
+    error_message = "site_sign_in.lab must be 1 to 40 lower case letters, digits and hyphens, starting with a letter."
+  }
+  validation {
+    condition     = var.site_sign_in == null || can(length(jsondecode(var.site_sign_in.jwks).keys) > 0)
+    error_message = "site_sign_in.jwks must be a JWKS document with at least one key (the website's /api/jwks.json)."
+  }
+}
+
 variable "permissions_boundary" {
   type        = string
   default     = null

@@ -55,3 +55,13 @@ output "provided_ontologies" {
     id => sort([for k in keys(local.ontology_files) : split("/", k)[1] if split("/", k)[0] == id])
   }
 }
+
+output "sign_in" {
+  description = "how people sign in: the stack's Cognito pool, or a host website's grant (site_sign_in) with the service clients the portal asks the agent as"
+  value = var.site_sign_in == null ? { mode = "cognito", lab = null, frame_ancestor = null, service_clients = [] } : {
+    mode            = "site"
+    lab             = var.site_sign_in.lab
+    frame_ancestor  = var.site_sign_in.issuer
+    service_clients = sort(keys(local.site_clients))
+  }
+}
