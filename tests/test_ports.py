@@ -188,6 +188,26 @@ def test_claims_for_entra(monkeypatch):
 # --- chat state ---------------------------------------------------------------------------
 
 
+class _SerialTable:
+    """DynamoDB applies writes to one item one at a time; moto's in-memory backend is not thread-safe,
+    so concurrent calls race inside it. A lock gives moto the service's guarantee, and the quota test
+    still checks that the conditional update admits exactly the limit."""
+
+    def __init__(self, table):
+        self._table = table
+        self._lock = threading.Lock()
+
+    def __getattr__(self, name):
+        attr = getattr(self._table, name)
+        if not callable(attr):
+            return attr
+
+        def call(*args, **kwargs):
+            with self._lock:
+                return attr(*args, **kwargs)
+        return call
+
+
 @pytest.fixture(params=["memory", "dynamodb", "mongodb"])
 def chat(request, monkeypatch):
     kind = request.param
@@ -202,7 +222,7 @@ def chat(request, monkeypatch):
             boto3.client("dynamodb").create_table(TableName="chat", BillingMode="PAY_PER_REQUEST",
                                                   KeySchema=[{"AttributeName": "pk", "KeyType": "HASH"}],
                                                   AttributeDefinitions=[{"AttributeName": "pk", "AttributeType": "S"}])
-            yield state.DynamoState("chat")
+            yield state.DynamoState("chat", table=_SerialTable(boto3.resource("dynamodb").Table("chat")))
     else:
         uri = os.environ.get("MONGODB_TEST_URI")
         if not uri:
