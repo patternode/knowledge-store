@@ -14,6 +14,7 @@ your machine: container images are built by CodeBuild inside your account.
 | [parameters.md](parameters.md) | Every parameter: what you must bring, what you may decide, the defaults |
 | [components.md](components.md) | The components, and how each one is expressed in the Terraform |
 | [architecture.png](architecture.png) / [architecture.svg](architecture.svg) | The reference architecture diagram |
+| [architecture.drawio](architecture.drawio) | The same diagram as an editable draw.io file: open it in [diagrams.net](https://app.diagrams.net), the draw.io desktop app or its VS Code extension. `architecture.py` and `architecture_drawio.py` generate the SVG and the draw.io file |
 | [`infra/stack`](../../../infra/stack) | The Terraform root you apply, with [`terraform.tfvars.example`](../../../infra/stack/terraform.tfvars.example) |
 | [`infra/modules/knowledge-store`](../../../infra/modules/knowledge-store) | The module it calls, which holds everything |
 
