@@ -33,9 +33,16 @@ locals {
       discovery_sample         = var.discovery.sample
       discovery_resamples      = var.discovery.resamples
       discovery_target_classes = var.discovery.target_classes
+      discovery_review         = var.discovery.review
       extraction_workers       = var.extraction_workers
     }
   } }
+
+  # Provided ontologies: "<collection>/<file>" => local path, for the lake's config/ontology/.
+  ontology_files = merge([for id, c in var.collections : {
+    for f in ["ontology.ttl", "shapes.ttl"] : "${id}/${f}" => abspath("${c.ontology_dir}/${f}")
+    if fileexists("${c.ontology_dir}/${f}")
+  } if c.ontology_dir != null]...)
 
   # Buckets outside the lake that sources read, from their options: granted to the pipeline.
   source_buckets = distinct(compact(flatten([for c in local.collections : [
@@ -44,10 +51,11 @@ locals {
 }
 
 module "lake" {
-  source        = "../lake"
-  name          = var.name
-  collections   = local.collections
-  force_destroy = var.force_destroy_lake
+  source         = "../lake"
+  name           = var.name
+  collections    = local.collections
+  ontology_files = local.ontology_files
+  force_destroy  = var.force_destroy_lake
 }
 
 module "build" {

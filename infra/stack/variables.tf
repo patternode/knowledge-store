@@ -49,6 +49,10 @@ variable "collections" {
                options = {prefix = "landing/<id>/"}}]. An s3_landing source with
                options.bucket reads another bucket; the pipeline is granted read access to it.
       ontology_mode  curated (a person publishes each version; the default) or auto.
+      ontology_dir   bring your own ontology instead of discovering one: a directory, relative
+                     to where you run Terraform, holding ontology.ttl (OWL, with owl:versionInfo
+                     set to its version) and optionally shapes.ttl. The sweep publishes and
+                     activates it; to change it, edit it, bump owl:versionInfo and apply.
   EOT
   type = map(object({
     profile = optional(object({
@@ -65,11 +69,16 @@ variable "collections" {
       scope   = optional(string, "public")
     })))
     ontology_mode = optional(string, "curated")
+    ontology_dir  = optional(string)
   }))
   default = { default = {} }
   validation {
     condition     = alltrue([for k, v in var.collections : can(regex("^[a-z0-9][a-z0-9-]{0,39}$", k)) && contains(["curated", "auto"], v.ontology_mode)])
     error_message = "collection ids are 1-40 lower case letters, digits and hyphens; ontology_mode is curated or auto."
+  }
+  validation {
+    condition     = alltrue([for k, v in var.collections : v.ontology_dir == null || fileexists("${coalesce(v.ontology_dir, ".")}/ontology.ttl")])
+    error_message = "an ontology_dir must hold ontology.ttl."
   }
 }
 
@@ -79,6 +88,7 @@ variable "discovery" {
     sample         = optional(number, 20)
     resamples      = optional(number, 2)
     target_classes = optional(number, 15)
+    review         = optional(bool, true) # a second model pass that fixes the draft's hierarchy, duplicates and domains
   })
   default = {}
 }

@@ -71,6 +71,7 @@ class OntologySpec:
     version_iri: str = ""
     prior_version: str = ""
     label: str = ""
+    comment: str = ""
     classes: dict[str, ClassTerm] = field(default_factory=dict)
     relations: dict[str, PropertyTerm] = field(default_factory=dict)
     attributes: dict[str, PropertyTerm] = field(default_factory=dict)
@@ -206,6 +207,7 @@ def from_graph(g: Graph) -> OntologySpec:
         version_iri=str(g.value(onto, OWL.versionIRI) or "") if onto is not None else "",
         prior_version=str(g.value(onto, OWL.priorVersion) or "") if onto is not None else "",
         label=_text(g, onto, RDFS.label) if onto is not None else "",
+        comment=_text(g, onto, RDFS.comment) if onto is not None else "",
         graph=g,
     )
 

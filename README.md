@@ -40,12 +40,23 @@ was extracted from.
 
 ## The ontology lifecycle
 
+A collection starts with an ontology one of two ways:
+
+| | How | Then |
+|---|---|---|
+| Bring one | Set the collection's `ontology_dir` to a directory holding `ontology.ttl` (and optionally `shapes.ttl`); `terraform apply` uploads it | The sweep publishes and activates it and extracts against it. Discovery never runs. To change it, bump `owl:versionInfo` and apply |
+| Discover one | Leave `ontology_dir` unset and upload documents | Discovery, then review, as below. `ontology_mode = "curated"` (the default) stops at a draft for a person to change and publish; `"auto"` publishes the draft as 0.1.0 straight away |
+
 1. Discover. With no ontology, the first run samples the collection and proposes one:
    open proposals per document, aggregation, then consolidation into a small ontology with
    definitions, synonyms, a hierarchy, and domains and ranges. The method follows EDC
    (extract, define, canonicalise). Discovery repeats on several samples and reports how
    stable each type is, because LLM ontology induction varies from run to run and nothing
-   in the literature measures by how much.
+   in the literature measures by how much. Then a review pass (`discovery.review`, on by
+   default) sees the draft with each term's document support and returns edits: parents
+   where one class is a kind of another, merges of near-duplicates, drops of noise, and
+   fixes to domains, ranges and datatypes. They are applied deterministically, each with its
+   reason in the draft's report, so a curator can see and undo every one.
 2. Curate. The draft is Turtle (OWL plus generated SHACL) for a person to edit in git.
    `knowledge-store ontology pull <draft> ontology/` fetches it.
 3. Release. `knowledge-store ontology publish ontology/ --activate` publishes the master as the

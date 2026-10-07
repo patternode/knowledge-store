@@ -1,0 +1,54 @@
+@prefix o:    <https://example.org/t/ontology#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+<https://example.org/t/ontology> a owl:Ontology ;
+    rdfs:label "Test"@en ;
+    owl:versionInfo "1.0.0" ;
+    owl:versionIRI <https://example.org/t/ontology/1.0.0> ;
+    rdfs:comment "Generated 2026-10-07; curate before publishing."@en .
+
+# ======================================================================
+# Classes
+# ======================================================================
+
+o:Mission a owl:Class ;
+    rdfs:label "Mission"@en ;
+    skos:altLabel "probe"@en ;
+    skos:definition "A space mission."@en .
+
+o:SpaceAgency a owl:Class ;
+    rdfs:label "Space agency"@en ;
+    skos:definition "An organisation that flies missions."@en .
+
+o:TargetBody a owl:Class ;
+    rdfs:label "Target body"@en ;
+    skos:definition "What a mission studies."@en .
+
+# ======================================================================
+# Relations
+# ======================================================================
+
+o:launchedBy a owl:ObjectProperty ;
+    rdfs:label "launchedBy"@en ;
+    skos:definition "The agency that launched a mission."@en ;
+    rdfs:domain o:Mission ;
+    rdfs:range o:SpaceAgency .
+
+o:studies a owl:ObjectProperty ;
+    rdfs:label "studies"@en ;
+    skos:definition "The body a mission studies."@en ;
+    rdfs:domain o:Mission ;
+    rdfs:range o:TargetBody .
+
+# ======================================================================
+# Attributes
+# ======================================================================
+
+o:launchYear a owl:DatatypeProperty ;
+    rdfs:label "launchYear"@en ;
+    skos:definition "Year of launch."@en ;
+    rdfs:domain o:Mission ;
+    rdfs:range xsd:integer .

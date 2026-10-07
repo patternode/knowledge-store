@@ -46,6 +46,7 @@ CANDIDATE_REGISTER = "ontology/candidates/register.json"
 CONFIG_SOURCES = "config/sources.json"
 CONFIG_PROFILE = "config/profile.json"
 CONFIG_SETTINGS = "config/settings.json"
+CONFIG_ONTOLOGY = "config/ontology"   # a provided ontology: ontology.ttl, optional shapes.ttl
 STATUS = "portal/status.json"
 GRAPH_POINTER = "gold/graph.json"
 DOCUMENTS_POINTER = "gold/documents.json"
