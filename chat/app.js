@@ -75,7 +75,7 @@
       if (!q.has('code') && !q.has('error')) return null;
       const saved = (() => { try { return JSON.parse(sstore.get(PKCE) || 'null'); } catch { return null; } })();
       sstore.del(PKCE);
-      history.replaceState(null, '', location.pathname);
+      window.history.replaceState(null, '', location.pathname);
       if (q.has('error')) return q.get('error_description') || q.get('error');
       if (!saved || saved.state !== q.get('state')) return 'The sign-in response did not match this browser session. Please sign in again.';
       try {
@@ -271,7 +271,7 @@
   }
 
   // ---- asking -------------------------------------------------------------------------
-  function history() {
+  function recentTurns() { // not history(): that would hide window.history inside this scope
     return S.turns.filter((t) => t.done).slice(-HISTORY_TURNS).map((t) => ({ q: t.question, a: t.answer }));
   }
   function ask() {
@@ -283,7 +283,7 @@
       h('div', { class: 'q' }, h('p', { class: 'sr-only', text: 'You asked' }), h('p', { text: question })), body);
     $('#log').append(el);
     $('#intro').hidden = true;
-    const turn = { key, question, el, body, done: false, answer: '', history: history() };
+    const turn = { key, question, el, body, done: false, answer: '', history: recentTurns() };
     S.turns.push(turn);
     ta.value = '';
     runTurn(turn);
