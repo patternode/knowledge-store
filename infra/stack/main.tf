@@ -29,6 +29,10 @@ module "knowledge_store" {
   guardrail                    = var.guardrail
   valves                       = var.valves
   budget                       = var.budget
+  network                      = var.network
+  portal_domain                = var.portal_domain
+  permissions_boundary         = var.permissions_boundary
+  log_retention_days           = var.log_retention_days
 }
 
 # Before the module existed these were root modules; state from that layout moves on the next plan.

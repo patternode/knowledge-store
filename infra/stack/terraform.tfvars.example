@@ -1,26 +1,70 @@
-# The minimum: who signs in first. Copy to terraform.tfvars (gitignored).
-admin_email = "you@example.org"
+# Copy to terraform.tfvars (gitignored) and fill in. Only admin_email is required; every other
+# line shows its default. docs/deploy/aws/parameters.md says what each one is for.
 
-# Everything below is optional.
+# --- required -----------------------------------------------------------------------------------
+admin_email = "you@example.org" # the first portal user; Cognito emails them a temporary password
 
-# region = "us-east-1"
-# name   = "knowledge-store"        # prefix for every resource and bucket name
-# account_id = "123456789012"     # a guard: refuse to apply anywhere else
+# --- account and naming -------------------------------------------------------------------------
+# region      = "us-east-1"       # needs Bedrock, AgentCore, S3 Vectors and Neptune
+# name        = "knowledge-store" # prefix of every resource; 3-25 of a-z, 0-9 and -
+# account_id  = "123456789012"    # a guard: refuse to apply in any other account
+# aws_profile = ""                # prefer AWS_PROFILE in the environment
+# extra_tags  = { cost-centre = "1234", owner = "platform-team" }
 
-# Collections: one per corpus, each with its own ontology. Upload to landing/<id>/.
-# collections = {
-#   holmes = {
-#     profile = {
-#       name        = "Sherlock Holmes"
-#       description = "The short stories of Arthur Conan Doyle's detective."
-#       key_terms   = ["case", "client", "clue", "crime", "suspect"]
-#       example_questions = ["Which cases turned on a poison?"]
-#     }
-#   }
-#   missions = {
-#     profile = { name = "Robotic space missions" }
-#     # sources = [{ name = "archive", type = "s3_landing", options = { bucket = "my-bucket", prefix = "docs/" } }]
+# --- network ------------------------------------------------------------------------------------
+# network = { cidr = "10.42.0.0/16", az_count = 2, enable_nat = false }
+# or bring your own VPC:
+# network = {
+#   existing = {
+#     vpc_id              = "vpc-0123456789abcdef0"
+#     private_subnet_ids  = ["subnet-aaa", "subnet-bbb"] # Neptune and the graph tools; must reach S3
+#     pipeline_subnet_ids = ["subnet-ccc", "subnet-ddd"] # the pipeline; must reach Bedrock, ECR, S3
+#     pipeline_public_ip  = false                        # true only for public subnets
 #   }
 # }
 
-# llm_provider = "bedrock"         # or "anthropic", with anthropic_api_key_secret_arn
+# --- portal -------------------------------------------------------------------------------------
+# portal_title    = "Knowledge Store"
+# portal_domain   = { name = "knowledge.example.org", certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/..." }
+# admin_private   = true # the admin user may read private sources
+# daily_questions = 30   # per person
+
+# --- organisation controls ----------------------------------------------------------------------
+# permissions_boundary = "arn:aws:iam::123456789012:policy/workload-boundary"
+# log_retention_days   = 30
+# budget               = { monthly_usd = 200, email = "finance@example.org" }
+
+# --- models -------------------------------------------------------------------------------------
+# Inference profile ids as your Bedrock console lists them for your region (us., eu., apac. or global.).
+# llm_provider        = "bedrock" # or "anthropic", with anthropic_api_key_secret_arn
+# anthropic_api_key_secret_arn = ""
+# extraction_model_id = "us.anthropic.claude-sonnet-5"
+# chat_model_id       = "us.anthropic.claude-sonnet-5"
+
+# --- collections: one per corpus, each with its own ontology; uploads go to landing/<id>/ --------
+# collections = {
+#   policies = {
+#     profile = {
+#       name              = "Card policies"
+#       description       = "The bank's card operations manuals and policies."
+#       key_terms         = ["card", "chargeback", "dispute"]
+#       example_questions = ["What happens when an ATM keeps a card abroad?"]
+#       ontology_base     = "https://data.example.org/policies/ontology#"
+#     }
+#     ontology_mode = "curated"            # or "auto"
+#     # ontology_dir = "ontology/policies" # bring your own ontology instead of discovering one
+#     # sources = [{ name = "archive", type = "s3_landing", options = { bucket = "my-docs", prefix = "cards/" }, scope = "private" }]
+#   }
+# }
+# discovery           = { min_docs = 5, sample = 20, resamples = 2, target_classes = 15, review = true }
+# extraction_workers  = 4
+# schedule_expression = "rate(6 hours)"
+# schedule_enabled    = true
+# force_destroy_lake  = false
+
+# --- graph, passages, agent ---------------------------------------------------------------------
+# knowledge_graph = { enabled = true, instance_class = "db.t4g.medium", serverless_min_ncu = 0, serverless_max_ncu = 8, deletion_protection = false }
+# knowledge_base  = { enabled = true, embedding_model_id = "amazon.titan-embed-text-v2:0" }
+# agent           = { runtime = false, prod_version = "", model_id = "us.anthropic.claude-sonnet-5" } # runtime = true on the second apply
+# guardrail       = { enabled = true, grounding_threshold = 0.75 }
+# valves          = { max_tool_calls = 16, max_model_calls = 14, max_output_tokens = 4000, grounding_repairs = 1, chat_concurrency = 20 }

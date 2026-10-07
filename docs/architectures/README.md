@@ -1,6 +1,7 @@
 # Reference architectures for Azure and Google Cloud
 
-The AWS stack in [`infra/`](../../infra) is the reference implementation ([aws.md](aws.md)). These documents design
+The AWS stack in [`infra/`](../../infra) is the reference implementation ([aws.md](aws.md); to install it,
+the [AWS installation guide](../deploy/aws/README.md)). These documents design
 the same system for Azure and Google Cloud: each names the components, what replaces what, and the
 changes the Python package needs. Azure is built, in [`deploy/azure/`](../../deploy/azure)
 ([azure-setup.md](azure-setup.md)). Google Cloud is a design; its storage and model provider are

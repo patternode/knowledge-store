@@ -4,7 +4,8 @@
 # Ingestion: documents in, an ontology applied (provided, or discovered and reviewed), a knowledge graph out.
 #   lake             the bucket, layered by prefix, with the deployer's sources, profile and settings
 #   build            CodeBuild builds the pipeline and agent images from this repository, inside the account
-#   network          a VPC: public subnets for the pipeline's tasks, private ones for Neptune (no NAT)
+#   network          a VPC: public subnets for the pipeline's tasks, private ones for Neptune (no NAT);
+#                    or the VPC and subnets you bring (network.existing)
 #   pipeline         the sweep task, triggered by uploads and on a schedule
 #   knowledge_graph  Neptune, holding the gold RDF; the sweep loads it
 #   knowledge_base   the passages' vector index (Bedrock Knowledge Base on S3 Vectors); the sweep syncs it
@@ -51,10 +52,27 @@ locals {
     if fileexists("${c.ontology_dir}/${f}")
   } if c.ontology_dir != null]...)
 
+  # The network: the module's own VPC, or one you bring (network.existing).
+  own_network        = var.network.existing == null
+  vpc_id             = local.own_network ? module.network[0].vpc_id : var.network.existing.vpc_id
+  private_subnet_ids = local.own_network ? module.network[0].private_subnet_ids : var.network.existing.private_subnet_ids
+  # The pipeline's tasks need Bedrock (or the Anthropic API), ECR and S3: from public subnets with a
+  # public IP, or from private subnets behind a NAT gateway.
+  pipeline_subnet_ids = (local.own_network
+    ? (var.network.enable_nat ? module.network[0].private_subnet_ids : module.network[0].public_subnet_ids)
+  : var.network.existing.pipeline_subnet_ids)
+  pipeline_public_ip = local.own_network ? !var.network.enable_nat : var.network.existing.pipeline_public_ip
+
   # Buckets outside the lake that sources read, from their options: granted to the pipeline.
   source_buckets = distinct(compact(flatten([for c in local.collections : [
     for s in c.sources : try(s.options.bucket, "")
   ]])))
+}
+
+# Every log group's retention, and every IAM role's permissions boundary.
+locals {
+  logs     = var.log_retention_days
+  boundary = var.permissions_boundary
 }
 
 module "lake" {
@@ -66,23 +84,33 @@ module "lake" {
 }
 
 module "build" {
-  source      = "../image-build"
-  name        = var.name
-  source_dir  = local.repo_root
-  build_agent = true
+  source               = "../image-build"
+  name                 = var.name
+  source_dir           = local.repo_root
+  build_agent          = true
+  permissions_boundary = local.boundary
 }
 
 module "network" {
-  source = "../network"
-  name   = var.name
+  count      = local.own_network ? 1 : 0
+  source     = "../network"
+  name       = var.name
+  cidr       = var.network.cidr
+  az_count   = var.network.az_count
+  enable_nat = var.network.enable_nat
+}
+
+moved {
+  from = module.network
+  to   = module.network[0]
 }
 
 module "knowledge_graph" {
   count                     = var.knowledge_graph.enabled ? 1 : 0
   source                    = "../knowledge-graph"
   name                      = var.name
-  vpc_id                    = module.network.vpc_id
-  private_subnet_ids        = module.network.private_subnet_ids
+  vpc_id                    = local.vpc_id
+  private_subnet_ids        = local.private_subnet_ids
   client_security_group_ids = { pipeline = module.pipeline.security_group_id }
   instance_class            = var.knowledge_graph.instance_class
   serverless_min_ncu        = var.knowledge_graph.serverless_min_ncu
@@ -91,11 +119,12 @@ module "knowledge_graph" {
 }
 
 module "knowledge_base" {
-  count              = var.knowledge_base.enabled ? 1 : 0
-  source             = "../knowledge-base"
-  name               = var.name
-  lake_bucket_arn    = module.lake.bucket_arn
-  embedding_model_id = var.knowledge_base.embedding_model_id
+  count                = var.knowledge_base.enabled ? 1 : 0
+  source               = "../knowledge-base"
+  name                 = var.name
+  lake_bucket_arn      = module.lake.bucket_arn
+  embedding_model_id   = var.knowledge_base.embedding_model_id
+  permissions_boundary = local.boundary
 }
 
 locals {
@@ -118,8 +147,11 @@ module "pipeline" {
   lake_bucket                  = module.lake.bucket
   lake_bucket_arn              = module.lake.bucket_arn
   extra_read_bucket_arns       = [for b in local.source_buckets : "arn:aws:s3:::${b}"]
-  vpc_id                       = module.network.vpc_id
-  subnet_ids                   = module.network.public_subnet_ids
+  vpc_id                       = local.vpc_id
+  subnet_ids                   = local.pipeline_subnet_ids
+  assign_public_ip             = local.pipeline_public_ip
+  log_retention_days           = local.logs
+  permissions_boundary         = local.boundary
   llm_provider                 = var.llm_provider
   anthropic_api_key_secret_arn = var.anthropic_api_key_secret_arn
   extraction_model_id          = var.extraction_model_id
@@ -135,7 +167,7 @@ module "identity" {
   admin_email   = var.admin_email
   groups        = [local.private_group]
   admin_groups  = var.admin_private ? [local.private_group] : []
-  callback_urls = [module.portal.url]
+  callback_urls = distinct([module.portal.url, module.portal.cloudfront_url])
 }
 
 module "portal" {
@@ -157,6 +189,10 @@ module "portal" {
   brand_name                   = var.portal_title
   agent_runtime_arn            = module.agent.runtime_arn
   agent_runtime_qualifier      = module.agent.runtime_qualifier
+  domain_name                  = var.portal_domain.name
+  certificate_arn              = var.portal_domain.certificate_arn
+  log_retention_days           = local.logs
+  permissions_boundary         = local.boundary
 }
 
 module "agent" {
@@ -179,7 +215,7 @@ module "agent" {
     port                     = module.knowledge_graph[0].port
     data_arn                 = module.knowledge_graph[0].data_arn
     client_security_group_id = module.knowledge_graph[0].client_security_group_id
-    private_subnet_ids       = module.network.private_subnet_ids
+    private_subnet_ids       = local.private_subnet_ids
   } : null
   knowledge_base = var.knowledge_base.enabled ? { id = local.knowledge_base.id, arn = local.knowledge_base.arn } : null
   guardrail      = var.guardrail
@@ -189,6 +225,8 @@ module "agent" {
     max_output_tokens = var.valves.max_output_tokens
     grounding_repairs = var.valves.grounding_repairs
   }
+  log_retention_days   = local.logs
+  permissions_boundary = local.boundary
 }
 
 moved {

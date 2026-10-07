@@ -96,6 +96,11 @@ variable "log_retention_days" {
   type    = number
   default = 30
 }
+variable "permissions_boundary" {
+  type        = string
+  default     = null
+  description = "an IAM policy ARN set as the permissions boundary of every role this module creates; null for none"
+}
 variable "tags" {
   type    = map(string)
   default = {}
@@ -154,9 +159,10 @@ data "archive_file" "code" {
 }
 
 resource "aws_iam_role" "graph" {
-  name               = "${var.name}-tools-graph"
-  assume_role_policy = data.aws_iam_policy_document.lambda_assume.json
-  tags               = var.tags
+  name                 = "${var.name}-tools-graph"
+  permissions_boundary = var.permissions_boundary
+  assume_role_policy   = data.aws_iam_policy_document.lambda_assume.json
+  tags                 = var.tags
 }
 
 resource "aws_iam_role_policy_attachment" "graph_logs" {
@@ -202,9 +208,10 @@ resource "aws_lambda_function" "graph" {
 }
 
 resource "aws_iam_role" "passages" {
-  name               = "${var.name}-tools-passages"
-  assume_role_policy = data.aws_iam_policy_document.lambda_assume.json
-  tags               = var.tags
+  name                 = "${var.name}-tools-passages"
+  permissions_boundary = var.permissions_boundary
+  assume_role_policy   = data.aws_iam_policy_document.lambda_assume.json
+  tags                 = var.tags
 }
 
 resource "aws_iam_role_policy_attachment" "passages_logs" {
@@ -241,9 +248,10 @@ resource "aws_lambda_function" "passages" {
 }
 
 resource "aws_iam_role" "interceptor" {
-  name               = "${var.name}-agent-interceptor"
-  assume_role_policy = data.aws_iam_policy_document.lambda_assume.json
-  tags               = var.tags
+  name                 = "${var.name}-agent-interceptor"
+  permissions_boundary = var.permissions_boundary
+  assume_role_policy   = data.aws_iam_policy_document.lambda_assume.json
+  tags                 = var.tags
 }
 
 resource "aws_iam_role_policy_attachment" "interceptor_logs" {
@@ -283,9 +291,10 @@ resource "aws_s3_object" "tool_schema" {
 }
 
 resource "aws_iam_role" "gateway" {
-  name               = "${var.name}-gateway"
-  assume_role_policy = data.aws_iam_policy_document.agentcore_assume.json
-  tags               = var.tags
+  name                 = "${var.name}-gateway"
+  permissions_boundary = var.permissions_boundary
+  assume_role_policy   = data.aws_iam_policy_document.agentcore_assume.json
+  tags                 = var.tags
 }
 
 resource "aws_iam_role_policy" "gateway" {
@@ -390,9 +399,10 @@ resource "aws_bedrock_guardrail_version" "this" {
 # --- Runtime ------------------------------------------------------------------------------------
 
 resource "aws_iam_role" "runtime" {
-  name               = "${var.name}-agent-runtime"
-  assume_role_policy = data.aws_iam_policy_document.agentcore_assume.json
-  tags               = var.tags
+  name                 = "${var.name}-agent-runtime"
+  permissions_boundary = var.permissions_boundary
+  assume_role_policy   = data.aws_iam_policy_document.agentcore_assume.json
+  tags                 = var.tags
 }
 
 resource "aws_iam_role_policy" "runtime" {

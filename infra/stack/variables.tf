@@ -234,3 +234,84 @@ variable "budget" {
   })
   default = {}
 }
+
+# --- where it runs in your AWS estate (all optional) --------------------------------------------
+
+variable "network" {
+  description = <<-EOT
+    The network. By default the module creates its own VPC: public subnets for the pipeline's
+    tasks, private subnets with no route out for Neptune and the graph tools, and an S3 gateway
+    endpoint. Options:
+      cidr, az_count  the VPC's range and how many availability zones it spans
+      enable_nat      a NAT gateway (about 33 USD a month), and the pipeline's tasks in the
+                      private subnets with no public IP
+      existing        use a VPC you already have instead of creating one:
+        vpc_id               the VPC
+        private_subnet_ids   two or more subnets in different zones for Neptune and the graph tools;
+                             they must reach S3 (a gateway endpoint on their route table, or a NAT)
+        pipeline_subnet_ids  subnets for the pipeline's tasks, which must reach Bedrock (or the
+                             Anthropic API), ECR and S3
+        pipeline_public_ip   true for public subnets (a public IP, through an internet gateway);
+                             false for private subnets with a NAT or the VPC endpoints they need
+  EOT
+  type = object({
+    cidr       = optional(string, "10.42.0.0/16")
+    az_count   = optional(number, 2)
+    enable_nat = optional(bool, false)
+    existing = optional(object({
+      vpc_id              = string
+      private_subnet_ids  = list(string)
+      pipeline_subnet_ids = list(string)
+      pipeline_public_ip  = optional(bool, false)
+    }))
+  })
+  default = {}
+  validation {
+    condition     = can(cidrhost(var.network.cidr, 0)) && var.network.az_count >= 2 && var.network.az_count <= 6
+    error_message = "network.cidr must be a CIDR block, and network.az_count 2 to 6 (Neptune needs subnets in two zones)."
+  }
+  validation {
+    condition = var.network.existing == null || try(
+      length(var.network.existing.private_subnet_ids) >= 2 && length(var.network.existing.pipeline_subnet_ids) >= 1,
+    false)
+    error_message = "network.existing needs at least two private_subnet_ids (in different zones) and one pipeline_subnet_ids."
+  }
+}
+
+variable "portal_domain" {
+  description = <<-EOT
+    Serve the portal on a domain of your own (portal.example.org) instead of CloudFront's. Needs an
+    ACM certificate for it in us-east-1, which CloudFront requires whatever the stack's region.
+    After apply, point a CNAME (or a Route 53 alias) for the name at the portal_cloudfront_domain
+    output. Sign-in accepts both the custom URL and CloudFront's.
+  EOT
+  type = object({
+    name            = optional(string, "")
+    certificate_arn = optional(string, "")
+  })
+  default = {}
+  validation {
+    condition     = (var.portal_domain.name == "") == (var.portal_domain.certificate_arn == "")
+    error_message = "portal_domain needs both name and certificate_arn, or neither."
+  }
+  validation {
+    condition     = var.portal_domain.certificate_arn == "" || startswith(var.portal_domain.certificate_arn, "arn:aws:acm:us-east-1:")
+    error_message = "portal_domain.certificate_arn must be an ACM certificate in us-east-1 (CloudFront's requirement)."
+  }
+}
+
+variable "permissions_boundary" {
+  type        = string
+  default     = null
+  description = "an IAM policy ARN set as the permissions boundary of every role the module creates, where your organisation requires one"
+}
+
+variable "log_retention_days" {
+  type        = number
+  default     = 30
+  description = "how long the pipeline's, the chat API's and the tools' CloudWatch logs are kept"
+  validation {
+    condition     = contains([1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653], var.log_retention_days)
+    error_message = "log_retention_days must be a value CloudWatch Logs accepts (1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, ...)."
+  }
+}

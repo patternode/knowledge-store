@@ -48,7 +48,11 @@ same account, and the same files work in CI.
 | model choices, agent switches | defaults that work for anyone |
 | curated ontologies and their history | the ontology tooling and the core vocabulary |
 
-If you need something the module does not offer, such as an existing VPC or user pool, add it
+The module takes your own VPC and subnets (`network.existing`), a NAT gateway, a portal domain
+(`portal_domain`), an IAM permissions boundary and log retention; every input is described in
+[docs/deploy/aws/parameters.md](../../docs/deploy/aws/parameters.md).
+
+If you need something the module does not offer, such as an existing user pool, add it
 upstream as an input with a default that keeps today's behaviour, rather than patching a copy.
 Then everyone can use it, and your deployment keeps following releases.
 
