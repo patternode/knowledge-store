@@ -32,7 +32,7 @@ Gemini Enterprise ──▶ Agent Engine (ADK agent) ──MCP──▶ Cloud Ru
 | Image build | CodeBuild, ECR | Cloud Build, Artifact Registry |
 | Models | Bedrock | Claude on Vertex AI (Model Garden), regional or global endpoint; check the partner model data terms as for Foundry |
 | People | Cognito | Identity Platform; `private-reader` as a custom claim set by an admin command. It can federate to an Entra tenant over OIDC, so one directory can serve both clouds |
-| Applications | Cognito client credentials | Google-signed ID tokens for service accounts, with the scope held as configuration per service account |
+| Applications | none in the reference stack: software calls the chat API, or the Gateway's tools, with a person's token | Google-signed ID tokens for service accounts, with the scope held as configuration per service account |
 | Portal site | S3, CloudFront | Firebase Hosting, rewriting `/api/**` to the Cloud Run service (one origin, no load balancer floor) |
 | Portal API | API Gateway, Lambda | Cloud Run service, minimum instances 0, validating the Identity Platform token in the handler |
 | Async chat | Lambda invokes itself | POST stores the question and creates a Cloud Tasks task; the task calls a private route on the same service |

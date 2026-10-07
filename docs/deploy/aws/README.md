@@ -56,7 +56,7 @@ Optional, depending on your organisation:
 
 | Item | Cost |
 |---|---|
-| Neptune `db.t4g.medium` | About 70 USD a month while it runs. It is the main fixed cost. `knowledge_graph = { enabled = false }` removes it. |
+| Neptune `db.t3.medium` | About 60 USD a month while it runs. It is the main fixed cost. `knowledge_graph = { enabled = false }` removes it. |
 | NAT gateway, only if you set `network.enable_nat` | About 33 USD a month, plus data processed |
 | Everything else at rest | Close to nothing: S3, S3 Vectors, CloudFront, Lambda, DynamoDB on demand, Fargate only while a sweep runs |
 | Model calls | The cost that matters. Discovery and extraction read every document. Each question is several model calls, roughly 0.10 to 0.30 USD with a Sonnet-class model. |
@@ -436,7 +436,7 @@ python3 -m venv .venv && . .venv/bin/activate
 pip install ".[aws]"
 export LAKE_URI=s3://$(terraform -chdir=infra/stack output -raw lake_bucket)
 
-aws s3 ls $LAKE_URI/collections/<collection>/ontology/drafts/   # or see the portal's Overview
+aws s3 ls $LAKE_URI/collections/<collection>/ontology/drafts/   # the draft ids
 knowledge-store -c <collection> ontology pull <draft id> ontology/<collection>/
 # edit ontology/<collection>/ontology.ttl, and set owl:versionInfo to "1.0.0"
 knowledge-store -c <collection> ontology publish ontology/<collection>/ --activate
@@ -531,6 +531,6 @@ terraform destroy
 | Pipeline tasks never start, or cannot pull the image | With `network.existing`: the pipeline subnets cannot reach ECR, or a public subnet is used without `pipeline_public_ip = true`. |
 | Graph tools time out | With `network.existing`: the private subnets cannot reach S3 (add the S3 gateway endpoint to their route table), or a network ACL blocks port 8182 inside the VPC. |
 | No ontology after uploading | Curated mode waits for at least `discovery.min_docs` documents and then for a person to publish (step 12). |
-| `apply` stops at the Neptune instance with `InvalidVPCNetworkStateFault ... no subnets exist in Availability Zones with sufficient capacity`, naming another zone | The default VPC spans the account's first two zones, and neither has capacity for the instance class. Raise `network.az_count` until the named zone is included (for us-east-1d, `az_count = 4`), plan and apply again: subnets are added by position, so the existing ones stay. With `network.existing`, add a private subnet in the named zone. Or choose another `knowledge_graph.instance_class`. |
+| `apply` stops at the Neptune instance with `InvalidVPCNetworkStateFault ... no subnets exist in Availability Zones with sufficient capacity`, naming another zone | The default VPC spans the account's first two zones, and neither has capacity for the instance class. Raise `network.az_count` until the named zone is included (for us-east-1d, `az_count = 4`), plan and apply again: subnets are added by position, so the existing ones stay. With `network.existing`, add a private subnet in the named zone. Or choose another `knowledge_graph.instance_class` (in us-east-1, `db.t4g.medium` moved between zones while `db.t3.medium` was available), or Neptune Serverless (`serverless_min_ncu = 1`). |
 | The chat answers but without the agent | `agent.runtime` is not `true` yet (step 8). |
 | Sign-in redirects to an error | The URL is neither `portal_url` nor the CloudFront domain, or DNS for `portal_domain` points elsewhere. |

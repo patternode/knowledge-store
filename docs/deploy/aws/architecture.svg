@@ -73,7 +73,7 @@ text { font-family: Inter, 'DejaVu Sans', sans-serif; }
 <text x="594" y="430" class="title" fill="#14463D">Knowledge graph</text>
 <text x="594" y="450" class="body" fill="#14463D">Gold RDF: one named graph per document,</text>
 <text x="594" y="467" class="body" fill="#14463D">plus the ontology itself · IAM auth</text>
-<text x="594" y="484" class="body" fill="#14463D">db.t4g.medium ≈ 70 USD/month (can be off)</text>
+<text x="594" y="484" class="body" fill="#14463D">db.t3.medium ≈ 60 USD/month (can be off)</text>
 <rect x="580" y="560" width="360" height="95" rx="10" fill="#E8EFFB" stroke="#3B6FC9" stroke-width="1.6"/>
 <text x="594" y="584" class="svc" fill="#3B6FC9">AWS Lambda</text>
 <text x="594" y="604" class="title" fill="#1B3566">Graph tools</text>

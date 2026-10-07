@@ -158,7 +158,8 @@ carries only what it uses:
 
    ```bash
    export LAKE_URI=s3://<lake bucket>                     # or az://<account>/<container>
-   knowledge-store ontology pull <draft id> ontology/    # the draft id is on the portal's Overview
+   # the draft id: list the lake's collections/<id>/ontology/drafts/
+   knowledge-store ontology pull <draft id> ontology/
    # edit ontology/ontology.ttl, set owl:versionInfo "1.0.0", commit it
    knowledge-store ontology diff ontology/
    knowledge-store ontology publish ontology/ --activate
@@ -221,7 +222,7 @@ see `llm.py` for their settings.
 
 ## Costs
 
-On AWS the knowledge graph (Neptune, about 70 USD a month) is the fixed cost; switch it off for
+On AWS the knowledge graph (Neptune, about 60 USD a month) is the fixed cost; switch it off for
 a small demo and the graph tools answer from memory. Everything else idles at close to nothing.
 Each cloud's guide lists what it runs. Model calls are the cost that matters. Discovery reads `discovery.sample` x `discovery.resamples`
 documents, whatever the collection's size. Extraction reads every document once per full
@@ -236,7 +237,7 @@ version. Chat is limited by `daily_questions` per user.
   thousands of entities and wrong beyond it. For more, the pipeline can load the same projection
   into a document store and a graph database (`PROJECTION_STORE`, `GRAPH_BACKEND`; see
   [docs/architectures](docs/architectures/README.md#new-the-graph-and-document-backends)), behind
-  the same API. On AWS the graph tools query Neptune; the portal's own pages still read memory.
+  the same API. On AWS the agent's graph tools query Neptune; the portal API's own routes still read memory.
 - Delta selection is a heuristic (see above).
 - Scanned PDFs need OCR, which is not built in.
 - Extraction is synchronous (one model call per document). Batch inference (50% cheaper, for

@@ -93,7 +93,7 @@ Start there to see every connection.
 | | |
 |---|---|
 | **Job** | Holds the gold RDF as it is: one named graph per document per ontology version, and one for the active ontology. The agent's graph tools query it with fixed SPARQL built from the ontology. |
-| **AWS** | A Neptune cluster `<name>` with one instance (`db.t4g.medium`, or Neptune Serverless). It is in the private subnets, with IAM database authentication, encrypted storage and an audit log exported to CloudWatch. Two security groups: Neptune's own, and a client group. Port 8182 is open only to the client group (the graph tools) and the pipeline's tasks. |
+| **AWS** | A Neptune cluster `<name>` with one instance (`db.t3.medium`, or Neptune Serverless). It is in the private subnets, with IAM database authentication, encrypted storage and an audit log exported to CloudWatch. Two security groups: Neptune's own, and a client group. Port 8182 is open only to the client group (the graph tools) and the pipeline's tasks. |
 | **Terraform** | [`modules/knowledge-graph`](../../../infra/modules/knowledge-graph/main.tf), called with `count` so that `knowledge_graph.enabled = false` removes it. It outputs `data_arn`, the resource that the IAM `neptune-db:*` grants name. |
 | **Your inputs** | `knowledge_graph` |
 

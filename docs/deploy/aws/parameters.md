@@ -32,7 +32,7 @@ Copy this table, fill in the right-hand column, and keep it with the deployment'
 | Required tags | `extra_tags` | |
 | Log retention, in days | `log_retention_days` | |
 | Monthly budget alert and who receives it | `budget` | |
-| Neptune on (about 70 USD a month), or off for a demo | `knowledge_graph.enabled` | |
+| Neptune on (about 60 USD a month), or off for a demo | `knowledge_graph.enabled` | |
 | Collections: ids, names, descriptions | `collections` | |
 | Ontology per collection: curated, auto, or your own | `collections.<id>.ontology_mode`, `ontology_dir` | |
 | Portal title | `portal_title` | |
@@ -110,7 +110,7 @@ Copy this table, fill in the right-hand column, and keep it with the deployment'
 | Parameter | Default | Description |
 |---|---|---|
 | `knowledge_graph.enabled` | `true` | Neptune, holding the gold RDF. Off, the graph tools answer from the lake's projection in memory, which suits a small demo. |
-| `knowledge_graph.instance_class` | `db.t4g.medium` | The Neptune instance class. |
+| `knowledge_graph.instance_class` | `db.t3.medium` | The Neptune instance class. `db.t4g.medium` costs a little less but often has no capacity in a zone. |
 | `knowledge_graph.serverless_min_ncu` / `serverless_max_ncu` | `0` / `8` | A minimum above zero uses Neptune Serverless instead of the instance class. |
 | `knowledge_graph.deletion_protection` | `false` | Protect the cluster from deletion. The graph is rebuilt from the lake, so this is off by default. |
 | `knowledge_base.enabled` | `true` | Search of passages by meaning: a Bedrock Knowledge Base on S3 Vectors. Off, passage search falls back to keywords. |
