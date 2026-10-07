@@ -6,6 +6,10 @@
 #     -> EventBridge Pipe -> ECS RunTask
 #   EventBridge Scheduler (every schedule_expression) -> ECS RunTask   the safety net
 #
+# At the end of each sweep the task loads the gold RDF into Neptune (when neptune is set; the
+# task reaches it inside the VPC) and writes the passages for the Knowledge Base (when
+# knowledge_base is set), starting an ingestion job when any changed.
+#
 # Pipes allows a batch of only one message for an ECS target, so each upload starts a task.
 # The task takes an S3 lock, so a task started while one runs exits at once, and the running
 # one keeps sweeping until nothing new arrives. Because the sweep is idempotent, the schedule
@@ -67,6 +71,24 @@ variable "schedule_enabled" {
 variable "log_retention_days" {
   type    = number
   default = 30
+}
+variable "neptune" {
+  type = object({
+    endpoint = string
+    port     = number
+    data_arn = string
+  })
+  default     = null
+  description = "the knowledge graph the sweep loads the gold RDF into; null for none"
+}
+variable "knowledge_base" {
+  type = object({
+    id             = string
+    arn            = string
+    data_source_id = string
+  })
+  default     = null
+  description = "the passages' vector index the sweep keeps in step; null for none"
 }
 variable "tags" {
   type    = map(string)
@@ -150,6 +172,13 @@ resource "aws_iam_role_policy" "task" {
     ], local.anthropic ? [
     { Sid = "AnthropicKey", Effect = "Allow", Action = "secretsmanager:GetSecretValue",
     Resource = var.anthropic_api_key_secret_arn },
+    ] : [], var.neptune != null ? [
+    { Sid    = "LoadGraph", Effect = "Allow",
+      Action = ["neptune-db:connect", "neptune-db:ReadDataViaQuery", "neptune-db:WriteDataViaQuery", "neptune-db:DeleteDataViaQuery"],
+    Resource = var.neptune.data_arn },
+    ] : [], var.knowledge_base != null ? [
+    { Sid = "SyncPassages", Effect = "Allow", Action = ["bedrock:StartIngestionJob", "bedrock:GetIngestionJob"],
+    Resource = var.knowledge_base.arn },
   ] : []) })
 }
 
@@ -176,7 +205,11 @@ resource "aws_ecs_task_definition" "pipeline" {
       { name = "LLM_PROVIDER", value = var.llm_provider },
       { name = "EXTRACTION_MODEL_ID", value = var.extraction_model_id },
       { name = "AWS_REGION", value = data.aws_region.current.region },
-    ], local.anthropic ? [{ name = "ANTHROPIC_API_KEY_SECRET", value = var.anthropic_api_key_secret_arn }] : [])
+      ], local.anthropic ? [{ name = "ANTHROPIC_API_KEY_SECRET", value = var.anthropic_api_key_secret_arn }] : [],
+      var.neptune != null ? [{ name = "NEPTUNE_ENDPOINT", value = var.neptune.endpoint },
+      { name = "NEPTUNE_PORT", value = tostring(var.neptune.port) }] : [],
+      var.knowledge_base != null ? [{ name = "KNOWLEDGE_BASE_ID", value = var.knowledge_base.id },
+    { name = "KNOWLEDGE_BASE_DATA_SOURCE_ID", value = var.knowledge_base.data_source_id }] : [])
     logConfiguration = {
       logDriver = "awslogs"
       options = { "awslogs-group" = aws_cloudwatch_log_group.pipeline.name,

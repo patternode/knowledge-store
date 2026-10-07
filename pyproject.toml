@@ -20,7 +20,9 @@ gcp = ["google-cloud-storage>=2.18", "google-auth>=2.30", "pyjwt[crypto]>=2.8"]
 mongo = ["pymongo>=4.8"]
 neo4j = ["neo4j>=5.20"]
 age = ["psycopg[binary]>=3.2"]
-dev = ["pytest>=8", "moto>=5", "azure-functions>=1.21", "knowledge-store[aws,azure,gcp,mongo,neo4j,age]"]
+# The chat agent (as in Dockerfile.agent) and the evaluation runner.
+agent = ["boto3>=1.40", "strands-agents>=1.50", "bedrock-agentcore>=1.20", "mcp>=1.20,<2", "pydantic>=2", "pyyaml>=6"]
+dev = ["pytest>=8", "moto>=5", "azure-functions>=1.21", "knowledge-store[aws,azure,gcp,mongo,neo4j,age,agent]"]
 
 [project.scripts]
 knowledge-store = "knowledge_store.cli:main"

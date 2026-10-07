@@ -14,9 +14,16 @@ output "run_now" {
 }
 output "pipeline_logs" { value = module.knowledge_store.pipeline_logs }
 output "cognito_user_pool" { value = module.knowledge_store.cognito_user_pool }
+output "cognito_client_id" { value = module.knowledge_store.cognito_client_id }
 output "agent" {
   value       = module.knowledge_store.agent
-  description = "the example agent: how to call it (see examples/agent/invoke.py)"
+  description = "the chat agent: its runtime (empty until agent.runtime = true), Gateway and guardrail"
+}
+output "knowledge_graph" { value = module.knowledge_store.knowledge_graph }
+output "knowledge_base" { value = module.knowledge_store.knowledge_base }
+output "evaluate" {
+  value       = module.knowledge_store.evaluate
+  description = "run an evaluation set against the deployed chat, as a signed-in person"
 }
 
 output "provided_ontologies" {

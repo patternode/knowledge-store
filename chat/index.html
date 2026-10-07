@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self' https: http://localhost:* http://127.0.0.1:*; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Knowledge Store</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231b202c'/%3E%3Cpath d='M16 20h32v20H30l-10 8v-8h-4z' fill='none' stroke='%2300b8e6' stroke-width='4' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+<script defer src="app.js"></script>
+</head>
+<body>
+<a class="skip" href="#question">Skip to the question box</a>
+<header class="header">
+  <p class="brand" id="brand-name">Knowledge Store</p>
+  <div class="controls">
+    <span id="coll-wrap" hidden>
+      <label for="coll-select">Collection</label>
+      <select id="coll-select"></select>
+    </span>
+    <span class="coll-name" id="coll-name" hidden></span>
+    <span class="pill" id="private-pill" hidden>Private access</span>
+    <span class="user" id="user"></span>
+    <button class="btn" id="signin" type="button" hidden>Sign in</button>
+    <button class="btn" id="signout" type="button" hidden>Sign out</button>
+  </div>
+</header>
+
+<main id="main">
+  <div id="notice" class="notice" hidden></div>
+  <p class="intro" id="intro" hidden></p>
+  <div id="log" class="log"></div>
+  <div id="announce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+</main>
+
+<form id="ask" class="ask" hidden>
+  <label class="sr-only" for="question">Your question</label>
+  <div class="ask-row">
+    <textarea id="question" rows="2" maxlength="2000" placeholder="Ask a question about the documents" aria-describedby="hint keys"></textarea>
+    <button class="btn primary" id="send" type="submit">Send</button>
+  </div>
+  <p class="hint" id="hint">Answers come only from the documents in this collection, and every statement links to its source.</p>
+  <p class="sr-only" id="keys">Enter sends. Shift and Enter starts a new line.</p>
+</form>
+</body>
+</html>

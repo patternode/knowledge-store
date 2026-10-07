@@ -44,10 +44,10 @@ class GroundedAnswer(BaseModel):
                             description="what the sources could not say: a missing fact, type, relation or document")
 
 
-_QUOTES = str.maketrans({"‘": "'", "’": "'", "‚": "'", "‛": "'", "′": "'",
-                         "“": '"', "”": '"', "„": '"', "″": '"',
-                         "‐": "-", "‑": "-", "‒": "-", "–": "-", "—": "-",
-                         "―": "-", "−": "-", " ": " "})
+_QUOTES = str.maketrans({"\u2018": "'", "\u2019": "'", "\u201a": "'", "\u201b": "'", "\u2032": "'",
+                         "\u201c": '"', "\u201d": '"', "\u201e": '"', "\u2033": '"',
+                         "\u2010": "-", "\u2011": "-", "\u2012": "-", "\u2013": "-", "\u2014": "-",
+                         "\u2015": "-", "\u2212": "-", "\u00a0": " "})
 
 
 def normalise(text: str) -> str:

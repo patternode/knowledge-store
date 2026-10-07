@@ -56,10 +56,10 @@ To run it for real, keep your configuration and curated ontologies in a private 
 
 To try it with sample content, run `python examples/sherlock-holmes/fetch.py` and upload the stories, or upload `examples/space-missions/`.
 
-## The example agent
+## The chat agent
 
-Set EnableAgent to true (or `agent = { enabled = true }`), wait for the agent image to build, then set EnableAgentRuntime to true. See [examples/agent](examples/agent/README.md).
+The first deploy builds the agent's image. Once it is built (a few minutes; the `agent.image_project` output names the CodeBuild project), set EnableAgentRuntime to true (or `agent = { runtime = true }`) and deploy again. Until then the chat answers with the portal's own tool loop. How the agent answers, and the checks on every answer, are in [docs/architectures/aws.md](docs/architectures/aws.md).
 
 ## What it costs idle
 
-Close to nothing. The stack has no NAT gateway, no database server and no always-on compute: S3, CloudFront, Lambda, DynamoDB on demand, and Fargate only while a sweep runs. Model calls in Bedrock are the cost that matters.
+About 70 USD a month, for the Neptune instance that holds the knowledge graph. Set EnableKnowledgeGraph to false (or `knowledge_graph = { enabled = false }`) for a small demo, and the stack idles at close to nothing: no NAT gateway and no always-on compute, only S3, CloudFront, Lambda, DynamoDB on demand, the Knowledge Base on S3 Vectors, and Fargate while a sweep runs. Model calls in Bedrock are the cost that matters.

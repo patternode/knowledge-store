@@ -1,9 +1,10 @@
 # Knowledge Store
 
-Put documents in a data lake and get an ontology-typed knowledge graph, and a portal to browse
-its concepts and ask questions about them, for any domain. The ontology is discovered from the
-documents first. After that, it is maintained under version control, released in controlled
-versions, and grown from the terms extraction finds it lacks.
+Put documents in a data lake and get an ontology-typed knowledge graph, and a chat in which an
+agent answers questions from it, every statement linked to the passage it comes from, for any
+domain. Bring an ontology, or have one discovered from the documents and reviewed. After that,
+it is maintained under version control, released in controlled versions, and grown from the
+terms extraction finds it lacks.
 
 It runs on AWS or Azure, in one account or subscription from one Terraform stack, or on your own
 machine over a local folder. Model calls go to Claude through your cloud's own service (Amazon
@@ -106,6 +107,12 @@ it into what each consumer needs, under `ontology/versions/<v>/renditions/`:
 
 `knowledge-store ontology render ontology/ out/` shows what a release would ship.
 
+On AWS it is a minimal GraphRAG reference architecture you deploy from Terraform: a pipeline
+that applies the ontology and loads a knowledge graph into Amazon Neptune, a Bedrock Knowledge
+Base over the passages, and a chat agent on AgentCore that queries the graph in the ontology's
+terms and shows only answers it can ground in cited passages. See
+[docs/architectures/aws.md](docs/architectures/aws.md).
+
 ## Deploy
 
 The core (the pipeline, the ontology lifecycle, the portal and its API, and the knowledge tools)
@@ -144,7 +151,8 @@ carries only what it uses:
    output). Any folder structure is kept as metadata. Supported now: .md, .txt, .csv, .html, .json
    and .pdf (with a text layer).
 2. The upload starts the pipeline within a few minutes, and a schedule reruns it as a safety net.
-3. Open the portal and sign in. Your cloud's guide says how the first user gets in.
+3. Open the portal and sign in. Your cloud's guide says how the first user gets in. Ask a
+   question: the answer lists its sources, and each statement links to its passage.
 4. With `ontology_mode = "curated"` (the default), the first run stops after discovery with a
    draft. Curate and publish it:
 
@@ -184,6 +192,19 @@ sharepoint = "my_package.sharepoint:SharePointAdapter"
 A source can be `scope = "private"`. Its facts are shown only to portal users who may read private
 content: the `private-readers` Cognito group on AWS, the `private-reader` app role on Azure.
 
+## Evaluate
+
+Measure the agent against questions with known answers, including some the sources cannot
+answer, which it must decline:
+
+```bash
+python -m knowledge_store.evals examples/evals/space-missions.yaml --lake <lake> --model <model id> --yes
+```
+
+The scoring needs no model as judge: facts stated, near misses avoided, the share of claims that
+passed the citation checks, expected sources cited, and declines. See
+[docs/architectures/aws.md](docs/architectures/aws.md#evaluation).
+
 ## Run it locally
 
 ```bash
@@ -200,9 +221,9 @@ see `llm.py` for their settings.
 
 ## Costs
 
-Each stack idles at close to nothing: no always-on compute and no database server unless you turn
-on a graph or document backend. Each cloud's guide lists what it runs. Model calls are the cost
-that matters. Discovery reads `discovery.sample` x `discovery.resamples`
+On AWS the knowledge graph (Neptune, about 70 USD a month) is the fixed cost; switch it off for
+a small demo and the graph tools answer from memory. Everything else idles at close to nothing.
+Each cloud's guide lists what it runs. Model calls are the cost that matters. Discovery reads `discovery.sample` x `discovery.resamples`
 documents, whatever the collection's size. Extraction reads every document once per full
 version. Chat is limited by `daily_questions` per user.
 
@@ -215,7 +236,7 @@ version. Chat is limited by `daily_questions` per user.
   thousands of entities and wrong beyond it. For more, the pipeline can load the same projection
   into a document store and a graph database (`PROJECTION_STORE`, `GRAPH_BACKEND`; see
   [docs/architectures](docs/architectures/README.md#new-the-graph-and-document-backends)), behind
-  the same API. The AWS stack does not deploy either yet.
+  the same API. On AWS the graph tools query Neptune; the portal's own pages still read memory.
 - Delta selection is a heuristic (see above).
 - Scanned PDFs need OCR, which is not built in.
 - Extraction is synchronous (one model call per document). Batch inference (50% cheaper, for

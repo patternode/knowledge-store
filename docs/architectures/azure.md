@@ -45,7 +45,7 @@ Foundry task agent   ──MCP──▶ (token check, rate limit)
 | Portal API | API Gateway JWT authorizer, Lambda | Function App on Flex Consumption. The code verifies the Entra token itself (`knowledge_store.authn`) |
 | Async chat | Lambda invokes itself | POST stores the question and enqueues it on `chat`; a queue-triggered function answers |
 | Chat and quota | DynamoDB | MongoDB (`CHAT_STATE=mongodb`) |
-| Tools for agents | AgentCore Gateway, interceptor, Cedar, Lambda | API Management (token check, rate limit per caller) in front of the Function App's `/mcp`, which checks the token again and sets the caller's scope |
+| Tools for agents | AgentCore Gateway, interceptor, two Lambdas (graph, passages) | API Management (token check, rate limit per caller) in front of the Function App's `/mcp`, which checks the token again and sets the caller's scope |
 | Secrets | Secrets Manager | Key Vault (RBAC), read by managed identities and Key Vault references |
 | Logs and traces | CloudWatch, X-Ray | Log Analytics, Application Insights |
 | State | S3 (bootstrap) | a storage account with Entra auth and versioning (`deploy/azure/bootstrap`) |

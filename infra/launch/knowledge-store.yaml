@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >-
-  Knowledge Store: documents in S3 to an ontology-typed knowledge graph, with a portal. This stack runs
+  Knowledge Store: documents in S3 to an ontology-typed knowledge graph, with a grounded chat agent. This stack runs
   the project's Terraform inside your account with CodeBuild; the stack completes when Terraform
   has. Deleting the stack destroys what Terraform created and keeps the data lake unless
   DeleteDataOnStackDelete is true.
@@ -12,14 +12,14 @@ Metadata:
         Parameters: [AdminEmail]
       - Label: { default: "Collections" }
         Parameters: [CollectionsJson, OntologyMode, ModelId]
-      - Label: { default: "Example agent (AgentCore), optional" }
-        Parameters: [EnableAgent, EnableAgentRuntime, EnableTransactionSearch]
+      - Label: { default: "Knowledge graph and chat agent" }
+        Parameters: [EnableKnowledgeGraph, EnableKnowledgeBase, EnableAgentRuntime]
       - Label: { default: "Deployment" }
         Parameters: [DeploymentName, DeleteDataOnStackDelete, SourceUrl, SourceSha256, TerraformVersion]
     ParameterLabels:
       AdminEmail: { default: "Admin email (receives the portal's temporary password)" }
       CollectionsJson: { default: "Collections (JSON)" }
-      EnableTransactionSearch: { default: "Turn on CloudWatch Transaction Search (account-wide)" }
+      EnableKnowledgeGraph: { default: "Neptune knowledge graph (about 70 USD a month)" }
 
 Parameters:
   AdminEmail:
@@ -46,23 +46,23 @@ Parameters:
     Type: String
     Default: us.anthropic.claude-sonnet-4-5-20250929-v1:0
     Description: Amazon Bedrock model for discovery, extraction and chat. Enable access to it in the Bedrock console first.
-  EnableAgent:
+  EnableKnowledgeGraph:
     Type: String
-    Default: "false"
+    Default: "true"
     AllowedValues: ["true", "false"]
-    Description: Deploy the example AgentCore agent's Gateway, tools, Memory and Identity, and build its image.
+    Description: >-
+      Load the knowledge graph into Amazon Neptune (db.t4g.medium, the stack's main fixed cost). false
+      answers from the lake's projection in memory, which suits a small demo.
+  EnableKnowledgeBase:
+    Type: String
+    Default: "true"
+    AllowedValues: ["true", "false"]
+    Description: Search passages by meaning with a Bedrock Knowledge Base on S3 Vectors. Enable Titan Text Embeddings V2 in Bedrock first.
   EnableAgentRuntime:
     Type: String
     Default: "false"
     AllowedValues: ["true", "false"]
-    Description: Create the agent Runtime. Update the stack to true once the agent image has been built (a few minutes after EnableAgent).
-  EnableTransactionSearch:
-    Type: String
-    Default: "false"
-    AllowedValues: ["true", "false"]
-    Description: >-
-      ACCOUNT-WIDE: send X-Ray spans to CloudWatch Logs, which online evaluation of the agent needs.
-      Leave false if anything else in the account relies on the current setting.
+    Description: Create the chat agent's Runtime. Update the stack to true once the agent image has been built (a few minutes after the first deploy).
   DeleteDataOnStackDelete:
     Type: String
     Default: "false"
@@ -232,12 +232,12 @@ Resources:
           import json, os, urllib.request
           import boto3
 
-          PASS = ["AdminEmail", "DeploymentName", "CollectionsJson", "OntologyMode", "ModelId", "EnableAgent",
-                  "EnableAgentRuntime", "EnableTransactionSearch", "DeleteDataOnStackDelete", "SourceUrl",
+          PASS = ["AdminEmail", "DeploymentName", "CollectionsJson", "OntologyMode", "ModelId", "EnableKnowledgeGraph",
+                  "EnableKnowledgeBase", "EnableAgentRuntime", "DeleteDataOnStackDelete", "SourceUrl",
                   "SourceSha256", "TerraformVersion"]
           ENV = {"AdminEmail": "ADMIN_EMAIL", "DeploymentName": "DEPLOYMENT_NAME", "CollectionsJson": "COLLECTIONS_JSON",
-                 "OntologyMode": "ONTOLOGY_MODE", "ModelId": "MODEL_ID", "EnableAgent": "ENABLE_AGENT",
-                 "EnableAgentRuntime": "AGENT_RUNTIME", "EnableTransactionSearch": "TRANSACTION_SEARCH",
+                 "OntologyMode": "ONTOLOGY_MODE", "ModelId": "MODEL_ID", "EnableKnowledgeGraph": "KNOWLEDGE_GRAPH",
+                 "EnableAgentRuntime": "AGENT_RUNTIME", "EnableKnowledgeBase": "KNOWLEDGE_BASE",
                  "DeleteDataOnStackDelete": "DELETE_DATA", "SourceUrl": "SOURCE_URL", "SourceSha256": "SOURCE_SHA256",
                  "TerraformVersion": "TF_VERSION"}
 
@@ -272,9 +272,9 @@ Resources:
       CollectionsJson: !Ref CollectionsJson
       OntologyMode: !Ref OntologyMode
       ModelId: !Ref ModelId
-      EnableAgent: !Ref EnableAgent
+      EnableKnowledgeGraph: !Ref EnableKnowledgeGraph
+      EnableKnowledgeBase: !Ref EnableKnowledgeBase
       EnableAgentRuntime: !Ref EnableAgentRuntime
-      EnableTransactionSearch: !Ref EnableTransactionSearch
       DeleteDataOnStackDelete: !Ref DeleteDataOnStackDelete
       SourceUrl: !Ref SourceUrl
       SourceSha256: !Ref SourceSha256

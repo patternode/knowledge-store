@@ -1,14 +1,21 @@
 # The Knowledge Store module: everything, in one apply. A root calls it with its own provider
 # and backend: infra/stack is the reference root, examples/deployment a template for your own.
 #
-#   lake      the bucket, layered by prefix, with the deployer's sources/profile/settings
-#   build     CodeBuild builds the pipeline image from this repository, inside the account
-#   network   a VPC with public subnets for the pipeline's tasks (no NAT)
-#   pipeline  the sweep task, triggered by uploads and on a schedule
-#   identity  Cognito sign-in for the portal
-#   portal    CloudFront, the static page and its API
+# Ingestion: documents in, an ontology applied (provided, or discovered and reviewed), a knowledge graph out.
+#   lake             the bucket, layered by prefix, with the deployer's sources, profile and settings
+#   build            CodeBuild builds the pipeline and agent images from this repository, inside the account
+#   network          a VPC: public subnets for the pipeline's tasks, private ones for Neptune (no NAT)
+#   pipeline         the sweep task, triggered by uploads and on a schedule
+#   knowledge_graph  Neptune, holding the gold RDF; the sweep loads it
+#   knowledge_base   the passages' vector index (Bedrock Knowledge Base on S3 Vectors); the sweep syncs it
 #
-# After apply: upload files to s3://<lake>/landing/<collection>/ (outputs.upload_to) and open the portal.
+# Chat: a person asks, an agent answers from the graph, every statement linked to its source.
+#   identity         Cognito sign-in
+#   portal           CloudFront, the chat page and its API (a quota per person, a concurrency cap)
+#   agent            the chat agent on AgentCore Runtime, its tools behind AgentCore Gateway, a guardrail
+#
+# After the first apply: upload files to s3://<lake>/landing/<collection>/ (outputs.upload_to);
+# once the agent image is built, set agent.runtime = true and apply again; open the portal.
 
 locals {
   repo_root     = abspath("${path.module}/../../..")
@@ -62,12 +69,46 @@ module "build" {
   source      = "../image-build"
   name        = var.name
   source_dir  = local.repo_root
-  build_agent = var.agent.enabled
+  build_agent = true
 }
 
 module "network" {
   source = "../network"
   name   = var.name
+}
+
+module "knowledge_graph" {
+  count                     = var.knowledge_graph.enabled ? 1 : 0
+  source                    = "../knowledge-graph"
+  name                      = var.name
+  vpc_id                    = module.network.vpc_id
+  private_subnet_ids        = module.network.private_subnet_ids
+  client_security_group_ids = { pipeline = module.pipeline.security_group_id }
+  instance_class            = var.knowledge_graph.instance_class
+  serverless_min_ncu        = var.knowledge_graph.serverless_min_ncu
+  serverless_max_ncu        = var.knowledge_graph.serverless_max_ncu
+  deletion_protection       = var.knowledge_graph.deletion_protection
+}
+
+module "knowledge_base" {
+  count              = var.knowledge_base.enabled ? 1 : 0
+  source             = "../knowledge-base"
+  name               = var.name
+  lake_bucket_arn    = module.lake.bucket_arn
+  embedding_model_id = var.knowledge_base.embedding_model_id
+}
+
+locals {
+  neptune = var.knowledge_graph.enabled ? {
+    endpoint = module.knowledge_graph[0].endpoint
+    port     = module.knowledge_graph[0].port
+    data_arn = module.knowledge_graph[0].data_arn
+  } : null
+  knowledge_base = var.knowledge_base.enabled ? {
+    id             = module.knowledge_base[0].knowledge_base_id
+    arn            = module.knowledge_base[0].knowledge_base_arn
+    data_source_id = module.knowledge_base[0].data_source_id
+  } : null
 }
 
 module "pipeline" {
@@ -84,6 +125,8 @@ module "pipeline" {
   extraction_model_id          = var.extraction_model_id
   schedule_expression          = var.schedule_expression
   schedule_enabled             = var.schedule_enabled
+  neptune                      = local.neptune
+  knowledge_base               = local.knowledge_base
 }
 
 module "identity" {
@@ -93,19 +136,13 @@ module "identity" {
   groups        = [local.private_group]
   admin_groups  = var.admin_private ? [local.private_group] : []
   callback_urls = [module.portal.url]
-  # With the agent: the agent's own identity (public tools only), and one application client for
-  # callers of the agent. Give callers private scope with agent.caller_private.
-  machine_clients = var.agent.enabled ? {
-    agent  = { scopes = ["tools.public"] }
-    caller = { scopes = concat(["agent.invoke", "tools.public"], var.agent.caller_private ? ["tools.private"] : []) }
-  } : {}
 }
 
 module "portal" {
   source                       = "../portal"
   name                         = var.name
   package_root                 = "${local.repo_root}/src"
-  portal_dir                   = "${local.repo_root}/portal"
+  portal_dir                   = "${local.repo_root}/chat"
   lake_bucket                  = module.lake.bucket
   lake_bucket_arn              = module.lake.bucket_arn
   cognito_issuer               = module.identity.issuer
@@ -116,32 +153,69 @@ module "portal" {
   anthropic_api_key_secret_arn = var.anthropic_api_key_secret_arn
   chat_model_id                = var.chat_model_id
   daily_questions              = var.daily_questions
+  reserved_concurrency         = var.valves.chat_concurrency
   brand_name                   = var.portal_title
+  agent_runtime_arn            = module.agent.runtime_arn
+  agent_runtime_qualifier      = module.agent.runtime_qualifier
 }
 
 module "agent" {
-  count               = var.agent.enabled ? 1 : 0
-  source              = "../agent"
-  name                = var.name
-  package_root        = "${local.repo_root}/src"
-  tool_schema_path    = "${local.repo_root}/src/knowledge_store/tools/schema.json"
-  lake_bucket         = module.lake.bucket
-  lake_bucket_arn     = module.lake.bucket_arn
-  discovery_url       = module.identity.discovery_url
-  allowed_client_ids  = concat([module.identity.client_id], values(module.identity.machine_client_ids))
-  agent_client_id     = module.identity.machine_client_ids["agent"]
-  agent_client_secret = module.identity.machine_client_secrets["agent"]
-  scope_prefix        = module.identity.scope_prefix
-  private_group       = local.private_group
-  agent_image_uri     = module.build.agent_image_uri
-  runtime_enabled     = var.agent.runtime
-  prod_version        = var.agent.prod_version
-  agent_model_id      = var.agent.model_id
-  judge_model_id      = var.agent.judge_model_id
-  policy_mode         = var.agent.policy_mode
-  browser_enabled     = var.agent.browser
-  transaction_search  = var.agent.transaction_search
-  evaluations_enabled = var.agent.evaluations
-  registry_enabled    = var.agent.registry
-  harness_enabled     = var.agent.harness
+  source             = "../agent"
+  name               = var.name
+  package_root       = "${local.repo_root}/src"
+  tool_schema_dir    = "${local.repo_root}/src/knowledge_store/tools"
+  lake_bucket        = module.lake.bucket
+  lake_bucket_arn    = module.lake.bucket_arn
+  discovery_url      = module.identity.discovery_url
+  allowed_client_ids = [module.identity.client_id]
+  scope_prefix       = module.identity.scope_prefix
+  private_group      = local.private_group
+  agent_image_uri    = module.build.agent_image_uri
+  runtime_enabled    = var.agent.runtime
+  prod_version       = var.agent.prod_version
+  agent_model_id     = var.agent.model_id
+  neptune = var.knowledge_graph.enabled ? {
+    endpoint                 = module.knowledge_graph[0].endpoint
+    port                     = module.knowledge_graph[0].port
+    data_arn                 = module.knowledge_graph[0].data_arn
+    client_security_group_id = module.knowledge_graph[0].client_security_group_id
+    private_subnet_ids       = module.network.private_subnet_ids
+  } : null
+  knowledge_base = var.knowledge_base.enabled ? { id = local.knowledge_base.id, arn = local.knowledge_base.arn } : null
+  guardrail      = var.guardrail
+  valves = {
+    max_tool_calls    = var.valves.max_tool_calls
+    max_model_calls   = var.valves.max_model_calls
+    max_output_tokens = var.valves.max_output_tokens
+    grounding_repairs = var.valves.grounding_repairs
+  }
+}
+
+moved {
+  from = module.agent[0]
+  to   = module.agent
+}
+
+# A monthly cost budget for the whole account, mailed at 80% of actual and 100% of forecast spend.
+resource "aws_budgets_budget" "monthly" {
+  count        = var.budget.monthly_usd > 0 ? 1 : 0
+  name         = "${var.name}-monthly"
+  budget_type  = "COST"
+  limit_amount = tostring(var.budget.monthly_usd)
+  limit_unit   = "USD"
+  time_unit    = "MONTHLY"
+  notification {
+    comparison_operator        = "GREATER_THAN"
+    threshold                  = 80
+    threshold_type             = "PERCENTAGE"
+    notification_type          = "ACTUAL"
+    subscriber_email_addresses = [coalesce(var.budget.email, var.admin_email)]
+  }
+  notification {
+    comparison_operator        = "GREATER_THAN"
+    threshold                  = 100
+    threshold_type             = "PERCENTAGE"
+    notification_type          = "FORECASTED"
+    subscriber_email_addresses = [coalesce(var.budget.email, var.admin_email)]
+  }
 }

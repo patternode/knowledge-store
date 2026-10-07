@@ -1,6 +1,6 @@
 # Reference architectures for Azure and Google Cloud
 
-The AWS stack in [`infra/`](../../infra) is the reference implementation. These documents design
+The AWS stack in [`infra/`](../../infra) is the reference implementation ([aws.md](aws.md)). These documents design
 the same system for Azure and Google Cloud: each names the components, what replaces what, and the
 changes the Python package needs. Azure is built, in [`deploy/azure/`](../../deploy/azure)
 ([azure-setup.md](azure-setup.md)). Google Cloud is a design; its storage and model provider are
@@ -129,18 +129,18 @@ agent service. Both call the same MCP tools, so the tools are still one implemen
 
 | Job | AWS | Azure | Google Cloud |
 |---|---|---|---|
-| Conversational agent for people | portal chat | Copilot Studio agent (Teams, Microsoft 365 Copilot, web) | Gemini Enterprise |
-| Task agent for software | AgentCore Runtime (Strands) | Foundry Agent Service, hosted agent | Vertex AI Agent Engine (ADK) |
-| Configuration-only agent, for comparison | AgentCore Harness | Foundry prompt agent | Gemini Enterprise Agent Designer |
+| Conversational agent for people | the chat agent on AgentCore Runtime (Strands), behind the chat page | Copilot Studio agent (Teams, Microsoft 365 Copilot, web) | Gemini Enterprise |
+| Task agent for software | the same agent, through the chat API or the Gateway's tools | Foundry Agent Service, hosted agent | Vertex AI Agent Engine (ADK) |
+| Configuration-only agent, for comparison | none | Foundry prompt agent | Gemini Enterprise Agent Designer |
 | Tools over MCP | AgentCore Gateway, Lambda target | API Management MCP server, Function | Cloud Run MCP server |
-| Caller scope enforced | interceptor and Cedar | API Management policy, and the Function checks the token again | the MCP server checks the token |
-| Acting as itself | token vault, client credentials | managed identity with the `tools.public` role only | service account with public scope only |
-| Memory | AgentCore Memory | sessions in the document store; Foundry memory optional | Agent Engine Sessions and Memory Bank |
-| Sandboxed computation | Code Interpreter | Container Apps dynamic sessions | Agent Engine Code Execution |
-| Open-web corroboration | Browser | Foundry browser automation, optional | Grounding with Google Search, optional |
+| Caller scope enforced | the Gateway's interceptor, from the verified token | API Management policy, and the Function checks the token again | the MCP server checks the token |
+| Acting as itself | never: the agent acts only as its caller | managed identity with the `tools.public` role only | service account with public scope only |
+| Memory | the conversation's last turns, sent by the page | sessions in the document store; Foundry memory optional | Agent Engine Sessions and Memory Bank |
+| Sandboxed computation | none | Container Apps dynamic sessions | Agent Engine Code Execution |
+| Open-web corroboration | none: answers come only from the collection | Foundry browser automation, optional | Grounding with Google Search, optional |
 | Traces | OpenTelemetry to CloudWatch | Application Insights | Cloud Trace |
-| Evaluations | AgentCore Evaluations | Foundry evaluations with a custom grounding grader | Gen AI evaluation service |
-| Registry | Agent Registry | Azure API Center | Gemini Enterprise agent registration |
+| Evaluations | `knowledge_store.evals`: deterministic scoring of a question set, and the grounding check on every answer | Foundry evaluations with a custom grounding grader | Gen AI evaluation service |
+| Registry | none | Azure API Center | Gemini Enterprise agent registration |
 
 ## Deployment, the same shape everywhere
 

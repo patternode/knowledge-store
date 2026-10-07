@@ -18,16 +18,31 @@ output "run_now" {
 }
 output "pipeline_logs" { value = module.pipeline.log_group }
 output "cognito_user_pool" { value = module.identity.user_pool_id }
+output "cognito_client_id" { value = module.identity.client_id }
 output "agent" {
-  description = "the example agent: how to call it (see examples/agent/invoke.py)"
-  value = var.agent.enabled ? {
-    gateway_url    = module.agent[0].gateway_url
-    runtime_arn    = module.agent[0].runtime_arn
-    caller_client  = module.identity.machine_client_ids["caller"]
-    token_endpoint = module.identity.token_endpoint
-    scope_prefix   = module.identity.scope_prefix
-    image_project  = module.build.agent_codebuild_project
-  } : null
+  description = "the chat agent: its runtime (empty until agent.runtime = true), Gateway and guardrail"
+  value = {
+    runtime_arn   = module.agent.runtime_arn
+    qualifier     = module.agent.runtime_qualifier
+    gateway_url   = module.agent.gateway_url
+    guardrail_id  = module.agent.guardrail_id
+    image_project = module.build.agent_codebuild_project
+  }
+}
+
+output "knowledge_graph" {
+  description = "the Neptune cluster the sweep loads and the graph tools query (null when off)"
+  value       = var.knowledge_graph.enabled ? { endpoint = module.knowledge_graph[0].endpoint, port = module.knowledge_graph[0].port } : null
+}
+
+output "knowledge_base" {
+  description = "the passages' Knowledge Base (null when off)"
+  value       = var.knowledge_base.enabled ? { id = module.knowledge_base[0].knowledge_base_id, data_source_id = module.knowledge_base[0].data_source_id } : null
+}
+
+output "evaluate" {
+  description = "run an evaluation set against the deployed chat, as a signed-in person (see README)"
+  value       = "python -m knowledge_store.evals <set.yaml> --api ${trimsuffix(module.portal.url, "/")} --token-env KS_TOKEN --yes"
 }
 
 output "provided_ontologies" {

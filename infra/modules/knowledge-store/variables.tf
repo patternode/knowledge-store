@@ -132,29 +132,86 @@ variable "force_destroy_lake" {
   default = false
 }
 
-# --- the example agent (AgentCore), optional ------------------------------------------------------
+# --- the knowledge graph and the passages' index ------------------------------------------------
+
+variable "knowledge_graph" {
+  description = <<-EOT
+    Neptune, holding the gold RDF, which the agent's graph tools query. On by default; it is the
+    stack's main fixed cost (db.t4g.medium runs about 70 USD a month). enabled = false answers the
+    graph tools from the lake's projection in memory instead, which suits a small demo.
+    serverless_min_ncu > 0 uses Neptune Serverless.
+  EOT
+  type = object({
+    enabled             = optional(bool, true)
+    instance_class      = optional(string, "db.t4g.medium")
+    serverless_min_ncu  = optional(number, 0)
+    serverless_max_ncu  = optional(number, 8)
+    deletion_protection = optional(bool, false)
+  })
+  default = {}
+}
+
+variable "knowledge_base" {
+  description = <<-EOT
+    Search of the passages by meaning: a Bedrock Knowledge Base on S3 Vectors (cents a month at
+    rest). On by default; needs the embedding model enabled in Bedrock. enabled = false searches
+    passages by keyword instead.
+  EOT
+  type = object({
+    enabled            = optional(bool, true)
+    embedding_model_id = optional(string, "amazon.titan-embed-text-v2:0")
+  })
+  default = {}
+}
+
+# --- the chat agent -----------------------------------------------------------------------------
 
 variable "agent" {
   description = <<-EOT
-    The example task agent and the AgentCore services it uses. Off by default. Two applies: first
-    with enabled = true (builds the agent image, creates Gateway, Memory, Identity and tools), then,
-    once the image is in ECR, with runtime = true. Account-wide switches are separate and off by
-    default because they change the whole account: transaction_search (spans to CloudWatch, needed
-    by evaluations).
+    The chat agent on AgentCore Runtime. Two applies: the first builds its image (CodeBuild) and
+    creates its Gateway, tools and guardrail; once the image is in ECR, set runtime = true and
+    apply again. Until then the portal answers with its own tool loop. prod_version pins a tested
+    Runtime version as the prod endpoint the portal calls.
   EOT
   type = object({
-    enabled            = optional(bool, false)
-    runtime            = optional(bool, false)
-    prod_version       = optional(string, "")
-    caller_private     = optional(bool, false)
-    policy_mode        = optional(string, "ENFORCE")
-    browser            = optional(bool, false)
-    transaction_search = optional(bool, false)
-    evaluations        = optional(bool, false)
-    registry           = optional(bool, false)
-    harness            = optional(bool, false)
-    model_id           = optional(string, "us.anthropic.claude-sonnet-4-5-20250929-v1:0")
-    judge_model_id     = optional(string, "us.anthropic.claude-haiku-4-5-20251001-v1:0")
+    runtime      = optional(bool, false)
+    prod_version = optional(string, "")
+    model_id     = optional(string, "us.anthropic.claude-sonnet-5")
+  })
+  default = {}
+}
+
+variable "guardrail" {
+  description = "a Bedrock Guardrail: screens each question, and checks each claim against the passages it cites"
+  type = object({
+    enabled             = optional(bool, true)
+    grounding_threshold = optional(number, 0.75)
+  })
+  default = {}
+}
+
+variable "valves" {
+  description = <<-EOT
+    Limits around every question (daily_questions per person is a variable of its own):
+      max_tool_calls, max_model_calls, max_output_tokens   per question, in the agent
+      grounding_repairs   times the agent is shown its failed citations and asked again
+      chat_concurrency    the chat API's reserved concurrency (-1 none, 0 turns the chat off)
+  EOT
+  type = object({
+    max_tool_calls    = optional(number, 16)
+    max_model_calls   = optional(number, 14)
+    max_output_tokens = optional(number, 4000)
+    grounding_repairs = optional(number, 1)
+    chat_concurrency  = optional(number, 20)
+  })
+  default = {}
+}
+
+variable "budget" {
+  description = "a monthly cost budget for the account, mailed to email (default admin_email); 0 for none"
+  type = object({
+    monthly_usd = optional(number, 0)
+    email       = optional(string)
   })
   default = {}
 }

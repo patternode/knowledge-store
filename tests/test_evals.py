@@ -7,7 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from knowledge_store.evals import run, score
+pytest.importorskip("yaml")
+
+from knowledge_store.evals import run, score  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 SET = ROOT / "examples/evals/space-missions.yaml"

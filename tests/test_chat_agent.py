@@ -7,10 +7,12 @@ from types import SimpleNamespace
 
 import pytest
 
-from knowledge_store.agent import app, grounding, valves
-from knowledge_store.agent.grounding import Citation, Claim, GroundedAnswer
-from knowledge_store.tools import gateway
-from test_review_fixes import mixed  # noqa: F401
+pytest.importorskip("pydantic")
+
+from knowledge_store.agent import app, grounding, valves  # noqa: E402
+from knowledge_store.agent.grounding import Citation, Claim, GroundedAnswer  # noqa: E402
+from knowledge_store.tools import gateway  # noqa: E402
+from test_review_fixes import mixed  # noqa: F401,E402
 
 
 class Tools:
@@ -53,7 +55,7 @@ def claim(text, pid, quote):
 # --- the checks themselves ------------------------------------------------------------------------
 
 def test_quotes_match_through_case_spacing_quotes_and_dashes():
-    text = "Mission Alpha was launched by\nAgency Nova in 2011 — the “first”."
+    text = "Mission Alpha was launched by\nAgency Nova in 2011 \u2014 the \u201cfirst\u201d."
     assert grounding.quote_in("mission alpha was launched by agency nova", text)
     assert grounding.quote_in('in 2011 - the "first"', text)
     assert not grounding.quote_in("launched by Agency Orbis", text)
