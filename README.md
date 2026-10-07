@@ -1,12 +1,14 @@
 # Knowledge Store
 
-Put documents in S3 and get an ontology-typed knowledge graph, and a portal to browse its
-concepts and ask questions about them, for any domain. The ontology is discovered from the
-documents first. After that, it is maintained under version control, released in controlled
-versions, and grown from the terms extraction finds it lacks.
+Put documents in a data lake and get an ontology-typed knowledge graph, and a chat in which an
+agent answers questions from it, every statement linked to the passage it comes from, for any
+domain. Bring an ontology, or have one discovered from the documents and reviewed. After that,
+it is maintained under version control, released in controlled versions, and grown from the
+terms extraction finds it lacks.
 
-Everything runs in one AWS account from one Terraform stack. Model calls go to Amazon
-Bedrock by default, so no data leaves AWS.
+It runs on AWS or Azure, in one account or subscription from one Terraform stack, or on your own
+machine over a local folder. Model calls go to Claude through your cloud's own service (Amazon
+Bedrock, or Microsoft Foundry), so no data leaves your cloud, or to the Anthropic API.
 
 ## What it does
 
@@ -39,12 +41,23 @@ was extracted from.
 
 ## The ontology lifecycle
 
+A collection starts with an ontology one of two ways:
+
+| | How | Then |
+|---|---|---|
+| Bring one | Set the collection's `ontology_dir` to a directory holding `ontology.ttl` (and optionally `shapes.ttl`); `terraform apply` uploads it | The sweep publishes and activates it and extracts against it. Discovery never runs. To change it, bump `owl:versionInfo` and apply |
+| Discover one | Leave `ontology_dir` unset and upload documents | Discovery, then review, as below. `ontology_mode = "curated"` (the default) stops at a draft for a person to change and publish; `"auto"` publishes the draft as 0.1.0 straight away |
+
 1. Discover. With no ontology, the first run samples the collection and proposes one:
    open proposals per document, aggregation, then consolidation into a small ontology with
    definitions, synonyms, a hierarchy, and domains and ranges. The method follows EDC
    (extract, define, canonicalise). Discovery repeats on several samples and reports how
    stable each type is, because LLM ontology induction varies from run to run and nothing
-   in the literature measures by how much.
+   in the literature measures by how much. Then a review pass (`discovery.review`, on by
+   default) sees the draft with each term's document support and returns edits: parents
+   where one class is a kind of another, merges of near-duplicates, drops of noise, and
+   fixes to domains, ranges and datatypes. They are applied deterministically, each with its
+   reason in the draft's report, so a curator can see and undo every one.
 2. Curate. The draft is Turtle (OWL plus generated SHACL) for a person to edit in git.
    `knowledge-store ontology pull <draft> ontology/` fetches it.
 3. Release. `knowledge-store ontology publish ontology/ --activate` publishes the master as the
@@ -88,36 +101,63 @@ it into what each consumer needs, under `ontology/versions/<v>/renditions/`:
 | owl/ontology.ttl, owl/shapes.ttl | SPARQL stores (Neptune), SHACL validation, the pipeline |
 | agent/ontology.md, agent/ontology.json | an agent's prompt or tools: compact types, relations, attributes and synonyms |
 | neo4j/schema.cypher, neo4j/mapping.json, neo4j/schema.md | a property-graph projection: constraints, the class-to-label and property-to-relationship mapping, and the schema for Cypher agents |
+| age/schema.sql, spanner/schema.sql | the same projection in PostgreSQL with Apache AGE, and in Spanner Graph |
 | extraction/tool.json | the extraction tool's JSON Schema |
 | jsonld/context.jsonld | JSON-LD over the same terms |
 
 `knowledge-store ontology render ontology/ out/` shows what a release would ship.
 
+On AWS it is a minimal GraphRAG reference architecture you deploy from Terraform: a pipeline
+that applies the ontology and loads a knowledge graph into Amazon Neptune, a Bedrock Knowledge
+Base over the passages, and a chat agent on AgentCore that queries the graph in the ontology's
+terms and shows only answers it can ground in cited passages. See
+[docs/architectures/aws.md](docs/architectures/aws.md).
+
 ## Deploy
 
-See [QUICKSTART.md](QUICKSTART.md). Three routes, one Terraform module ([`infra/modules/knowledge-store`](infra/modules/knowledge-store)):
+The core (the pipeline, the ontology lifecycle, the portal and its API, and the knowledge tools)
+is the same everywhere. Each cloud adds its storage, model provider, sign-in and hosting, and its
+own Terraform:
 
-| Route | You need | What happens |
-|---|---|---|
-| CloudFormation launch stack ([`infra/launch/knowledge-store.yaml`](infra/launch/knowledge-store.yaml)) | An AWS console and an email address | A CodeBuild project in your account runs the Terraform; the stack completes when it has, and its outputs give the portal URL |
-| Terraform ([`infra/stack`](infra/stack)) | Terraform 1.10+ and AWS credentials | You run it; the only required variable is `admin_email` |
-| Your own deployment repository ([`examples/deployment`](examples/deployment)) | Terraform 1.10+, AWS credentials and a repository of your own | Your configuration and curated ontologies live in your repository, and the module is pinned to a release of this one |
+| Cloud | State | Deployment code | Start here |
+|---|---|---|---|
+| AWS | Built: the reference implementation | [`infra/`](infra): the module [`infra/modules/knowledge-store`](infra/modules/knowledge-store), the root [`infra/stack`](infra/stack), a CloudFormation launch stack, and a template for a deployment repository of your own ([`examples/deployment`](examples/deployment)) | [QUICKSTART.md](QUICKSTART.md) |
+| Azure | Built | [`deploy/azure/`](deploy/azure): the module, the root, the state bootstrap and the Function App | [docs/architectures/azure-setup.md](docs/architectures/azure-setup.md) |
+| Google Cloud | Designed. Storage and the Vertex AI provider are built; there is no deployment yet | none yet | [docs/architectures/gcp.md](docs/architectures/gcp.md) |
 
-Either way the pipeline image is built by CodeBuild inside your account from this repository's source, so nothing is pulled from a registry you do not own apart from the Python base image on ECR Public. Model calls go to Amazon Bedrock unless you choose the Anthropic API.
+How the clouds map onto one design is in [docs/architectures](docs/architectures/README.md).
+On every cloud the pipeline image is built inside your account from this repository's source.
+
+## Install
+
+```bash
+pip install -e ".[aws]"     # from a clone; or [azure], or [gcp]
+```
+
+The core depends on no cloud's SDK. Each cloud and each optional backend is an extra, so an install
+carries only what it uses:
+
+| Extra | For |
+|---|---|
+| aws | S3 lakes (`s3://`), Amazon Bedrock, DynamoDB chat state |
+| azure | Blob Storage lakes (`az://`), Claude in Microsoft Foundry with Entra ID, the Azure host |
+| gcp | Cloud Storage lakes (`gs://`), Claude on Vertex AI |
+| mongo, neo4j, age | the document store and graph backends |
+| dev | all of the above, plus the test tools |
 
 ## Use
 
-1. Upload documents to the `upload_to` output, `s3://<name>-lake-<account>/landing/`. Any folder
-   structure is kept as metadata. Supported now: .md, .txt, .csv, .html, .json and .pdf (with
-   a text layer).
-2. The upload starts the pipeline within about a minute (S3 event, EventBridge, SQS, an
-   EventBridge Pipe, then an ECS Fargate task). A schedule reruns it as a safety net.
-3. Open `portal_url`. The admin user (`admin_email`) receives a temporary password by email.
+1. Upload documents to the lake's `landing/<collection>/` folder (the deployment's `upload_to`
+   output). Any folder structure is kept as metadata. Supported now: .md, .txt, .csv, .html, .json
+   and .pdf (with a text layer).
+2. The upload starts the pipeline within a few minutes, and a schedule reruns it as a safety net.
+3. Open the portal and sign in. Your cloud's guide says how the first user gets in. Ask a
+   question: the answer lists its sources, and each statement links to its passage.
 4. With `ontology_mode = "curated"` (the default), the first run stops after discovery with a
    draft. Curate and publish it:
 
    ```bash
-   export LAKE_URI=s3://<lake bucket>
+   export LAKE_URI=s3://<lake bucket>                     # or az://<account>/<container>
    knowledge-store ontology pull <draft id> ontology/    # the draft id is on the portal's Overview
    # edit ontology/ontology.ttl, set owl:versionInfo "1.0.0", commit it
    knowledge-store ontology diff ontology/
@@ -149,26 +189,41 @@ own package:
 sharepoint = "my_package.sharepoint:SharePointAdapter"
 ```
 
-A source can be `scope = "private"`. Its facts are shown only to portal users in the
-`private-readers` Cognito group.
+A source can be `scope = "private"`. Its facts are shown only to portal users who may read private
+content: the `private-readers` Cognito group on AWS, the `private-reader` app role on Azure.
+
+## Evaluate
+
+Measure the agent against questions with known answers, including some the sources cannot
+answer, which it must decline:
+
+```bash
+python -m knowledge_store.evals examples/evals/space-missions.yaml --lake <lake> --model <model id> --yes
+```
+
+The scoring needs no model as judge: facts stated, near misses avoided, the share of claims that
+passed the citation checks, expected sources cited, and declines. See
+[docs/architectures/aws.md](docs/architectures/aws.md#evaluation).
 
 ## Run it locally
 
 ```bash
-pip install -e ".[dev]"
+pip install -e ".[dev]"     # or -e . with no extras: the core and its tests need no cloud
 pytest
 knowledge-store --lake ./build/lake ingest       # with config/sources.json pointing at local_dir
 python -m knowledge_store.portal_api.local --lake ./build/lake
 ```
 
-Model calls need `LLM_PROVIDER=bedrock` (and AWS credentials) or `LLM_PROVIDER=anthropic` (and
-`ANTHROPIC_API_KEY`), plus `EXTRACTION_MODEL_ID`.
+Model calls need `LLM_PROVIDER` and `EXTRACTION_MODEL_ID`. The provider is `anthropic` (with
+`ANTHROPIC_API_KEY`, no extra needed), `bedrock` (the aws extra and AWS credentials), `foundry`
+(Claude in Microsoft Foundry, the azure extra) or `vertex` (Claude on Vertex AI, the gcp extra);
+see `llm.py` for their settings.
 
 ## Costs
 
-The stack idles at close to nothing. It has no NAT gateway, no database server and no always-on
-compute: S3, CloudFront, Lambda, DynamoDB on demand, and Fargate only while a sweep runs. Model
-calls are the cost that matters. Discovery reads `discovery.sample` x `discovery.resamples`
+On AWS the knowledge graph (Neptune, about 70 USD a month) is the fixed cost; switch it off for
+a small demo and the graph tools answer from memory. Everything else idles at close to nothing.
+Each cloud's guide lists what it runs. Model calls are the cost that matters. Discovery reads `discovery.sample` x `discovery.resamples`
 documents, whatever the collection's size. Extraction reads every document once per full
 version. Chat is limited by `daily_questions` per user.
 
@@ -177,10 +232,11 @@ version. Chat is limited by `daily_questions` per user.
 - Entity resolution is naive. An entity's IRI is its root type plus its normalised name, so
   "NASA" and "National Aeronautics and Space Administration" are two nodes unless a document
   gives one as the other's alias.
-- The portal's projection is held in memory by one Lambda. That is right for tens of
-  thousands of entities and wrong beyond it. For more, load the same N-Quads into a SPARQL
-  store (Oxigraph in a container, or Neptune) or a property graph (using the Neo4j mapping)
-  behind the same API.
+- The portal's projection is held in memory by one function by default. That is right for tens of
+  thousands of entities and wrong beyond it. For more, the pipeline can load the same projection
+  into a document store and a graph database (`PROJECTION_STORE`, `GRAPH_BACKEND`; see
+  [docs/architectures](docs/architectures/README.md#new-the-graph-and-document-backends)), behind
+  the same API. On AWS the graph tools query Neptune; the portal's own pages still read memory.
 - Delta selection is a heuristic (see above).
 - Scanned PDFs need OCR, which is not built in.
 - Extraction is synchronous (one model call per document). Batch inference (50% cheaper, for

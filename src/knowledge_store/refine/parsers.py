@@ -88,7 +88,7 @@ def parse_pdf(data: bytes) -> ParseResult:
     try:
         from pypdf import PdfReader
     except ImportError as e:
-        raise UnsupportedFormat("PDF needs the pypdf package (pip install knowledge-store[pdf])") from e
+        raise UnsupportedFormat("PDF needs the pypdf package (pip install pypdf)") from e
     reader = PdfReader(io.BytesIO(data))
     pages = [(p.extract_text() or "").strip() for p in reader.pages]
     text = "\n\n".join(p for p in pages if p)

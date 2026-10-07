@@ -2,7 +2,8 @@
 # The launch stack and the quick start apply this. To deploy into your own infrastructure from a
 # repository of your own, start from examples/deployment instead.
 #
-# After apply: upload files to s3://<lake>/landing/<collection>/ (outputs.upload_to) and open the portal.
+# After apply: upload files to s3://<lake>/landing/<collection>/ (outputs.upload_to). Once the agent
+# image is built, set agent = { runtime = true } and apply again; then open the portal and ask.
 
 module "knowledge_store" {
   source = "../modules/knowledge-store"
@@ -22,7 +23,12 @@ module "knowledge_store" {
   admin_private                = var.admin_private
   daily_questions              = var.daily_questions
   force_destroy_lake           = var.force_destroy_lake
+  knowledge_graph              = var.knowledge_graph
+  knowledge_base               = var.knowledge_base
   agent                        = var.agent
+  guardrail                    = var.guardrail
+  valves                       = var.valves
+  budget                       = var.budget
 }
 
 # Before the module existed these were root modules; state from that layout moves on the next plan.

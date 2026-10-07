@@ -19,23 +19,7 @@ from urllib.parse import parse_qs, urlparse
 
 from . import handler
 from ..store import LocalStore
-
-
-class _Table:
-    """The DynamoDB calls the handler makes, in memory."""
-
-    def __init__(self):
-        self.items: dict[str, dict] = {}
-
-    def get_item(self, Key):
-        return {"Item": self.items[Key["pk"]]} if Key["pk"] in self.items else {}
-
-    def put_item(self, Item):
-        self.items[Item["pk"]] = Item
-
-    def update_item(self, **kw):
-        k = kw["Key"]["pk"]
-        self.items.setdefault(k, {"pk": k, "n": 0})["n"] += 1
+from .state import MemoryState
 
 
 class _Ctx:
@@ -44,13 +28,11 @@ class _Ctx:
 
 def serve(lake_dir: str, portal_dir: str, port: int) -> None:
     handler._lake = LocalStore(lake_dir)
-    handler._ddb = _Table()
+    handler._state = MemoryState()
     portal = Path(portal_dir).resolve()
 
     def run_job(job):
         threading.Thread(target=handler.answer_job, args=(job,), daemon=True).start()
-
-    import boto3  # noqa: F401  the handler imports it for the async invoke; replace that path
 
     class H(BaseHTTPRequestHandler):
         def _api(self, method: str):
@@ -66,8 +48,7 @@ def serve(lake_dir: str, portal_dir: str, port: int) -> None:
                 job = {"id": uuid.uuid4().hex, "sub": "local", "private": True, "question": q.get("question", ""),
                        "collection": cid,
                        "history": q.get("history") or []}
-                handler.table().put_item(Item={"pk": f"chat#{job['id']}", "sub": "local",
-                                               "body": json.dumps({"status": "pending"})})
+                handler.state().put_chat(job["id"], "local", {"status": "pending"})
                 run_job(job)
                 res = {"statusCode": 202, "headers": {"content-type": "application/json"}, "body": json.dumps({"id": job["id"]})}
             else:

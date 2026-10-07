@@ -1,7 +1,8 @@
-"""Object store port with S3 and local-filesystem adapters.
+"""Object store port with S3, Azure Blob, Google Cloud Storage and local-filesystem adapters.
 
 Every job reads and writes through this port so that the whole pipeline runs
-locally against a directory (tests, dry runs) and in AWS against S3 unchanged.
+locally against a directory (tests, dry runs) and in any cloud's object store unchanged.
+Each cloud's SDK is imported only by its adapter, so no deployment needs another's.
 
 Beyond put/get/list: objects() (keys with etags, so adapters can skip unchanged objects without reading
 them), put_if_absent() (the pipeline lock) and delete().
@@ -133,10 +134,135 @@ class S3Store:
         return f"s3://{self.bucket}/{key}"
 
 
+class BlobStore:
+    """Azure Blob Storage: one container is the lake.
+
+    Authenticates with Entra ID (DefaultAzureCredential: the managed identity when deployed), or
+    with AZURE_STORAGE_CONNECTION_STRING when set (Azurite, local runs). The account's blob
+    endpoint is https://<account>.blob.core.windows.net unless AZURE_STORAGE_BLOB_ENDPOINT names
+    another."""
+
+    def __init__(self, account: str, container: str, client=None):
+        self.account, self.container = account, container
+        if client is None:
+            from azure.storage.blob import BlobServiceClient
+            conn = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
+            if conn:
+                service = BlobServiceClient.from_connection_string(conn)
+            else:
+                from azure.identity import DefaultAzureCredential
+                endpoint = os.environ.get("AZURE_STORAGE_BLOB_ENDPOINT") or f"https://{account}.blob.core.windows.net"
+                service = BlobServiceClient(endpoint, credential=DefaultAzureCredential())
+            client = service.get_container_client(container)
+        self.c = client
+
+    def put(self, key, body, content_type="application/octet-stream"):
+        from azure.storage.blob import ContentSettings
+        self.c.upload_blob(key, body, overwrite=True, content_settings=ContentSettings(content_type=content_type))
+
+    def get(self, key):
+        return self.c.download_blob(key).readall()
+
+    def exists(self, key):
+        return self.c.get_blob_client(key).exists()
+
+    def list(self, prefix):
+        for b in self.c.list_blobs(name_starts_with=prefix):
+            yield b.name
+
+    def objects(self, prefix):
+        for b in self.c.list_blobs(name_starts_with=prefix):
+            yield b.name, b.etag.strip('"')
+
+    def put_if_absent(self, key, body):
+        """A conditional write (If-None-Match: *): exactly one caller wins."""
+        from azure.core.exceptions import ResourceExistsError
+        from azure.storage.blob import ContentSettings
+        try:
+            # overwrite=False is the SDK's If-None-Match: *
+            self.c.upload_blob(key, body, overwrite=False, content_settings=ContentSettings(content_type="application/json"))
+            return True
+        except ResourceExistsError:
+            return False
+
+    def delete(self, key):
+        from azure.core.exceptions import ResourceNotFoundError
+        try:
+            self.c.delete_blob(key)
+        except ResourceNotFoundError:
+            pass
+
+    def uri(self, key):
+        return f"az://{self.account}/{self.container}/{key}"
+
+
+class GcsStore:
+    """Google Cloud Storage. Authenticates with Application Default Credentials (the service
+    account when deployed); STORAGE_EMULATOR_HOST points the client at an emulator."""
+
+    def __init__(self, bucket: str, client=None):
+        if client is None:
+            from google.cloud import storage
+            if os.environ.get("STORAGE_EMULATOR_HOST"):
+                from google.auth.credentials import AnonymousCredentials
+                client = storage.Client(project=os.environ.get("GOOGLE_CLOUD_PROJECT", "test"),
+                                        credentials=AnonymousCredentials())
+            else:
+                client = storage.Client()
+        self.name = bucket
+        self.b = client.bucket(bucket)
+        self.client = client
+
+    def put(self, key, body, content_type="application/octet-stream"):
+        self.b.blob(key).upload_from_string(body, content_type=content_type)
+
+    def get(self, key):
+        return self.b.blob(key).download_as_bytes()
+
+    def exists(self, key):
+        return self.b.blob(key).exists()
+
+    def list(self, prefix):
+        for b in self.client.list_blobs(self.b, prefix=prefix):
+            yield b.name
+
+    def objects(self, prefix):
+        """The generation, not the etag: it changes when the content does and not when only
+        metadata does."""
+        for b in self.client.list_blobs(self.b, prefix=prefix):
+            yield b.name, str(b.generation)
+
+    def put_if_absent(self, key, body):
+        """A conditional write (if_generation_match=0): exactly one caller wins."""
+        from google.api_core.exceptions import PreconditionFailed
+        try:
+            self.b.blob(key).upload_from_string(body, content_type="application/json", if_generation_match=0)
+            return True
+        except PreconditionFailed:
+            return False
+
+    def delete(self, key):
+        from google.api_core.exceptions import NotFound
+        try:
+            self.b.blob(key).delete()
+        except NotFound:
+            pass
+
+    def uri(self, key):
+        return f"gs://{self.name}/{key}"
+
+
 def store_from_uri(uri: str) -> Store:
-    """s3://bucket or a local path."""
+    """s3://bucket, az://account/container, gs://bucket or a local path."""
     if uri.startswith("s3://"):
         return S3Store(uri[5:].split("/", 1)[0])
+    if uri.startswith("az://"):
+        parts = uri[5:].split("/")
+        if len(parts) < 2 or not parts[0] or not parts[1]:
+            raise ValueError(f"an Azure lake is az://<account>/<container>, not {uri!r}")
+        return BlobStore(parts[0], parts[1])
+    if uri.startswith("gs://"):
+        return GcsStore(uri[5:].split("/", 1)[0])
     return LocalStore(uri)
 
 

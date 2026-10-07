@@ -1,6 +1,8 @@
-# Quick start
+# Quick start on AWS
 
-Two ways to install. Both deploy the same Terraform into your own AWS account, and need access to an Anthropic Claude model in Amazon Bedrock (Bedrock console, Model access) in the region you deploy to.
+For Azure, see [docs/architectures/azure-setup.md](docs/architectures/azure-setup.md).
+
+Three ways to install. All three deploy the same Terraform into your own AWS account, and need access to an Anthropic Claude model in Amazon Bedrock (Bedrock console, Model access) in the region you deploy to.
 
 ## Option 1: from the AWS console (CloudFormation)
 
@@ -37,10 +39,12 @@ To run it for real, keep your configuration and curated ontologies in a private 
 ## Then
 
 1. Upload documents to the `upload_to` location, `s3://<name>-lake-<account>/landing/<collection>/`.
+   The upload starts the pipeline within about a minute (S3 event, EventBridge, SQS, an
+   EventBridge Pipe, then an ECS Fargate task).
 2. The first run proposes an ontology and waits for you (curated mode). The portal's Overview shows the draft; curate and publish it:
 
    ```bash
-   pip install .
+   pip install ".[aws]"
    export LAKE_URI=s3://<lake bucket>
    knowledge-store -c default ontology pull <draft id> ontology/
    # edit ontology/ontology.ttl, set owl:versionInfo "1.0.0"
@@ -52,6 +56,10 @@ To run it for real, keep your configuration and curated ontologies in a private 
 
 To try it with sample content, run `python examples/sherlock-holmes/fetch.py` and upload the stories, or upload `examples/space-missions/`.
 
-## The example agent
+## The chat agent
 
-Set EnableAgent to true (or `agent = { enabled = true }`), wait for the agent image to build, then set EnableAgentRuntime to true. See [examples/agent](examples/agent/README.md).
+The first deploy builds the agent's image. Once it is built (a few minutes; the `agent.image_project` output names the CodeBuild project), set EnableAgentRuntime to true (or `agent = { runtime = true }`) and deploy again. Until then the chat answers with the portal's own tool loop. How the agent answers, and the checks on every answer, are in [docs/architectures/aws.md](docs/architectures/aws.md).
+
+## What it costs idle
+
+About 70 USD a month, for the Neptune instance that holds the knowledge graph. Set EnableKnowledgeGraph to false (or `knowledge_graph = { enabled = false }`) for a small demo, and the stack idles at close to nothing: no NAT gateway and no always-on compute, only S3, CloudFront, Lambda, DynamoDB on demand, the Knowledge Base on S3 Vectors, and Fargate while a sweep runs. Model calls in Bedrock are the cost that matters.

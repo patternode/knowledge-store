@@ -9,7 +9,8 @@ agent vocabulary, a Neo4j schema and mapping, the extraction tool schema, a JSON
 Every publish is diffed against the version it follows, and the change is classified with the
 taxonomy:
 
-    descriptive  labels, synonyms, definitions only        patch   no re-extraction
+    descriptive  labels, synonyms, definitions, or the     patch   no re-extraction
+                 ontology's own label or comment
     additive     new classes or properties, nothing else   minor   delta extraction of the new terms
     semantic     parents, domains or ranges changed        major   full re-extraction
     removal      a term removed or deprecated              major   full re-extraction
@@ -83,6 +84,10 @@ def diff(old: model.OntologySpec, new: model.OntologySpec) -> Diff:
             semantic.append(f"{k}: signature {list(x.domain)}->{list(x.range)} to {list(y.domain)}->{list(y.range)}")
         if (x.label, set(x.alt_labels), x.definition) != (y.label, set(y.alt_labels), y.definition):
             descriptive.append(k)
+    # The ontology's own label and comment describe it, as a term's do; its version IRI changes
+    # with every version, so it is checked against the version instead (publish).
+    if (old.label, old.comment) != (new.label, new.comment):
+        descriptive.append("(ontology header)")
     return Diff(added, removed, semantic, descriptive)
 
 
@@ -152,6 +157,9 @@ def publish(lake: Store, src_dir: str | Path, *, by: str = "", note: str = "", a
         raise ValueError(f"owl:versionInfo must be a semver X.Y.Z, not {version!r}")
     if spec.is_empty():
         raise ValueError("the ontology declares no classes in its own namespace")
+    if spec.version_iri and spec.version_iri.rstrip("/").rsplit("/", 1)[-1] != version:
+        raise ValueError(f"owl:versionIRI <{spec.version_iri}> does not name version {version}; "
+                         f"set it to <{spec.iri.rstrip('/')}/{version}> with owl:versionInfo")
     pre = layout.ontology_version_prefix(version)
     if lake.exists(f"{pre}/manifest.json"):
         raise ValueError(f"version {version} is already published, and published versions are immutable; "

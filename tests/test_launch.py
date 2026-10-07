@@ -33,20 +33,22 @@ def stack_variables() -> set[str]:
 def test_tfvars_only_uses_declared_variables():
     out = tfvars.build({"ADMIN_EMAIL": "a@example.org"})
     assert set(out) <= stack_variables()
-    agent_fields = set(re.findall(r"^\s+(\w+)\s+= optional", (ROOT / "infra/stack/variables.tf").read_text().split('variable "agent"')[1], re.M))
-    assert set(out["agent"]) <= agent_fields
+    text = (ROOT / "infra/stack/variables.tf").read_text()
+    for var in ("agent", "knowledge_graph", "knowledge_base"):
+        fields = set(re.findall(r"^\s+(\w+)\s+= optional", text.split(f'variable "{var}"')[1].split("\nvariable ")[0], re.M))
+        assert set(out[var]) <= fields, var
 
 
 def test_tfvars_defaults_and_flags():
     out = tfvars.build({"ADMIN_EMAIL": "a@example.org", "ONTOLOGY_MODE": "auto",
                         "COLLECTIONS_JSON": '{"holmes": {"profile": {"name": "Holmes"}}, "m": {"ontology_mode": "curated"}}',
-                        "ENABLE_AGENT": "true", "AGENT_RUNTIME": "true", "TRANSACTION_SEARCH": "true"})
+                        "AGENT_RUNTIME": "true", "KNOWLEDGE_GRAPH": "false"})
     assert out["collections"]["holmes"]["ontology_mode"] == "auto"
     assert out["collections"]["m"]["ontology_mode"] == "curated"
-    assert out["agent"] == {"enabled": True, "runtime": True, "model_id": out["extraction_model_id"],
-                            "transaction_search": True, "evaluations": True}
-    off = tfvars.build({"ADMIN_EMAIL": "a@example.org", "AGENT_RUNTIME": "true", "TRANSACTION_SEARCH": "true"})
-    assert off["agent"]["enabled"] is False and off["agent"]["runtime"] is False and off["agent"]["transaction_search"] is False
+    assert out["agent"] == {"runtime": True, "model_id": out["extraction_model_id"]}
+    assert out["knowledge_graph"] == {"enabled": False} and out["knowledge_base"] == {"enabled": True}
+    off = tfvars.build({"ADMIN_EMAIL": "a@example.org"})
+    assert off["agent"]["runtime"] is False and off["knowledge_graph"]["enabled"] is True
     assert off["collections"] == {"default": {"ontology_mode": "curated"}}
     assert off["force_destroy_lake"] is False
 

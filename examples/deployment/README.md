@@ -99,11 +99,9 @@ Read the release notes, change `ref` in `main.tf` to the new tag, and plan. Refa
 module carry `moved` blocks, so a plan should show only real changes. To try an unreleased change,
 point `ref` at a branch, or at a local checkout with `source = "../knowledge-store/infra/modules/knowledge-store"`.
 
-## The example agent
+## The chat agent
 
-The agent needs two applies: first with `agent = { enabled = true }`, which builds its image in
-CodeBuild; then, once the image is in ECR, with `runtime = true`. To call it:
-
-```bash
-python <knowledge-store checkout>/examples/agent/invoke.py --stack-dir . dossier <collection> "<entity>"
-```
+The agent needs two applies: the first builds its image in CodeBuild; once the image is in ECR,
+set `agent = { runtime = true }` and apply again. Until then the portal answers with its own tool
+loop. To measure it, run an evaluation set against the deployed chat as a signed-in person (the
+`evaluate` output has the command).

@@ -12,9 +12,15 @@ The method follows EDC (extract, define, canonicalise; Zhang and Soh, EMNLP 2024
 3. Consolidate. One call sees the aggregated proposals with their counts and stability, and
    defines a small ontology: merges synonyms, picks parents, fixes domains and ranges, and
    says what it rejected and why.
+4. Review (review.py, on unless review=False). One more call sees the consolidated draft with
+   each term's document support and returns edits (parents, merges, drops, domains, ranges,
+   datatypes), each with a reason, which are applied deterministically and recorded in the
+   report. Drafts come out of step 3 flat and with near-duplicates; this is the first pass at
+   fixing that, before a person does.
 
-The output is a draft (ontology/drafts/<id>/): ontology.ttl, shapes.ttl and report.json. It is
-never activated automatically. A person curates it in git and publishes it (versions.py).
+The output is a draft (ontology/drafts/<id>/): ontology.ttl, shapes.ttl and report.json. In curated
+mode a person curates it in git and publishes it (versions.py); in auto mode the sweep publishes
+it as 0.1.0, provisional, so the reviewed draft is what extraction first uses.
 
 Discovery reads a sample, not the collection, because it is the expensive, unbounded step: its
 cost is set by sample_docs x resamples, whatever the collection's size.
@@ -34,6 +40,7 @@ from ..llm import decode_tool_input
 from ..pipeline.refine import load_doc, load_passages, silver_doc_ids
 from ..store import Store, put_json
 from . import model, writer
+from . import review as reviewer
 
 log = logging.getLogger("discover")
 
@@ -239,7 +246,8 @@ def consolidate(client, model_id: str, aggregated: dict, profile: Profile, *, ta
 
 
 def discover(client, model_id: str, lake: Store, profile: Profile, *, sample: int = 20, resamples: int = 1,
-             seed: int = 7, target_classes: int = 15, version: str = "0.1.0", draft_id: str | None = None) -> dict:
+             seed: int = 7, target_classes: int = 15, version: str = "0.1.0", draft_id: str | None = None,
+             review: bool = True) -> dict:
     draft_id = draft_id or dt.datetime.now(dt.UTC).strftime("discover-%Y%m%dT%H%M%S")
     rounds, usage = [], defaultdict(int)
     for r in range(resamples):
@@ -255,6 +263,18 @@ def discover(client, model_id: str, lake: Store, profile: Profile, *, sample: in
     for k, v in u.items():
         if isinstance(v, int):
             usage[k] += v
+    reviewed = None
+    if review:
+        try:
+            edits, u = reviewer.review(client, model_id, defn, agg, profile)
+            for k, v in u.items():
+                if isinstance(v, int):
+                    usage[k] += v
+            defn, applied, skipped = reviewer.apply_edits(defn, edits)
+            reviewed = {"prompt_version": reviewer.PROMPT_VERSION, "applied": applied, "skipped": skipped}
+        except Exception as e:  # a failed review leaves the draft as consolidation made it
+            log.warning("review failed, keeping the consolidated draft: %r", e)
+            reviewed = {"prompt_version": reviewer.PROMPT_VERSION, "error": repr(e)[:300]}
     evidence = {writer.class_name(t["name"]): t["docs"] for t in agg["classes"]}
     ttl = writer.ontology_ttl(defn, namespace=profile.ontology_base, version=version,
                               label=f"{profile.name} ontology",
@@ -266,7 +286,7 @@ def discover(client, model_id: str, lake: Store, profile: Profile, *, sample: in
               "sample": sample, "resamples": resamples, "seed": seed,
               "stability_jaccard": {k: stability_jaccard(rounds, k) for k in KINDS},
               "documents": sorted({p["doc_id"] for r in rounds for p in r}),
-              "aggregated": agg, "rejected": defn.get("rejected") or [], "usage": dict(usage),
+              "aggregated": agg, "rejected": defn.get("rejected") or [], "review": reviewed, "usage": dict(usage),
               "counts": {"classes": len(spec.classes), "relations": len(spec.relations), "attributes": len(spec.attributes)}}
     write_draft(lake, draft_id, ttl, writer.shapes_ttl(spec), report)
     return report

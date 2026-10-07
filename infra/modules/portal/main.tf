@@ -1,14 +1,18 @@
-# The portal: a static page and its API on one CloudFront URL.
+# The portal: the chat page and its API on one CloudFront URL.
 #
 #   CloudFront  /*      -> private S3 bucket (index.html, app.js, styles.css, config.json)
 #               /api/*  -> API Gateway HTTP API (Cognito JWT authorizer) -> portal Lambda
-#   Lambda      reads the lake's projection (gold/<version>/index/) and status; answers questions
-#               with a tool loop over it, asynchronously (DynamoDB holds answers and daily quotas)
+#   Lambda      takes each question, checks the person's daily quota, and answers it
+#               asynchronously (DynamoDB holds answers and quotas): with agent_runtime_arn set,
+#               by asking the chat agent on AgentCore Runtime as that person (their own access
+#               token); without it, with the portal's own tool loop over the lake's projection
+#               GET /api/document gives a person a short-lived link to a source document they
+#               may read
 #
-# Every API route needs a signed-in user: API Gateway checks the Cognito ID token before the
-# Lambda runs. The page signs in with Cognito's managed login (code flow with PKCE). The Lambda
-# is a zip built from source by Terraform (stdlib and boto3 only), so the first apply needs no
-# image. The chat's model spend is bounded by daily_questions per user.
+# Every API route needs a signed-in user: API Gateway checks the Cognito token before the Lambda
+# runs. The page signs in with Cognito's managed login (code flow with PKCE). The Lambda is a zip
+# built from source by Terraform (stdlib and boto3 only), so the first apply needs no image.
+# Valves: daily_questions per person, and reserved_concurrency on the Lambda.
 
 terraform {
   required_providers {
@@ -61,6 +65,20 @@ variable "daily_questions" {
   type    = number
   default = 30
 }
+variable "agent_runtime_arn" {
+  type        = string
+  default     = ""
+  description = "the chat agent; empty answers with the portal's own tool loop"
+}
+variable "agent_runtime_qualifier" {
+  type    = string
+  default = "DEFAULT"
+}
+variable "reserved_concurrency" {
+  type        = number
+  default     = 20
+  description = "at most this many API requests and answers at once; -1 for no reservation, 0 turns the API off"
+}
 variable "log_retention_days" {
   type    = number
   default = 30
@@ -79,7 +97,7 @@ locals {
   json = "application/json", svg = "image/svg+xml", png = "image/png", ico = "image/x-icon" }
   site_files = [for f in fileset(var.portal_dir, "**") : f if !startswith(f, "config.") && !endswith(f, ".md")]
   # the lake layers the API serves, under each collections/<id>/ (see src/knowledge_store/layout.py)
-  served_prefixes = ["gold", "portal", "ontology", "config"]
+  served_prefixes = ["gold", "portal", "ontology", "config", "silver", "bronze"]
 }
 
 # --- static site --------------------------------------------------------------------------
@@ -246,9 +264,11 @@ resource "aws_iam_role_policy_attachment" "api_logs" {
 resource "aws_iam_role_policy" "api" {
   role = aws_iam_role.api.id
   policy = jsonencode({ Version = "2012-10-17", Statement = concat([
-    # Every collection's data is under collections/<id>/. The portal reads only the served layers
-    # (gold's projection, the status, published ontologies and drafts, config), never bronze or
-    # silver. ListBucket on the same prefixes also makes a missing key a 404 rather than a 403.
+    # Every collection's data is under collections/<id>/. The portal reads the served layers:
+    # gold's projection, the status, published ontologies and drafts, config, and the documents
+    # in silver and bronze, which it reads only to sign a link to a document after checking the
+    # person may read it. ListBucket on the same prefixes also makes a missing key a 404 rather
+    # than a 403.
     { Sid = "ReadLake", Effect = "Allow", Action = "s3:GetObject",
       Resource = concat(["${var.lake_bucket_arn}/config/*"],
     [for p in local.served_prefixes : "${var.lake_bucket_arn}/collections/*/${p}/*"]) },
@@ -272,14 +292,15 @@ resource "aws_cloudwatch_log_group" "api" {
 }
 
 resource "aws_lambda_function" "api" {
-  function_name    = "${var.name}-portal-api"
-  role             = aws_iam_role.api.arn
-  runtime          = "python3.12"
-  handler          = "knowledge_store.portal_api.handler.handler"
-  filename         = data.archive_file.api.output_path
-  source_code_hash = data.archive_file.api.output_base64sha256
-  timeout          = 300
-  memory_size      = 1024
+  function_name                  = "${var.name}-portal-api"
+  role                           = aws_iam_role.api.arn
+  runtime                        = "python3.12"
+  handler                        = "knowledge_store.portal_api.handler.handler"
+  filename                       = data.archive_file.api.output_path
+  source_code_hash               = data.archive_file.api.output_base64sha256
+  timeout                        = 600
+  memory_size                    = 1024
+  reserved_concurrent_executions = var.reserved_concurrency
   environment {
     variables = merge({
       LAKE_BUCKET     = var.lake_bucket
@@ -288,7 +309,8 @@ resource "aws_lambda_function" "api" {
       CHAT_MODEL_ID   = var.chat_model_id
       PRIVATE_GROUP   = var.private_group
       DAILY_QUESTIONS = tostring(var.daily_questions)
-    }, local.anthropic ? { ANTHROPIC_API_KEY_SECRET = var.anthropic_api_key_secret_arn } : {})
+      }, local.anthropic ? { ANTHROPIC_API_KEY_SECRET = var.anthropic_api_key_secret_arn } : {},
+    var.agent_runtime_arn != "" ? { AGENT_RUNTIME_ARN = var.agent_runtime_arn, AGENT_RUNTIME_QUALIFIER = var.agent_runtime_qualifier } : {})
   }
   depends_on = [aws_cloudwatch_log_group.api]
   tags       = var.tags

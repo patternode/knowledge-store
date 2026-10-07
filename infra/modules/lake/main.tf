@@ -23,6 +23,11 @@ variable "collections" {
   type        = any
   description = "collection id => {sources, profile, settings}, written to collections/<id>/config/*.json"
 }
+variable "ontology_files" {
+  type        = map(string)
+  default     = {}
+  description = "provided ontologies: \"<collection>/<file>\" => local path, uploaded to collections/<id>/config/ontology/"
+}
 variable "force_destroy" {
   type        = bool
   default     = false
@@ -123,3 +128,13 @@ resource "aws_s3_object" "collection_config" {
 
 output "bucket" { value = aws_s3_bucket.lake.id }
 output "bucket_arn" { value = aws_s3_bucket.lake.arn }
+
+# A collection's provided ontology (ontology_dir), which the sweep publishes in place of discovery.
+resource "aws_s3_object" "collection_ontology" {
+  for_each     = var.ontology_files
+  bucket       = aws_s3_bucket.lake.id
+  key          = "collections/${split("/", each.key)[0]}/config/ontology/${split("/", each.key)[1]}"
+  source       = each.value
+  etag         = filemd5(each.value)
+  content_type = "text/turtle"
+}

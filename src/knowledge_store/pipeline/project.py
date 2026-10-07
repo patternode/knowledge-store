@@ -72,6 +72,7 @@ def project(lake: Store) -> dict | None:
             meta = load_doc(lake, d)
             docs[d] = {"title": meta.get("title"), "name": meta.get("name"), "source": meta.get("source"),
                        "scope": meta.get("scope", "public"), "passages": meta.get("passages"),
+                       "source_uri": meta.get("source_uri"),
                        "format": (meta.get("parser") or "text@1").split("@")[0]}
 
     passage_doc: dict[str, str] = {}
@@ -144,7 +145,7 @@ def project(lake: Store) -> dict | None:
                         "counts": m.get("counts"), "note": m.get("note"), "in_chain": v in chain})
     ontology = {
         "namespace": spec.namespace, "version": version, "label": spec.label,
-        "classes": [{"name": c.local, "label": c.label, "definition": c.definition, "synonyms": list(c.alt_labels),
+        "classes": [{"name": c.local, "iri": c.iri, "label": c.label, "definition": c.definition, "synonyms": list(c.alt_labels),
                      "parents": list(c.parents), "count": class_counts.get(c.local, 0)}
                     for c in sorted(spec.classes.values(), key=lambda t: t.local)],
         "relations": [{"name": p.local, "label": p.label, "definition": p.definition, "domain": list(p.domain),

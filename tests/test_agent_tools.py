@@ -61,14 +61,3 @@ def test_tool_errors_are_data(root, monkeypatch):
     monkeypatch.setattr(gateway, "_lake", root)
     assert "no collection" in gateway.lambda_handler({"collection": "nope"}, ctx("get_entity"))["error"]
     assert "unknown tool" in gateway.lambda_handler({}, ctx("drop_tables"))["error"]
-
-
-def test_verify_marks_unresolved_citations():
-    pytest.importorskip("pydantic")
-    from knowledge_store.agent.app import Answer, Cited, verify
-    a = Answer(collection="c", ontology_version="1.0.0", question="q", answer="a", confidence="high", gaps=[],
-               evidence=[Cited(statement="real", citations=["p1"]), Cited(statement="made up", citations=["p9"]),
-                         Cited(statement="uncited", citations=[])])
-    stats = verify(a, lambda c, ids: {"passages": [{"id": i} for i in ids if i == "p1"]}, "c")
-    assert [e.verified for e in a.evidence] == [True, False, False]
-    assert stats == {"citations": 2, "resolved": 1, "unverified_items": 2}

@@ -1,4 +1,4 @@
-"""The pipeline sweep: ingest -> refine -> (discover) -> extract -> candidates -> project.
+"""The pipeline sweep: ingest -> refine -> (discover) -> extract -> candidates -> project -> load.
 
 One entry point for every trigger: an upload (S3 event -> EventBridge -> SQS -> Pipe -> ECS
 task), the schedule (EventBridge Scheduler, the safety net for missed events) and a person
@@ -18,6 +18,10 @@ Ontology mode (config/settings.json, from tfvars):
     auto     with no active ontology, discovery's draft is published as 0.1.0 and activated,
              so an upload goes all the way to the portal unattended. The version is marked
              provisional; curate it and publish 0.1.1 or 1.0.0 in its place when ready.
+
+A provided ontology (config/ontology/, from the collection's ontology_dir in tfvars) takes the
+place of discovery in either mode: the sweep publishes and activates it, and extracts against it
+(ontology/provided.py).
 """
 
 from __future__ import annotations
@@ -33,10 +37,11 @@ from pathlib import Path
 
 from .. import collections, layout
 from ..config import load_profile, load_sources
-from ..ontology import candidates, discover, versions
+from ..ontology import candidates, discover, provided, versions
 from ..store import Store, put_json
 from .extract import extract_all
 from .ingest import ingest_source
+from .load import load_documents, load_graph, load_sparql, sync_passages
 from .project import project
 from .refine import refine_all, silver_doc_ids
 
@@ -46,7 +51,8 @@ LOCK_TTL_S = 6 * 3600
 MAX_ROUNDS = 5
 
 DEFAULT_SETTINGS = {"ontology_mode": "curated", "discovery_min_docs": 5, "discovery_sample": 20,
-                    "discovery_resamples": 2, "discovery_target_classes": 15, "extraction_workers": 4}
+                    "discovery_resamples": 2, "discovery_target_classes": 15, "discovery_review": True,
+                    "extraction_workers": 4}
 
 
 def settings(lake: Store) -> dict:
@@ -110,6 +116,9 @@ def sweep_once(lake: Store, client_factory, model_id: str, cfg: dict) -> dict:
     refined = refine_all(lake)
     stats["refined"] = sum(1 for r in refined if r["status"] == "refined")
     profile = load_profile(lake)
+    provided_now = provided.apply(lake)  # a provided ontology replaces discovery
+    if provided_now:
+        stats["ontology"] = provided_now
     if not versions.active_version(lake):
         n = len(silver_doc_ids(lake))
         if n < cfg["discovery_min_docs"]:
@@ -120,7 +129,8 @@ def sweep_once(lake: Store, client_factory, model_id: str, cfg: dict) -> dict:
             report = discover.discover(client_factory(), model_id, lake, profile,
                                        sample=min(cfg["discovery_sample"], n),
                                        resamples=cfg["discovery_resamples"],
-                                       target_classes=cfg["discovery_target_classes"])
+                                       target_classes=cfg["discovery_target_classes"],
+                                       review=cfg["discovery_review"])
             stats["discovered"] = report["draft_id"]
             if cfg["ontology_mode"] == "auto":
                 _auto_publish(lake, report)
@@ -134,6 +144,15 @@ def sweep_once(lake: Store, client_factory, model_id: str, cfg: dict) -> dict:
     if rows or not lake.exists(layout.index_key(versions.active_version(lake), "summary")):
         candidates.build_register(lake, versions.active_version(lake))
         stats["projection"] = project(lake)
+    for name, step in (("graph", load_graph), ("documents", load_documents), ("sparql", load_sparql),
+                       ("passages", sync_passages)):
+        try:
+            loaded = step(lake)
+            if loaded:
+                stats[name] = {"key": loaded["key"], **loaded["counts"]}
+        except Exception as e:  # the portal answers from memory until a load succeeds; the next sweep retries
+            log.exception("%s load failed", name)
+            stats[f"{name}_error"] = repr(e)[:300]
     write_status(lake, "ready", {"last_run": stats})
     return stats
 
