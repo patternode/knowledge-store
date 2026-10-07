@@ -117,7 +117,7 @@ locals {
   in_graph = var.neptune != null
   # what each toolset reads in the lake (per collection, under collections/<id>/)
   graph_layers    = ["gold", "ontology", "config"]
-  passages_layers = ["gold", "silver", "config"]
+  passages_layers = ["gold", "silver", "ontology", "config"] # the index reads ontology/active.json first
   targets = {
     graph    = { schema = "${var.tool_schema_dir}/schema-graph.json", lambda = aws_lambda_function.graph.arn }
     passages = { schema = "${var.tool_schema_dir}/schema-passages.json", lambda = aws_lambda_function.passages.arn }
