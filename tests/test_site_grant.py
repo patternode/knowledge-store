@@ -9,11 +9,15 @@ import os
 import time
 
 import pytest
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
 
-from knowledge_store import site_grant
+pytest.importorskip("cryptography")  # signs the test grants; the code under test needs only the standard library
+
+from cryptography.hazmat.primitives import hashes  # noqa: E402
+from cryptography.hazmat.primitives.asymmetric import ec  # noqa: E402
+from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature  # noqa: E402
+
+from knowledge_store import site_grant  # noqa: E402
+from test_review_fixes import mixed  # noqa: E402,F401
 
 ISSUER = "https://site.example"
 
@@ -134,3 +138,38 @@ def test_off_without_configuration(monkeypatch):
     assert not site_grant.enabled()
     with pytest.raises(site_grant.Refused):
         site_grant.verify("a.b.c")
+
+
+def test_the_portal_signs_in_through_the_website(mixed, site, monkeypatch):
+    """With the website's grant in place of a token: no grant is refused, a role decides the
+    scope, and the agent is asked as the matching service client."""
+    from knowledge_store.portal_api import agent_client, handler
+    from test_chat_api import State
+    root, lake = mixed
+    from knowledge_store.pipeline.refine import load_doc, silver_doc_ids
+    docs = {load_doc(lake, d)["scope"]: d for d in silver_doc_ids(lake)}
+
+    def ev(method, path, grant=None, body=None, qs=None):
+        return {"rawPath": path, "headers": {"X-Site-Grant": grant} if grant else {},
+                "requestContext": {"http": {"method": method}},   # no authorizer: the handler verifies
+                "queryStringParameters": {"c": "m", **(qs or {})}, "body": json.dumps(body) if body else None}
+
+    assert handler.handler(ev("GET", "/api/collections"), None)["statusCode"] == 401
+    team, owner = mint(site, claims(roles=["team"])), mint(site, claims(sub="o", roles=["owner"]))
+    assert handler.handler(ev("GET", "/api/document", team, qs={"doc": docs["private"]}), None)["statusCode"] == 404
+    assert handler.handler(ev("GET", "/api/document", owner, qs={"doc": docs["private"]}), None)["statusCode"] == 200
+    nobody = mint(site, claims(sub="v", roles=["visitor"]))
+    assert handler.handler(ev("GET", "/api/collections", nobody), None)["statusCode"] == 403
+
+    state, asked = State(), []
+    monkeypatch.setattr(handler, "_state", state)
+    monkeypatch.setattr(handler, "dispatch", lambda job, ctx: handler.answer_job(job))
+    monkeypatch.setenv("AGENT_RUNTIME_ARN", "arn:aws:bedrock-agentcore:eu-west-2:123456789012:runtime/chat-x")
+    monkeypatch.setattr(agent_client, "service_token", lambda private: f"svc-{'private' if private else 'public'}")
+    monkeypatch.setattr(agent_client, "ask", lambda token, payload, **kw: asked.append(token) or {"answer": "ok"})
+    for grant in (team, owner):
+        r = handler.handler(ev("POST", "/api/chat", grant, body={"question": "Who?"}), None)
+        assert r["statusCode"] == 202
+    assert asked == ["svc-public", "svc-private"]
+    assert {i["sub"] for i in state.items.values()} == {"site-u1", "site-o"}
+
