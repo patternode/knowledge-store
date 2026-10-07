@@ -27,6 +27,11 @@ variable "build_agent" {
   default     = false
   description = "also build the example agent image (linux/arm64, Dockerfile.agent) for AgentCore Runtime"
 }
+variable "permissions_boundary" {
+  type        = string
+  default     = null
+  description = "an IAM policy ARN set as the permissions boundary of every role this module creates; null for none"
+}
 variable "tags" {
   type    = map(string)
   default = {}
@@ -91,7 +96,8 @@ resource "aws_s3_object" "source" {
 }
 
 resource "aws_iam_role" "codebuild" {
-  name = "${var.name}-codebuild"
+  name                 = "${var.name}-codebuild"
+  permissions_boundary = var.permissions_boundary
   assume_role_policy = jsonencode({ Version = "2012-10-17", Statement = [{
   Effect = "Allow", Principal = { Service = "codebuild.amazonaws.com" }, Action = "sts:AssumeRole" }] })
   tags = var.tags
@@ -163,7 +169,8 @@ resource "aws_cloudwatch_event_rule" "source_uploaded" {
 }
 
 resource "aws_iam_role" "events" {
-  name = "${var.name}-build-trigger"
+  name                 = "${var.name}-build-trigger"
+  permissions_boundary = var.permissions_boundary
   assume_role_policy = jsonencode({ Version = "2012-10-17", Statement = [{
   Effect = "Allow", Principal = { Service = "events.amazonaws.com" }, Action = "sts:AssumeRole" }] })
   tags = var.tags

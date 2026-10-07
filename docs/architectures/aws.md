@@ -1,7 +1,8 @@
 # Knowledge Store on AWS
 
 The reference implementation: a minimal GraphRAG system that anyone can deploy from Terraform
-([`infra/modules/knowledge-store`](../../infra/modules/knowledge-store)). It has two use cases.
+([`infra/modules/knowledge-store`](../../infra/modules/knowledge-store)). To install it, follow
+the [AWS installation guide](../deploy/aws/README.md). It has two use cases.
 
 1. **Ingestion.** A corpus goes in. An ontology is applied to it: one you bring, or one discovered
    from the documents and reviewed. Extraction against the ontology fills a knowledge graph.

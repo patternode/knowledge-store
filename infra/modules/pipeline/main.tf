@@ -90,6 +90,11 @@ variable "knowledge_base" {
   default     = null
   description = "the passages' vector index the sweep keeps in step; null for none"
 }
+variable "permissions_boundary" {
+  type        = string
+  default     = null
+  description = "an IAM policy ARN set as the permissions boundary of every role this module creates; null for none"
+}
 variable "tags" {
   type    = map(string)
   default = {}
@@ -141,9 +146,10 @@ data "aws_iam_policy_document" "ecs_assume" {
 }
 
 resource "aws_iam_role" "execution" {
-  name               = "${var.name}-pipeline-exec"
-  assume_role_policy = data.aws_iam_policy_document.ecs_assume.json
-  tags               = var.tags
+  name                 = "${var.name}-pipeline-exec"
+  permissions_boundary = var.permissions_boundary
+  assume_role_policy   = data.aws_iam_policy_document.ecs_assume.json
+  tags                 = var.tags
 }
 
 resource "aws_iam_role_policy_attachment" "execution" {
@@ -152,9 +158,10 @@ resource "aws_iam_role_policy_attachment" "execution" {
 }
 
 resource "aws_iam_role" "task" {
-  name               = "${var.name}-pipeline-task"
-  assume_role_policy = data.aws_iam_policy_document.ecs_assume.json
-  tags               = var.tags
+  name                 = "${var.name}-pipeline-task"
+  permissions_boundary = var.permissions_boundary
+  assume_role_policy   = data.aws_iam_policy_document.ecs_assume.json
+  tags                 = var.tags
 }
 
 resource "aws_iam_role_policy" "task" {
@@ -275,7 +282,8 @@ data "aws_iam_policy_document" "run_task" {
 }
 
 resource "aws_iam_role" "pipe" {
-  name = "${var.name}-pipe"
+  name                 = "${var.name}-pipe"
+  permissions_boundary = var.permissions_boundary
   assume_role_policy = jsonencode({ Version = "2012-10-17", Statement = [{
     Effect    = "Allow", Principal = { Service = "pipes.amazonaws.com" }, Action = "sts:AssumeRole",
     Condition = { StringEquals = { "aws:SourceAccount" = data.aws_caller_identity.me.account_id } }
@@ -324,7 +332,8 @@ resource "aws_pipes_pipe" "uploads" {
 # --- schedule -----------------------------------------------------------------------------
 
 resource "aws_iam_role" "scheduler" {
-  name = "${var.name}-scheduler"
+  name                 = "${var.name}-scheduler"
+  permissions_boundary = var.permissions_boundary
   assume_role_policy = jsonencode({ Version = "2012-10-17", Statement = [{
     Effect    = "Allow", Principal = { Service = "scheduler.amazonaws.com" }, Action = "sts:AssumeRole",
     Condition = { StringEquals = { "aws:SourceAccount" = data.aws_caller_identity.me.account_id } }

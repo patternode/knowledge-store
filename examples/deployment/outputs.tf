@@ -1,5 +1,6 @@
 # The same outputs as the reference root.
 output "portal_url" { value = module.knowledge_store.portal_url }
+output "portal_cloudfront_domain" { value = module.knowledge_store.portal_cloudfront_domain }
 output "lake_bucket" { value = module.knowledge_store.lake_bucket }
 output "upload_to" { value = module.knowledge_store.upload_to }
 output "image_build_project" { value = module.knowledge_store.image_build_project }

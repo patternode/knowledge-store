@@ -121,7 +121,7 @@ own Terraform:
 
 | Cloud | State | Deployment code | Start here |
 |---|---|---|---|
-| AWS | Built: the reference implementation | [`infra/`](infra): the module [`infra/modules/knowledge-store`](infra/modules/knowledge-store), the root [`infra/stack`](infra/stack), a CloudFormation launch stack, and a template for a deployment repository of your own ([`examples/deployment`](examples/deployment)) | [QUICKSTART.md](QUICKSTART.md) |
+| AWS | Built: the reference implementation | [`infra/`](infra): the module [`infra/modules/knowledge-store`](infra/modules/knowledge-store), the root [`infra/stack`](infra/stack), a CloudFormation launch stack, and a template for a deployment repository of your own ([`examples/deployment`](examples/deployment)) | [QUICKSTART.md](QUICKSTART.md) to try it; [docs/deploy/aws](docs/deploy/aws/README.md) to install it in your own AWS estate |
 | Azure | Built | [`deploy/azure/`](deploy/azure): the module, the root, the state bootstrap and the Function App | [docs/architectures/azure-setup.md](docs/architectures/azure-setup.md) |
 | Google Cloud | Designed. Storage and the Vertex AI provider are built; there is no deployment yet | none yet | [docs/architectures/gcp.md](docs/architectures/gcp.md) |
 

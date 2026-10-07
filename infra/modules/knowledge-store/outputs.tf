@@ -1,4 +1,8 @@
 output "portal_url" { value = module.portal.url }
+output "portal_cloudfront_domain" {
+  value       = module.portal.domain_name
+  description = "with portal_domain set: point a CNAME (or a Route 53 alias) for that name at this"
+}
 output "lake_bucket" { value = module.lake.bucket }
 output "upload_to" {
   value       = { for id, c in local.collections : id => "s3://${module.lake.bucket}/landing/${id}/" }
@@ -13,7 +17,7 @@ output "run_now" {
   value = join(" ", [
     "aws ecs run-task --cluster ${module.pipeline.cluster_name} --task-definition ${module.pipeline.task_definition}",
     "--launch-type FARGATE --network-configuration",
-    "'awsvpcConfiguration={subnets=[${join(",", module.network.public_subnet_ids)}],securityGroups=[${module.pipeline.security_group_id}],assignPublicIp=ENABLED}'",
+    "'awsvpcConfiguration={subnets=[${join(",", local.pipeline_subnet_ids)}],securityGroups=[${module.pipeline.security_group_id}],assignPublicIp=${local.pipeline_public_ip ? "ENABLED" : "DISABLED"}}'",
   ])
 }
 output "pipeline_logs" { value = module.pipeline.log_group }

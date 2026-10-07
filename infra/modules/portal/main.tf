@@ -79,9 +79,24 @@ variable "reserved_concurrency" {
   default     = 20
   description = "at most this many API requests and answers at once; -1 for no reservation, 0 turns the API off"
 }
+variable "domain_name" {
+  type        = string
+  default     = ""
+  description = "a domain of your own for the portal (portal.example.org); empty serves it on the CloudFront domain only"
+}
+variable "certificate_arn" {
+  type        = string
+  default     = ""
+  description = "with domain_name: an ACM certificate in us-east-1 that covers it (CloudFront requires us-east-1)"
+}
 variable "log_retention_days" {
   type    = number
   default = 30
+}
+variable "permissions_boundary" {
+  type        = string
+  default     = null
+  description = "an IAM policy ARN set as the permissions boundary of every role this module creates; null for none"
 }
 variable "tags" {
   type    = map(string)
@@ -93,6 +108,9 @@ data "aws_region" "current" {}
 
 locals {
   anthropic = var.llm_provider == "anthropic" && var.anthropic_api_key_secret_arn != ""
+  custom    = var.domain_name != ""
+  # the URL people use: the custom domain when there is one, else CloudFront's own
+  url = local.custom ? "https://${var.domain_name}/" : "https://${aws_cloudfront_distribution.this.domain_name}/"
   mime = { html = "text/html; charset=utf-8", js = "text/javascript; charset=utf-8", css = "text/css; charset=utf-8",
   json = "application/json", svg = "image/svg+xml", png = "image/png", ico = "image/x-icon" }
   site_files = [for f in fileset(var.portal_dir, "**") : f if !startswith(f, "config.") && !endswith(f, ".md")]
@@ -132,7 +150,7 @@ resource "aws_s3_object" "config" {
     mode        = "hosted"
     brand       = { name = var.brand_name }
     apiBase     = "/api"
-    redirectUri = "https://${aws_cloudfront_distribution.this.domain_name}/"
+    redirectUri = local.url
     cognito     = { domain = var.cognito_domain_url, clientId = var.cognito_client_id }
   })
   content_type  = "application/json"
@@ -173,6 +191,7 @@ resource "aws_cloudfront_distribution" "this" {
   comment             = "${var.name} portal"
   default_root_object = "index.html"
   price_class         = "PriceClass_100"
+  aliases             = local.custom ? [var.domain_name] : []
 
   origin {
     origin_id                = "site"
@@ -211,7 +230,12 @@ resource "aws_cloudfront_distribution" "this" {
   restrictions {
     geo_restriction { restriction_type = "none" }
   }
-  viewer_certificate { cloudfront_default_certificate = true }
+  viewer_certificate {
+    cloudfront_default_certificate = !local.custom
+    acm_certificate_arn            = local.custom ? var.certificate_arn : null
+    ssl_support_method             = local.custom ? "sni-only" : null
+    minimum_protocol_version       = local.custom ? "TLSv1.2_2021" : null
+  }
   tags = var.tags
 }
 
@@ -250,7 +274,8 @@ data "archive_file" "api" {
 }
 
 resource "aws_iam_role" "api" {
-  name = "${var.name}-portal-api"
+  name                 = "${var.name}-portal-api"
+  permissions_boundary = var.permissions_boundary
   assume_role_policy = jsonencode({ Version = "2012-10-17", Statement = [{
   Effect = "Allow", Principal = { Service = "lambda.amazonaws.com" }, Action = "sts:AssumeRole" }] })
   tags = var.tags
@@ -368,7 +393,8 @@ resource "aws_lambda_permission" "api" {
   source_arn    = "${aws_apigatewayv2_api.this.execution_arn}/*/*"
 }
 
-output "url" { value = "https://${aws_cloudfront_distribution.this.domain_name}/" }
+output "url" { value = local.url }
+output "cloudfront_url" { value = "https://${aws_cloudfront_distribution.this.domain_name}/" }
 output "domain_name" { value = aws_cloudfront_distribution.this.domain_name }
 output "distribution_id" { value = aws_cloudfront_distribution.this.id }
 output "site_bucket" { value = aws_s3_bucket.site.id }

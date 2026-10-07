@@ -32,6 +32,11 @@ variable "embedding_dimensions" {
   type    = number
   default = 1024
 }
+variable "permissions_boundary" {
+  type        = string
+  default     = null
+  description = "an IAM policy ARN set as the permissions boundary of every role this module creates; null for none"
+}
 variable "tags" {
   type    = map(string)
   default = {}
@@ -80,9 +85,10 @@ data "aws_iam_policy_document" "assume" {
 }
 
 resource "aws_iam_role" "kb" {
-  name               = "${var.name}-knowledge-base"
-  assume_role_policy = data.aws_iam_policy_document.assume.json
-  tags               = var.tags
+  name                 = "${var.name}-knowledge-base"
+  permissions_boundary = var.permissions_boundary
+  assume_role_policy   = data.aws_iam_policy_document.assume.json
+  tags                 = var.tags
 }
 
 resource "aws_iam_role_policy" "kb" {
