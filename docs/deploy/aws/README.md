@@ -531,5 +531,6 @@ terraform destroy
 | Pipeline tasks never start, or cannot pull the image | With `network.existing`: the pipeline subnets cannot reach ECR, or a public subnet is used without `pipeline_public_ip = true`. |
 | Graph tools time out | With `network.existing`: the private subnets cannot reach S3 (add the S3 gateway endpoint to their route table), or a network ACL blocks port 8182 inside the VPC. |
 | No ontology after uploading | Curated mode waits for at least `discovery.min_docs` documents and then for a person to publish (step 12). |
+| `apply` stops at the Neptune instance with `InvalidVPCNetworkStateFault ... no subnets exist in Availability Zones with sufficient capacity`, naming another zone | The default VPC spans the account's first two zones, and neither has capacity for the instance class. Raise `network.az_count` until the named zone is included (for us-east-1d, `az_count = 4`), plan and apply again: subnets are added by position, so the existing ones stay. With `network.existing`, add a private subnet in the named zone. Or choose another `knowledge_graph.instance_class`. |
 | The chat answers but without the agent | `agent.runtime` is not `true` yet (step 8). |
 | Sign-in redirects to an error | The URL is neither `portal_url` nor the CloudFront domain, or DNS for `portal_domain` points elsewhere. |
