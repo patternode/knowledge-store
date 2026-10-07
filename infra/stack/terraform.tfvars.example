@@ -29,6 +29,15 @@ admin_email = "you@example.org" # the first portal user; Cognito emails them a t
 # admin_private   = true # the admin user may read private sources
 # daily_questions = 30   # per person
 
+# Sign people in on a host website that frames the portal, instead of Cognito (see parameters.md):
+# site_sign_in = {
+#   issuer        = "https://www.example.org"
+#   jwks          = "{\"keys\":[...]}"   # the website's /api/jwks.json
+#   lab           = "knowledge"
+#   roles         = ["owner", "team", "preview"]
+#   private_roles = ["owner"]
+# }
+
 # --- organisation controls ----------------------------------------------------------------------
 # permissions_boundary = "arn:aws:iam::123456789012:policy/workload-boundary"
 # log_retention_days   = 30

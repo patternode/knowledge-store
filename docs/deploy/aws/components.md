@@ -113,7 +113,11 @@ Start there to see every connection.
 | **Job** | Sign-in for people. Only an administrator creates users (no self sign-up). Members of `private-readers` may read private sources. |
 | **AWS** | A user pool `<name>` with a password policy and email recovery. A managed sign-in domain `<name>-<account>`. One public web client: authorisation code with PKCE, no secret, 60-minute tokens. The `private-readers` group, and the admin user. |
 | **Terraform** | [`modules/identity`](../../../infra/modules/identity/main.tf). Its callback URLs are the portal's URLs, both the custom domain and CloudFront's. |
-| **Your inputs** | `admin_email`, `admin_private`, `portal_domain` |
+| **Your inputs** | `admin_email`, `admin_private`, `portal_domain`, `site_sign_in` |
+
+With `site_sign_in`, people sign in on a host website instead and the pool signs no one in. It still
+holds two client-credentials clients, `<name>-site-public` (scopes `agent.invoke`, `tools.public`) and
+`<name>-site-private` (also `tools.private`), which the portal asks the agent as on a person's behalf.
 
 ### Portal: the chat page and its API
 
@@ -146,6 +150,14 @@ Start there to see every connection.
   Lambda runs. The agent's Runtime and Gateway accept only tokens from the portal's client. The
   agent presents the person's own token to the Gateway, so it can never read more than the person
   asking. A person outside `private-readers` never sees a private source, whatever the model asks for.
+- **People, signed in through a website (`site_sign_in`):** the website frames the portal and hands
+  the page a short grant for this lab (ES256, about fifteen minutes). API Gateway lets requests
+  through, and the portal Lambda verifies the grant on every request against the website's public
+  keys: signature, issuer, audience `lab:<lab>` and expiry. The person's roles decide what they may
+  read, and a person with no role this lab takes is refused. The portal then asks the agent as the
+  public or the private service client, whose Gateway scopes match what the person may read. Their
+  credentials are in the secret `<name>/portal/service-clients`, readable only by the portal's
+  role. CloudFront lets only the website (and the portal itself) frame the pages.
 - **Data:** the lake and the site bucket block public access. Only CloudFront reads the site
   bucket. Neptune has no public endpoint and requires IAM authentication. Every bucket, Neptune
   and the vector index are encrypted at rest with AWS-managed keys.
@@ -207,6 +219,7 @@ Every name derives from `name` (and the account id, where a name must be unique 
 | `cognito_user_pool`, `cognito_client_id` | The user pool and the portal's client |
 | `knowledge_graph`, `knowledge_base` | Neptune's endpoint and the Knowledge Base's ids (null when off) |
 | `evaluate` | The command that runs an evaluation set against the deployed chat |
+| `sign_in` | How people sign in (`cognito` or `site`), and with `site`, the lab name, the website that may frame the portal and the service clients |
 | `provided_ontologies` | Collections that bring their own ontology, with the files uploaded for each |
 
 ## Tests

@@ -74,3 +74,29 @@ def test_invocation_url():
     url = agent_client.invocation_url("arn:aws:bedrock-agentcore:eu-west-2:123456789012:runtime/chat-x", "prod")
     assert url == ("https://bedrock-agentcore.eu-west-2.amazonaws.com/runtimes/"
                    "arn%3Aaws%3Abedrock-agentcore%3Aeu-west-2%3A123456789012%3Aruntime%2Fchat-x/invocations?qualifier=prod")
+
+
+def test_service_tokens_are_reused_until_they_expire(monkeypatch):
+    calls = []
+
+    class Resp:
+        def __init__(self, n): self.n = n
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+        def read(self): return json.dumps({"access_token": f"t{self.n}", "expires_in": 3600}).encode()
+
+    def urlopen(req, timeout):
+        calls.append((req.full_url, req.headers["Authorization"], req.data))
+        return Resp(len(calls))
+
+    monkeypatch.setattr(agent_client, "_clients", {"token_endpoint": "https://idp.example/oauth2/token",
+                                                   "public": {"id": "pub", "secret": "s1"}, "private": {"id": "prv", "secret": "s2"}})
+    monkeypatch.setattr(agent_client, "_tokens", {})
+    monkeypatch.setattr(agent_client.urllib.request, "urlopen", urlopen)
+    assert agent_client.service_token(False, now=0) == "t1"
+    assert agent_client.service_token(False, now=3000) == "t1"
+    assert agent_client.service_token(True, now=3000) == "t2"
+    assert agent_client.service_token(False, now=3550) == "t3"   # within a minute of expiry: a new one
+    assert calls[0][2] == b"grant_type=client_credentials"
+    import base64
+    assert base64.b64decode(calls[1][1].split()[1]) == b"prv:s2"

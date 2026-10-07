@@ -111,3 +111,45 @@ run "retention_must_be_a_cloudwatch_value" {
   }
   expect_failures = [var.log_retention_days]
 }
+
+run "cognito_sign_in_by_default" {
+  command = plan
+  assert {
+    condition     = module.knowledge_store.sign_in.mode == "cognito" && length(module.knowledge_store.sign_in.service_clients) == 0
+    error_message = "without site_sign_in people sign in with the stack's Cognito pool, and no service clients exist"
+  }
+}
+
+run "sign_in_through_a_website" {
+  command = plan
+  variables {
+    site_sign_in = {
+      issuer = "https://site.example"
+      jwks   = "{\"keys\":[{\"kty\":\"EC\",\"crv\":\"P-256\",\"kid\":\"k1\",\"x\":\"vySYL0dPdJCxiOoZSFJDuqkrsMfWODIm7sOIdv2vsuY\",\"y\":\"lwMPa4YNioew4tIVGeQ8xnb7rCOYRc56W-JpVstCMGY\"}]}"
+    }
+  }
+  assert {
+    condition     = module.knowledge_store.sign_in.mode == "site" && module.knowledge_store.sign_in.lab == "knowledge"
+    error_message = "site_sign_in should switch the portal to the website's grant, for lab:knowledge by default"
+  }
+  assert {
+    condition     = join(",", module.knowledge_store.sign_in.service_clients) == "site-private,site-public"
+    error_message = "the portal should get a public and a private service client to ask the agent as"
+  }
+}
+
+run "the_website_issuer_is_an_origin" {
+  command = plan
+  variables {
+    site_sign_in = { issuer = "https://site.example/path", jwks = "{\"keys\":[{\"kty\":\"EC\"}]}" }
+  }
+  expect_failures = [var.site_sign_in]
+}
+
+run "the_website_keys_are_a_jwks" {
+  command = plan
+  variables {
+    site_sign_in = { issuer = "https://site.example", jwks = "{}" }
+  }
+  expect_failures = [var.site_sign_in]
+}
