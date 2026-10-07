@@ -6,6 +6,13 @@
  * one address (config.json's redirectUri, the chat page), so a sign-in started on another page
  * remembers that page and goes back to it once the code is exchanged.
  *
+ * Sign-in through a host website (config.json mode "site"): the website signs people in and frames
+ * these pages. Over the embed protocol (postMessage: pn:hello, pn:init, pn:ready, then pn:grant),
+ * it hands the page a short grant for this lab, renewed before it expires, and every /api call
+ * carries it as X-Site-Grant. Only the configured site origin is listened to. The grant is kept in
+ * sessionStorage, so the other page in the same frame (chat, ontology) can use it at once rather
+ * than wait for the next renewal. Opened on its own, the page sends people to the website.
+ *
  * No server text ever reaches innerHTML: pages build nodes with h(), which sets textContent and
  * attributes only.
  */
@@ -83,9 +90,12 @@ window.KS = (() => {
         this.save(await this.tokenRequest({ grant_type: 'authorization_code', code: q.get('code'),
           redirect_uri: this.redirectUri(), code_verifier: saved.verifier }));
       } catch (e) { return e.message; }
-      const back = String(saved.back || '');
-      if (/^\/(?![/\\])/.test(back) && back.split('?')[0] !== location.pathname) {
-        location.replace(back);
+      // Back to the page that started the sign-in: only a page of this site, resolved as a URL (a
+      // string check alone misses tricks such as a tab inside "//", which browsers strip).
+      let back = null;
+      try { back = new URL(String(saved.back || ''), location.origin); } catch { /* none */ }
+      if (back && back.origin === location.origin && back.pathname !== location.pathname) {
+        location.replace(back.href); // absolute and same-origin, never protocol-relative
         return new Promise(() => {}); // the page is going away
       }
       return null;
@@ -112,10 +122,54 @@ window.KS = (() => {
     },
   };
 
+  // ---- sign-in through a host website (mode "site") -------------------------------------
+  const GRANT = 'ks.site.grant', PN = 1;
+  const framed = window.parent !== window;
+  const site = {
+    hostOrigin: null,
+    waiters: [],
+    get current() { // {grant, exp} while it is valid, else null
+      try {
+        const g = JSON.parse(sstore.get(GRANT) || 'null');
+        return g && typeof g.grant === 'string' && g.exp * 1000 > Date.now() + 5000 ? g : null;
+      } catch { return null; }
+    },
+    drop() { sstore.del(GRANT); },
+    listen() {
+      if (!framed) return;
+      window.addEventListener('message', (e) => {
+        const d = e.data;
+        if (e.source !== window.parent || !d || d.pn !== PN || e.origin !== cfg.site.origin) return;
+        if (d.type === 'pn:init') {
+          site.hostOrigin = e.origin;
+          window.parent.postMessage({ pn: PN, type: 'pn:ready', title: document.title, route: '' }, e.origin);
+        } else if (d.type === 'pn:grant' && e.origin === site.hostOrigin && typeof d.grant === 'string' && typeof d.exp === 'number') {
+          sstore.set(GRANT, JSON.stringify({ grant: d.grant, exp: d.exp }));
+          site.waiters.splice(0).forEach((fn) => fn(true));
+        }
+      });
+      window.parent.postMessage({ pn: PN, type: 'pn:hello' }, '*'); // the hello carries nothing
+    },
+    // Resolves true once a grant is held, or false after `ms` (signed out on the website, or a
+    // role this lab does not take: the website then sends none).
+    wait(ms) {
+      if (site.current) return Promise.resolve(true);
+      return new Promise((resolve) => {
+        site.waiters.push(resolve);
+        setTimeout(() => resolve(!!site.current), ms);
+      });
+    },
+  };
+
   class ApiError extends Error { constructor(status, msg, body) { super(msg); this.status = status; this.body = body; } }
   async function api(path, params, { method = 'GET', body, retried = false } = {}) {
     const headers = {};
     if (body !== undefined) headers['content-type'] = 'application/json';
+    if (cfg.mode === 'site') {
+      const g = site.current || ((await site.wait(4000)) && site.current);
+      if (!g) throw new ApiError(401, 'Your sign-in has expired. Reload the page on the website.');
+      headers['x-site-grant'] = g.grant;
+    }
     if (cfg.mode === 'hosted') {
       const t = await auth.accessToken();
       if (!t) { auth.login(); throw new ApiError(401, 'Signing in again.'); }
@@ -124,6 +178,7 @@ window.KS = (() => {
     const qs = new URLSearchParams(Object.entries(params || {}).filter(([, v]) => v != null && v !== '')).toString();
     const r = await fetch(cfg.apiBase + path + (qs ? '?' + qs : ''), { method, headers, cache: 'no-store',
       body: body === undefined ? undefined : JSON.stringify(body) });
+    if (r.status === 401 && cfg.mode === 'site') site.drop();
     if (r.status === 401 && cfg.mode === 'hosted') {
       if (!retried && await auth.refresh()) return api(path, params, { method, body, retried: true });
       sstore.del(TOK); auth.login(); throw new ApiError(401, 'Signing in again.');
@@ -146,6 +201,15 @@ window.KS = (() => {
   async function start() {
     cfg = { apiBase: '/api', ...(await loadConfig()) };
     cfg.apiBase = String(cfg.apiBase || '/api').replace(/\/$/, '');
+    if (cfg.mode === 'site') {
+      if (!cfg.site || !/^https?:\/\/[^/]+$/.test(String(cfg.site.origin || ''))) { // https when deployed (Terraform checks)
+        return { cfg, error: 'config.json sets site mode without the website\'s origin.', signedIn: false, claims: {} };
+      }
+      if (!framed) return { cfg, error: null, signedIn: false, claims: {}, standalone: true };
+      site.listen();
+      const ok = await site.wait(8000);
+      return { cfg, error: null, signedIn: ok, claims: ok ? jwtClaims(site.current.grant) : {} };
+    }
     if (cfg.mode !== 'hosted') return { cfg, error: null, signedIn: true, claims: {} };
     if (cfg.cognito && cfg.cognito.domain) { // Cognito's hosted UI: its endpoints follow from the domain
       const d = String(cfg.cognito.domain).replace(/\/$/, '');
@@ -159,6 +223,22 @@ window.KS = (() => {
   }
   const brandName = () => str((cfg.brand && cfg.brand.name) || 'Knowledge Store');
 
-  return { $, h, clear, sstore, lstore, safeUrl, sleep, str, jwtClaims, auth, api, ApiError, start, brandName,
+  // What a page shows a person who is not signed in: in site mode, a way to the website (the page
+  // cannot sign them in itself); otherwise the portal's own sign-in.
+  function signedOutNotice(started, title) {
+    if (cfg.mode === 'site') {
+      const home = String(cfg.site && cfg.site.origin || '');
+      return [h('h2', { text: started.standalone ? `Open ${brandName()} from the website` : 'Sign in on the website' }),
+        h('p', { text: started.standalone
+          ? `${brandName()} opens inside ${home.replace(/^https:\/\//, '')}, where you sign in.`
+          : 'Sign in on the website with an account that includes this lab, then reload this page.' }),
+        safeUrl(home) ? h('a', { class: 'btn primary', href: home, target: '_top', rel: 'noopener' }, 'Go to the website') : null];
+    }
+    return [h('h2', { text: started.error ? 'Sign-in did not complete' : title }),
+      h('p', { text: started.error || 'This collection is private to its readers. Sign in to continue.' }),
+      h('button', { class: 'btn primary', type: 'button', onclick: () => auth.login() }, 'Sign in')];
+  }
+
+  return { $, h, clear, sstore, lstore, safeUrl, sleep, str, jwtClaims, auth, api, ApiError, start, brandName, signedOutNotice,
     get cfg() { return cfg; }, COLL_KEY };
 })();

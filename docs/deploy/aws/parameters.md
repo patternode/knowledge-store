@@ -28,6 +28,7 @@ Copy this table, fill in the right-hand column, and keep it with the deployment'
 | Network: own VPC (CIDR), or existing VPC and subnets | `network` | |
 | NAT gateway allowed? | `network.enable_nat` | |
 | Portal domain and its us-east-1 certificate | `portal_domain` | |
+| Sign-in: the stack's Cognito pool, or a host website's grant (its origin, keys, lab name, roles) | `site_sign_in` | |
 | IAM permissions boundary | `permissions_boundary` | |
 | Required tags | `extra_tags` | |
 | Log retention, in days | `log_retention_days` | |
@@ -70,6 +71,12 @@ Copy this table, fill in the right-hand column, and keep it with the deployment'
 | `portal_domain.name` | empty | A domain of your own for the portal. Leave empty to use CloudFront's domain only. |
 | `portal_domain.certificate_arn` | empty | An ACM certificate covering that name, in `us-east-1` (CloudFront requires it there). Set both fields or neither. |
 | `admin_private` | `true` | Put the admin user in `private-readers`, the group that may read private sources. |
+| `site_sign_in` | none | Sign people in on a host website instead of Cognito. The website frames the portal and hands each signed-in person's page a short grant for this lab; the portal verifies it on every request. Its fields are below. Unset, people sign in with the stack's Cognito pool. |
+| `site_sign_in.issuer` | | The website's origin (`https://host`, no path): the grants' issuer, and the one site allowed to frame the portal. |
+| `site_sign_in.jwks` | | The website's public grant keys, a JWKS document (for example the website's `/api/jwks.json`). P-256 keys only. To rotate, add the new key here before the website signs with it. |
+| `site_sign_in.lab` | `knowledge` | The name a grant's audience must carry (`lab:<lab>`), so a grant for another lab is refused. |
+| `site_sign_in.roles` | `["owner", "team", "preview"]` | Roles that may read public sources. A person with none of these roles, nor a private one, is refused. |
+| `site_sign_in.private_roles` | `["owner"]` | Roles that may also read private sources. |
 | `daily_questions` | `30` | Questions each person may ask per day. |
 
 ## Organisation controls

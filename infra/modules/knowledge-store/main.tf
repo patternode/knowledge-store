@@ -19,6 +19,12 @@
 # once the agent image is built, set agent.runtime = true and apply again; open the portal.
 
 locals {
+  site = var.site_sign_in != null
+  # With site_sign_in, the portal asks the agent as one of these (OAuth client credentials)
+  site_clients = local.site ? {
+    site-public  = { scopes = ["agent.invoke", "tools.public"] }
+    site-private = { scopes = ["agent.invoke", "tools.public", "tools.private"] }
+  } : {}
   repo_root     = abspath("${path.module}/../../..")
   private_group = "private-readers"
 
@@ -162,12 +168,13 @@ module "pipeline" {
 }
 
 module "identity" {
-  source        = "../identity"
-  name          = var.name
-  admin_email   = var.admin_email
-  groups        = [local.private_group]
-  admin_groups  = var.admin_private ? [local.private_group] : []
-  callback_urls = distinct([module.portal.url, module.portal.cloudfront_url])
+  source          = "../identity"
+  name            = var.name
+  admin_email     = var.admin_email
+  groups          = [local.private_group]
+  admin_groups    = var.admin_private ? [local.private_group] : []
+  callback_urls   = distinct([module.portal.url, module.portal.cloudfront_url])
+  machine_clients = local.site_clients
 }
 
 module "portal" {
@@ -191,8 +198,14 @@ module "portal" {
   agent_runtime_qualifier      = module.agent.runtime_qualifier
   domain_name                  = var.portal_domain.name
   certificate_arn              = var.portal_domain.certificate_arn
-  log_retention_days           = local.logs
-  permissions_boundary         = local.boundary
+  site_sign_in                 = var.site_sign_in
+  service_clients = local.site ? {
+    token_endpoint = module.identity.token_endpoint
+    public         = { id = module.identity.machine_client_ids["site-public"], secret = module.identity.machine_client_secrets["site-public"] }
+    private        = { id = module.identity.machine_client_ids["site-private"], secret = module.identity.machine_client_secrets["site-private"] }
+  } : null
+  log_retention_days   = local.logs
+  permissions_boundary = local.boundary
 }
 
 module "agent" {
@@ -203,7 +216,7 @@ module "agent" {
   lake_bucket        = module.lake.bucket
   lake_bucket_arn    = module.lake.bucket_arn
   discovery_url      = module.identity.discovery_url
-  allowed_client_ids = [module.identity.client_id]
+  allowed_client_ids = concat([module.identity.client_id], [for k in sort(keys(local.site_clients)) : module.identity.machine_client_ids[k]])
   scope_prefix       = module.identity.scope_prefix
   private_group      = local.private_group
   agent_image_uri    = module.build.agent_image_uri

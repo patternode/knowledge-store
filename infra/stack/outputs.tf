@@ -31,3 +31,4 @@ output "provided_ontologies" {
   value       = module.knowledge_store.provided_ontologies
   description = "collections that bring their own ontology, and the files uploaded for each"
 }
+output "sign_in" { value = module.knowledge_store.sign_in }

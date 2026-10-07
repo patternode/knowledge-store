@@ -50,6 +50,19 @@ portal's:
 Cognito's hosted UI (authorization code with PKCE) and sends the Cognito access token as
 `Authorization: Bearer <token>` on every `/api` call, refreshing it shortly before it expires.
 
+With `site_sign_in` set, Terraform writes site mode instead:
+
+```json
+{ "mode": "site", "brand": { "name": "Knowledge Store" }, "apiBase": "/api",
+  "site": { "origin": "https://www.example.org", "lab": "knowledge" } }
+```
+
+In site mode a host website signs people in and frames the pages. Over the embed protocol
+(postMessage `pn:hello`, `pn:init`, `pn:ready`, then `pn:grant`) it hands the page a short grant
+for the lab and renews it before it expires. The page listens to the configured origin only, sends
+the grant as `X-Site-Grant` on every `/api` call, and keeps it in sessionStorage so the other page
+in the frame can use it at once. Opened on its own, the page links to the website instead.
+
 For local development, add a `config.local.json` such as
 `{"mode": "local", "apiBase": "http://localhost:8765/api"}`: local mode skips sign-in.
 
