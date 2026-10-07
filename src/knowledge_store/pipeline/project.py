@@ -143,6 +143,14 @@ def project(lake: Store) -> dict | None:
         m = versions.manifest(lake, v)
         history.append({"version": v, "kind": m["kind"], "base": m.get("base"), "published_at": m.get("published_at"),
                         "counts": m.get("counts"), "note": m.get("note"), "in_chain": v in chain})
+    # What the data shows: how often a relation links one class to another, by the most specific
+    # type of each end. The portal's ontology view draws the pairs the ontology does not declare.
+    observed: Counter = Counter()
+    type_of = {e["id"]: e["type"] for e in entities.values()}
+    for e in entities.values():
+        for row in e["out"]:
+            if row["o"] in type_of:
+                observed[(e["type"], row["p"], type_of[row["o"]])] += 1
     ontology = {
         "namespace": spec.namespace, "version": version, "label": spec.label,
         "classes": [{"name": c.local, "iri": c.iri, "label": c.label, "definition": c.definition, "synonyms": list(c.alt_labels),
@@ -154,6 +162,7 @@ def project(lake: Store) -> dict | None:
         "attributes": [{"name": p.local, "label": p.label, "definition": p.definition, "domain": list(p.domain),
                         "datatype": p.range[0] if p.range else "string", "count": prop_counts.get(p.local, 0)}
                        for p in sorted(spec.attributes.values(), key=lambda t: t.local)],
+        "observed": [{"domain": d, "p": p, "range": r, "count": n} for (d, p, r), n in sorted(observed.items())],
     }
     profile = load_profile(lake)
     summary = {

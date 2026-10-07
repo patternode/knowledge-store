@@ -8,12 +8,17 @@
 <title>Knowledge Store</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231b202c'/%3E%3Cpath d='M16 20h32v20H30l-10 8v-8h-4z' fill='none' stroke='%2300b8e6' stroke-width='4' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="styles.css">
+<script defer src="common.js"></script>
 <script defer src="app.js"></script>
 </head>
 <body>
 <a class="skip" href="#question">Skip to the question box</a>
 <header class="header">
-  <p class="brand" id="brand-name">Knowledge Store</p>
+  <nav class="nav" aria-label="Pages">
+    <p class="brand" id="brand-name">Knowledge Store</p>
+    <a class="navlink" href="./" aria-current="page">Chat</a>
+    <a class="navlink" href="ontology.html">Ontology</a>
+  </nav>
   <div class="controls">
     <span id="coll-wrap" hidden>
       <label for="coll-select">Collection</label>

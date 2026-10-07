@@ -131,6 +131,9 @@ def test_full_lifecycle(lake, tmp_path):
     nova = next(e for e in ents if e["label"] == "Agency Nova")
     assert len(nova["docs"]) == 3  # one node across documents
     assert counts["entities"] == len(ents)
+    onto = json.loads(lake.get(layout.index_key("0.2.0", "ontology")))
+    seen = {(o["domain"], o["p"], o["range"]): o["count"] for o in onto["observed"]}
+    assert seen[("Mission", "launchedBy", "SpaceAgency")] >= 1
 
 
 def test_semantic_change_needs_major(lake, tmp_path):

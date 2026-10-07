@@ -1,17 +1,32 @@
 # Chat page
 
 A minimal page for asking questions of a collection. Every answer is built from the documents
-in that collection, and every statement links to the passage it came from.
+in that collection, and every statement links to the passage it came from. A second page,
+`ontology.html`, shows the collection's active ontology as a graph, with its statistics.
 
-Plain HTML, CSS and JavaScript: no framework, no build step, no external scripts or fonts.
+Plain HTML, CSS and JavaScript: no framework, no build step, no external scripts or fonts. The
+ontology page's one library, D3, is served from this folder (`vendor/`).
 
 ## Files
 
 - `index.html`: the page. Its Content-Security-Policy allows only same-origin scripts and styles
   (no inline scripts or styles) and HTTPS connections, which covers the API and Cognito's token
   endpoint.
-- `app.js`: sign-in, the collection picker, asking and polling, and rendering answers and
-  sources. No server text reaches `innerHTML`; the DOM is built from nodes and `textContent`.
+- `common.js`: what both pages share: sign-in, the API client and the DOM helpers. Cognito
+  returns to one address (the chat page), so a sign-in started on the ontology page remembers it
+  and goes back there.
+- `app.js`: the collection picker, asking and polling, and rendering answers and sources. No
+  server text reaches `innerHTML`; the DOM is built from nodes and `textContent`. A `?ask=`
+  parameter fills the question box without sending it.
+- `ontology.html`, `ontology.js`, `ontology.css`: the ontology page, ported from the earnings
+  lab's ontology view. Classes are spheres coloured by their root class, with a pill counting
+  their entities and an arc showing how populated each is against the largest; subclass links,
+  declared relations (domain to range) and relations the data uses between classes the ontology
+  does not declare them for (dashed, weighted by use). The most connected classes are the core:
+  gold and central. Beside it are the counts, every class with its entities, every property with
+  its facts, and the selected class or property in detail. `?class=` or `?prop=` opens with one
+  selected. Data: `GET /api/ontology` and `GET /api/summary`.
+- `vendor/d3.min.js`: D3 7.9.0, unmodified (see `vendor/README.md`).
 - `styles.css`: colour tokens on `:root`, light and dark themes from `prefers-color-scheme`.
 - `config.json`: not in this folder. Terraform generates it when it uploads the folder.
 
@@ -49,3 +64,6 @@ All routes are on the same origin under `/api`, and every route but `/collection
 - `GET /api/chat?c=<id>&id=<id>`: the answer's status, polled every 2 seconds for up to 5 minutes.
   A finished answer carries `claims`, `sources`, `abstained`, `blocked` and `gaps`.
 - `GET /api/document?c=<id>&doc=<doc id>`: a link to open the source document in a new tab.
+- `GET /api/ontology?c=<id>`: the active ontology's classes, relations and attributes with their
+  counts, and `observed`: how often each relation links one class to another in the data.
+- `GET /api/summary?c=<id>`: the collection's counts of documents, entities and facts.

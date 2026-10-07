@@ -141,6 +141,10 @@ resource "aws_s3_object" "site" {
   source       = "${var.portal_dir}/${each.key}"
   etag         = filemd5("${var.portal_dir}/${each.key}")
   content_type = lookup(local.mime, reverse(split(".", each.key))[0], "application/octet-stream")
+  # The page's files keep their names across releases, so browsers and CloudFront must check for a
+  # newer copy rather than keep one: a cached app.js from the last release would run against this
+  # release's page.
+  cache_control = "no-cache"
 }
 
 resource "aws_s3_object" "config" {

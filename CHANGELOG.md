@@ -12,11 +12,14 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 - Valves: a Bedrock Guardrail on questions and on the grounding of claims, tool and model call limits per question, the chat API's reserved concurrency, and an optional monthly budget.
 - An evaluation framework (`python -m knowledge_store.evals`) with deterministic scoring, and an evaluation set for the space-missions example.
 - A minimal chat page (`chat/`), which replaces the explorer as the AWS portal.
+- An ontology page beside the chat (`chat/ontology.html`): the earnings lab's ontology view, made generic. The active ontology as a force-directed graph, with core classes, population arcs, declared relations and the relations seen in the data but not declared, and its statistics. The projection's ontology index gains `observed`, the class-to-class counts behind it.
 
 - Bring your own ontology: a collection's `ontology_dir` is published and activated in place of discovery, and changed by bumping its version.
 - A review pass after discovery that adds hierarchy, merges near-duplicates and fixes domains, ranges and datatypes, recorded edit by edit in the draft's report (`discovery.review`, on by default).
 - Publish refuses an `owl:versionIRI` that does not name the version, and accepts a change to the ontology's own label or comment as a patch.
 - AWS inputs for deploying into an existing estate, each optional with today's behaviour as its default: `network` (the VPC's CIDR and zones, a NAT gateway, or a VPC and subnets you bring), `portal_domain` (the portal on your own domain with an ACM certificate), `permissions_boundary` (on every IAM role) and `log_retention_days`. A `portal_cloudfront_domain` output.
+- The passage tools could not read the collection's `ontology/active.json`, which the index loads first, so every passage search failed with an S3 403. Their role now reads the ontology layer, as the graph tools' does.
+- The chat page stalled after every sign-in: its own `history()` function hid `window.history`, so stripping the sign-in code from the URL threw. Renamed. The page's files are now served with `Cache-Control: no-cache`, so a browser never runs a previous release's `app.js` against a new page.
 - Neptune's default instance class is `db.t3.medium` (was `db.t4g.medium`), after a deploy in us-east-1 found no `t4g.medium` capacity in four zones. An existing cluster's instance changes in place, with a restart, unless `knowledge_graph.instance_class` is set.
 - An AWS installation pack (`docs/deploy/aws/`): a step-by-step guide, every parameter with a worksheet, the components and how the Terraform expresses them, and the reference architecture diagram.
 
