@@ -29,3 +29,10 @@ output "agent" {
     image_project  = module.build.agent_codebuild_project
   } : null
 }
+
+output "provided_ontologies" {
+  description = "collections that bring their own ontology, with the files uploaded for each (the rest discover theirs)"
+  value = { for id in distinct([for k in keys(local.ontology_files) : split("/", k)[0]]) :
+    id => sort([for k in keys(local.ontology_files) : split("/", k)[1] if split("/", k)[0] == id])
+  }
+}

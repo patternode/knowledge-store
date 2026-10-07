@@ -34,6 +34,13 @@ class FakeClient:
             return _resp(name, self._propose(passages))
         if name == "define_ontology":
             return _resp(name, self._define(json.loads(text), kw["system"][0]["text"]))
+        if name == "review_ontology":
+            # One edit that changes nothing and one that cannot apply: the path runs, the draft stays.
+            return _resp(name, {"edits": [
+                {"op": "set_datatype", "kind": "attributes", "term": "launchYear", "value": "integer",
+                 "reason": "years are whole numbers"},
+                {"op": "set_parent", "kind": "classes", "term": "Comet", "value": "TargetBody",
+                 "reason": "a comet is a target body"}]})
         if name == "record_knowledge":
             return _resp(name, self._record(passages, tool, text))
         raise AssertionError(name)

@@ -44,6 +44,7 @@ module "knowledge_store" {
         description = "What the collection is about, in a sentence or two. It guides prompts and the portal."
       }
       # ontology_mode = "auto"   # publish the first discovered ontology unreviewed
+      # ontology_dir  = "ontology/default"   # bring your own ontology instead (see ontology/README.md)
     }
   }
 

@@ -24,7 +24,7 @@ jobs:
           terraform_version: "1.14.3"
       - run: terraform fmt -check -recursive infra && terraform fmt -check -recursive examples/deployment
       - working-directory: infra/stack
-        run: terraform init -backend=false -input=false && terraform validate
+        run: terraform init -backend=false -input=false && terraform validate && terraform test
       # The deployment template, against this checkout's module instead of the release it pins.
       - name: validate examples/deployment
         run: |

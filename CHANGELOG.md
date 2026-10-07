@@ -4,6 +4,12 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 ## [Unreleased]
 
+### Added since 0.1.2
+
+- Bring your own ontology: a collection's `ontology_dir` is published and activated in place of discovery, and changed by bumping its version.
+- A review pass after discovery that adds hierarchy, merges near-duplicates and fixes domains, ranges and datatypes, recorded edit by edit in the draft's report (`discovery.review`, on by default).
+- Publish refuses an `owl:versionIRI` that does not name the version, and accepts a change to the ontology's own label or comment as a patch.
+
 ### Added
 
 - Source adapters (S3 landing, HTTPS URLs, local directory) and an entry-point registry.
