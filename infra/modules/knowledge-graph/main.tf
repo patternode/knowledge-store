@@ -6,8 +6,8 @@
 #   the agent's graph tools query it with fixed SPARQL built from the ontology
 #
 # Neptune Database rather than Neptune Analytics: it speaks SPARQL over RDF, which the ontology,
-# SHACL and the lake's N-Quads already are, so nothing is converted. Its smallest instance
-# (db.t4g.medium) is the cheapest graph option that is always on; serverless_min_ncu > 0 uses
+# SHACL and the lake's N-Quads already are, so nothing is converted. Its small instance
+# (db.t3.medium) is the cheapest graph option that is always on and widely available; serverless_min_ncu > 0 uses
 # Neptune Serverless instead. The graph is a projection of the lake, rebuilt by the next sweep,
 # so backups are kept for a day and no final snapshot is taken.
 #
@@ -30,8 +30,9 @@ variable "client_security_group_ids" {
   description = "name => security group allowed to connect on 8182 (keys must be known at plan)"
 }
 variable "instance_class" {
-  type    = string
-  default = "db.t4g.medium"
+  type        = string
+  default     = "db.t3.medium"
+  description = "db.t3.medium is the smallest always-on class that is widely available; db.t4g.medium is cheaper per hour but often has no capacity in a zone"
 }
 variable "serverless_min_ncu" {
   type        = number

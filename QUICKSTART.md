@@ -45,11 +45,12 @@ To run it for real, keep your configuration and curated ontologies in a private 
 1. Upload documents to the `upload_to` location, `s3://<name>-lake-<account>/landing/<collection>/`.
    The upload starts the pipeline within about a minute (S3 event, EventBridge, SQS, an
    EventBridge Pipe, then an ECS Fargate task).
-2. The first run proposes an ontology and waits for you (curated mode). The portal's Overview shows the draft; curate and publish it:
+2. The first run proposes an ontology and waits for you (curated mode). Find its id under `collections/default/ontology/drafts/` in the lake, then curate and publish it:
 
    ```bash
    pip install ".[aws]"
    export LAKE_URI=s3://<lake bucket>
+   aws s3 ls $LAKE_URI/collections/default/ontology/drafts/
    knowledge-store -c default ontology pull <draft id> ontology/
    # edit ontology/ontology.ttl, set owl:versionInfo "1.0.0"
    knowledge-store -c default ontology publish ontology/ --activate
@@ -66,4 +67,4 @@ The first deploy builds the agent's image. Once it is built (a few minutes; the 
 
 ## What it costs idle
 
-About 70 USD a month, for the Neptune instance that holds the knowledge graph. Set EnableKnowledgeGraph to false (or `knowledge_graph = { enabled = false }`) for a small demo, and the stack idles at close to nothing: no NAT gateway and no always-on compute, only S3, CloudFront, Lambda, DynamoDB on demand, the Knowledge Base on S3 Vectors, and Fargate while a sweep runs. Model calls in Bedrock are the cost that matters.
+About 60 USD a month, for the Neptune instance that holds the knowledge graph. Set EnableKnowledgeGraph to false (or `knowledge_graph = { enabled = false }`) for a small demo, and the stack idles at close to nothing: no NAT gateway and no always-on compute, only S3, CloudFront, Lambda, DynamoDB on demand, the Knowledge Base on S3 Vectors, and Fargate while a sweep runs. Model calls in Bedrock are the cost that matters.
