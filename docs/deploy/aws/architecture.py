@@ -33,7 +33,7 @@ def chip(x, y, w, text, role):
     out.append(f'<text x="{x+w/2}" y="{y+16.5}" class="chip" fill="{t}" text-anchor="middle">{text}</text>')
 
 # Title and lanes
-out.append('<text x="40" y="48" class="h1">Knowledge Store on AWS — minimal GraphRAG</text>')
+out.append('<text x="40" y="48" class="h1">Knowledge Store on AWS: minimal GraphRAG</text>')
 out.append('<text x="40" y="74" class="sub">Ingestion fills a knowledge graph and a passage index; chat answers from both, and every claim shown is checked against a cited passage.</text>')
 for x, w, name in [(28, 440, "INGESTION"), (548, 424, "SHARED: GRAPH, PASSAGES, MODELS"), (1068, 504, "CHAT")]:
     out.append(f'<rect x="{x}" y="96" width="{w}" height="736" rx="14" fill="#F7F8FA" stroke="#DDE1E7"/>')
@@ -73,17 +73,17 @@ arrow([(440, 768), (568, 768)], "every passage", 504, 760)
 
 # Chat column
 box(1084, 132, 220, 62, "person", "A person", ["asks in the chat page"])
-box(1336, 132, 220, 78, "edge", "Sign-in", ["group private-readers"], "Amazon Cognito")
+box(1336, 132, 220, 88, "edge", "Sign-in", ["Cognito (private-readers), or", "a host website's grant"], "Amazon Cognito · or site_sign_in")
 arrow([(1304, 163), (1332, 163)])
 arrow([(1194, 194), (1194, 222)])
-box(1084, 226, 472, 66, "edge", "Chat page (static, from S3)", [], "Amazon CloudFront")
+box(1084, 226, 472, 66, "edge", "Chat and ontology pages (static, from S3)", [], "Amazon CloudFront")
 arrow([(1194, 292), (1194, 320)], "/api/*", 1206, 310, "start")
-box(1084, 324, 472, 112, "compute", "Chat API", ["JWT check · daily quota (30) · concurrency cap (20)", "passes the person's own token, never stored", "conversation and quota state in DynamoDB"], "API Gateway (JWT) · Lambda · DynamoDB")
+box(1084, 324, 472, 112, "compute", "Chat API", ["Token or website grant checked · daily quota (30) · concurrency (20)", "asks the agent as the person, or as a service client by scope", "conversation and quota state in DynamoDB"], "API Gateway · Lambda · DynamoDB")
 arrow([(1194, 436), (1194, 456)])
 box(1084, 460, 472, 112, "ai", "The chat agent", ["Released ontology in its system prompt", "Answers as claims, each citing a passage + quote", "Code checks every citation; failed claims removed"], "Amazon Bedrock AgentCore Runtime")
 arrow([(1084, 500), (1010, 500), (1010, 230), (952, 230)])
 out.append('<text x="1002" y="370" class="lbl" text-anchor="middle" transform="rotate(-90 1002 370)">model, guardrail</text>')
-arrow([(1194, 572), (1194, 596)], "MCP, as the person", 1206, 589, "start")
+arrow([(1194, 572), (1194, 596)], "MCP, as the caller", 1206, 589, "start")
 box(1084, 600, 472, 95, "compute", "Tool gateway", ["Interceptor writes the caller's scope into every", "call from the verified token"], "AgentCore Gateway (MCP)")
 arrow([(1084, 630), (944, 630)], "graph tools", 1012, 622)
 arrow([(1194, 695), (1194, 716)])
@@ -94,7 +94,7 @@ arrow([(1084, 768), (952, 768)], "Retrieve", 1018, 760)
 notes = [
  ("Grounding", ["No statement without a source: a claim survives only if its quote is", "in a passage the caller may read, is ≥ 12 characters, and the", "guardrail scores it grounded. One repair turn, then it is removed."]),
  ("Valves", ["Per question: 16 tool calls, 14 model calls, 4000 output tokens", "per call, 1 repair turn. Optional monthly budget alert."]),
- ("Networking and cost", ["No NAT gateway. Neptune and the graph tools reach S3 through a", "gateway endpoint. Neptune is the main fixed cost; set", "knowledge_graph.enabled = false to remove it."]),
+ ("Sign-in, networking and cost", ["Cognito, or a host website that frames the pages (site_sign_in).", "No NAT gateway; Neptune and the graph tools reach S3 through a", "gateway endpoint. Neptune is the main fixed cost (can be off)."]),
 ]
 for i, (h, ls) in enumerate(notes):
     x = 28 + i*520
