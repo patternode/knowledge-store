@@ -90,9 +90,12 @@ window.KS = (() => {
         this.save(await this.tokenRequest({ grant_type: 'authorization_code', code: q.get('code'),
           redirect_uri: this.redirectUri(), code_verifier: saved.verifier }));
       } catch (e) { return e.message; }
-      const back = String(saved.back || '');
-      if (/^\/(?![/\\])/.test(back) && back.split('?')[0] !== location.pathname) {
-        location.replace(back);
+      // Back to the page that started the sign-in: only a page of this site, resolved as a URL (a
+      // string check alone misses tricks such as a tab inside "//", which browsers strip).
+      let back = null;
+      try { back = new URL(String(saved.back || ''), location.origin); } catch { /* none */ }
+      if (back && back.origin === location.origin && back.pathname !== location.pathname) {
+        location.replace(back.href); // absolute and same-origin, never protocol-relative
         return new Promise(() => {}); // the page is going away
       }
       return null;
