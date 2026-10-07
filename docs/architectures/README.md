@@ -26,7 +26,7 @@ nothing else differs. Google Cloud takes the same settings.
 - One master ontology, many renditions. New backends add renditions; they never add a second
   place to edit the ontology.
 - The tool contract ([`tools/schema.json`](../../src/knowledge_store/tools/schema.json)) and the
-  task agent's request and result types. Every agent on every cloud calls the same fixed tools.
+  agent's request and result types. Every agent on every cloud calls the same fixed tools.
   There is still no free-form query tool.
 - Scope. A caller sees private content only if their verified token says so, and the tool code
   derives that from the token, never from the model's arguments.
@@ -123,10 +123,12 @@ that have outgrown it.
 
 ## Agents: low code for people, high code for software
 
-The AWS stack has the portal's chat for people and the AgentCore task agent for software. On
+The AWS stack has one agent: the chat agent on AgentCore Runtime, behind the chat page. Software
+asks it through the chat API, or calls the same read-only tools through AgentCore Gateway. On
 Azure and Google Cloud a low-code agent takes the chat's role where people already work (Teams,
-Microsoft 365 Copilot, Gemini Enterprise), and the task agent moves to each cloud's high-code
-agent service. Both call the same MCP tools, so the tools are still one implementation.
+Microsoft 365 Copilot, Gemini Enterprise), and a task agent for software runs on each cloud's
+high-code agent service. All of them call the same MCP tools, so the tools are still one
+implementation.
 
 | Job | AWS | Azure | Google Cloud |
 |---|---|---|---|

@@ -61,7 +61,7 @@ out.append(f'<text x="60" y="{y0+229}" class="body" fill="#1B3566">built in your
 box(572, 140, 376, 150, "ai", "Models and screening", ["Claude: discovery, review, extraction,", "and the chat agent", "Titan Text Embeddings V2: passages", "Guardrails: questions and grounding"], "Amazon Bedrock")
 out.append('<rect x="560" y="352" width="400" height="318" rx="12" fill="none" stroke="#8A919E" stroke-width="1.4" stroke-dasharray="7 5"/>')
 out.append('<text x="574" y="372" class="lane" fill="#5A6170">VPC · PRIVATE SUBNETS · NO ROUTE OUT</text>')
-box(580, 386, 360, 112, "store", "Knowledge graph", ["Gold RDF: one named graph per document,", "plus the ontology itself · IAM auth", "db.t4g.medium ≈ 70 USD/month (can be off)"], "Amazon Neptune · SPARQL")
+box(580, 386, 360, 112, "store", "Knowledge graph", ["Gold RDF: one named graph per document,", "plus the ontology itself · IAM auth", "db.t3.medium ≈ 60 USD/month (can be off)"], "Amazon Neptune · SPARQL")
 box(580, 560, 360, 95, "compute", "Graph tools", ["Fixed, read-only SPARQL built from", "the ontology: entities, facts, paths"], "AWS Lambda")
 arrow([(760, 560), (760, 502)], "read-only", 770, 536, "start")
 box(572, 704, 376, 112, "store", "Passage index", ["One vector per passage, so a hit is", "a passage id · filtered to collection", "and the caller's scope"], "Bedrock Knowledge Base · S3 Vectors")

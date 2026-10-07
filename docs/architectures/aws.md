@@ -39,7 +39,7 @@ the [AWS installation guide](../deploy/aws/README.md). It has two use cases.
 | Lake | S3 | The record: uploads, parsed text and passages, the gold RDF per document and ontology version, the ontology's versions |
 | Pipeline | ECS Fargate, EventBridge, SQS, EventBridge Pipes and Scheduler | The idempotent sweep, started by uploads and on a schedule |
 | Ontology | in the lake | Provided (`ontology_dir`) or discovered and reviewed (`ontology_mode`); versions are immutable and classified |
-| Knowledge graph | Amazon Neptune Database (`db.t4g.medium`, or Serverless) | The gold RDF as it is: one named graph per document, and the ontology itself |
+| Knowledge graph | Amazon Neptune Database (`db.t3.medium`, or Serverless) | The gold RDF as it is: one named graph per document, and the ontology itself |
 | Passage index | Bedrock Knowledge Base on S3 Vectors | Search by meaning; one vector per passage, so a hit is a passage id |
 | Tools | AgentCore Gateway (MCP) with two Lambda targets | Fixed, read-only tools: entities, facts, neighbourhoods, paths, passage search and reading |
 | Agent | AgentCore Runtime (a container built in your account) | Answers questions, grounded in cited passages |
@@ -48,9 +48,10 @@ the [AWS installation guide](../deploy/aws/README.md). It has two use cases.
 | Sign-in | Cognito | People; members of `private-readers` may read private sources |
 | Images | CodeBuild, ECR | The pipeline and agent images, built from this repository inside the account |
 
-There is no NAT gateway. The pipeline's tasks run in public subnets to reach Bedrock. Neptune
+By default there is no NAT gateway. The pipeline's tasks run in public subnets to reach Bedrock. Neptune
 and the graph tools' Lambda sit in private subnets with no route out, and reach S3 through a
-gateway endpoint.
+gateway endpoint. A NAT gateway (`network.enable_nat`), the VPC's range and zones, or a VPC of your own
+(`network.existing`) are inputs; see the [installation guide](../deploy/aws/parameters.md#network).
 
 ## How a question is answered
 
@@ -143,7 +144,7 @@ estimate and stops. Reports go to `build/eval/`.
 
 | Item | Cost |
 |---|---|
-| Neptune `db.t4g.medium` | about 70 USD a month while it runs, plus storage and I/O; the main fixed cost. `knowledge_graph.enabled = false` removes it (the graph tools then answer from memory) |
+| Neptune `db.t3.medium` | about 60 USD a month while it runs, plus storage and I/O; the main fixed cost. `knowledge_graph.enabled = false` removes it (the graph tools then answer from memory) |
 | Knowledge Base on S3 Vectors | cents a month at rest; embedding each passage once is a few cents per thousand passages |
 | AgentCore Runtime, Gateway, Lambda, API Gateway, CloudFront, DynamoDB, S3 | pay per use; close to nothing idle |
 | Model calls | the cost that matters: discovery reads `discovery.sample` x `discovery.resamples` documents, extraction reads every document once per full version, and each question is several calls (roughly 0.10 to 0.30 USD with a Sonnet-class model) |

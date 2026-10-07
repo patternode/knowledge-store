@@ -137,13 +137,13 @@ variable "force_destroy_lake" {
 variable "knowledge_graph" {
   description = <<-EOT
     Neptune, holding the gold RDF, which the agent's graph tools query. On by default; it is the
-    stack's main fixed cost (db.t4g.medium runs about 70 USD a month). enabled = false answers the
+    stack's main fixed cost (db.t3.medium runs about 60 USD a month). enabled = false answers the
     graph tools from the lake's projection in memory instead, which suits a small demo.
     serverless_min_ncu > 0 uses Neptune Serverless.
   EOT
   type = object({
     enabled             = optional(bool, true)
-    instance_class      = optional(string, "db.t4g.medium")
+    instance_class      = optional(string, "db.t3.medium")
     serverless_min_ncu  = optional(number, 0)
     serverless_max_ncu  = optional(number, 8)
     deletion_protection = optional(bool, false)

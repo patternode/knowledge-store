@@ -39,7 +39,7 @@ Foundry task agent   ──MCP──▶ (token check, rate limit)
 | Image build | CodeBuild, ECR | ACR Tasks (`az acr build`) from this repository's source, Azure Container Registry, tagged by a hash of the source |
 | Models | Bedrock | Claude in Microsoft Foundry, called with Entra ID (`LLM_PROVIDER=foundry`) |
 | People | Cognito user pool, groups | Entra ID. The API's app registration exposes `access_as_user` and the app role `private-reader` |
-| Applications | Cognito client credentials | App roles `tools.public` and `tools.private` on the same API |
+| Applications | none in the reference stack: software calls the chat API, or the Gateway's tools, with a person's token | App roles `tools.public` and `tools.private` on the same API |
 | Portal page | S3, CloudFront | A storage account's static website (HTTPS, no server); Front Door in front for a custom domain or WAF |
 | Portal sign-in | Cognito hosted UI, PKCE | Entra ID, PKCE, from a single-page app registration pre-authorised for the API; the page sends the access token |
 | Portal API | API Gateway JWT authorizer, Lambda | Function App on Flex Consumption. The code verifies the Entra token itself (`knowledge_store.authn`) |

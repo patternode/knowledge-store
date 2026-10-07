@@ -1,6 +1,7 @@
 # Your deployment of Knowledge Store. Copy this directory into a private repository of your own and
-# edit it: this file is the whole configuration, committed, and the module is pinned to a release.
-# To upgrade, change ref and plan.
+# edit it: this file is the whole configuration, committed, and the module is pinned to a release
+# (here, until the next release is tagged, to the commit on main that carries the GraphRAG
+# architecture). To upgrade, change ref and plan. Every input: docs/deploy/aws/parameters.md.
 
 terraform {
   required_version = ">= 1.10.0"
@@ -31,7 +32,7 @@ provider "aws" {
 }
 
 module "knowledge_store" {
-  source = "git::https://github.com/patternode/knowledge-store.git//infra/modules/knowledge-store?ref=v0.1.0"
+  source = "git::https://github.com/patternode/knowledge-store.git//infra/modules/knowledge-store?ref=3c6948a5ca410ae2fab829e1f339156aa481bc17"
 
   admin_email = "you@example.org"
   name        = "knowledge-store"
@@ -57,7 +58,7 @@ module "knowledge_store" {
   # true and apply again. Until then the portal answers with its own tool loop.
   # agent = { runtime = true }
 
-  # knowledge_graph = { enabled = true }      # Neptune (db.t4g.medium, about 70 USD a month); false answers from memory
+  # knowledge_graph = { enabled = true }      # Neptune (db.t3.medium, about 60 USD a month); false answers from memory
   # knowledge_base  = { enabled = true }      # search passages by meaning (Bedrock Knowledge Base on S3 Vectors)
   # guardrail       = { enabled = true, grounding_threshold = 0.75 }
   # valves          = { max_tool_calls = 16, max_model_calls = 14, chat_concurrency = 20 }

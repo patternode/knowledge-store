@@ -19,7 +19,7 @@ Metadata:
     ParameterLabels:
       AdminEmail: { default: "Admin email (receives the portal's temporary password)" }
       CollectionsJson: { default: "Collections (JSON)" }
-      EnableKnowledgeGraph: { default: "Neptune knowledge graph (about 70 USD a month)" }
+      EnableKnowledgeGraph: { default: "Neptune knowledge graph (about 60 USD a month)" }
 
 Parameters:
   AdminEmail:
@@ -51,7 +51,7 @@ Parameters:
     Default: "true"
     AllowedValues: ["true", "false"]
     Description: >-
-      Load the knowledge graph into Amazon Neptune (db.t4g.medium, the stack's main fixed cost). false
+      Load the knowledge graph into Amazon Neptune (db.t3.medium, the stack's main fixed cost). false
       answers from the lake's projection in memory, which suits a small demo.
   EnableKnowledgeBase:
     Type: String
@@ -70,7 +70,7 @@ Parameters:
     Description: When false, deleting the stack keeps the data lake bucket and everything in it.
   SourceUrl:
     Type: String
-    Default: https://github.com/patternode/knowledge-store/archive/refs/tags/v0.1.0.zip
+    Default: https://github.com/patternode/knowledge-store/archive/3c6948a5ca410ae2fab829e1f339156aa481bc17.zip
     Description: The release to deploy, as an https:// or s3:// URL of a zip of the repository.
   SourceSha256:
     Type: String
