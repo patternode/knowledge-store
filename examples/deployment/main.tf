@@ -44,6 +44,7 @@ module "knowledge_store" {
         description = "What the collection is about, in a sentence or two. It guides prompts and the portal."
       }
       # ontology_mode = "auto"   # publish the first discovered ontology unreviewed
+      # ontology_dir  = "ontology/default"   # bring your own ontology instead (see ontology/README.md)
     }
   }
 
@@ -52,7 +53,14 @@ module "knowledge_store" {
   # chat_model_id       = "us.anthropic.claude-sonnet-5"
   # portal_title        = "Knowledge Store"
 
-  # The example agent. First apply with enabled = true; once CodeBuild has pushed the agent image,
-  # set runtime = true and apply again. See examples/agent in the Knowledge Store repository.
-  # agent = { enabled = true, runtime = false }
+  # The chat agent. The first apply builds its image; once CodeBuild has pushed it, set runtime =
+  # true and apply again. Until then the portal answers with its own tool loop.
+  # agent = { runtime = true }
+
+  # knowledge_graph = { enabled = true }      # Neptune (db.t4g.medium, about 70 USD a month); false answers from memory
+  # knowledge_base  = { enabled = true }      # search passages by meaning (Bedrock Knowledge Base on S3 Vectors)
+  # guardrail       = { enabled = true, grounding_threshold = 0.75 }
+  # valves          = { max_tool_calls = 16, max_model_calls = 14, chat_concurrency = 20 }
+  # daily_questions = 30                     # per person
+  # budget          = { monthly_usd = 200 }  # a monthly cost budget mailed to admin_email
 }

@@ -48,7 +48,11 @@ same account, and the same files work in CI.
 | model choices, agent switches | defaults that work for anyone |
 | curated ontologies and their history | the ontology tooling and the core vocabulary |
 
-If you need something the module does not offer, such as an existing VPC or user pool, add it
+The module takes your own VPC and subnets (`network.existing`), a NAT gateway, a portal domain
+(`portal_domain`), an IAM permissions boundary and log retention; every input is described in
+[docs/deploy/aws/parameters.md](../../docs/deploy/aws/parameters.md).
+
+If you need something the module does not offer, such as an existing user pool, add it
 upstream as an input with a default that keeps today's behaviour, rather than patching a copy.
 Then everyone can use it, and your deployment keeps following releases.
 
@@ -99,11 +103,9 @@ Read the release notes, change `ref` in `main.tf` to the new tag, and plan. Refa
 module carry `moved` blocks, so a plan should show only real changes. To try an unreleased change,
 point `ref` at a branch, or at a local checkout with `source = "../knowledge-store/infra/modules/knowledge-store"`.
 
-## The example agent
+## The chat agent
 
-The agent needs two applies: first with `agent = { enabled = true }`, which builds its image in
-CodeBuild; then, once the image is in ECR, with `runtime = true`. To call it:
-
-```bash
-python <knowledge-store checkout>/examples/agent/invoke.py --stack-dir . dossier <collection> "<entity>"
-```
+The agent needs two applies: the first builds its image in CodeBuild; once the image is in ECR,
+set `agent = { runtime = true }` and apply again. Until then the portal answers with its own tool
+loop. To measure it, run an evaluation set against the deployed chat as a signed-in person (the
+`evaluate` output has the command).

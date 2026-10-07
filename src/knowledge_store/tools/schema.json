@@ -15,7 +15,7 @@
   },
   {
     "name": "describe_ontology",
-    "description": "The released ontology of a collection, as its compact agent rendition: types, relations, attributes and synonyms. Read it before querying a collection.",
+    "description": "The released ontology of a collection, as its compact agent rendition: types, relations, attributes and synonyms. Read it before querying a collection, and query in its terms.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -34,7 +34,7 @@
   },
   {
     "name": "search_entities",
-    "description": "Find entities by name, optionally of one type (subtypes included).",
+    "description": "Find entities in the knowledge graph by name or synonym, optionally of one ontology type (its subtypes included).",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -63,7 +63,7 @@
   },
   {
     "name": "list_entities",
-    "description": "The best-connected entities of a type.",
+    "description": "The best-connected entities of an ontology type (its subtypes included).",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -89,7 +89,7 @@
   },
   {
     "name": "get_entity",
-    "description": "An entity's types, names, attributes and relations, each with the passages it is stated in.",
+    "description": "An entity's types, names, attributes and relations, each with the ids of the passages it is stated in.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -112,7 +112,7 @@
   },
   {
     "name": "neighbourhood",
-    "description": "The entities directly related to one entity, and the relations among them.",
+    "description": "The entities within 1 to 3 relations of one entity (default 1), nearest and best connected first, and the relations among them.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -121,6 +121,9 @@
         },
         "id": {
           "type": "string"
+        },
+        "hops": {
+          "type": "integer"
         },
         "limit": {
           "type": "integer"
@@ -137,8 +140,41 @@
     }
   },
   {
+    "name": "find_paths",
+    "description": "How two entities are connected: every shortest chain of relations between them, up to max_hops (1 to 4, default 3) long, each relation with its direction. Cite the passages of each relation (get_entity) before stating it.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "max_hops": {
+          "type": "integer"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": [
+        "collection",
+        "from",
+        "to"
+      ]
+    }
+  },
+  {
     "name": "search_passages",
-    "description": "Keyword search over the source passages; returns text with passage ids.",
+    "description": "Search the source passages by what they say; returns each passage's text, id and document. Use it for anything the graph does not hold, and to find the passage behind a fact.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -164,7 +200,7 @@
   },
   {
     "name": "read_passages",
-    "description": "The full text of passages by id, with the title of the document each comes from.",
+    "description": "The full text of passages by id, with the document each comes from. Read a passage before citing it.",
     "inputSchema": {
       "type": "object",
       "properties": {

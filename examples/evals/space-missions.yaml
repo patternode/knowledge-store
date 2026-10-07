@@ -1,0 +1,303 @@
+# The evaluation set for examples/space-missions: questions with what a right answer states.
+# Run it with: python -m knowledge_store.evals examples/evals/space-missions.yaml --lake <lake> --yes
+# The format is in src/knowledge_store/evals/score.py. Answers follow the corpus as written, which is a
+# demonstration text and not fact-checked; where it differs from reality, the note says so.
+#
+# Kept outside examples/space-missions so that loading the corpus does not ingest it.
+name: space-missions
+collection: missions
+questions:
+- id: q01
+  kind: lookup
+  question: Which rocket launched Juno?
+  expected: Atlas V 551
+  must:
+  - - Atlas V 551
+    - Atlas V
+  sources:
+  - outer-planets/juno.json
+  note: The JSON field says Atlas V 551; the timeline entry says just 'an Atlas V rocket'. Either is correct.
+- id: q02
+  kind: lookup
+  question: In which crater did Perseverance land?
+  expected: Jezero Crater
+  must:
+  - - Jezero Crater
+    - Jezero
+  must_not:
+  - Gale
+  sources:
+  - mars/perseverance-and-ingenuity.md
+  note: Do not confuse with Gale Crater (Curiosity).
+- id: q03
+  kind: lookup
+  question: Which asteroid did Hayabusa2 collect samples from?
+  expected: Ryugu
+  must:
+  - - Ryugu
+    - asteroid Ryugu
+  sources:
+  - small-bodies/hayabusa2.html
+  note: 1998 KY26 is the extended-mission flyby target, not the sample source; answering it is wrong.
+- id: q04
+  kind: lookup
+  question: From which launch site did Tianwen-1 launch?
+  expected: Wenchang Spacecraft Launch Site
+  must:
+  - - Wenchang Spacecraft Launch Site
+    - Wenchang
+  sources:
+  - mars/tianwen-1-and-zhurong.txt
+  note: The document places it on Hainan Island; 'Hainan' alone is not specific enough.
+- id: q05
+  kind: lookup
+  question: Who is the principal investigator of OSIRIS-REx?
+  expected: Dante Lauretta
+  must:
+  - - Dante Lauretta
+    - Lauretta
+  sources:
+  - small-bodies/osiris-rex.json
+  note: Affiliated with the University of Arizona.
+- id: q06
+  kind: lookup
+  question: Which James Webb Space Telescope instrument was contributed by the Canadian Space Agency?
+  expected: NIRISS (Near-Infrared Imager and Slitless Spectrograph)
+  must:
+  - - NIRISS
+    - Near-Infrared Imager and Slitless Spectrograph
+  sources:
+  - telescopes/james-webb-space-telescope.md
+  note: NIRSpec was built with ESA and MIRI with a European consortium; neither is correct.
+- id: q07
+  kind: list
+  question: Which missions in the corpus launched on an Atlas V rocket (any variant)?
+  expected: Curiosity, Perseverance, Juno, New Horizons, OSIRIS-REx
+  must:
+  - - Curiosity
+  - - Perseverance
+  - - Juno
+  - - New Horizons
+  - - OSIRIS-REx
+    - OSIRIS REx
+    - OSIRISREx
+  sources:
+  - mars/curiosity.html
+  - mars/perseverance-and-ingenuity.md
+  - outer-planets/juno.json
+  - outer-planets/new-horizons.txt
+  - small-bodies/osiris-rex.json
+  note: 'Variants as named in the corpus: Curiosity and Perseverance ''Atlas V'' (no variant), Juno and New Horizons
+    ''Atlas V 551'', OSIRIS-REx ''Atlas V 411''. Ingenuity rode with Perseverance; listing it as well is acceptable
+    but not required. No other mission uses an Atlas.'
+- id: q08
+  kind: list
+  question: Which missions in the corpus were built, operated or managed by the Jet Propulsion Laboratory?
+  expected: Curiosity, Perseverance, Cassini-Huygens, Europa Clipper, Juno, Voyager 1, Voyager 2, Dawn
+  must:
+  - - Curiosity
+  - - Perseverance
+  - - Cassini
+  - - Europa Clipper
+  - - Juno
+  - - Voyager 1
+  - - Voyager 2
+  - - Dawn
+  sources:
+  - mars/curiosity.html
+  - mars/perseverance-and-ingenuity.md
+  - outer-planets/cassini-huygens.html
+  - outer-planets/europa-clipper.txt
+  - outer-planets/juno.json
+  - outer-planets/voyager-1.md
+  - outer-planets/voyager-2.md
+  - small-bodies/dawn.md
+  note: 'Roles: Curiosity and Perseverance built and operated; Cassini orbiter built and operated (Huygens was built
+    by ESA); Europa Clipper built and managed; Juno operator; Voyagers built/designed and operated; Dawn managed
+    (spacecraft built by Orbital Sciences). Galileo is NOT in the gold set: in reality JPL managed it, but galileo.md
+    never mentions JPL; a grader should not penalise it heavily but it is not supported by the corpus. Ingenuity
+    (rode with Perseverance) is acceptable as an extra.'
+- id: q09
+  kind: list
+  question: Which missions in the corpus used a gravity assist at Venus?
+  expected: Cassini-Huygens, Galileo, BepiColombo, Parker Solar Probe
+  must:
+  - - Cassini
+  - - Galileo
+  - - BepiColombo
+  - - Parker Solar Probe
+    - Parker
+  sources:
+  - outer-planets/cassini-huygens.html
+  - outer-planets/galileo.md
+  - sun-and-inner/bepicolombo.html
+  - sun-and-inner/parker-solar-probe.md
+  note: Galileo's path is named VEEGA (Venus-Earth-Earth Gravity Assist). BepiColombo used two Venus assists; Parker
+    repeated Venus flybys. No other document mentions Venus as an assist.
+- id: q10
+  kind: list
+  question: Which missions in the corpus involve the Johns Hopkins University Applied Physics Laboratory?
+  expected: New Horizons, Parker Solar Probe, Europa Clipper
+  must:
+  - - New Horizons
+  - - Parker Solar Probe
+    - Parker
+  - - Europa Clipper
+  sources:
+  - outer-planets/new-horizons.txt
+  - sun-and-inner/parker-solar-probe.md
+  - outer-planets/europa-clipper.txt
+  note: 'Alias test: New Horizons says ''Johns Hopkins University Applied Physics Laboratory (APL)'', Parker says
+    ''Johns Hopkins University Applied Physics Laboratory'', Europa Clipper says only ''Applied Physics Laboratory''
+    (contributing to spacecraft development; JPL built and manages it). APL manages New Horizons and Parker.'
+- id: q11
+  kind: multi-hop
+  question: From which launch site did the mission that first soft-landed near the lunar south pole launch?
+  expected: Satish Dhawan Space Centre, Sriharikota
+  must:
+  - - Satish Dhawan Space Centre
+    - Satish Dhawan
+    - Sriharikota
+  sources:
+  - moon/chandrayaan-3.json
+  note: 'Hop: lunar south pole landing -> Chandrayaan-3 -> launch site. The document says it made India the first
+    to land this close to the south pole.'
+- id: q12
+  kind: multi-hop
+  question: What carried to space the mission whose evidence for a subsurface ocean on Europa shaped the case for
+    Europa Clipper?
+  expected: Space Shuttle Atlantis (with an Inertial Upper Stage)
+  must:
+  - - Space Shuttle Atlantis
+    - Atlantis
+    - Space Shuttle
+  sources:
+  - outer-planets/europa-clipper.txt
+  - outer-planets/galileo.md
+  note: 'Hop: Europa Clipper -> Galileo -> launch vehicle. The Inertial Upper Stage booster sent it on toward Jupiter;
+    ''Inertial Upper Stage'' alone is incomplete. galileo.md gives no launch site.'
+- id: q13
+  kind: multi-hop
+  question: From which launch site did the mission whose comet-rendezvous approach informed OSIRIS-REx's mapping
+    strategy launch?
+  expected: Guiana Space Centre, Kourou, French Guiana
+  must:
+  - - Guiana Space Centre
+    - Kourou
+  sources:
+  - small-bodies/osiris-rex.json
+  - small-bodies/rosetta-philae.md
+  note: 'Hop: OSIRIS-REx -> Rosetta (at comet 67P) -> launch site. rosetta-philae.md also says its techniques informed
+    Hayabusa2 and OSIRIS-REx.'
+- id: q14
+  kind: aggregate
+  question: How many missions in the corpus launched from Cape Canaveral, under any of its names?
+  expected: '10'
+  must:
+  - - '10'
+    - ten
+  must_not:
+  - '11'
+  - eleven
+  sources:
+  - mars/curiosity.html
+  - mars/perseverance-and-ingenuity.md
+  - outer-planets/cassini-huygens.html
+  - outer-planets/juno.json
+  - outer-planets/new-horizons.txt
+  - outer-planets/voyager-1.md
+  - outer-planets/voyager-2.md
+  - small-bodies/dawn.md
+  - small-bodies/osiris-rex.json
+  - sun-and-inner/parker-solar-probe.md
+  note: 'Names used: ''Cape Canaveral'' (Curiosity, Perseverance, New Horizons, Voyager 2, Dawn, Parker), ''Cape
+    Canaveral, Florida'' (Voyager 1), ''Cape Canaveral Air Force Station'' (Juno, OSIRIS-REx), ''Cape Canaveral
+    Space Force Station'' in prose and ''Cape Canaveral'' in the table (Cassini; the Space Force name is anachronistic
+    for 1997, corpus wins). Excluded: Europa Clipper (Kennedy Space Center, a distinct site in the corpus) and Galileo
+    (no launch site given; in reality Kennedy). Count missions, not documents; Ingenuity rode with Perseverance
+    and should not be counted separately, so 11 is wrong.'
+- id: q15
+  kind: aggregate
+  question: How many missions in the corpus launched on an Ariane 5?
+  expected: '3'
+  must:
+  - - '3'
+    - three
+  sources:
+  - small-bodies/rosetta-philae.md
+  - sun-and-inner/bepicolombo.html
+  - telescopes/james-webb-space-telescope.md
+  note: All three also launched from the Guiana Space Centre in Kourou. Philae rode with Rosetta and is not a separate
+    launch.
+- id: q16
+  kind: aggregate
+  question: How many missions in the corpus used a gravity assist at Earth?
+  expected: '7'
+  must:
+  - - '7'
+    - seven
+  must_not:
+  - '8'
+  - eight
+  sources:
+  - outer-planets/cassini-huygens.html
+  - outer-planets/galileo.md
+  - outer-planets/juno.json
+  - small-bodies/hayabusa2.html
+  - small-bodies/osiris-rex.json
+  - small-bodies/rosetta-philae.md
+  - sun-and-inner/bepicolombo.html
+  note: 'Galileo used Earth twice but counts once. Borderline: Europa Clipper says only ''gravity assists, including
+    a flyby of Mars'' and names no Earth assist, so it is excluded (in reality it also has an Earth assist). Dawn
+    mentions no gravity assist (in reality it had a Mars assist).'
+- id: q17
+  kind: comparison
+  question: Which launched first, Voyager 1 or Voyager 2?
+  expected: Voyager 2
+  must:
+  - - Voyager 2
+  first:
+  - Voyager 2
+  - Voyager 1
+  sources:
+  - outer-planets/voyager-1.md
+  - outer-planets/voyager-2.md
+  note: 'Voyager 2 launched August 20, 1977; Voyager 1 on September 5, 1977. Trap: the lower mission number launched
+    second. Both documents state the order.'
+- id: q18
+  kind: comparison
+  question: Which launched first, Tianwen-1 or Perseverance?
+  expected: Tianwen-1
+  must:
+  - - Tianwen-1
+    - Tianwen 1
+    - Tianwen
+  first:
+  - Tianwen-1
+  - Perseverance
+  sources:
+  - mars/tianwen-1-and-zhurong.txt
+  - mars/perseverance-and-ingenuity.md
+  note: Tianwen-1 launched July 23, 2020; Perseverance July 30, 2020. Needs dates from both documents; tianwen-1-and-zhurong.txt
+    only says they arrived in the same window.
+- id: u01
+  kind: unanswerable
+  question: How much did the Juno mission cost?
+  answerable: false
+  note: No document gives a mission's cost.
+- id: u02
+  kind: unanswerable
+  question: When is the Artemis III crewed Moon landing planned?
+  answerable: false
+  note: Artemis is not in the corpus.
+- id: u03
+  kind: unanswerable
+  question: Which rover does ESA's Rosalind Franklin mission carry to Mars?
+  answerable: false
+  note: Rosalind Franklin is not in the corpus.
+- id: u04
+  kind: unanswerable
+  question: Who is the principal investigator of the Psyche mission?
+  answerable: false
+  note: Psyche is not in the corpus; the nearest is OSIRIS-REx's principal investigator, which would be a wrong
+    answer.

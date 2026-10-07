@@ -1,0 +1,175 @@
+[
+  {
+    "name": "list_collections",
+    "description": "The collections (corpora) in this deployment, each with its own ontology.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "describe_ontology",
+    "description": "The released ontology of a collection, as its compact agent rendition: types, relations, attributes and synonyms. Read it before querying a collection, and query in its terms.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": [
+        "collection"
+      ]
+    }
+  },
+  {
+    "name": "search_entities",
+    "description": "Find entities in the knowledge graph by name or synonym, optionally of one ontology type (its subtypes included).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "query": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": [
+        "collection",
+        "query"
+      ]
+    }
+  },
+  {
+    "name": "list_entities",
+    "description": "The best-connected entities of an ontology type (its subtypes included).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": [
+        "collection",
+        "type"
+      ]
+    }
+  },
+  {
+    "name": "get_entity",
+    "description": "An entity's types, names, attributes and relations, each with the ids of the passages it is stated in.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": [
+        "collection",
+        "id"
+      ]
+    }
+  },
+  {
+    "name": "neighbourhood",
+    "description": "The entities within 1 to 3 relations of one entity (default 1), nearest and best connected first, and the relations among them.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "hops": {
+          "type": "integer"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": [
+        "collection",
+        "id"
+      ]
+    }
+  },
+  {
+    "name": "find_paths",
+    "description": "How two entities are connected: every shortest chain of relations between them, up to max_hops (1 to 4, default 3) long, each relation with its direction. Cite the passages of each relation (get_entity) before stating it.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "max_hops": {
+          "type": "integer"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": [
+        "collection",
+        "from",
+        "to"
+      ]
+    }
+  }
+]

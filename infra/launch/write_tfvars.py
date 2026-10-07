@@ -10,7 +10,7 @@ read. Kept here, not inline in the template, so it is tested with the rest of th
     COLLECTIONS_JSON       {"<id>": {"profile": {...}, "sources": [...], "ontology_mode": "..."}}
     ONTOLOGY_MODE          applied to collections that do not set their own
     MODEL_ID               extraction and chat model
-    ENABLE_AGENT, AGENT_RUNTIME, TRANSACTION_SEARCH    "true" or "false"
+    KNOWLEDGE_GRAPH, KNOWLEDGE_BASE, AGENT_RUNTIME    "true" or "false"
     DELETE_DATA            "true" lets destroy delete the lake
 """
 
@@ -43,10 +43,7 @@ def build(env: dict | None = None) -> dict:
         if not isinstance(c, dict):
             raise ValueError(f"collection {cid!r} must be an object")
         c.setdefault("ontology_mode", mode)
-    model = env.get("MODEL_ID") or "us.anthropic.claude-sonnet-4-5-20250929-v1:0"
-    agent_on = flag_of(env, "ENABLE_AGENT")
-    runtime = agent_on and flag_of(env, "AGENT_RUNTIME")
-    search = agent_on and flag_of(env, "TRANSACTION_SEARCH")
+    model = env.get("MODEL_ID") or "us.anthropic.claude-sonnet-5"
     return {
         "admin_email": email,
         "name": env.get("DEPLOYMENT_NAME") or "knowledge-store",
@@ -55,13 +52,14 @@ def build(env: dict | None = None) -> dict:
         "extraction_model_id": model,
         "chat_model_id": model,
         "force_destroy_lake": flag_of(env, "DELETE_DATA"),
-        "agent": {"enabled": agent_on, "runtime": runtime, "model_id": model,
-                  "transaction_search": search, "evaluations": search and runtime},
+        "knowledge_graph": {"enabled": flag_of(env, "KNOWLEDGE_GRAPH", True)},
+        "knowledge_base": {"enabled": flag_of(env, "KNOWLEDGE_BASE", True)},
+        "agent": {"runtime": flag_of(env, "AGENT_RUNTIME"), "model_id": model},
     }
 
 
-def flag_of(env, name: str) -> bool:
-    return str(env.get(name, "false")).strip().lower() == "true"
+def flag_of(env, name: str, default: bool = False) -> bool:
+    return str(env.get(name, str(default))).strip().lower() == "true"
 
 
 def main() -> int:

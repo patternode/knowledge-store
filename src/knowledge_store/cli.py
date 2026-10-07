@@ -12,9 +12,10 @@
     knowledge-store candidates [--min-docs 2] [--propose]    the register, and a draft revision from it
     knowledge-store status
 
---lake is s3://bucket or a local directory; it defaults to $LAKE_URI. -c names the collection
-(default: default); knowledge-store collections lists them. Model calls use
-$LLM_PROVIDER (bedrock or anthropic) and $EXTRACTION_MODEL_ID.
+--lake is s3://bucket, az://account/container, gs://bucket or a local directory; it defaults
+to $LAKE_URI. -c names the collection (default: default); knowledge-store collections lists
+them. Model calls use $LLM_PROVIDER (bedrock, anthropic, foundry or vertex) and
+$EXTRACTION_MODEL_ID.
 """
 
 from __future__ import annotations
@@ -105,6 +106,9 @@ def main(argv: list[str] | None = None) -> int:
     from .pipeline import extract, ingest, project, refine, run
 
     if args.cmd == "run":
+        if os.environ.get("LAKE_QUEUE_URL"):  # an Azure job started by upload notifications
+            from .hosts.azure import drain
+            logging.getLogger("cli").info("drained %d upload notifications", drain())
         _print(run.run(root, _client, args.model, [args.collection] if args.collection else None))
     elif args.cmd == "ingest":
         out = {}

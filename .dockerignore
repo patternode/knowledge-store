@@ -5,3 +5,4 @@ examples
 docs
 **/__pycache__
 *.egg-info
+deploy

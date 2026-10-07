@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import base64
 import json
+
+import pytest
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -54,8 +56,10 @@ def test_tools_honour_the_injected_scope(mixed, monkeypatch):  # noqa: F811
     assert gateway.lambda_handler({"collection": "m", "query": "Zeta", "caller_private": "true"}, ctx)["total"] == 0
 
 
-def test_committed_tool_schema_matches_the_code():
-    committed = json.loads((ROOT / "src/knowledge_store/tools/schema.json").read_text())
-    assert committed == gateway.tool_schema(), "regenerate src/knowledge_store/tools/schema.json from tool_schema()"
+@pytest.mark.parametrize("name,toolset", [("schema.json", "all"), ("schema-graph.json", "graph"),
+                                          ("schema-passages.json", "passages")])
+def test_committed_tool_schemas_match_the_code(name, toolset):
+    committed = json.loads((ROOT / "src/knowledge_store/tools" / name).read_text())
+    assert committed == gateway.tool_schema(toolset), f"regenerate src/knowledge_store/tools/{name} from tool_schema()"
     for t in committed:
-        assert "caller_private" in t["inputSchema"]["properties"], "Cedar can only refer to declared inputs"
+        assert "caller_private" in t["inputSchema"]["properties"], "the interceptor sets a declared input"

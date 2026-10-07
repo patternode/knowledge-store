@@ -45,7 +45,7 @@
   const PALETTE = ['#0099c0', '#7077ff', '#e69f00', '#e8457c', '#009e73', '#d55e00', '#56b4e9', '#b07cd8', '#a89200', '#7e8aa7'];
   function hash(s) { let x = 2166136261; for (const ch of String(s)) { x ^= ch.codePointAt(0); x = Math.imul(x, 16777619); } return x >>> 0; }
 
-  // ---- config and sign-in (Cognito authorization code with PKCE) ------------------------
+  // ---- config and sign-in (OIDC authorization code with PKCE: Cognito or Entra ID) ------
   let cfg = { mode: 'local', apiBase: '/api' };
   const TOK = 'kl.tokens', PKCE = 'kl.pkce';
   const b64url = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -55,7 +55,7 @@
   const auth = {
     get tokens() { try { return JSON.parse(store.get(TOK) || 'null'); } catch { return null; } },
     save(t, old) {
-      const claims = jwtClaims(t.id_token || '');
+      const claims = jwtClaims((cfg.oidc.useAccessToken ? t.access_token : t.id_token) || '');
       store.set(TOK, JSON.stringify({ id_token: t.id_token, access_token: t.access_token,
         refresh_token: t.refresh_token || (old && old.refresh_token),
         expires_at: claims.exp ? claims.exp * 1000 : Date.now() + (t.expires_in || 3600) * 1000 }));
@@ -65,14 +65,14 @@
       const verifier = randomB64(48), state = randomB64(16);
       const challenge = b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
       store.set(PKCE, JSON.stringify({ verifier, state, back: location.hash }));
-      const q = new URLSearchParams({ response_type: 'code', client_id: cfg.cognito.clientId, redirect_uri: this.redirectUri(),
-        scope: cfg.cognito.scope || 'openid email', state, code_challenge_method: 'S256', code_challenge: challenge });
-      location.assign(`${cfg.cognito.domain}/oauth2/authorize?${q}`);
+      const q = new URLSearchParams({ response_type: 'code', client_id: cfg.oidc.clientId, redirect_uri: this.redirectUri(),
+        scope: cfg.oidc.scope || 'openid email', state, code_challenge_method: 'S256', code_challenge: challenge });
+      location.assign(`${cfg.oidc.authorize}?${q}`);
     },
     async tokenRequest(params) {
-      const r = await fetch(`${cfg.cognito.domain}/oauth2/token`, { method: 'POST',
+      const r = await fetch(cfg.oidc.token, { method: 'POST',
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ client_id: cfg.cognito.clientId, ...params }) });
+        body: new URLSearchParams({ client_id: cfg.oidc.clientId, ...params, ...(cfg.oidc.logoutStyle !== 'cognito' && cfg.oidc.scope ? { scope: cfg.oidc.scope } : {}) }) });
       if (!r.ok) throw new Error(`sign-in failed (${r.status})`);
       return r.json();
     },
@@ -99,16 +99,20 @@
         .finally(() => { this.refreshing = null; });
       return this.refreshing;
     },
-    async idToken() { // API Gateway's JWT authorizer checks aud, which only the ID token carries
+    // The token the API accepts. Cognito: the ID token, because API Gateway's JWT authorizer checks
+    // aud, which only the ID token carries. Entra ID: the access token issued for the API.
+    async apiToken() {
       let t = this.tokens;
       if (!t) return null;
       if (Date.now() > t.expires_at - 60000) { if (!(await this.refresh())) return null; t = this.tokens; }
-      return t.id_token;
+      return cfg.oidc.useAccessToken ? t.access_token : t.id_token;
     },
     logout() {
       store.del(TOK);
-      const q = new URLSearchParams({ client_id: cfg.cognito.clientId, logout_uri: this.redirectUri() });
-      location.assign(`${cfg.cognito.domain}/logout?${q}`);
+      const q = cfg.oidc.logoutStyle === 'cognito'
+        ? new URLSearchParams({ client_id: cfg.oidc.clientId, logout_uri: this.redirectUri() })
+        : new URLSearchParams({ client_id: cfg.oidc.clientId, post_logout_redirect_uri: this.redirectUri() });
+      location.assign(`${cfg.oidc.logout}?${q}`);
     },
   };
 
@@ -117,7 +121,7 @@
     const headers = {};
     if (body !== undefined) headers['content-type'] = 'application/json';
     if (cfg.mode === 'hosted') {
-      const t = await auth.idToken();
+      const t = await auth.apiToken();
       if (!t) { auth.login(); throw new ApiError(401, 'Signing in again.'); }
       headers.authorization = `Bearer ${t}`;
     }
@@ -844,14 +848,18 @@
     cfg.apiBase = String(cfg.apiBase || '/api').replace(/\/$/, '');
     if (cfg.brand && cfg.brand.name) $('#brand-name').textContent = String(cfg.brand.name);
     if (cfg.mode === 'hosted') {
-      if (!cfg.cognito || !cfg.cognito.domain || !cfg.cognito.clientId) return bootMessage(h('p', { class: 'error', text: 'config.json sets hosted mode without a Cognito domain and client id.' }));
-      cfg.cognito.domain = cfg.cognito.domain.replace(/\/$/, '');
+      if (cfg.cognito && cfg.cognito.domain) { // Cognito's hosted UI: its endpoints follow from the domain
+        const d = cfg.cognito.domain.replace(/\/$/, '');
+        cfg.oidc = { authorize: `${d}/oauth2/authorize`, token: `${d}/oauth2/token`, logout: `${d}/logout`,
+          logoutStyle: 'cognito', clientId: cfg.cognito.clientId, scope: cfg.cognito.scope, useAccessToken: false };
+      }
+      if (!cfg.oidc || !cfg.oidc.authorize || !cfg.oidc.token || !cfg.oidc.clientId) return bootMessage(h('p', { class: 'error', text: 'config.json sets hosted mode without a sign-in configuration (cognito or oidc).' }));
       const err = await auth.handleRedirect();
       if (err) return bootMessage(h('h3', { text: 'Sign-in did not complete' }), h('p', { class: 'muted', text: err }),
         h('button', { class: 'btn primary', type: 'button', onclick: () => auth.login() }, 'Sign in'));
       if (!auth.tokens) return auth.login();
       const c = jwtClaims(auth.tokens.id_token || '');
-      $('#user').textContent = c.email || c['cognito:username'] || '';
+      $('#user').textContent = c.email || c.preferred_username || c.name || c['cognito:username'] || '';
       $('#signout').hidden = false;
       $('#signout').addEventListener('click', () => auth.logout());
     }

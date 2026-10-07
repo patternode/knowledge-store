@@ -8,18 +8,19 @@ the tools can serve private-scope content to exactly the callers entitled to it:
     a person       their Cognito access token carries cognito:groups; private if in PRIVATE_GROUP
     an application its client-credentials token carries scope; private if it holds <api>/tools.private
 
-The Cedar policy on the Gateway checks the same claims independently (defence in depth): a tool
-call marked private from a caller without the group or scope is refused before it reaches a tool.
+The tools trust only this argument, and only a real boolean true: a call that arrives without
+the interceptor (a local run, a test) serves public-scope content.
 
 The token's signature is not re-checked here because Gateway checked it; the claims are only
-decoded. Standard library only.
+decoded. Standard library only. The claim names are configuration (knowledge_store.claims).
 """
 
 from __future__ import annotations
 
 import base64
 import json
-import os
+
+from ..claims import private_caller
 
 ARG = "caller_private"
 
@@ -36,13 +37,7 @@ def claims_of(authorization: str | None) -> dict:
 
 
 def is_private(claims: dict) -> bool:
-    groups = claims.get("cognito:groups") or []
-    if isinstance(groups, str):
-        groups = groups.strip("[]").replace(",", " ").split()
-    if os.environ.get("PRIVATE_GROUP", "private-readers") in groups:
-        return True
-    scopes = str(claims.get("scope") or "").split()
-    return f"{os.environ.get('SCOPE_PREFIX', 'knowledge-store')}/tools.private" in scopes
+    return private_caller(claims)
 
 
 def lambda_handler(event, context):

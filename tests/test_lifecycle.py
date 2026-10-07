@@ -238,3 +238,39 @@ def test_discovery_survives_json_encoded_proposals(lake):
     rep = discover.discover(StringifyingClient(), "fake", lake, PROFILE, sample=5, resamples=2)
     spec = model.load(data=lake.get(f"{layout.ONTOLOGY_DRAFTS}/{rep['draft_id']}/ontology.ttl").decode())
     assert set(spec.classes) == {"Mission", "SpaceAgency", "TargetBody"}
+
+
+def test_version_iri_must_name_the_version(lake, tmp_path):
+    """A draft's owl:versionIRI names the draft's version; a curator who bumps only
+    owl:versionInfo would publish a version whose IRI names another. Publish refuses it."""
+    ttl = """@prefix o: <https://example.org/o#> . @prefix owl: <http://www.w3.org/2002/07/owl#> .
+    <https://example.org/o> a owl:Ontology ; owl:versionInfo "1.0.0" ;
+        owl:versionIRI <https://example.org/o/{iri}> .
+    o:A a owl:Class .
+    """
+    bad, good = tmp_path / "bad", tmp_path / "good"
+    for d, iri in ((bad, "0.1.0"), (good, "1.0.0")):
+        d.mkdir()
+        (d / "ontology.ttl").write_text(ttl.format(iri=iri))
+    with pytest.raises(ValueError, match="does not name version 1.0.0"):
+        versions.publish(lake, bad)
+    assert versions.publish(lake, good)["version"] == "1.0.0"
+
+
+def test_a_header_only_change_is_a_patch(lake, tmp_path):
+    """Correcting the ontology's own comment (or label) is descriptive: publishable as a patch,
+    with nothing to re-extract, rather than refused as identical."""
+    ttl = """@prefix o: <https://example.org/o#> . @prefix owl: <http://www.w3.org/2002/07/owl#> .
+    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+    <https://example.org/o> a owl:Ontology ; owl:versionInfo "{v}" ; rdfs:comment "{c}" .
+    o:A a owl:Class .
+    """
+    d1, d2, d3 = (tmp_path / n for n in ("1", "2", "3"))
+    for d, v, c in ((d1, "1.0.0", "draft"), (d2, "1.0.1", "curated"), (d3, "1.0.2", "curated")):
+        d.mkdir()
+        (d / "ontology.ttl").write_text(ttl.format(v=v, c=c))
+    versions.publish(lake, d1, activate=True)
+    m = versions.publish(lake, d2, activate=True)
+    assert m["kind"] == "descriptive" and m["base"] == "1.0.0"
+    with pytest.raises(ValueError, match="identical"):
+        versions.publish(lake, d3)
