@@ -74,6 +74,10 @@ button, select, textarea { font: inherit; color: inherit; }
   padding: 14px 24px; background: var(--surface); border-bottom: 1px solid var(--border);
 }
 .brand { margin: 0; font-size: 1.1rem; font-weight: 600; }
+.nav { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
+.navlink { color: var(--muted); text-decoration: none; padding: 2px 0; border-bottom: 2px solid transparent; }
+.navlink:hover { color: var(--text); }
+.navlink[aria-current="page"] { color: var(--text); border-bottom-color: var(--action); }
 .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; min-width: 0; }
 .controls label { color: var(--muted); font-size: 0.9rem; margin-right: 6px; }
 select {
