@@ -1,6 +1,6 @@
 # Third-party notices
 
-This project's own code is licensed under the Apache License 2.0 (see LICENSE). It uses the third-party software below under the licences its authors publish. None of it is bundled in this repository.
+This project's own code is licensed under the Apache License 2.0 (see LICENSE). It uses the third-party software below under the licences its authors publish. Only D3.js is bundled in this repository, in `chat/vendor/`.
 
 ## Python dependencies, installed by pip
 
@@ -28,6 +28,12 @@ Optional, installed only with the extra that names them (see the README's Instal
 | pymongo | mongo | Apache-2.0 |
 | neo4j | neo4j | Apache-2.0 (parts under the Python Software Foundation License) |
 | psycopg, psycopg-binary | age | LGPL-3.0-only. It is installed by pip as an unmodified, separate library and imported at run time; this project does not include or change its code |
+
+## Bundled with the chat page
+
+| Component | File | Licence |
+|---|---|---|
+| D3.js 7.9.0, Copyright 2010-2023 Mike Bostock | `chat/vendor/d3.min.js`, unmodified from the `d3` npm package | ISC (the notice is in the file's first line and in `chat/vendor/README.md`) |
 
 ## Loaded by the portal page at run time
 

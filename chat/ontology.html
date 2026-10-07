@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self' https: http://localhost:* http://127.0.0.1:*; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Ontology · Knowledge Store</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231b202c'/%3E%3Cpath d='M16 20h32v20H30l-10 8v-8h-4z' fill='none' stroke='%2300b8e6' stroke-width='4' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="ontology.css">
+<script defer src="vendor/d3.min.js"></script>
+<script defer src="common.js"></script>
+<script defer src="ontology.js"></script>
+</head>
+<body class="onto-page">
+<a class="skip" href="#onto-side">Skip to the class list</a>
+<header class="header">
+  <nav class="nav" aria-label="Pages">
+    <p class="brand" id="brand-name">Knowledge Store</p>
+    <a class="navlink" href="./">Chat</a>
+    <a class="navlink" href="ontology.html" aria-current="page">Ontology</a>
+  </nav>
+  <div class="controls">
+    <span id="coll-wrap" hidden>
+      <label for="coll-select">Collection</label>
+      <select id="coll-select"></select>
+    </span>
+    <span class="coll-name" id="coll-name" hidden></span>
+    <span class="pill" id="private-pill" hidden>Private access</span>
+    <span class="user" id="user"></span>
+    <button class="btn" id="signin" type="button" hidden>Sign in</button>
+    <button class="btn" id="signout" type="button" hidden>Sign out</button>
+  </div>
+</header>
+
+<div id="notice" class="notice onto-notice" hidden></div>
+
+<div class="onto" id="onto" hidden>
+  <section class="stage-wrap" aria-label="Ontology graph">
+    <div class="stage" id="onto-graph">
+      <div class="find">
+        <label class="sr-only" for="onto-find">Find a class</label>
+        <input id="onto-find" type="search" placeholder="Find a class" autocomplete="off">
+        <button class="stage-btn" id="onto-fit" type="button" title="Fit the whole ontology in view">Fit</button>
+      </div>
+      <div class="tip" id="onto-tip" role="tooltip" hidden></div>
+      <div class="legend" id="onto-legend">
+        <span><svg width="22" height="6" aria-hidden="true"><line x1="0" y1="3" x2="22" y2="3" stroke="#d5dbe9" stroke-width="1.8"/></svg> subclass of</span>
+        <span><svg width="22" height="6" aria-hidden="true"><line x1="0" y1="3" x2="22" y2="3" stroke="#909cff" stroke-width="1.4"/></svg> declared relation (from → to)</span>
+        <span><svg width="22" height="6" aria-hidden="true"><line x1="0" y1="3" x2="22" y2="3" stroke="#e8457c" stroke-width="1.6" stroke-dasharray="5,3"/></svg> seen in the data, not declared</span>
+        <span><svg width="10" height="10" aria-hidden="true"><circle cx="5" cy="5" r="4" fill="#c88a1e" stroke="#ffcf66" stroke-width="1.5"/></svg> core: the most connected classes</span>
+        <span>the pill counts entities; the <span class="arc-key">arc</span> shows how populated, against the largest class</span>
+        <span>small dashed ring: no entities yet</span>
+      </div>
+    </div>
+  </section>
+
+  <aside class="side" id="onto-side" aria-label="Ontology statistics">
+    <div class="stats" id="onto-stats"></div>
+    <div class="tabs" role="tablist" aria-label="Ontology lists">
+      <button role="tab" id="tab-classes" aria-controls="panel-classes" aria-selected="true" data-tab="classes">Classes</button>
+      <button role="tab" id="tab-properties" aria-controls="panel-properties" aria-selected="false" tabindex="-1" data-tab="properties">Properties</button>
+      <button role="tab" id="tab-selected" aria-controls="panel-selected" aria-selected="false" tabindex="-1" data-tab="selected">Selected</button>
+    </div>
+    <div role="tabpanel" class="panel" id="panel-classes" aria-labelledby="tab-classes" tabindex="0"></div>
+    <div role="tabpanel" class="panel" id="panel-properties" aria-labelledby="tab-properties" tabindex="0" hidden></div>
+    <div role="tabpanel" class="panel" id="panel-selected" aria-labelledby="tab-selected" tabindex="0" hidden></div>
+  </aside>
+</div>
+<div id="announce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
