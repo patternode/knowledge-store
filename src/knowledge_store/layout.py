@@ -19,6 +19,7 @@
     ontology/drafts/<draft_id>/...          discovery and revision proposals, for a person to curate
     ontology/candidates/register.json       candidate terms aggregated across documents
     config/sources.json, config/profile.json, config/settings.json   written by Terraform from tfvars
+    gold/sparql.json, gold/kb.json          what the SPARQL store and the Knowledge Base hold
     portal/status.json                      pipeline stage and counts, for the portal before any ontology exists
     locks/pipeline.json                     the one-at-a-time pipeline lock
     manifests/<job>/<run_id>.jsonl          one row per item a run touched
@@ -50,6 +51,10 @@ CONFIG_ONTOLOGY = "config/ontology"   # a provided ontology: ontology.ttl, optio
 STATUS = "portal/status.json"
 GRAPH_POINTER = "gold/graph.json"
 DOCUMENTS_POINTER = "gold/documents.json"
+SPARQL_POINTER = "gold/sparql.json"        # what the SPARQL store (Neptune) holds of this collection
+PASSAGES_POINTER = "gold/kb.json"          # what the Knowledge Base data source holds of it
+KB_PASSAGES = "kb/passages"                # kb/passages/<collection>/<passage id>.txt (+ .metadata.json),
+                                           # at the lake's root: the Knowledge Base's one data source
 PIPELINE_LOCK = "locks/pipeline.json"
 MANIFESTS = "manifests"
 

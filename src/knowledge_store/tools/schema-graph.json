@@ -171,57 +171,5 @@
         "to"
       ]
     }
-  },
-  {
-    "name": "search_passages",
-    "description": "Search the source passages by what they say; returns each passage's text, id and document. Use it for anything the graph does not hold, and to find the passage behind a fact.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "collection": {
-          "type": "string"
-        },
-        "query": {
-          "type": "string"
-        },
-        "limit": {
-          "type": "integer"
-        },
-        "caller_private": {
-          "type": "boolean",
-          "description": "set by the gateway from the caller's token; any value you send is replaced"
-        }
-      },
-      "required": [
-        "collection",
-        "query"
-      ]
-    }
-  },
-  {
-    "name": "read_passages",
-    "description": "The full text of passages by id, with the document each comes from. Read a passage before citing it.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "collection": {
-          "type": "string"
-        },
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "caller_private": {
-          "type": "boolean",
-          "description": "set by the gateway from the caller's token; any value you send is replaced"
-        }
-      },
-      "required": [
-        "collection",
-        "ids"
-      ]
-    }
   }
 ]

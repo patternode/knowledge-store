@@ -41,7 +41,7 @@ from ..ontology import candidates, discover, provided, versions
 from ..store import Store, put_json
 from .extract import extract_all
 from .ingest import ingest_source
-from .load import load_documents, load_graph
+from .load import load_documents, load_graph, load_sparql, sync_passages
 from .project import project
 from .refine import refine_all, silver_doc_ids
 
@@ -144,7 +144,8 @@ def sweep_once(lake: Store, client_factory, model_id: str, cfg: dict) -> dict:
     if rows or not lake.exists(layout.index_key(versions.active_version(lake), "summary")):
         candidates.build_register(lake, versions.active_version(lake))
         stats["projection"] = project(lake)
-    for name, step in (("graph", load_graph), ("documents", load_documents)):
+    for name, step in (("graph", load_graph), ("documents", load_documents), ("sparql", load_sparql),
+                       ("passages", sync_passages)):
         try:
             loaded = step(lake)
             if loaded:

@@ -11,6 +11,7 @@
     GET  /api/neighbourhood?id=&hops=&limit=
     GET  /api/paths?from=&to=&hops=&limit=
     GET  /api/drafts                 discovery and revision drafts awaiting curation
+    GET  /api/document?doc=          a link to open a source document (its URL, or a short-lived link)
     POST /api/chat {question, history}   -> {id}; answered asynchronously
     GET  /api/chat?id=               -> {status, answer, citations, trace}
 
@@ -21,6 +22,10 @@ id and groups from the claims (knowledge_store.claims). Members of the group nam
 PRIVATE_GROUP see private-scope content. A question is limited per caller per day
 (DAILY_QUESTIONS), counted with a conditional write in the chat state (state.py: DynamoDB, or
 the MongoDB API on Azure and Google Cloud), so the limit holds across concurrent requests.
+
+With AGENT_RUNTIME_ARN set, the question goes to the chat agent on AgentCore Runtime with the
+person's own access token (agent_client.py), and the answer is the agent's: grounded claims with
+their sources. Without it, the portal's own tool loop answers (chat.py), as on other clouds.
 
 API Gateway gives an integration 30 seconds, less than a multi-step tool loop can take, so POST
 /api/chat stores the question and invokes this function again asynchronously to answer it; the
@@ -39,7 +44,7 @@ from .. import collections, layout
 from ..claims import private_reader, subject
 from ..config import load_profile
 from ..store import S3Store, store_from_uri
-from . import chat, index, state as chat_state
+from . import agent_client, chat, index, state as chat_state
 
 log = logging.getLogger()
 log.setLevel(logging.INFO)
@@ -84,6 +89,37 @@ def caller(event: dict) -> tuple[str, bool]:
     return subject(claims), private_reader(claims)
 
 
+def bearer(event: dict) -> str:
+    h = {k.lower(): v for k, v in (event.get("headers") or {}).items()}
+    v = h.get("authorization", "")
+    return v.split(" ", 1)[1] if v.lower().startswith("bearer ") else v
+
+
+def document_link(lk, doc_id: str, private: bool) -> dict | None:
+    """Where a person can open a source document: its own URL when it came from the web, else a
+    short-lived link to the copy in the lake. None if there is no such document in their scope."""
+    from ..pipeline.refine import load_doc
+    if not doc_id or "/" in doc_id or not lk.exists(layout.doc_key(doc_id)):
+        return None
+    doc = load_doc(lk, doc_id)
+    if not (private or doc.get("scope", "public") == "public"):
+        return None
+    out = {"doc": doc_id, "title": doc.get("title") or doc.get("name"), "name": doc.get("name")}
+    uri = doc.get("source_uri") or ""
+    if uri.startswith(("https://", "http://")):
+        return {**out, "url": uri}
+    meta_key = layout.bronze_meta_key(doc["source"], doc_id)
+    root = getattr(lk, "whole", lk)
+    if not lk.exists(meta_key) or not hasattr(root, "s3"):
+        return out
+    meta = json.loads(lk.get(meta_key))
+    key = getattr(lk, "prefix", "") + layout.bronze_content_key(doc["source"], doc_id, meta.get("ext", ""))
+    name = (doc.get("name") or doc_id).replace('"', "")
+    url = root.s3.generate_presigned_url("get_object", ExpiresIn=600, Params={
+        "Bucket": root.bucket, "Key": key, "ResponseContentDisposition": f'inline; filename="{name}"'})
+    return {**out, "url": url}
+
+
 def _json(lake_, key, default=None):
     return json.loads(lake_.get(key)) if lake_.exists(key) else default
 
@@ -93,13 +129,20 @@ def take_quota(sub: str) -> bool:
 
 
 def answer_job(job: dict) -> None:
-    """The asynchronous half of POST /api/chat."""
+    """The asynchronous half of POST /api/chat: the chat agent on AgentCore Runtime, as the person
+    asking, when AGENT_RUNTIME_ARN is set; otherwise the portal's own tool loop (chat.py)."""
     cid = job.get("collection", collections.DEFAULT_ID)
-    idx = index.load(collections.scoped(lake(), cid), cid)
     try:
-        if idx is None:
-            raise RuntimeError("the knowledge graph is not built yet")
-        out = chat.ask(idx, job["question"], job.get("history"), private=job["private"])
+        if agent_client.configured():
+            out = agent_client.ask(job.pop("token", ""), {"question": job["question"], "collection": cid,
+                                                          "history": job.get("history")})
+            if out.get("error") and not out.get("answer"):
+                raise RuntimeError(out["error"])
+        else:
+            idx = index.load(collections.scoped(lake(), cid), cid)
+            if idx is None:
+                raise RuntimeError("the knowledge graph is not built yet")
+            out = chat.ask(idx, job["question"], job.get("history"), private=job["private"])
         item = {"status": "done", **out}
     except Exception as e:
         log.exception("chat failed")
@@ -153,6 +196,9 @@ def handler(event, context):
             if not qs.get("id") or "/" in qs["id"] or not lk.exists(key):
                 return reply(404, {"error": "no such draft"})
             return reply(200, {"id": qs["id"], "ttl": lk.get(key).decode()})
+        if path == "/document":
+            link = document_link(lk, qs.get("doc", ""), private)
+            return reply(200, link) if link else reply(404, {"error": "no such document"})
         if path == "/chat" and method == "GET":
             item = state().get_chat(qs.get("id", ""))
             if not item or item.get("sub") != sub:
@@ -202,6 +248,8 @@ def handler(event, context):
                 return reply(429, {"error": "You have reached today's question limit."})
             job = {"id": uuid.uuid4().hex, "sub": sub, "private": private, "question": q, "collection": cid,
                    "history": [h for h in (body.get("history") or [])[-6:] if isinstance(h, dict)]}
+            if agent_client.configured():  # the agent acts as this person: it gets their token, never stored
+                job["token"] = bearer(event)
             state().put_chat(job["id"], sub, {"status": "pending"})
             dispatch(job, context)
             return reply(202, {"id": job["id"]})
