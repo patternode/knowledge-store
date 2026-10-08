@@ -17,7 +17,7 @@
  * Every name and definition comes from the ontology, which a model may have proposed, so text
  * reaches the page through textContent only (h() and D3's .text()), never innerHTML.
  */
-(() => {
+function main() {
   'use strict';
   const { $, h, clear, lstore, str, auth, api, COLL_KEY } = window.KS;
 
@@ -566,4 +566,23 @@
     await load();
   }
   boot();
-})();
+}
+
+// common.js normally runs first (both are deferred). If it did not, because the browser kept a
+// broken copy from a deploy or something blocked the request, fetch a fresh copy once; if that
+// fails too, say so on the page rather than leaving it blank.
+(function withCommon(run) {
+  if (window.KS) return run();
+  const failed = () => {
+    const n = document.getElementById('notice');
+    if (!n) return;
+    n.hidden = false;
+    n.textContent = 'This page could not load its script (common.js). Reload it; if that does not help, '
+      + 'a browser extension may be blocking it.';
+  };
+  const s = document.createElement('script');
+  s.src = `common.js?fresh=${Date.now()}`;
+  s.onload = () => (window.KS ? run() : failed());
+  s.onerror = failed;
+  document.head.append(s);
+})(main);
