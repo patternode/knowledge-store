@@ -209,20 +209,21 @@ module "portal" {
 }
 
 module "agent" {
-  source             = "../agent"
-  name               = var.name
-  package_root       = "${local.repo_root}/src"
-  tool_schema_dir    = "${local.repo_root}/src/knowledge_store/tools"
-  lake_bucket        = module.lake.bucket
-  lake_bucket_arn    = module.lake.bucket_arn
-  discovery_url      = module.identity.discovery_url
-  allowed_client_ids = concat([module.identity.client_id], [for k in sort(keys(local.site_clients)) : module.identity.machine_client_ids[k]])
-  scope_prefix       = module.identity.scope_prefix
-  private_group      = local.private_group
-  agent_image_uri    = module.build.agent_image_uri
-  runtime_enabled    = var.agent.runtime
-  prod_version       = var.agent.prod_version
-  agent_model_id     = var.agent.model_id
+  source               = "../agent"
+  name                 = var.name
+  package_root         = "${local.repo_root}/src"
+  tool_schema_dir      = "${local.repo_root}/src/knowledge_store/tools"
+  lake_bucket          = module.lake.bucket
+  lake_bucket_arn      = module.lake.bucket_arn
+  discovery_url        = module.identity.discovery_url
+  allowed_client_ids   = concat([module.identity.client_id], [for k in sort(keys(local.site_clients)) : module.identity.machine_client_ids[k]])
+  scope_prefix         = module.identity.scope_prefix
+  private_group        = local.private_group
+  agent_image_uri      = module.build.agent_image_uri
+  runtime_enabled      = var.agent.runtime
+  prod_version         = var.agent.prod_version
+  agent_model_id       = var.agent.model_id
+  idle_session_minutes = var.agent.idle_session_minutes
   neptune = var.knowledge_graph.enabled ? {
     endpoint                 = module.knowledge_graph[0].endpoint
     port                     = module.knowledge_graph[0].port

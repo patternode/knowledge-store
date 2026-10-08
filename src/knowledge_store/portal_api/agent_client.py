@@ -20,6 +20,7 @@ Standard library and boto3 (in the Lambda runtime).
 from __future__ import annotations
 
 import base64
+import hashlib
 import json
 import os
 import time
@@ -70,6 +71,14 @@ def invocation_url(arn: str, qualifier: str) -> str:
     region = arn.split(":")[3]
     return (f"https://bedrock-agentcore.{region}.amazonaws.com/runtimes/{urllib.parse.quote(arn, safe='')}"
             f"/invocations?qualifier={urllib.parse.quote(qualifier)}")
+
+
+def session_for(sub: str, private: bool) -> str:
+    """One Runtime session per person (and reading scope), so their questions reach the same warm
+    microVM until it has been idle for the Runtime's idle timeout, rather than starting a new one
+    each time. The agent keeps no conversation state between calls (history travels in the
+    payload), so a reused session only saves the start-up. Hashed: the id never carries the sub."""
+    return "chat-" + hashlib.sha256(f"{sub}|{int(bool(private))}".encode()).hexdigest()[:40]
 
 
 def ask(token: str, payload: dict, session_id: str | None = None, timeout: int = 600) -> dict:
