@@ -4,12 +4,12 @@ The claims differ by identity provider; the rule does not. A person is private i
 role) claim holds PRIVATE_GROUP; an application is private if a scope (or role) claim holds
 PRIVATE_SCOPE. The claim names are configuration:
 
-                    Cognito (the default)   Entra ID                  Identity Platform
-    SUBJECT_CLAIM   sub                     oid                       sub
-    GROUPS_CLAIM    cognito:groups          roles                     private_groups (custom)
-    PRIVATE_GROUP   private-readers         private-reader            private-readers
-    SCOPES_CLAIM    scope                   roles,scp                 private_scopes (custom)
-    PRIVATE_SCOPE   <SCOPE_PREFIX>/tools.private  tools.private       tools.private
+                    Cognito (the default)
+    SUBJECT_CLAIM   sub
+    GROUPS_CLAIM    cognito:groups
+    PRIVATE_GROUP   private-readers
+    SCOPES_CLAIM    scope
+    PRIVATE_SCOPE   <SCOPE_PREFIX>/tools.private
 
 A claim setting may name several claims, comma-separated. Nothing here verifies a signature:
 callers pass claims that a gateway or authorizer has already verified. Standard library only,

@@ -1,7 +1,5 @@
 # Quick start on AWS
 
-For Azure, see [docs/architectures/azure-setup.md](docs/architectures/azure-setup.md).
-
 To install it for real, in an account with its own network, controls and domain, follow the
 [AWS installation guide](docs/deploy/aws/README.md): every parameter, the components and how
 the Terraform expresses them, and the reference architecture diagram.

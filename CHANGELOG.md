@@ -4,6 +4,12 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 ## [Unreleased]
 
+### Removed
+
+- The Azure deployment (`deploy/azure/`) and its code: the Blob Storage lake, the `foundry` model provider, Entra ID sign-in for AGE, the Azure host, token verification (`authn.py`) and the MCP server it served (`tools/mcp.py`). The `azure` extra is gone.
+- Google Cloud: the Cloud Storage lake, the `vertex` model provider, the Spanner Graph rendition and the `gcp` extra.
+- The reference architectures for Azure and Google Cloud. AWS is the one supported deployment; the graph and document backends stay, in `docs/architectures/backends.md`.
+
 ### Added since 0.1.2
 
 - On AWS, a minimal GraphRAG reference architecture: the sweep loads the gold RDF into Amazon Neptune (one named graph per document, and the ontology), and the agent's graph tools query it with fixed SPARQL built from the ontology (`knowledge_graph`, on by default).

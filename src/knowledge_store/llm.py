@@ -1,12 +1,10 @@
-"""The model provider, one for every model call: Bedrock, the Anthropic API, Claude in
-Microsoft Foundry or Claude on Vertex AI.
+"""The model provider, one for every model call: Bedrock or the Anthropic API.
 
 Every caller builds a Bedrock Converse request and reads a Converse response.
 runtime_client() returns what they call `converse` on: the Bedrock runtime
-client, or, for every other provider, AnthropicConverse, which sends the same
-request to the Messages API (Anthropic's, Foundry's or Vertex AI's; they take the
-same request) and answers in Converse form. Callers change only where they build
-their client.
+client, or, with the Anthropic API, AnthropicConverse, which sends the same request to
+the Messages API and answers in Converse form. Callers change only where they build their
+client.
 
 There is no default. LLM_PROVIDER must be set, so a run can never fall back to one
 provider while the lab is switched to the other. Deployed jobs, the proxy and the
@@ -15,14 +13,6 @@ exports the same value for local commands.
 
 The API key comes from ANTHROPIC_API_KEY, or else from the Secrets Manager secret
 named by ANTHROPIC_API_KEY_SECRET (how the deployed jobs, proxy and agent get it).
-
-LLM_PROVIDER=foundry reads the resource from ANTHROPIC_FOUNDRY_RESOURCE (or
-ANTHROPIC_FOUNDRY_BASE_URL). It authenticates with Entra ID (the managed identity when
-deployed) unless ANTHROPIC_FOUNDRY_API_KEY is set. The model id is the deployment name;
-a Bedrock id is mapped to the model's name, which is the default deployment name.
-
-LLM_PROVIDER=vertex reads the project from ANTHROPIC_VERTEX_PROJECT_ID and the region
-from CLOUD_ML_REGION, and authenticates with Application Default Credentials.
 """
 
 from __future__ import annotations
@@ -35,11 +25,8 @@ from functools import lru_cache
 
 log = logging.getLogger("llm")
 
-BEDROCK, ANTHROPIC, FOUNDRY, VERTEX = "bedrock", "anthropic", "foundry", "vertex"
-PROVIDERS = (BEDROCK, ANTHROPIC, FOUNDRY, VERTEX)
-
-# The Entra scope for Foundry's Anthropic endpoint.
-FOUNDRY_SCOPE = "https://cognitiveservices.azure.com/.default"
+BEDROCK, ANTHROPIC = "bedrock", "anthropic"
+PROVIDERS = (BEDROCK, ANTHROPIC)
 
 # us.anthropic.claude-sonnet-4-5-20250929-v1:0 -> claude-sonnet-4-5-20250929
 _BEDROCK_ID = re.compile(r"^(?:(?:us|eu|apac|jp|au|global)\.)?anthropic\.(?P<name>.+?)(?:-v\d+(?::\d+)?)?$")
@@ -66,8 +53,8 @@ def model_name(model_id: str) -> str:
     return m.group("name") if m else model_id
 
 
-# claude-opus-4-8, claude-sonnet-4-5-20250929, claude-opus-5, claude-fable-5-1, and Vertex AI's
-# claude-sonnet-4-5@20250929
+# claude-opus-4-8, claude-sonnet-4-5-20250929, claude-opus-5, claude-fable-5-1, and the
+# claude-sonnet-4-5@20250929 form
 _MODEL = re.compile(r"^claude-(?P<family>[a-z]+)-(?P<major>\d+)(?:-(?P<minor>\d{1,2}))?(?:[-@]\d{8})?$")
 
 
@@ -122,14 +109,6 @@ def sdk_client(p: str, *, timeout: float = 300, max_retries: int = 2):
     import anthropic
     if p == ANTHROPIC:
         return anthropic.Anthropic(api_key=api_key(), timeout=timeout, max_retries=max_retries)
-    if p == FOUNDRY:
-        kw = {}
-        if not os.environ.get("ANTHROPIC_FOUNDRY_API_KEY"):
-            from azure.identity import DefaultAzureCredential, get_bearer_token_provider
-            kw["azure_ad_token_provider"] = get_bearer_token_provider(DefaultAzureCredential(), FOUNDRY_SCOPE)
-        return anthropic.AnthropicFoundry(timeout=timeout, max_retries=max_retries, **kw)
-    if p == VERTEX:
-        return anthropic.AnthropicVertex(timeout=timeout, max_retries=max_retries)
     raise ValueError(f"{p} is not a Messages API provider")
 
 
@@ -299,8 +278,6 @@ class AnthropicConverse:
 def strands_model(model_id: str, temperature: float = 0, max_tokens: int | None = None):
     """The Strands model for the agent, for the configured provider. `max_tokens` caps each model
     call's output (the chat's per-question limits); without it Anthropic gets 8000."""
-    if provider() in (FOUNDRY, VERTEX):
-        raise NotImplementedError(f"the agent does not run on {provider()} yet; see docs/architectures")
     if provider() == ANTHROPIC:
         from strands.models.anthropic import AnthropicModel
         name = model_name(model_id)

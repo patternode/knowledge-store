@@ -3,17 +3,15 @@
 Three adapters behind one port, chosen by CHAT_STATE:
 
     dynamodb  (the default)  DynamoDB table CHAT_TABLE, as on AWS
-    mongodb                  database MONGODB_DB (default knowledge_store) at MONGODB_URI: MongoDB
-                             Atlas, Azure Cosmos DB for MongoDB or Firestore with MongoDB
-                             compatibility, which all speak the same protocol
+    mongodb                  database MONGODB_DB (default knowledge_store) at MONGODB_URI: MongoDB,
+                             or a service that speaks its protocol
     memory                   a dict, for local runs and tests
 
 The quota must hold across concurrent requests, so each adapter takes it with one atomic
-conditional write. The MongoDB adapter keeps to what all three MongoDB targets support: no
+conditional write. The MongoDB adapter keeps to what every MongoDB target supports: no
 transactions, no $text, no TTL dependence. Expiry is checked on read, so a target without a
 TTL index is correct and only keeps old rows longer; each deployment adds the TTL its target
-supports (an index on expires_at for Atlas, the _ts TTL for Cosmos DB, a TTL policy for
-Firestore) to clear them.
+supports (an index on expires_at, for example) to clear them.
 """
 
 from __future__ import annotations
@@ -84,7 +82,7 @@ class MongoState:
     @classmethod
     def connect(cls, uri: str, db: str) -> "MongoState":
         from pymongo import MongoClient
-        # retryWrites is off because Cosmos DB for MongoDB (RU) rejects it; the writes here are
+        # retryWrites is off because some MongoDB-compatible services reject it; the writes here are
         # idempotent or conditional, so a caller's retry is safe.
         return cls(MongoClient(uri, retryWrites=False, serverSelectionTimeoutMS=10000)[db])
 

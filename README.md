@@ -6,9 +6,9 @@ domain. Bring an ontology, or have one discovered from the documents and reviewe
 it is maintained under version control, released in controlled versions, and grown from the
 terms extraction finds it lacks.
 
-It runs on AWS or Azure, in one account or subscription from one Terraform stack, or on your own
-machine over a local folder. Model calls go to Claude through your cloud's own service (Amazon
-Bedrock, or Microsoft Foundry), so no data leaves your cloud, or to the Anthropic API.
+It runs on AWS, in one account from one Terraform stack, or on your own machine over a local
+folder. Model calls go to Claude through Amazon Bedrock, so no data leaves your account, or to
+the Anthropic API.
 
 ## What it does
 
@@ -101,7 +101,7 @@ it into what each consumer needs, under `ontology/versions/<v>/renditions/`:
 | owl/ontology.ttl, owl/shapes.ttl | SPARQL stores (Neptune), SHACL validation, the pipeline |
 | agent/ontology.md, agent/ontology.json | an agent's prompt or tools: compact types, relations, attributes and synonyms |
 | neo4j/schema.cypher, neo4j/mapping.json, neo4j/schema.md | a property-graph projection: constraints, the class-to-label and property-to-relationship mapping, and the schema for Cypher agents |
-| age/schema.sql, spanner/schema.sql | the same projection in PostgreSQL with Apache AGE, and in Spanner Graph |
+| age/schema.sql | the same projection in PostgreSQL with Apache AGE |
 | extraction/tool.json | the extraction tool's JSON Schema |
 | jsonld/context.jsonld | JSON-LD over the same terms |
 
@@ -115,33 +115,26 @@ terms and shows only answers it can ground in cited passages. See
 
 ## Deploy
 
-The core (the pipeline, the ontology lifecycle, the portal and its API, and the knowledge tools)
-is the same everywhere. Each cloud adds its storage, model provider, sign-in and hosting, and its
-own Terraform:
-
-| Cloud | State | Deployment code | Start here |
-|---|---|---|---|
-| AWS | Built: the reference implementation | [`infra/`](infra): the module [`infra/modules/knowledge-store`](infra/modules/knowledge-store), the root [`infra/stack`](infra/stack), a CloudFormation launch stack, and a template for a deployment repository of your own ([`examples/deployment`](examples/deployment)) | [QUICKSTART.md](QUICKSTART.md) to try it; [docs/deploy/aws](docs/deploy/aws/README.md) to install it in your own AWS estate |
-| Azure | Built | [`deploy/azure/`](deploy/azure): the module, the root, the state bootstrap and the Function App | [docs/architectures/azure-setup.md](docs/architectures/azure-setup.md) |
-| Google Cloud | Designed. Storage and the Vertex AI provider are built; there is no deployment yet | none yet | [docs/architectures/gcp.md](docs/architectures/gcp.md) |
-
-How the clouds map onto one design is in [docs/architectures](docs/architectures/README.md).
-On every cloud the pipeline image is built inside your account from this repository's source.
+The deployment code is in [`infra/`](infra): the module
+[`infra/modules/knowledge-store`](infra/modules/knowledge-store), the root
+[`infra/stack`](infra/stack), a CloudFormation launch stack, and a template for a deployment
+repository of your own ([`examples/deployment`](examples/deployment)). Read
+[QUICKSTART.md](QUICKSTART.md) to try it, and [docs/deploy/aws](docs/deploy/aws/README.md) to
+install it in your own AWS estate. The pipeline image is built inside your account from this
+repository's source.
 
 ## Install
 
 ```bash
-pip install -e ".[aws]"     # from a clone; or [azure], or [gcp]
+pip install -e ".[aws]"     # from a clone
 ```
 
-The core depends on no cloud's SDK. Each cloud and each optional backend is an extra, so an install
+The core depends on no cloud's SDK. AWS and each optional backend is an extra, so an install
 carries only what it uses:
 
 | Extra | For |
 |---|---|
 | aws | S3 lakes (`s3://`), Amazon Bedrock, DynamoDB chat state |
-| azure | Blob Storage lakes (`az://`), Claude in Microsoft Foundry with Entra ID, the Azure host |
-| gcp | Cloud Storage lakes (`gs://`), Claude on Vertex AI |
 | mongo, neo4j, age | the document store and graph backends |
 | dev | all of the above, plus the test tools |
 
@@ -157,7 +150,7 @@ carries only what it uses:
    draft. Curate and publish it:
 
    ```bash
-   export LAKE_URI=s3://<lake bucket>                     # or az://<account>/<container>
+   export LAKE_URI=s3://<lake bucket>
    # the draft id: list the lake's collections/<id>/ontology/drafts/
    knowledge-store ontology pull <draft id> ontology/
    # edit ontology/ontology.ttl, set owl:versionInfo "1.0.0", commit it
@@ -191,7 +184,7 @@ sharepoint = "my_package.sharepoint:SharePointAdapter"
 ```
 
 A source can be `scope = "private"`. Its facts are shown only to portal users who may read private
-content: the `private-readers` Cognito group on AWS, the `private-reader` app role on Azure.
+content: the `private-readers` Cognito group, or the private roles of `site_sign_in`.
 
 ## Evaluate
 
@@ -216,15 +209,14 @@ python -m knowledge_store.portal_api.local --lake ./build/lake
 ```
 
 Model calls need `LLM_PROVIDER` and `EXTRACTION_MODEL_ID`. The provider is `anthropic` (with
-`ANTHROPIC_API_KEY`, no extra needed), `bedrock` (the aws extra and AWS credentials), `foundry`
-(Claude in Microsoft Foundry, the azure extra) or `vertex` (Claude on Vertex AI, the gcp extra);
-see `llm.py` for their settings.
+`ANTHROPIC_API_KEY`, no extra needed) or `bedrock` (the aws extra and AWS credentials); see
+`llm.py` for their settings.
 
 ## Costs
 
 On AWS the knowledge graph (Neptune, about 60 USD a month) is the fixed cost; switch it off for
 a small demo and the graph tools answer from memory. Everything else idles at close to nothing.
-Each cloud's guide lists what it runs. Model calls are the cost that matters. Discovery reads `discovery.sample` x `discovery.resamples`
+The deployment guide lists what it runs. Model calls are the cost that matters. Discovery reads `discovery.sample` x `discovery.resamples`
 documents, whatever the collection's size. Extraction reads every document once per full
 version. Chat is limited by `daily_questions` per user.
 
@@ -236,7 +228,7 @@ version. Chat is limited by `daily_questions` per user.
 - The portal's projection is held in memory by one function by default. That is right for tens of
   thousands of entities and wrong beyond it. For more, the pipeline can load the same projection
   into a document store and a graph database (`PROJECTION_STORE`, `GRAPH_BACKEND`; see
-  [docs/architectures](docs/architectures/README.md#new-the-graph-and-document-backends)), behind
+  [docs/architectures/backends.md](docs/architectures/backends.md)), behind
   the same API. On AWS the agent's graph tools query Neptune; the portal API's own routes still read memory.
 - Delta selection is a heuristic (see above).
 - Scanned PDFs need OCR, which is not built in.

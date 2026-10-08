@@ -1,4 +1,4 @@
-"""The core runs without any cloud's SDK. Each cloud's SDK is an extra (aws, azure, gcp), so
+"""The core runs without any cloud's SDK. Each SDK is an extra (aws, and the backends'), so
 every module must import with none of them installed, and import a cloud SDK only inside the
 code that uses it. CI also runs the whole suite on an install with no extras."""
 
@@ -11,7 +11,7 @@ from pathlib import Path
 
 SRC = Path(__file__).resolve().parents[1] / "src"
 
-CLOUD_SDKS = ("boto3", "botocore", "azure", "google", "pymongo", "neo4j", "psycopg", "jwt")
+CLOUD_SDKS = ("boto3", "botocore", "pymongo", "neo4j", "psycopg", "jwt")
 
 PROBE = f"""
 import importlib, pkgutil, sys

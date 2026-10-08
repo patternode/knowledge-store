@@ -24,7 +24,7 @@ website instead, which frames the portal: API Gateway lets requests through, and
 verifies the site's grant (header X-Site-Grant, knowledge_store.site_grant) on every request,
 its roles deciding who may read and who may read private-scope content. A question is limited per caller per day
 (DAILY_QUESTIONS), counted with a conditional write in the chat state (state.py: DynamoDB, or
-the MongoDB API on Azure and Google Cloud), so the limit holds across concurrent requests.
+MongoDB), so the limit holds across concurrent requests.
 
 With AGENT_RUNTIME_ARN set, the question goes to the chat agent on AgentCore Runtime with the
 person's own access token (agent_client.py), and the answer is the agent's: grounded claims with
@@ -72,8 +72,8 @@ def _invoke_self(job: dict, context) -> None:
                                   Payload=json.dumps({"chat_job": job}).encode())
 
 
-# How a question is handed to the asynchronous half. Another host replaces it: on Azure a queue
-# message that a queue-triggered function answers with answer_job().
+# How a question is handed to the asynchronous half. Another host replaces it, for example with a
+# queue message whose consumer answers it with answer_job().
 dispatch = _invoke_self
 
 

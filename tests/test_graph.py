@@ -40,7 +40,6 @@ def test_release_renders_graph_schemas(mixed):
     age = lake.get(f"{pre}/age/schema.sql").decode()
     assert "SELECT create_elabel('{graph}', 'LAUNCHED_BY');" in age
     assert "REQUIRE (n.g, n.id) IS UNIQUE" in lake.get(f"{pre}/neo4j/schema.cypher").decode()
-    assert "CREATE PROPERTY GRAPH KnowledgeGraph" in lake.get(f"{pre}/spanner/schema.sql").decode()
     mapping = json.loads(lake.get(f"{pre}/neo4j/mapping.json"))
     assert mapping["node_key"] == "id" and mapping["graph_key"] == "g"
 
