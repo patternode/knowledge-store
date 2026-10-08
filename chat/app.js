@@ -166,11 +166,11 @@ function main() {
   async function runTurn(turn) {
     const gen = S.gen, started = Date.now();
     setBusy(true);
-    const elapsed = h('span', { text: 'Reading the documents.' });
+    const elapsed = h('span', { text: 'Working on your answer.' });
     clear(turn.body, h('div', { class: 'progress', role: 'status' }, h('span', { class: 'spinner', 'aria-hidden': 'true' }), elapsed));
     turn.body.classList.add('pending');
     turn.el.scrollIntoView({ block: 'nearest' });
-    const tick = setInterval(() => { elapsed.textContent = `Reading the documents (${Math.round((Date.now() - started) / 1000)} s). This can take a minute.`; }, 1000);
+    const tick = setInterval(() => { elapsed.textContent = `Working on your answer (${Math.round((Date.now() - started) / 1000)} s). The first question after a break can take a minute.`; }, 1000);
     try {
       let id;
       try {

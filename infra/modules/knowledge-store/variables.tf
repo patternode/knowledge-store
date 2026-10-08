@@ -177,6 +177,8 @@ variable "agent" {
     runtime      = optional(bool, false)
     prod_version = optional(string, "")
     model_id     = optional(string, "us.anthropic.claude-sonnet-5")
+    # minutes a person's Runtime session stays warm after their last question (15 to 480)
+    idle_session_minutes = optional(number, 120)
   })
   default = {}
 }

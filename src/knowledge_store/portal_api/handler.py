@@ -147,7 +147,8 @@ def answer_job(job: dict) -> None:
         if agent_client.configured():
             token = job.pop("token", "") or agent_client.service_token(job["private"])
             out = agent_client.ask(token, {"question": job["question"], "collection": cid,
-                                           "history": job.get("history")})
+                                           "history": job.get("history")},
+                                   session_id=agent_client.session_for(job["sub"], job["private"]))
             if out.get("error") and not out.get("answer"):
                 raise RuntimeError(out["error"])
         else:
