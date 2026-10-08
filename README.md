@@ -162,6 +162,23 @@ carries only what it uses:
    `ontology_mode = "auto"`, the first draft is published as 0.1.0 unreviewed, so uploads reach
    the portal unattended. Curate it later and publish a new version in its place.
 
+## The workbench
+
+Beside the chat is a workbench for the people who look after a collection:
+
+- **Steps.** Every search, read and citation check the agent makes, shown as it happens, with the
+  ontology terms each one touched. On a long question you can see whether it is searching the wrong
+  type, reading the wrong documents or failing its checks.
+- **What would it take?** For a question the chat could not answer, an analyst explores the same
+  graph and reports what is missing: classes, relations and attributes to add, data to add, or facts
+  extraction missed. A curator can keep the report as an ontology request, and requested terms join
+  the candidate register that drafts the next ontology version.
+- **Ontology use.** Which classes and properties questions ask for, read and cite, over all time,
+  this month or this session, drawn as an overlay on the ontology page.
+
+See [docs/workbench.md](docs/workbench.md), including what the usage numbers can and cannot tell
+you.
+
 ## Sources and adapters
 
 A source is an adapter type plus options, set in `sources` in terraform.tfvars:

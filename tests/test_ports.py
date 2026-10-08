@@ -185,6 +185,20 @@ def test_chat_round_trip_and_owner(chat):
     assert chat.get_chat("missing") is None
 
 
+def test_usage_counters_add_up_by_collection_and_bucket(chat):
+    one = {"classes|Mission|read": 1, "relations|launchedBy|cited": 1, "classes|Odd.Name$|queried": 1, "questions": 1}
+    threads = [threading.Thread(target=lambda: chat.add_usage("m", ["all", "2026-10"], one)) for _ in range(6)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    chat.add_usage("m", ["all"], {"classes|Mission|read": 1, "questions": 1})
+    assert chat.get_usage("m", "all") == {"classes|Mission|read": 7, "relations|launchedBy|cited": 6,
+                                          "classes|Odd.Name$|queried": 6, "questions": 7}
+    assert chat.get_usage("m", "2026-10")["questions"] == 6
+    assert chat.get_usage("other", "all") == {}
+
+
 def test_quota_holds_under_concurrency(chat):
     taken = []
     threads = [threading.Thread(target=lambda: taken.append(chat.take_quota("alice", "2026-09-30", 5)))
@@ -212,7 +226,7 @@ def test_expired_mongo_chat_reads_as_missing():
         def find_one(self, flt):
             return self.docs.get(flt["_id"])
 
-    s = state.MongoState({"chat": Coll(), "quota": Coll()})
+    s = state.MongoState({"chat": Coll(), "quota": Coll(), "usage": Coll()})
     s.put_chat("q", "alice", {"status": "done"})
     assert s.get_chat("q")
     s.chat.docs["q"]["expires_at"] = dt.datetime.now(dt.timezone.utc) - dt.timedelta(seconds=1)

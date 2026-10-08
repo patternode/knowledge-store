@@ -17,7 +17,10 @@ ontology page's one library, D3, is served from this folder (`vendor/`).
   and goes back there.
 - `app.js`: the collection picker, asking and polling, and rendering answers and sources. No
   server text reaches `innerHTML`; the DOM is built from nodes and `textContent`. A `?ask=`
-  parameter fills the question box without sending it.
+  parameter fills the question box without sending it. The workbench beside the chat shows the
+  selected question's steps as they happen, the ontology terms its answer used and this session's
+  totals; "What would it take?" asks the analyst and renders its report
+  ([docs/workbench.md](../docs/workbench.md)). Below 1100 pixels the workbench is a drawer.
 - `ontology.html`, `ontology.js`, `ontology.css`: the ontology page. Classes are spheres
   coloured by their root class, with a pill counting their entities and an arc showing how
   populated each is against the largest; subclass links,
@@ -25,7 +28,9 @@ ontology page's one library, D3, is served from this folder (`vendor/`).
   does not declare them for (dashed, weighted by use). The most connected classes are the core:
   gold and central. Beside it are the counts, every class with its entities, every property with
   its facts, and the selected class or property in detail. `?class=` or `?prop=` opens with one
-  selected. Data: `GET /api/ontology` and `GET /api/summary`.
+  selected. Data: `GET /api/ontology` and `GET /api/summary`. The question overlay
+  (`?overlay=all|month|session`) rings each class by how many questions used it, from
+  `GET /api/usage` or this session's totals; curators also get a Requests tab.
 - `vendor/d3.min.js`: D3 7.9.0, unmodified (see `vendor/README.md`).
 - `styles.css`: colour tokens on `:root`, light and dark themes from `prefers-color-scheme`.
 - `config.json`: not in this folder. Terraform generates it when it uploads the folder.
@@ -72,10 +77,15 @@ All routes are on the same origin under `/api`, and every route but `/collection
 `?c=<collection id>`.
 
 - `GET /api/collections`: the collections to pick from, and whether the person has private access.
-- `POST /api/chat?c=<id>` with `{"question", "history"}`: starts an answer and returns its `id`.
-  `history` holds the last 6 completed turns as `{"q", "a"}`. 429 when the daily quota is spent.
-- `GET /api/chat?c=<id>&id=<id>`: the answer's status, polled every 2 seconds for up to 5 minutes.
-  A finished answer carries `claims`, `sources`, `abstained`, `blocked` and `gaps`.
+- `POST /api/chat?c=<id>` with `{"question", "history", "mode", "about"}`: starts an answer and
+  returns its `id`. `history` holds the last 6 completed turns as `{"q", "a"}`. `mode` is `ask` or
+  `gaps` (what would it take). 429 when the daily quota is spent.
+- `GET /api/chat?c=<id>&id=<id>`: the answer's status (`pending`, `running` with the `steps` so
+  far, `done` or `failed`), polled every 1.5 seconds for up to 10 minutes. A finished answer
+  carries `claims`, `sources`, `abstained`, `blocked`, `gaps`, `steps` and `ontology_hits`; a
+  `gaps` run carries `report`.
+- `GET /api/usage?c=<id>&window=all|month`: how many questions used each class and property.
+- `GET`, `POST /api/requests?c=<id>`: ontology requests kept from gap reports (curators only).
 - `GET /api/document?c=<id>&doc=<doc id>`: a link to open the source document in a new tab.
 - `GET /api/ontology?c=<id>`: the active ontology's classes, relations and attributes with their
   counts, and `observed`: how often each relation links one class to another in the data.

@@ -12,8 +12,18 @@
     GET  /api/paths?from=&to=&hops=&limit=
     GET  /api/drafts                 discovery and revision drafts awaiting curation
     GET  /api/document?doc=          a link to open a source document (its URL, or a short-lived link)
-    POST /api/chat {question, history}   -> {id}; answered asynchronously
-    GET  /api/chat?id=               -> {status, answer, citations, trace}
+    POST /api/chat {question, history, mode, about}   -> {id}; answered asynchronously
+    GET  /api/chat?id=               -> {status, steps, answer, ...}: status is pending, running
+                                        (steps so far), done or failed
+    GET  /api/usage?window=all|month the ontology terms questions have used (workbench.py)
+    GET  /api/requests               ontology requests kept by curators
+    POST /api/requests {question, report, ontology_version}   keep a gap report as a request
+
+A question's mode is "ask" (the default: answer it) or "gaps" (the workbench's analyst reports what
+it would take to answer it; "about" carries what the chat agent said when asked). While either
+runs, its steps are written to the chat state as they happen, at most about once a second, so the
+page shows them while it polls. A finished "ask" adds the ontology terms it used to the usage
+totals of the collection, all time and for the month.
 
 Every route but /api/collections takes ?c=<collection id> (default: the first collection).
 
@@ -43,12 +53,13 @@ import datetime as dt
 import json
 import logging
 import os
+import time
 import uuid
 
-from .. import collections, layout, site_grant
+from .. import collections, layout, site_grant, workbench
 from ..claims import private_reader, subject
 from ..config import load_profile
-from ..store import S3Store, store_from_uri
+from ..store import S3Store, put_json, store_from_uri
 from . import agent_client, chat, index, state as chat_state
 
 log = logging.getLogger()
@@ -139,27 +150,87 @@ def take_quota(sub: str) -> bool:
     return state().take_quota(sub, dt.date.today().isoformat(), int(os.environ.get("DAILY_QUESTIONS", "30")))
 
 
+PROGRESS_EVERY_S = 1.0
+
+
+class Progress:
+    """Keeps a running question's steps in the chat state as they arrive, at most once every
+    PROGRESS_EVERY_S, so polling shows them without a write per step."""
+
+    def __init__(self, job: dict, every: float = PROGRESS_EVERY_S):
+        self.job, self.every, self.steps, self.last = job, every, [], 0.0
+
+    def __call__(self, step: dict) -> None:
+        self.steps.append(step)
+        now = time.monotonic()
+        if now - self.last >= self.every:
+            self.last = now
+            try:
+                state().put_chat(self.job["id"], self.job["sub"],
+                                 {"status": "running", "mode": self.job.get("mode", "ask"), "steps": self.steps})
+            except Exception:  # progress is a courtesy; the answer must not fail for it
+                log.exception("progress write failed")
+
+
+def record_usage(cid: str, out: dict) -> None:
+    hits = out.get("ontology_hits")
+    if not hits:
+        return
+    try:
+        state().add_usage(cid, ["all", workbench.month()], {**workbench.usage_counts(hits), "questions": 1})
+    except Exception:  # the totals are a courtesy; the answer must not fail for them
+        log.exception("usage write failed")
+
+
 def answer_job(job: dict) -> None:
     """The asynchronous half of POST /api/chat: the chat agent on AgentCore Runtime, as the person
     asking, when AGENT_RUNTIME_ARN is set; otherwise the portal's own tool loop (chat.py)."""
     cid = job.get("collection", collections.DEFAULT_ID)
+    mode = job.get("mode", "ask")
+    progress = Progress(job)
     try:
         if agent_client.configured():
             token = job.pop("token", "") or agent_client.service_token(job["private"])
-            out = agent_client.ask(token, {"question": job["question"], "collection": cid,
-                                           "history": job.get("history")})
-            if out.get("error") and not out.get("answer"):
+            out = agent_client.ask(token, {"question": job["question"], "collection": cid, "mode": mode,
+                                           "history": job.get("history"), "about": job.get("about")}, on_step=progress)
+            if out.get("error") and not (out.get("answer") or out.get("report")):
                 raise RuntimeError(out["error"])
+            if mode == "gaps" and not out.get("report"):  # an agent built before the workbench answers instead
+                raise RuntimeError("The agent returned no report. It predates the workbench: rebuild its image and "
+                                   "re-create the Runtime (agent.runtime false, then true).")
         else:
             idx = index.load(collections.scoped(lake(), cid), cid)
             if idx is None:
                 raise RuntimeError("the knowledge graph is not built yet")
-            out = chat.ask(idx, job["question"], job.get("history"), private=job["private"])
-        item = {"status": "done", **out}
+            if mode == "gaps":
+                out = chat.analyse(idx, job["question"], job.get("about"), private=job["private"], on_step=progress)
+                if out.get("error"):
+                    raise RuntimeError(out["error"])
+            else:
+                out = chat.ask(idx, job["question"], job.get("history"), private=job["private"], on_step=progress)
+        item = {"status": "done", "mode": mode, **out}
+        if mode == "ask":
+            record_usage(cid, out)
     except Exception as e:
         log.exception("chat failed")
-        item = {"status": "failed", "error": str(e)[:500]}
+        item = {"status": "failed", "mode": mode, "error": str(e)[:500], "steps": progress.steps}
     state().put_chat(job["id"], job["sub"], item)
+
+
+def about_of(body: dict) -> dict | None:
+    """What the chat agent said when it was asked, as the page sends it with a gaps question: kept
+    short, and only the fields the analyst reads."""
+    a = body.get("about")
+    if not isinstance(a, dict):
+        return None
+    return {"answer": str(a.get("answer") or "")[:2000],
+            "gaps": [str(g)[:300] for g in (a.get("gaps") or [])[:6] if isinstance(g, str)],
+            "steps": [str(s)[:200] for s in (a.get("steps") or [])[:20] if isinstance(s, str)]}
+
+
+def list_requests(lk, limit: int = 50) -> list[dict]:
+    keys = sorted((k for k in lk.list(workbench.REQUESTS + "/") if k.endswith(".json")), reverse=True)[:limit]
+    return [json.loads(lk.get(k)) for k in keys]
 
 
 def handler(event, context):
@@ -219,6 +290,26 @@ def handler(event, context):
             if not item or item.get("sub") != sub:
                 return reply(404, {"error": "no such question"})
             return reply(200, item["body"])
+        if path == "/usage":
+            window = qs.get("window", "all")
+            if window not in ("all", "month"):
+                return reply(400, {"error": "window is all or month"})
+            bucket = "all" if window == "all" else workbench.month()
+            return reply(200, {"window": window, "bucket": bucket,
+                               **workbench.usage_view(state().get_usage(cid, bucket))})
+        # Requests quote questions and passages, so, like drafts, they are for curators.
+        if path == "/requests" and not private:
+            return reply(403, {"error": "Ontology requests are for curators (people with private access)."})
+        if path == "/requests" and method == "GET":
+            return reply(200, {"requests": list_requests(lk)})
+        if path == "/requests" and method == "POST":
+            body = json.loads(event.get("body") or "{}")
+            q = str(body.get("question") or "").strip()
+            if not q or not isinstance(body.get("report"), dict):
+                return reply(400, {"error": "a request needs the question and its report"})
+            key, rec = workbench.request_record(q, body["report"], version=body.get("ontology_version"), by=sub)
+            put_json(lk, key, rec)
+            return reply(201, {"id": rec["id"]})
         idx = index.load(lk, cid)
         if idx is None:
             return reply(409, {"error": "The knowledge graph is not built yet.",
@@ -261,11 +352,15 @@ def handler(event, context):
                 return reply(400, {"error": "ask a question of up to 2000 characters"})
             if not take_quota(sub):
                 return reply(429, {"error": "You have reached today's question limit."})
+            mode = body.get("mode") or "ask"
+            if mode not in ("ask", "gaps"):
+                return reply(400, {"error": "mode is ask or gaps"})
             job = {"id": uuid.uuid4().hex, "sub": sub, "private": private, "question": q, "collection": cid,
+                   "mode": mode, "about": about_of(body),
                    "history": [h for h in (body.get("history") or [])[-6:] if isinstance(h, dict)]}
             if agent_client.configured() and not site_grant.enabled():
                 job["token"] = bearer(event)  # the agent acts as this person: it gets their token, never stored
-            state().put_chat(job["id"], sub, {"status": "pending"})
+            state().put_chat(job["id"], sub, {"status": "pending", "mode": mode})
             dispatch(job, context)
             return reply(202, {"id": job["id"]})
         return reply(404, {"error": f"no route {method} {path}"})

@@ -12,7 +12,6 @@ import argparse
 import json
 import mimetypes
 import threading
-import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -31,8 +30,8 @@ def serve(lake_dir: str, portal_dir: str, port: int) -> None:
     handler._state = MemoryState()
     portal = Path(portal_dir).resolve()
 
-    def run_job(job):
-        threading.Thread(target=handler.answer_job, args=(job,), daemon=True).start()
+    # questions are answered in a thread here, rather than by the Lambda invoking itself
+    handler.dispatch = lambda job, _ctx: threading.Thread(target=handler.answer_job, args=(job,), daemon=True).start()
 
     class H(BaseHTTPRequestHandler):
         def _api(self, method: str):
@@ -42,17 +41,7 @@ def serve(lake_dir: str, portal_dir: str, port: int) -> None:
             event = {"rawPath": u.path, "requestContext": {"http": {"method": method},
                      "authorizer": {"jwt": {"claims": {"sub": "local", "cognito:groups": "[private-readers]"}}}},
                      "queryStringParameters": {k: v[0] for k, v in parse_qs(u.query).items()}, "body": body}
-            if method == "POST" and u.path == "/api/chat":
-                q = json.loads(body or "{}")
-                cid = (parse_qs(u.query).get("c") or [None])[0] or handler.collections.ids(handler.lake())[0]
-                job = {"id": uuid.uuid4().hex, "sub": "local", "private": True, "question": q.get("question", ""),
-                       "collection": cid,
-                       "history": q.get("history") or []}
-                handler.state().put_chat(job["id"], "local", {"status": "pending"})
-                run_job(job)
-                res = {"statusCode": 202, "headers": {"content-type": "application/json"}, "body": json.dumps({"id": job["id"]})}
-            else:
-                res = handler.handler(event, _Ctx())
+            res = handler.handler(event, _Ctx())
             self.send_response(res["statusCode"])
             for k, v in res["headers"].items():
                 self.send_header(k, v)

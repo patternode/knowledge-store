@@ -171,7 +171,7 @@ def main(argv: list[str] | None = None) -> int:
             if not v:
                 ap.error("no active ontology")
             reg = candidates.build_register(lake, v)
-            _print([{k: t[k] for k in ("kind", "term", "docs", "covered_by", "nearest")} for t in reg["terms"][:50]])
+            _print([{k: t.get(k) for k in ("kind", "term", "docs", "asked", "covered_by", "nearest")} for t in reg["terms"][:50]])
     elif args.cmd == "collections":
         _print([{"id": c, "status": (json.loads(collections.scoped(root, c).get(layout.STATUS))
                                      if collections.scoped(root, c).exists(layout.STATUS) else {"stage": "never_run"}).get("stage")}

@@ -370,6 +370,10 @@ resource "aws_iam_role_policy" "api" {
     [for p in local.served_prefixes : "${var.lake_bucket_arn}/collections/*/${p}/*"]) },
     { Sid = "ListLake", Effect = "Allow", Action = "s3:ListBucket", Resource = var.lake_bucket_arn,
     Condition = { StringLike = { "s3:prefix" = concat(["config/*"], [for p in local.served_prefixes : "collections/*/${p}/*"]) } } },
+    # The one place the portal writes to the lake: ontology requests that curators keep from the
+    # workbench (knowledge_store.workbench), which the candidate register reads.
+    { Sid = "KeepRequests", Effect = "Allow", Action = "s3:PutObject",
+    Resource = "${var.lake_bucket_arn}/collections/*/ontology/requests/*" },
     { Sid = "Chat", Effect = "Allow", Action = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem"],
     Resource = aws_dynamodb_table.chat.arn },
     { Sid = "Models", Effect = "Allow", Action = ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"],

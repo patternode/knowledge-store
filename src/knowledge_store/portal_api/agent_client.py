@@ -72,20 +72,53 @@ def invocation_url(arn: str, qualifier: str) -> str:
             f"/invocations?qualifier={urllib.parse.quote(qualifier)}")
 
 
-def ask(token: str, payload: dict, session_id: str | None = None, timeout: int = 600) -> dict:
+def ask(token: str, payload: dict, session_id: str | None = None, timeout: int = 600, on_step=None) -> dict:
+    """The agent's answer. With on_step, the agent streams its steps (server-sent events) and
+    on_step is called with each as it arrives; an agent that does not stream still answers."""
     arn = os.environ["AGENT_RUNTIME_ARN"]
     url = invocation_url(arn, os.environ.get("AGENT_RUNTIME_QUALIFIER", "DEFAULT"))
     # AgentCore wants a session id of at least 33 characters
     session = (session_id or f"chat-{uuid.uuid4().hex}").ljust(33, "0")
-    req = urllib.request.Request(url, data=json.dumps(payload).encode(), method="POST", headers={
-        "Authorization": f"Bearer {token}", "Content-Type": "application/json", "Accept": "application/json",
+    stream = on_step is not None
+    req = urllib.request.Request(url, data=json.dumps({**payload, "stream": stream}).encode(), method="POST", headers={
+        "Authorization": f"Bearer {token}", "Content-Type": "application/json",
+        "Accept": "text/event-stream, application/json" if stream else "application/json",
         "X-Amzn-Bedrock-AgentCore-Runtime-Session-Id": session})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
+            if "text/event-stream" in (r.headers.get("content-type") or ""):
+                return read_events(r, on_step)
             body = r.read()
     except urllib.error.HTTPError as e:
         raise RuntimeError(f"agent {e.code}: {e.read()[:300].decode(errors='replace')}") from e
+    return _decode(body)
+
+
+def _decode(body) -> dict:
     out = json.loads(body)
     if isinstance(out, str):  # some runtimes return the result JSON-encoded twice
         out = json.loads(out)
     return out
+
+
+def read_events(lines, on_step) -> dict:
+    """Server-sent events from the agent: {"step"} events go to on_step, {"result"} is the answer.
+    An event with only an error (the runtime's own, when the stream fails) ends it as a failure."""
+    result = None
+    for raw in lines:
+        line = raw.decode("utf-8", errors="replace").strip() if isinstance(raw, bytes) else str(raw).strip()
+        if not line.startswith("data:"):
+            continue
+        try:
+            ev = _decode(line[5:].strip())
+        except ValueError:
+            continue
+        if not isinstance(ev, dict):
+            continue
+        if "step" in ev and on_step:
+            on_step(ev["step"])
+        elif "result" in ev:
+            result = ev["result"]
+        elif "error" in ev and result is None:
+            result = {"error": str(ev["error"])[:500]}
+    return result if isinstance(result, dict) else {"error": "the agent's stream ended without an answer"}

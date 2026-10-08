@@ -243,6 +243,28 @@ window.KS = (() => {
       h('button', { class: 'btn primary', type: 'button', onclick: () => auth.login() }, 'Sign in')];
   }
 
-  return { $, h, clear, sstore, lstore, safeUrl, sleep, str, jwtClaims, auth, api, ApiError, start, brandName, signedOutNotice,
+  // ---- this session's ontology use ---------------------------------------------------------
+  // The terms each answered question used (the workbench), added up for this browser tab and
+  // collection, in the shape /api/usage returns, so the ontology page can show either.
+  const USAGE_KEY = (c) => `ks.usage.session.${c}`;
+  const LEVELS = ['queried', 'read', 'cited'], KINDS = ['classes', 'relations', 'attributes'];
+  function sessionUsage(c) {
+    const empty = { questions: 0, classes: {}, relations: {}, attributes: {} };
+    try { return { ...empty, ...(JSON.parse(sstore.get(USAGE_KEY(c)) || 'null') || {}) }; } catch { return empty; }
+  }
+  function addSessionUsage(c, hits) {
+    if (!c || !hits) return;
+    const u = sessionUsage(c);
+    u.questions += 1;
+    for (const k of KINDS) {
+      for (const [term, levels] of Object.entries(hits[k] || {})) {
+        const row = u[k][term] || (u[k][term] = { queried: 0, read: 0, cited: 0 });
+        for (const lv of levels || []) if (LEVELS.includes(lv)) row[lv] += 1;
+      }
+    }
+    sstore.set(USAGE_KEY(c), JSON.stringify(u));
+  }
+
+  return { $, h, clear, sstore, lstore, sessionUsage, addSessionUsage, safeUrl, sleep, str, jwtClaims, auth, api, ApiError, start, brandName, signedOutNotice,
     get cfg() { return cfg; }, COLL_KEY };
 })();

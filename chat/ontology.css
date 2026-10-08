@@ -68,15 +68,13 @@
 /* the side panel */
 .side { min-height: 0; overflow-y: auto; background: var(--surface); border-left: 1px solid var(--border); padding: 16px 18px 24px; font-size: 0.92rem; }
 .onto-title { margin: 0; font-weight: 600; font-size: 1.05rem; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
-.small { font-size: 0.82rem; }
-.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
 .side p { margin: 6px 0; }
 .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0 8px; }
 .tile { background: var(--surface-2); border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; }
 .tile .v { font-size: 1.2rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .tile .k { font-size: 0.75rem; color: var(--muted); }
-.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin: 14px 0 10px; }
-.tabs [role=tab] { background: none; border: 0; border-bottom: 2px solid transparent; padding: 6px 10px; cursor: pointer; color: var(--muted); }
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin: 14px 0 10px; overflow-x: auto; }
+.tabs [role=tab] { background: none; border: 0; border-bottom: 2px solid transparent; padding: 6px 8px; cursor: pointer; color: var(--muted); white-space: nowrap; }
 .tabs [role=tab][aria-selected="true"] { color: var(--text); border-bottom-color: var(--action); }
 .class-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .list-card {
@@ -92,12 +90,6 @@
 .tag.core { background: #c88a1e; color: #1b1203; }
 .bar { height: 4px; background: var(--surface-2); border-radius: 2px; margin-top: 6px; }
 .bar > div { height: 4px; border-radius: 2px; }
-.kv { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-.kv th { text-align: left; font-weight: 600; color: var(--muted); padding: 4px; border-bottom: 1px solid var(--border); }
-.kv td { padding: 5px 4px; border-bottom: 1px solid var(--surface-2); vertical-align: top; }
-.num-cell { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.linkish { background: none; border: 0; padding: 0; color: var(--link); cursor: pointer; text-align: left; }
-.linkish:hover { text-decoration: underline; }
 .chip {
   display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; background: var(--surface-2);
   border: 1px solid var(--border); border-radius: 999px; padding: 1px 9px; cursor: pointer; vertical-align: baseline;
@@ -119,3 +111,16 @@
   .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .find input { width: 160px; }
 }
+
+/* the question overlay */
+.stage-select { background: rgba(20, 24, 34, .85); color: #eef1f7; border: 1px solid #353d52; border-radius: 8px; padding: 5px 8px; font-size: 0.85rem; }
+.onode circle.ouse { fill: none; stroke: #2fd3c0; stroke-opacity: .9; pointer-events: none; }
+.ouse-n { font-size: 10px; font-weight: 600; fill: #2fd3c0; pointer-events: none; }
+.onode.unasked .obody, .onode.unasked .osheen { opacity: .45; }
+.olink.asked { stroke: #2fd3c0; stroke-opacity: .9; }
+.usage-note { border-left: 3px solid #2fd3c0; padding-left: 10px; }
+.use-line { display: block; color: #1f8f84; }
+@media (prefers-color-scheme: dark) { .use-line { color: #2fd3c0; } }
+.req { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin: 8px 0; background: var(--bg); }
+.req h4 { margin: 0 0 4px; font-size: 0.9rem; }
+.req ul { margin: 4px 0 0; padding-left: 18px; }
