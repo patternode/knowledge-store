@@ -47,6 +47,20 @@ variable "agent_image_uri" {
   type    = string
   default = ""
 }
+variable "idle_session_minutes" {
+  description = <<-EOT
+    How long a person's Runtime session stays warm after their last question (the portal reuses one
+    session per person). A question after this waits for a new microVM to start. Memory is billed
+    while a session is open, CPU only while it works. 15 to 480 (AgentCore's limits).
+  EOT
+  type        = number
+  default     = 120
+  validation {
+    condition     = var.idle_session_minutes >= 15 && var.idle_session_minutes <= 480
+    error_message = "idle_session_minutes must be between 15 and 480."
+  }
+}
+
 variable "runtime_enabled" {
   type    = bool
   default = false
@@ -442,8 +456,8 @@ resource "aws_bedrockagentcore_agent_runtime" "agent" {
   }
   request_header_configuration { request_header_allowlist = ["Authorization"] }
   lifecycle_configuration {
-    idle_runtime_session_timeout = 900
-    max_lifetime                 = 3600
+    idle_runtime_session_timeout = var.idle_session_minutes * 60
+    max_lifetime                 = 28800 # the longest AgentCore allows; idle timeout ends a session first
   }
   environment_variables = merge({
     GATEWAY_MCP_URL   = aws_bedrockagentcore_gateway.this.gateway_url
