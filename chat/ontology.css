@@ -1,4 +1,4 @@
-/* The ontology page. The graph stage is always dark, as in the earnings lab, so its colours,
+/* The ontology page. The graph stage is always dark, so its colours,
    gold core and sheen read the same in either theme; the side panel follows the page's theme. */
 .onto-page { height: 100vh; min-height: 0; }
 .onto-notice { margin: 32px auto; max-width: 820px; width: calc(100% - 48px); }

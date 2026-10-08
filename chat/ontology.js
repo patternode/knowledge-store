@@ -1,10 +1,9 @@
 /* Knowledge Store ontology page: the active ontology of a collection as a force-directed graph,
  * with its statistics. Plain ES2020 and D3 (vendor/d3.min.js), no build step.
  *
- * The view is the earnings lab's ontology view, made generic. Classes are spheres coloured by
- * their root class; subclass links are solid and pale, declared relations run from domain to
- * range, and relations the data uses between classes the ontology does not declare for them are
- * dashed, weighted by use. Three tiers, by place in the ontology rather than by size:
+ * Classes are spheres coloured by their root class; subclass links are solid and pale, declared
+ * relations run from domain to range, and relations the data uses between classes the ontology
+ * does not declare for them are dashed, weighted by use. Three tiers, by place in the ontology rather than by size:
  *   core        the most connected classes (by declared and seen links): larger, gold, pulled to
  *               the centre (the most connected of all most strongly), links between two of them
  *               drawn heavier

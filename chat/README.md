@@ -18,9 +18,9 @@ ontology page's one library, D3, is served from this folder (`vendor/`).
 - `app.js`: the collection picker, asking and polling, and rendering answers and sources. No
   server text reaches `innerHTML`; the DOM is built from nodes and `textContent`. A `?ask=`
   parameter fills the question box without sending it.
-- `ontology.html`, `ontology.js`, `ontology.css`: the ontology page, ported from the earnings
-  lab's ontology view. Classes are spheres coloured by their root class, with a pill counting
-  their entities and an arc showing how populated each is against the largest; subclass links,
+- `ontology.html`, `ontology.js`, `ontology.css`: the ontology page. Classes are spheres
+  coloured by their root class, with a pill counting their entities and an arc showing how
+  populated each is against the largest; subclass links,
   declared relations (domain to range) and relations the data uses between classes the ontology
   does not declare them for (dashed, weighted by use). The most connected classes are the core:
   gold and central. Beside it are the counts, every class with its entities, every property with

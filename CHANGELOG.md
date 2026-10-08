@@ -12,7 +12,7 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 - Valves: a Bedrock Guardrail on questions and on the grounding of claims, tool and model call limits per question, the chat API's reserved concurrency, and an optional monthly budget.
 - An evaluation framework (`python -m knowledge_store.evals`) with deterministic scoring, and an evaluation set for the space-missions example.
 - A minimal chat page (`chat/`), which replaces the explorer as the AWS portal.
-- An ontology page beside the chat (`chat/ontology.html`): the earnings lab's ontology view, made generic. The active ontology as a force-directed graph, with core classes, population arcs, declared relations and the relations seen in the data but not declared, and its statistics. The projection's ontology index gains `observed`, the class-to-class counts behind it.
+- An ontology page beside the chat (`chat/ontology.html`): the active ontology as a force-directed graph, with core classes, population arcs, declared relations and the relations seen in the data but not declared, and its statistics. The projection's ontology index gains `observed`, the class-to-class counts behind it.
 
 - Bring your own ontology: a collection's `ontology_dir` is published and activated in place of discovery, and changed by bumping its version.
 - A review pass after discovery that adds hierarchy, merges near-duplicates and fixes domains, ranges and datatypes, recorded edit by edit in the draft's report (`discovery.review`, on by default).
