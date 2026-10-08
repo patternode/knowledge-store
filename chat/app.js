@@ -262,8 +262,8 @@
       S.collections = (r && r.collections) || [];
       S.private = !!(r && r.private);
     } catch (e) {
-      if (e.status === 401) return;
-      return notice(h('h2', { text: 'The service could not be reached' }), h('p', { text: e.message }),
+      if (e.status === 401 && cfg.mode !== 'site') return; // hosted: already signing in again
+      return notice(h('h2', { text: e.status === 401 ? 'Your sign-in was not accepted' : 'The service could not be reached' }), h('p', { text: e.message }),
         h('button', { class: 'btn', type: 'button', onclick: () => location.reload() }, 'Try again'));
     }
     if (!S.collections.length) return notice(h('h2', { text: 'No collections yet' }), h('p', { text: 'There are no collections to ask about.' }));

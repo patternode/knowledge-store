@@ -125,16 +125,19 @@ window.KS = (() => {
   // ---- sign-in through a host website (mode "site") -------------------------------------
   const GRANT = 'ks.site.grant', PN = 1;
   const framed = window.parent !== window;
+  // The grant is held in memory. sessionStorage is only a cache for the other page in the same
+  // frame: a browser that blocks third-party storage (Chrome with third-party cookies blocked)
+  // refuses it inside the website's frame, and the page must still work.
+  const valid = (g) => (g && typeof g.grant === 'string' && typeof g.exp === 'number' && g.exp * 1000 > Date.now() + 5000 ? g : null);
   const site = {
     hostOrigin: null,
+    held: null,
     waiters: [],
     get current() { // {grant, exp} while it is valid, else null
-      try {
-        const g = JSON.parse(sstore.get(GRANT) || 'null');
-        return g && typeof g.grant === 'string' && g.exp * 1000 > Date.now() + 5000 ? g : null;
-      } catch { return null; }
+      if (valid(site.held)) return site.held;
+      try { return valid(JSON.parse(sstore.get(GRANT) || 'null')); } catch { return null; }
     },
-    drop() { sstore.del(GRANT); },
+    drop() { site.held = null; sstore.del(GRANT); },
     listen() {
       if (!framed) return;
       window.addEventListener('message', (e) => {
@@ -144,7 +147,8 @@ window.KS = (() => {
           site.hostOrigin = e.origin;
           window.parent.postMessage({ pn: PN, type: 'pn:ready', title: document.title, route: '' }, e.origin);
         } else if (d.type === 'pn:grant' && e.origin === site.hostOrigin && typeof d.grant === 'string' && typeof d.exp === 'number') {
-          sstore.set(GRANT, JSON.stringify({ grant: d.grant, exp: d.exp }));
+          site.held = { grant: d.grant, exp: d.exp };
+          sstore.set(GRANT, JSON.stringify(site.held));
           site.waiters.splice(0).forEach((fn) => fn(true));
         }
       });
@@ -207,8 +211,8 @@ window.KS = (() => {
       }
       if (!framed) return { cfg, error: null, signedIn: false, claims: {}, standalone: true };
       site.listen();
-      const ok = await site.wait(8000);
-      return { cfg, error: null, signedIn: ok, claims: ok ? jwtClaims(site.current.grant) : {} };
+      const g = (await site.wait(8000)) && site.current;
+      return { cfg, error: null, signedIn: !!g, claims: g ? jwtClaims(g.grant) : {} };
     }
     if (cfg.mode !== 'hosted') return { cfg, error: null, signedIn: true, claims: {} };
     if (cfg.cognito && cfg.cognito.domain) { // Cognito's hosted UI: its endpoints follow from the domain
