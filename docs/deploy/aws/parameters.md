@@ -7,6 +7,10 @@ is required. A deployment repository of your own ([`examples/deployment`](../../
 passes the same inputs to the module, except `region`, `account_id`, `aws_profile` and
 `extra_tags`, which belong to its provider block there.
 
+In short: `admin_email` is required; outside US regions, so are the three model ids (the default
+`us.` inference profile works only in US regions). Everything else has a default that works in a
+sandbox account; the [worksheet](#worksheet) lists what an organisation usually decides.
+
 Two other kinds of input sit outside `terraform.tfvars`:
 
 - **Credentials** come from the environment (`AWS_PROFILE`, or the CI runner's role). They are
