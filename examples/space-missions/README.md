@@ -62,6 +62,9 @@ the markdown link, which Terraform accepts as a string):
 ```hcl
 collections = {
   missions = {
+    # Copy examples/space-missions/ontology here. mappings.yaml turns structured lookup on
+    # for this collection. Upload the corpus, including tables/, to landing/missions/.
+    ontology_dir = "ontology/missions"
     profile = {
       name        = "Space missions"
       description = "Missions, launch vehicles and what the documents say about them."

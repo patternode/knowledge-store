@@ -55,6 +55,9 @@ variable "collections" {
                      to where you run Terraform, holding ontology.ttl (OWL, with owl:versionInfo
                      set to its version) and optionally shapes.ttl. The sweep publishes and
                      activates it; to change it, edit it, bump owl:versionInfo and apply.
+                     Structured lookup is on for that collection when the directory also holds
+                     mappings.yaml and, optionally, metrics.osi.yaml. A collection without those
+                     files is unchanged. Upload the mapped CSVs with the documents.
   EOT
   type = map(object({
     profile = optional(object({
