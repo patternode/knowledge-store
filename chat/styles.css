@@ -112,7 +112,8 @@ select {
 .workspace { flex: 1; display: grid; grid-template-columns: 260px minmax(0, 1fr) 400px; align-items: start; min-width: 0; }
 .workspace.bench-off { grid-template-columns: 260px minmax(0, 1fr); }
 .workspace.demo-off { grid-template-columns: minmax(0, 1fr); }
-.chat-col { min-width: 0; display: flex; flex-direction: column; min-height: calc(100vh - 64px); }
+.chat-col { min-width: 0; display: flex; flex-direction: row; align-items: stretch; min-height: calc(100vh - 64px); }
+.talk { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: calc(100vh - 64px); }
 
 .samples {
   position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--surface);
@@ -180,7 +181,28 @@ a.cite:hover { text-decoration: underline; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } }
 
-/* sources */
+/* sources, beside the conversation */
+.sources {
+  width: 380px; flex: none; display: flex; flex-direction: column; background: var(--surface);
+  border-left: 1px solid var(--border); position: sticky; top: 0; height: 100vh; overflow: hidden;
+}
+.sources-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 14px; border-bottom: 1px solid var(--border);
+}
+.sources-head h2 { margin: 0; font-size: 1rem; font-weight: 600; }
+.sources-q { margin: 0; padding: 10px 14px 0; font-size: 0.88rem; font-weight: 600; }
+#sources-body { overflow-y: auto; padding: 8px 14px 24px; flex: 1; }
+.source-item { margin: 0 0 8px; }
+.source-row {
+  display: flex; align-items: baseline; gap: 10px; width: 100%; text-align: left; cursor: pointer;
+  font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px;
+}
+.source-row.current { border-color: var(--action); background: var(--surface); }
+.source-name { min-width: 0; }
+.source-body { margin-top: 8px; }
+.source-item.flash .source-row { box-shadow: 0 0 0 3px var(--focus); }
 .sources-title { margin: 8px 0 0; font-size: 0.95rem; font-weight: 600; color: var(--muted); }
 .cards { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
 .card {
@@ -290,6 +312,12 @@ textarea {
 }
 .ask .btn.primary { padding: 12px 20px; }
 .hint { margin-top: 8px; margin-bottom: 0; font-size: 0.85rem; color: var(--muted); }
+
+/* below 1100px the sources panel is a drawer, so the conversation keeps its width */
+@media (max-width: 1099px) {
+  .sources { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100%); height: auto; z-index: 18;
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.25); }
+}
 
 /* below 1280px the workbench is a drawer, and the samples stay beside the chat */
 @media (max-width: 1279px) {

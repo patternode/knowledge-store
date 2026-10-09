@@ -1,7 +1,8 @@
 # Chat page
 
 A minimal page for asking questions of a collection. Every answer is built from the documents
-in that collection, and every statement links to the passage it came from. A second page,
+in that collection, and every statement links to the passage it came from. The passages open in a
+panel to the right of the conversation, one at a time, and that panel can be hidden. A second page,
 `ontology.html`, shows the collection's active ontology as a graph, with its statistics.
 
 Plain HTML, CSS and JavaScript: no framework, no build step, no external scripts or fonts. The
@@ -21,7 +22,9 @@ ontology page's one library, D3, is served from this folder (`vendor/`).
   Demonstrate, in the header, shows the sample questions and the workbench; User view hides them
   again. The workbench shows the selected question's steps as they happen, the ontology terms its
   answer used and this session's totals; a step's input says whether the call was a knowledge
-  graph query, a vector query or a keyword passage search. "What would it take?" asks the analyst
+  graph query, a vector query or a keyword passage search. A citation opens that source in the
+  panel beside the conversation; choosing it again hides the panel. Below 1100 pixels the sources
+  panel is a drawer. "What would it take?" asks the analyst
   and renders its report ([docs/workbench.md](../docs/workbench.md)). Below 1280 pixels the
   workbench is a drawer.
 - `ontology.html`, `ontology.js`, `ontology.css`: the ontology page. Classes are spheres

@@ -17,6 +17,9 @@
  * terms the answer used, and what the question cost, split by token kind and by model call.
  * A step's input says whether that call was a knowledge graph query, a vector query, or a
  * keyword passage search.
+ *
+ * Sources are not part of the conversation. They sit in a panel to the right of the questions
+ * and answers, shown and hidden from a citation or from Sources. One source is open at a time.
  * A question has a mode: "ask" answers it; "gaps" asks the analyst what it
  * would take to answer it (ontology extensions, data, missed extraction), which a curator can keep
  * as an ontology request.
@@ -25,7 +28,8 @@ function main() {
   'use strict';
   const { $, h, clear, lstore, safeUrl, sleep, str, auth, api, COLL_KEY } = window.KS;
   // ---- state ------------------------------------------------------------------------------
-  const S = { collections: [], id: null, private: false, gen: 0, busy: false, turns: [], seq: 0, selected: null };
+  const S = { collections: [], id: null, private: false, gen: 0, busy: false, turns: [], seq: 0, selected: null,
+    sourceTurn: null, sourceN: null, lastCite: null };
   const HISTORY_TURNS = 6, POLL_MS = 1500, POLL_LIMIT_MS = 10 * 60 * 1000;
   const BENCH_KEY = 'ks.chat.bench';
   const DEMO_KEY = 'ks.chat.demo';
@@ -91,22 +95,14 @@ function main() {
 
   // ---- rendering an answer ------------------------------------------------------------
   const cardId = (turn, n) => `src-${turn.key}-${n}`;
-  function flashCard(turn, n) {
-    const card = document.getElementById(cardId(turn, n));
-    if (!card) return;
-    card.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
-    card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash');
-    card.focus({ preventScroll: true });
-    setTimeout(() => card.classList.remove('flash'), 2000);
-  }
   function citeLinks(turn, nums, known) {
     return nums.map((n) => (known.has(n)
-      ? h('a', { class: 'cite', href: `#${cardId(turn, n)}`, 'aria-label': `Source ${n}`,
-        onclick: (e) => { e.preventDefault(); flashCard(turn, n); } }, `[${n}]`)
+      ? h('a', { class: 'cite', href: `#${cardId(turn, n)}`, 'aria-label': `Source ${n}`, 'aria-expanded': 'false',
+        onclick: (e) => { e.preventDefault(); S.lastCite = e.currentTarget; showSource(turn, n); } }, `[${n}]`)
       : h('span', { class: 'cite dead', title: 'This source is not listed' }, `[${n}]`)));
   }
   // The agent returns numbered sources. The portal tool loop returns citations and writes
-  // [p:<id>] in the answer. Both are shown the same way: the answer, then a card per source.
+  // [p:<id>] in the answer. The numbers stay in the answer. The passages open in the sources panel.
   function groundedSources(r) {
     const listed = (Array.isArray(r.sources) ? r.sources : []).slice().sort((a, b) => (a.n || 0) - (b.n || 0));
     if (listed.length) return listed;
@@ -176,7 +172,7 @@ function main() {
     return h('p', { class: 'answer-text' }, claims.map((c, i) => [i ? ' ' : null,
       h('span', { class: 'claim' }, str(c.text).trim(), citeLinks(turn, (c.sources || []).filter((x) => x != null), known))]));
   }
-  function sourceCard(turn, s, claims) {
+  function sourceBody(turn, s, claims) {
     const quotes = [...(s.quotes || [])];
     for (const c of claims) for (const cit of c.citations || []) if (cit && cit.passage_id === s.passage_id && cit.quote) quotes.push(cit.quote);
     const unique = [...new Set(quotes.map(str).filter((q) => q.trim()))];
@@ -185,12 +181,59 @@ function main() {
     const status = h('p', { class: 'card-status', role: 'status' });
     const open = h('button', { class: 'btn', type: 'button', 'aria-label': `Open document: ${title}` }, 'Open document');
     open.addEventListener('click', () => openDocument(s.doc, open, status));
-    return h('li', { class: 'card', id: cardId(turn, s.n), tabindex: '-1', 'aria-label': `Source ${s.n}: ${title}` },
-      h('div', { class: 'card-head' }, h('span', { class: 'num', 'aria-hidden': 'true', text: str(s.n) }), h('h4', { text: title })),
-      nodes.length ? h('blockquote', { class: 'passage' }, nodes) : null,
+    return h('div', { class: 'card source-body' },
+      nodes.length ? h('blockquote', { class: 'passage' }, nodes) : h('p', { class: 'small muted', text: 'This source has no passage text.' }),
       missing.length ? h('div', { class: 'missing' }, h('p', { text: 'Quoted from this source, not shown in the passage above:' }),
         h('ul', null, missing.map((q) => h('li', { text: q })))) : null,
       s.doc ? h('div', { class: 'card-actions' }, open, status) : null);
+  }
+  function setSources(open) {
+    $('#sources').hidden = !open;
+    $('#sources-open').setAttribute('aria-expanded', String(open));
+    for (const a of document.querySelectorAll('a.cite')) a.setAttribute('aria-expanded', 'false');
+    if (open && S.lastCite && S.sourceN != null) S.lastCite.setAttribute('aria-expanded', 'true');
+    if (!open) {
+      const back = S.lastCite && S.lastCite.isConnected ? S.lastCite : $('#sources-open');
+      if (back) back.focus({ preventScroll: true });
+    }
+  }
+  function renderSources() {
+    const turn = S.sourceTurn;
+    const box = $('#sources-body');
+    if (!turn || !(turn.sources || []).length) { clear(box); $('#sources-q').textContent = ''; return; }
+    $('#sources-q').textContent = turn.question;
+    const claims = turn.claims || [];
+    clear(box, turn.sources.map((s) => {
+      const expanded = S.sourceN === s.n;
+      const title = str(s.title || s.name || s.doc) || 'Untitled document';
+      const row = h('button', { class: `source-row${expanded ? ' current' : ''}`, type: 'button', 'aria-expanded': String(expanded) },
+        h('span', { class: 'num', 'aria-hidden': 'true', text: str(s.n) }),
+        h('span', { class: 'source-name', text: title }));
+      row.addEventListener('click', () => {
+        S.sourceN = expanded ? null : s.n;
+        S.lastCite = null;
+        renderSources();
+      });
+      return h('div', { class: 'source-item', id: cardId(turn, s.n) }, row, expanded ? sourceBody(turn, s, claims) : null);
+    }));
+    const current = S.sourceN != null ? document.getElementById(cardId(turn, S.sourceN)) : null;
+    if (!current) return;
+    current.classList.add('flash');
+    const delta = current.getBoundingClientRect().top - box.getBoundingClientRect().top;
+    box.scrollBy({ top: delta - 8, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    const row = current.querySelector('.source-row');
+    if (row) row.focus({ preventScroll: true });
+    setTimeout(() => current.classList.remove('flash'), 2000);
+  }
+  function showSource(turn, n) {
+    if (!turn || !(turn.sources || []).length) return;
+    const open = !$('#sources').hidden;
+    if (open && S.sourceTurn === turn && S.sourceN === n && n != null) { setSources(false); return; }
+    S.sourceTurn = turn;
+    S.sourceN = n;
+    setSources(true);
+    renderSources();
+    announce(n == null ? `Sources for this question, ${turn.sources.length}.` : `Source ${n}.`);
   }
   async function openDocument(doc, btn, status) {
     btn.disabled = true; status.textContent = 'Opening the document.';
@@ -218,10 +261,9 @@ function main() {
     } else {
       out.push(answerBody(turn, r, sources));
     }
-    if (sources.length) {
-      out.push(h('h3', { class: 'sources-title', text: sources.length === 1 ? 'Source' : 'Sources' }),
-        h('ol', { class: 'cards' }, sources.map((s) => sourceCard(turn, s, claims))));
-    }
+    turn.sources = sources;
+    turn.claims = claims;
+    if (sources.length) $('#sources-open').hidden = false;
     if (r.ontology_version) out.push(h('p', { class: 'meta', text: `Ontology version ${str(r.ontology_version)}` }));
     out.push(turnActions(turn));
     clear(turn.body, out);
@@ -290,6 +332,14 @@ function main() {
   function turnActions(turn) {
     const show = h('button', { class: 'btn small', type: 'button' }, `Steps (${(turn.steps || []).length})`);
     show.addEventListener('click', () => { selectTurn(turn); setBench(true); });
+    let sources = null;
+    if ((turn.sources || []).length) {
+      sources = h('button', { class: 'btn small', type: 'button' }, `Sources (${turn.sources.length})`);
+      sources.addEventListener('click', () => {
+        if (S.sourceTurn === turn && !$('#sources').hidden) setSources(false);
+        else showSource(turn, null);
+      });
+    }
     let gaps = null;
     if (turn.mode === 'ask') {
       const r = turn.result || {};
@@ -297,7 +347,7 @@ function main() {
       gaps = h('button', { class: `btn small${weak ? ' primary' : ''}`, type: 'button' }, 'What would it take to answer this?');
       gaps.addEventListener('click', () => askGaps(turn));
     }
-    return h('div', { class: 'turn-actions' }, show, gaps);
+    return h('div', { class: 'turn-actions' }, show, sources, gaps);
   }
 
   function renderFailed(turn, message, canRetry) {
@@ -640,6 +690,12 @@ function main() {
     });
     $('#coll-select').addEventListener('change', (e) => switchCollection(e.target.value));
     for (const r of document.querySelectorAll('input[name=mode]')) r.addEventListener('change', showMode);
+    $('#sources-open').addEventListener('click', () => {
+      if (!$('#sources').hidden) { S.lastCite = null; setSources(false); return; }
+      const turn = S.sourceTurn || [...S.turns].reverse().find((t) => (t.sources || []).length);
+      if (turn) showSource(turn, S.sourceTurn === turn ? S.sourceN : null);
+    });
+    $('#sources-close').addEventListener('click', () => setSources(false));
     $('#demo').addEventListener('click', () => {
       const on = $('#demo').getAttribute('aria-pressed') !== 'true';
       setDemo(on, true);
@@ -652,7 +708,11 @@ function main() {
       setBench(open, true);
       if (open) $('#bench-close').focus();
     });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !wide() && !$('#bench').hidden) setBench(false); });
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      if (!$('#sources').hidden) { setSources(false); return; }
+      if (!wide() && !$('#bench').hidden) setBench(false);
+    });
   }
   function signedOut(started) {
     $('#signin').hidden = started.cfg.mode === 'site';
