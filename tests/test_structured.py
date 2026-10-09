@@ -18,7 +18,7 @@ from knowledge_store.ontology import renditions, versions
 from knowledge_store.pipeline import project, refine
 from knowledge_store.pipeline.ingest import ingest_source
 from knowledge_store.store import LocalStore, put_json
-from knowledge_store.structured.bind import bind, binding, mapped_doc_ids
+from knowledge_store.structured.bind import bind, binding, mapped_doc_ids, published_mapping
 from knowledge_store.structured.mapping import Mapping, Table, load as load_mapping, r2rml
 from knowledge_store.structured.query import aggregate, lookup_rows, values_equal
 from knowledge_store.tools import gateway
@@ -263,6 +263,92 @@ def test_a_cited_figure_is_recomputed(tmp_path):
     assert check(GroundedAnswer(answerable=True, claims=[Claim(
         text="Five catalogued missions launched on an Atlas V.",
         citations=[Citation(metric_id=figure["id"], figure="5")])]), {}, {}, recomputed)[0]
+
+
+def _landing(tmp: Path, layout_name: str) -> tuple:
+    """A missions collection whose uploads sit in the lake the way s3_landing reads them."""
+    root, lake = _collection(tmp)
+    for name in ("ontology.ttl", "mappings.yaml", "metrics.osi.yaml"):
+        lake.put(f"{layout.CONFIG_ONTOLOGY}/{name}", (ONTO / name).read_bytes())
+    tables = CORPUS / "tables"
+    if layout_name == "nested":
+        keys = {
+            "landing/missions/tables/missions.csv": tables / "missions.csv",
+            "landing/missions/tables/launch_vehicles.csv": tables / "launch_vehicles.csv",
+        }
+    elif layout_name == "flat":
+        # What an upload of the two files into the collection folder actually is.
+        keys = {
+            "landing/missions/missions.csv": tables / "missions.csv",
+            "landing/missions/launch_vehicles.csv": tables / "launch_vehicles.csv",
+        }
+    else:
+        raise AssertionError(layout_name)
+    for key, src in keys.items():
+        root.put(key, src.read_bytes())
+    return root, lake
+
+
+@pytest.mark.parametrize("layout_name", ["nested", "flat"])
+def test_the_sweep_finds_catalog_csvs_in_the_landing_folder(tmp_path, layout_name):
+    """The mapping names tables/missions.csv. The lab stores the full landing key, and a
+    person often uploads the file itself rather than the tables/ directory. Both bind."""
+    from fake_llm import FakeClient
+    from knowledge_store.pipeline import run
+    root, lake = _landing(tmp_path, layout_name)
+    put_json(lake, layout.CONFIG_SETTINGS, {"ontology_mode": "curated", "discovery_min_docs": 99})
+    rounds = run.run(root, FakeClient, "fake")
+    first, last = rounds["missions"][0], rounds["missions"][-1]
+    assert first["bind"]["written"] == 2 and first["bind"]["missing"] == [] and first["refined"] == 0, rounds
+    assert last["bind"]["unchanged"] == 2 and last["bind"]["missing"] == []
+    juno = lookup_rows(lake, "Mission", [{"attribute": "name", "op": "eq", "value": "Juno"}])
+    assert juno["rows"][0]["values"]["sampleCostMillionUsd"]["value"] == "1100"
+    assert refine.silver_doc_ids(lake) == []
+
+
+def test_a_second_upload_of_the_same_bytes_keeps_the_mapped_path(tmp_path):
+    """The first name is not the mapping's path. The bytes are one bronze object, so the
+    later name has to be recorded or bind still looks at the first name and misses."""
+    root, lake = _collection(tmp_path)
+    versions.publish(lake, ONTO, by="test", activate=True)
+    body = (CORPUS / "tables" / "missions.csv").read_bytes()
+    vehicles = (CORPUS / "tables" / "launch_vehicles.csv").read_bytes()
+    root.put("landing/missions/export.csv", body)
+    root.put("landing/missions/launch_vehicles.csv", vehicles)
+    ingest_source(lake, SourceConfig("uploads", "s3_landing", {"prefix": "landing/missions/"}))
+    root.put("landing/missions/tables/missions.csv", body)
+    root.put("landing/missions/tables/launch_vehicles.csv", vehicles)
+    ingest_source(lake, SourceConfig("uploads", "s3_landing", {"prefix": "landing/missions/"}))
+    report = bind(lake)
+    assert report["missing"] == [], report
+    assert report["written"] == 2
+
+
+def test_two_files_of_the_same_name_are_not_a_guess(tmp_path):
+    root, lake = _collection(tmp_path)
+    versions.publish(lake, ONTO, by="test", activate=True)
+    root.put("landing/missions/old/missions.csv", b"mission_id,name\none,One\n")
+    root.put("landing/missions/new/missions.csv", b"mission_id,name\ntwo,Two\n")
+    root.put("landing/missions/launch_vehicles.csv", (CORPUS / "tables" / "launch_vehicles.csv").read_bytes())
+    ingest_source(lake, SourceConfig("uploads", "s3_landing", {"prefix": "landing/missions/"}))
+    report = bind(lake)
+    missed = next(m for m in report["missing"] if m["table"] == "missions")
+    assert missed["reason"] == "more than one file named missions.csv"
+    assert "missions" not in report["tables"]
+
+
+def test_a_mapping_added_to_a_published_version_is_not_ignored(tmp_path):
+    from knowledge_store.ontology import provided
+    root, lake = _collection(tmp_path)
+    bare = tmp_path / "bare"
+    bare.mkdir()
+    (bare / "ontology.ttl").write_bytes((ONTO / "ontology.ttl").read_bytes())
+    versions.publish(lake, bare, activate=True)
+    for name in ("ontology.ttl", "mappings.yaml", "metrics.osi.yaml"):
+        lake.put(f"{layout.CONFIG_ONTOLOGY}/{name}", (ONTO / name).read_bytes())
+    with pytest.raises(ValueError, match="mappings.yaml"):
+        provided.apply(lake)
+    assert published_mapping(lake) is None
 
 
 def test_a_private_table_is_hidden_and_a_broken_snapshot_is_not_activated(tmp_path):
