@@ -42,11 +42,13 @@ This is the path when you do not bring an ontology. The same documents come in. 
 
 From there it is the same flow. Passages are read into the ontology that was derived from them. The graph and the vectors are built the same way, and a fact still has to be in the passage.
 
-## 6. When someone asks
+## 6. The chat
 
-Clip `06-when-someone-asks.mp4`. Assembly 3:32 to 4:15.
+Clip `06-when-someone-asks.mp4`. Assembly 3:32 to 4:33.
 
-Someone asks a question. The agent has the ontology, so it can plan in those types. Name a thing, and it walks the graph. Describe a situation, and it searches by meaning, then comes back to the facts on that passage. You only see a statement the passage supports.
+Someone types in the chat. The agent has the ontology, so it plans in those types. If the message names something, it follows the graph. What killed Dr Roylott goes from the person to the cause, and the passage on that fact is read.
 
-Roylott is the swamp adder, from The Speckled Band. Holmes's mother is a decline. The stories do not say her name, and the answer does not borrow one.
+The agent offers a statement and a quote from the passage. The quote is checked. The Speckled Band does say swamp adder, so that statement stays. What you see in the chat is the swamp adder, and the passage it came from.
+
+Type the other question, and it is the same path. Holmes's mother's name meets other mothers, not his. Nothing survives the check. The chat declines.
 

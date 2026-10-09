@@ -42,11 +42,13 @@ If you do not bring an ontology, the documents arrive on their own. The lab read
 
 Then the same extraction runs. Passages are read into the vocabulary that came from the documents, and the graph and the vectors are built in the same way. The ontology was derived. A fact still has to be in the passage.
 
-## 6. When someone asks
+## 6. The chat
 
-Clip `06-when-someone-asks.mp4`. Assembly 3:32 to 4:15.
+Clip `06-when-someone-asks.mp4`. Assembly 3:32 to 4:33.
 
-When someone asks, the agent is given that ontology and plans in its types. A question that names something follows the graph. A question that describes a situation searches by meaning, and comes back to the facts that cite the passage. The page is built only from statements a passage supports.
+A person types a message in the chat. The agent is given the collection's ontology, and it plans in those types. A message that names something follows the graph. What killed Dr Roylott walks from the person to the cause, and the passage cited by that fact is read.
 
-What killed Dr Grimesby Roylott is answered from the swamp adder. The name of Sherlock Holmes's mother is declined. The stories do not say, and a nearby mother is not used to fill the gap.
+The agent proposes a statement, with a quote taken from the passage. The quote is checked. It is in The Speckled Band, so the statement stays. The result in the chat is the swamp adder, with that passage beside it.
+
+A second message takes the same path. The name of Sherlock Holmes's mother meets other mothers in the stories, and nothing that names his. No statement survives the check. The result in the chat is a decline.
 

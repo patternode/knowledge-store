@@ -18,9 +18,9 @@ The clips are timed to the longer of the two reads, at about 130 words a minute,
 | 1:30 | 2:12 | `03-graph-and-vectors.mp4` | Graph and vectors |
 | 2:12 | 2:49 | `04-bring-ontology.mp4` | Bring the ontology |
 | 2:49 | 3:32 | `05-derive-ontology.mp4` | Derive the ontology |
-| 3:32 | 4:15 | `06-when-someone-asks.mp4` | When someone asks |
+| 3:32 | 4:33 | `06-when-someone-asks.mp4` | The chat |
 
-Total picture: 4:15 (254.7 seconds).
+Total picture: 4:33 (272.8 seconds).
 
 ## 1. The usual path
 
@@ -67,12 +67,13 @@ Picture:
 - The other ingestion. Documents arrive with no ontology. A sample proposes Person, Case, and Cause.
 - The proposals become a draft, a person publishes it, and that ontology drops into the same extraction. The graph and the vectors are built the same way.
 
-## 6. When someone asks
+## 6. The chat
 
-`06-when-someone-asks.mp4`, 3:32 to 4:15.
+`06-when-someone-asks.mp4`, 3:32 to 4:33.
 
 Picture:
 
-- A question enters an agent that holds the ontology. One path walks the graph. The other searches by meaning and returns to the fact.
-- Roylott resolves to the swamp adder and the passage. Holmes's mother stays dark: the sources do not say.
+- A chat message, What killed Dr Roylott, enters an agent that holds the ontology. The agent walks the graph, reads the cited passage, and a check keeps the statement because the quote is in the passage.
+- The result returns in the chat: a swamp adder, with the Speckled Band passage.
+- A second message, Holmes's mother's name, takes the same path. Nothing survives the check. The result in the chat is a decline.
 

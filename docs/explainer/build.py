@@ -98,6 +98,29 @@ def draw_tracked(d, xy, text, fnt, fill, tracking=0):
     return x
 
 
+def wrap(text, fnt, width):
+    lines, cur = [], ""
+    for word in text.split():
+        trial = word if not cur else f"{cur} {word}"
+        if fnt.getlength(trial) <= width:
+            cur = trial
+        else:
+            if cur:
+                lines.append(cur)
+            cur = word
+    if cur:
+        lines.append(cur)
+    return lines or [""]
+
+
+def draw_wrapped(d, text, fnt, fill, x, y, width, gap=6):
+    lines = wrap(text, fnt, width)
+    step = fnt.size + gap
+    for i, line in enumerate(lines):
+        d.text((x, y + i * step), line, font=fnt, fill=fill)
+    return len(lines) * step
+
+
 def center_text(d, cx, cy, text, fnt, fill):
     box = fnt.getbbox(text)
     tw = box[2] - box[0]
@@ -396,18 +419,21 @@ SECTIONS = [
     {
         "id": "questions",
         "file": "06-when-someone-asks.mp4",
-        "kicker": "When someone asks",
+        "kicker": "The chat",
         "picture": [
-            "A question enters an agent that holds the ontology. One path walks the graph. The other searches by meaning and returns to the fact.",
-            "Roylott resolves to the swamp adder and the passage. Holmes's mother stays dark: the sources do not say.",
+            "A chat message, What killed Dr Roylott, enters an agent that holds the ontology. The agent walks the graph, reads the cited passage, and a check keeps the statement because the quote is in the passage.",
+            "The result returns in the chat: a swamp adder, with the Speckled Band passage.",
+            "A second message, Holmes's mother's name, takes the same path. Nothing survives the check. The result in the chat is a decline.",
         ],
         "pro": [
-            "When someone asks, the agent is given that ontology and plans in its types. A question that names something follows the graph. A question that describes a situation searches by meaning, and comes back to the facts that cite the passage. The page is built only from statements a passage supports.",
-            "What killed Dr Grimesby Roylott is answered from the swamp adder. The name of Sherlock Holmes's mother is declined. The stories do not say, and a nearby mother is not used to fill the gap.",
+            "A person types a message in the chat. The agent is given the collection's ontology, and it plans in those types. A message that names something follows the graph. What killed Dr Roylott walks from the person to the cause, and the passage cited by that fact is read.",
+            "The agent proposes a statement, with a quote taken from the passage. The quote is checked. It is in The Speckled Band, so the statement stays. The result in the chat is the swamp adder, with that passage beside it.",
+            "A second message takes the same path. The name of Sherlock Holmes's mother meets other mothers in the stories, and nothing that names his. No statement survives the check. The result in the chat is a decline.",
         ],
         "record": [
-            "Someone asks a question. The agent has the ontology, so it can plan in those types. Name a thing, and it walks the graph. Describe a situation, and it searches by meaning, then comes back to the facts on that passage. You only see a statement the passage supports.",
-            "Roylott is the swamp adder, from The Speckled Band. Holmes's mother is a decline. The stories do not say her name, and the answer does not borrow one.",
+            "Someone types in the chat. The agent has the ontology, so it plans in those types. If the message names something, it follows the graph. What killed Dr Roylott goes from the person to the cause, and the passage on that fact is read.",
+            "The agent offers a statement and a quote from the passage. The quote is checked. The Speckled Band does say swamp adder, so that statement stays. What you see in the chat is the swamp adder, and the passage it came from.",
+            "Type the other question, and it is the same path. Holmes's mother's name meets other mothers, not his. Nothing survives the check. The chat declines.",
         ],
     },
 ]
@@ -597,49 +623,66 @@ def draw_derive(d, t):
     stage(d, 1680, 920, "VECTORS", BLUE, a_out)
 
 
+def chat_bubble(d, box, who, text, accent, a, size=26):
+    if a <= 0.02:
+        return
+    x0, y0, x1, y1 = box
+    d.rounded_rectangle(box, radius=18, fill=col(INK, a), outline=col(accent, a), width=3)
+    d.text((x0 + 18, y0 + 14), who, font=font(13, "med"), fill=col(accent, a))
+    draw_wrapped(d, text, font(size, "sem"), col(IVORY, a), x0 + 18, y0 + 42, x1 - x0 - 36, gap=4)
+
+
 def draw_questions(d, t):
-    heading(d, "When someone asks", "The same ontology plans the question. A statement needs a passage.")
-    a_q = ease(t, 0.4, 2.2)
-    a_agent = ease(t, 2.4, 5.0)
-    a_fork = ease(t, 5.2, 9.0)
-    a_yes = ease(t, 9.5, 13.0)
-    a_no = ease(t, 13.5, 17.0)
+    heading(d, "A message, then a result", "Typed in the chat. Returned only when a passage supports it.")
+    a_msg = ease(t, 0.4, 2.4)
+    a_agent = ease(t, 2.6, 5.2)
+    a_find = ease(t, 5.4, 9.5)
+    a_keep = ease(t, 9.8, 13.0)
+    a_out = ease(t, 13.2, 16.5)
+    a_msg2 = ease(t, 18.0, 20.5)
+    a_find2 = ease(t, 20.8, 24.5)
+    a_drop = ease(t, 24.8, 28.0)
+    a_out2 = ease(t, 28.2, 32.0)
 
-    pill(d, 180, 390, "A question", IVORY, a_q)
-    arrow(d, (280, 390), (430, 390), col(GOLD, a_agent), prog=a_agent)
-    d.rounded_rectangle((450, 300, 900, 500), radius=22, fill=col(INK, a_agent), outline=col(GOLD, a_agent), width=3)
-    if a_agent > 0.15:
-        center_text(d, 675, 345, "Agent", font(24, "sem"), col(IVORY, a_agent))
-        for name, x in (("Person", 540), ("Case", 675), ("Cause", 810)):
-            pill(d, x, 430, name, GOLD, a_agent)
-    stage(d, 675, 270, "HOLDS THE ONTOLOGY", GOLD, a_agent)
+    # The message.
+    chat_bubble(d, (64, 230, 390, 360), "MESSAGE", "What killed Dr Roylott?", IVORY, a_msg, size=24)
+    arrow(d, (400, 295), (500, 430), col(GOLD, a_agent), prog=a_agent, width=3)
 
-    arrow(d, (910, 360), (1120, 280), col(TEAL, a_fork), prog=a_fork)
-    arrow(d, (910, 450), (1100, 560), col(BLUE, a_fork), prog=a_fork)
-    node(d, 1320, 270, 260, 64, "Walk the graph", TEAL, a_fork)
-    node(d, 1340, 560, 300, 64, "Search by meaning", BLUE, a_fork)
+    # Agent, shared by both messages.
+    d.rounded_rectangle((520, 400, 820, 620), radius=20, fill=col(INK, a_agent), outline=col(GOLD, a_agent), width=3)
+    if a_agent > 0.1:
+        center_text(d, 670, 445, "Agent", font(26, "sem"), col(IVORY, a_agent))
+        for name, x in (("Person", 575), ("Case", 670), ("Cause", 765)):
+            pill(d, x, 530, name, GOLD, a_agent)
+        stage(d, 670, 640, "HOLDS THE ONTOLOGY", GOLD, a_agent)
 
-    # Answered outcome
-    d.rounded_rectangle((80, 680, 920, 960), radius=22, fill=col(INK, a_yes), outline=col(TEAL, a_yes), width=3)
-    if a_yes > 0.2:
-        d.text((110, 705), "ANSWERED", font=font(14, "med"), fill=col(TEAL, a_yes))
-        node(d, 280, 820, 160, 56, "Roylott", TEAL, a_yes)
-        node(d, 620, 820, 200, 56, "Swamp adder", TEAL, a_yes)
-        arrow(d, (370, 820), (510, 820), col(TEAL, a_yes), prog=a_yes, width=3)
-        center_text(d, 440, 784, "killed by", font(14, "med"), col(TEAL, a_yes))
-        passage_mark(d, 730, 760, a_yes, "passage")
+    # Answered lookup: graph fact and its passage.
+    arrow(d, (820, 460), (960, 300), col(TEAL, a_find), prog=a_find, width=3)
+    node(d, 1080, 250, 150, 52, "Roylott", TEAL, a_find)
+    node(d, 1360, 250, 190, 52, "Swamp adder", TEAL, a_find)
+    arrow(d, (1160, 250), (1260, 250), col(TEAL, a_find), width=3, prog=a_find)
+    if a_find > 0.45:
+        center_text(d, 1210, 220, "killed by", font(14, "med"), col(TEAL, a_find))
+    passage_mark(d, 1280, 300, a_find, "Speckled Band")
+    stage(d, 1220, 410, "GRAPH AND PASSAGE", TEAL, a_find)
 
-    # Declined outcome
-    d.rounded_rectangle((1000, 680, 1840, 960), radius=22, fill=col(INK, a_no), outline=col(CORAL, a_no), width=3)
-    if a_no > 0.2:
-        d.text((1030, 705), "DECLINED", font=font(14, "med"), fill=col(CORAL, a_no))
-        node(d, 1280, 830, 220, 64, "Holmes", CORAL, a_no * 0.85)
-        node(d, 1620, 830, 200, 64, "mother", DIM, a_no * 0.45)
-        # a broken link
-        d.line((1400, 830, 1510, 830), fill=col(CORAL, a_no), width=3)
-        cx, cy = 1455, 830
-        d.line((cx - 10, cy - 10, cx + 10, cy + 10), fill=col(CORAL, a_no), width=3)
-        d.line((cx - 10, cy + 10, cx + 10, cy - 10), fill=col(CORAL, a_no), width=3)
+    # The check, then the result in the chat.
+    arrow(d, (1460, 250), (1580, 230), col(TEAL, a_keep), prog=a_keep, width=3)
+    node(d, 1660, 230, 150, 56, "Kept", TEAL, a_keep)
+    arrow(d, (1660, 262), (1660, 470), col(TEAL, a_out), prog=a_out, width=3)
+    chat_bubble(d, (1480, 480, 1860, 680), "RESULT", "A swamp adder.", TEAL, a_out, size=28)
+    if a_out > 0.4:
+        passage_mark(d, 1688, 580, a_out, "Speckled Band")
+
+    # Second message, same agent, nothing kept.
+    chat_bubble(d, (64, 760, 420, 900), "MESSAGE", "Holmes's mother's name?", IVORY, a_msg2, size=22)
+    arrow(d, (420, 820), (560, 620), col(GOLD, a_find2), prog=a_find2, width=3)
+    arrow(d, (760, 620), (980, 760), col(CORAL, a_find2), prog=a_find2, width=3)
+    node(d, 1160, 800, 280, 64, "Other mothers", CORAL, a_find2, sub="not his")
+    arrow(d, (1310, 800), (1450, 800), col(CORAL, a_drop), prog=a_drop, width=3)
+    node(d, 1580, 800, 170, 60, "Removed", CORAL, a_drop)
+    arrow(d, (1670, 800), (1740, 860), col(CORAL, a_out2), prog=a_out2, width=3)
+    chat_bubble(d, (1480, 880, 1860, 990), "RESULT", "The sources do not say.", CORAL, a_out2, size=22)
 
 
 DRAW = {
