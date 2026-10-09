@@ -544,7 +544,61 @@ function main() {
         terms.length ? h('p', { class: 'step-terms' }, terms) : null,
         input));
   }
-  function stepSummary(steps) {
+  const COST_PATHS = [
+    ['graph', 'Knowledge graph'],
+    ['vector', 'Vector'],
+    ['keyword', 'Keyword search'],
+    ['read', 'Passage read'],
+    ['ontology', 'Ontology read'],
+    ['other', 'Other tool'],
+    ['answer', 'Answer'],
+  ];
+  const PATH_IDS = new Set(COST_PATHS.map(([id]) => id).filter((id) => id !== 'answer'));
+  function costByPath(steps, done) {
+    const usd = Object.fromEntries(COST_PATHS.map(([id]) => [id, 0]));
+    const priced = Object.fromEntries(COST_PATHS.map(([id]) => [id, false]));
+    const unpriced = Object.fromEntries(COST_PATHS.map(([id]) => [id, false]));
+    let pending = null;
+    let paths = [];
+    function assign() {
+      if (!pending) { paths = []; return; }
+      const targets = [...new Set(paths)].filter((id) => PATH_IDS.has(id));
+      if (!targets.length) targets.push('answer');
+      if (pending.usd == null) {
+        for (const id of targets) unpriced[id] = true;
+      } else {
+        const share = pending.usd / targets.length;
+        for (const id of targets) { usd[id] += share; priced[id] = true; }
+      }
+      pending = null;
+      paths = [];
+    }
+    for (const s of steps) {
+      if (s.kind === 'model') {
+        assign();
+        pending = { usd: s.usd == null ? null : Number(s.usd) };
+      } else {
+        const type = stepType(s);
+        if (PATH_IDS.has(type)) paths.push(type);
+      }
+    }
+    if (done) assign();
+    return { usd, priced, unpriced };
+  }
+  function answerText(t) {
+    const running = t.status === 'pending' || t.status === 'running';
+    if (running) return '';
+    if (t.mode === 'gaps' && t.result && t.result.report) {
+      const report = t.result.report;
+      const verdict = VERDICT[report.verdict] || str(report.verdict) || 'Report';
+      return report.summary ? `${verdict}. ${str(report.summary)}` : verdict;
+    }
+    if (t.answer) return t.answer;
+    if (t.status === 'failed') return (t.result && t.result.error) || 'The question did not get an answer.';
+    return '';
+  }
+  function stepSummary(t) {
+    const steps = t.steps;
     const counts = Object.fromEntries(STEP_TYPES.map(([id]) => [id, 0]));
     const tools = {};
     const tokens = Object.fromEntries(TOKEN_KINDS.map(([key]) => [key, 0]));
@@ -558,9 +612,18 @@ function main() {
       }
     }
     const toolRows = Object.entries(tools).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    const done = t.status !== 'pending' && t.status !== 'running';
+    const costs = costByPath(steps, done);
     const countRow = (id, label) => h('tr', { class: `t-${id}` },
       h('th', { scope: 'row' }, h('span', { class: 'step-swatch', 'aria-hidden': 'true' }), h('span', { text: label })),
       h('td', { class: 'num-cell', text: String(counts[id]) }));
+    const priceCell = (id) => {
+      if (costs.priced[id] && costs.unpriced[id]) return `${usdText(costs.usd[id])} · some calls not priced`;
+      if (costs.priced[id]) return usdText(costs.usd[id]);
+      if (costs.unpriced[id]) return 'not priced';
+      return usdText(0);
+    };
+    const answer = answerText(t);
     return h('div', { class: 'step-summary' },
       h('h4', { text: 'Steps by type' }),
       h('table', { class: 'kv small' },
@@ -576,7 +639,17 @@ function main() {
       h('h4', { text: 'Model tokens' }),
       h('p', { class: 'small', text: reported
         ? tokenLine(tokens)
-        : 'No model call reported tokens.' }));
+        : 'No model call reported tokens.' }),
+      h('h4', { text: 'Cost by path' }),
+      h('p', { class: 'small muted', text: 'Each model call is charged to the paths of the tools that followed it, split evenly when there were several. A model call with no tool after it is the cost of the answer. Searches themselves are not charged.'
+        + (done ? '' : ' The model call still in progress is not in this table yet.') }),
+      h('table', { class: 'kv small' },
+        h('thead', null, h('tr', null, [h('th', { scope: 'col', text: 'Path' }), h('th', { scope: 'col', text: 'Price' })])),
+        h('tbody', null, COST_PATHS.map(([id, label]) => h('tr', { class: `t-${id === 'answer' ? 'done' : id}` },
+          h('th', { scope: 'row' }, h('span', { class: 'step-swatch', 'aria-hidden': 'true' }), h('span', { text: label })),
+          h('td', { class: 'num-cell', text: priceCell(id) }))))),
+      h('h4', { text: 'Answer' }),
+      h('p', { class: answer ? 'bench-answer' : 'small muted', text: answer || (done ? 'No answer was recorded.' : 'The answer appears when the question finishes.') }));
   }
   // List price. Under a cent, four places, so a split of small calls does not all read as the same amount.
   function usdText(n) {
@@ -641,7 +714,7 @@ function main() {
       statusLine,
       t.steps.length ? h('ol', { class: 'steps' }, t.steps.map(stepItem))
         : h('p', { class: 'small muted', text: running ? 'Waiting for the first step.' : 'This answer reported no steps.' }),
-      t.steps.length ? stepSummary(t.steps) : null);
+      t.steps.length ? stepSummary(t) : null);
     renderCost(t);
     const hits = t.hits || {};
     const groups = Object.keys(KIND_LABEL).filter((k) => Object.keys(hits[k] || {}).length);

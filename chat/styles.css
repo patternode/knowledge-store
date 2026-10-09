@@ -306,6 +306,7 @@ mark { background: var(--mark); color: var(--mark-text); border-radius: 2px; pad
 .step-summary tr.t-graph th, .step-summary tr.t-vector th, .step-summary tr.t-keyword th,
 .step-summary tr.t-read th, .step-summary tr.t-ontology th, .step-summary tr.t-other th { color: var(--step); }
 .step-swatch { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--step, var(--border)); vertical-align: 1px; }
+.bench-answer { white-space: pre-wrap; }
 .step-detail { color: var(--muted); font-size: 0.84rem; }
 .step-detail.error { color: var(--danger); }
 .step-terms { margin-top: 3px !important; display: flex; flex-wrap: wrap; gap: 4px; }
