@@ -58,25 +58,78 @@ def published_mapping(lake: Store, version: str | None = None) -> Mapping | None
     return Mapping.from_json(json.loads(lake.get(key)))
 
 
+def _paths(meta: dict) -> list[str]:
+    """Every path this bronze object was uploaded under, plus folder/name from the adapter."""
+    raw = [meta.get("source_key"), *(meta.get("source_keys") or [])]
+    out = []
+    for item in raw:
+        key = str(item or "").replace("\\", "/")
+        if key and key not in out:
+            out.append(key)
+    folder = str((meta.get("metadata") or {}).get("folder") or "").replace("\\", "/").strip("/")
+    name = str(meta.get("name") or "")
+    rel = f"{folder}/{name}" if folder and name else name
+    if rel and rel not in out:
+        out.append(rel)
+    return out
+
+
+def _rank(meta: dict, location: str) -> int:
+    """How closely a bronze object is the file the mapping names.
+
+    0 the path is the location, 1 the path ends with it, 2 only the file name matches
+    (a catalog uploaded beside the documents, or copied out of tables/). -1 is not a match.
+    """
+    location = location.replace("\\", "/").lstrip("/")
+    if not location:
+        return -1
+    base = location.rsplit("/", 1)[-1]
+    best = 99
+    for key in _paths(meta):
+        if key == location:
+            best = min(best, 0)
+        elif key.endswith("/" + location):
+            best = min(best, 1)
+        elif base and key.rsplit("/", 1)[-1] == base:
+            best = min(best, 2)
+    return -1 if best == 99 else best
+
+
 def matches(meta: dict, location: str) -> bool:
     """Whether a bronze object is the file the mapping names."""
-    key = str(meta.get("source_key") or "").replace("\\", "/")
-    if key == location or key.endswith("/" + location):
-        return True
-    folder = str((meta.get("metadata") or {}).get("folder") or "").strip("/")
-    name = str(meta.get("name") or "")
-    rel = f"{folder}/{name}" if folder else name
-    return rel == location
+    return _rank(meta, location) >= 0
+
+
+def _select(objects: dict, location: str) -> tuple[tuple[str, dict] | None, str]:
+    """The bronze object for a location. Two equally good files are not a guess."""
+    hits = [(_rank(meta, location), doc_id, meta) for doc_id, meta in objects.items()]
+    hits = [h for h in hits if h[0] >= 0]
+    if not hits:
+        return None, ""
+    best = min(h[0] for h in hits)
+    chosen = [h for h in hits if h[0] == best]
+    if len(chosen) > 1:
+        base = location.replace("\\", "/").rsplit("/", 1)[-1]
+        return None, f"more than one file named {base}"
+    return (chosen[0][1], chosen[0][2]), ""
 
 
 def mapped_doc_ids(lake: Store) -> set[str]:
-    """Bronze objects a published mapping names, so refine and extract leave them alone."""
+    """Bronze objects a published mapping names, so refine and extract leave them alone.
+
+    An ambiguous name is left as a document: bind will say which file it could not choose.
+    """
     mapping = published_mapping(lake)
     if mapping is None:
         return set()
     from ..pipeline.ingest import bronze_objects
-    paths = mapping.locations()
-    return {doc_id for doc_id, meta in bronze_objects(lake).items() if any(matches(meta, p) for p in paths)}
+    objects = bronze_objects(lake)
+    chosen = set()
+    for path in mapping.locations():
+        found, _why = _select(objects, path)
+        if found:
+            chosen.add(found[0])
+    return chosen
 
 
 def _read_rows(data: bytes, location: str) -> list[dict]:
@@ -102,14 +155,6 @@ def _iri(spec, table: Table, key: str) -> str:
 
 def _scope(table: Table, meta: dict) -> str:
     return "private" if table.scope == "private" or meta.get("scope") == "private" else "public"
-
-
-def _find(objects: dict, location: str) -> tuple[str, dict] | None:
-    hits = [(i, m) for i, m in objects.items() if matches(m, location)]
-    if not hits:
-        return None
-    exact = [h for h in hits if str(h[1].get("source_key") or "").endswith(location)]
-    return (exact or hits)[0]
 
 
 def binding(lake: Store, version: str | None = None) -> dict:
@@ -151,9 +196,12 @@ def bind(lake: Store, version: str | None = None) -> dict:
         if table.location.startswith("coa:"):
             missing.append({"table": table.logical_table, "reason": "live source, not copied"})
             continue
-        found = _find(objects, table.location)
+        found, why = _select(objects, table.location)
         if found is None:
-            missing.append({"table": table.logical_table, "location": table.location})
+            row = {"table": table.logical_table, "location": table.location}
+            if why:
+                row["reason"] = why
+            missing.append(row)
             continue
         doc_id, meta = found
         source = meta.get("source") or "uploads"

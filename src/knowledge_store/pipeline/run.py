@@ -113,12 +113,15 @@ def sweep_once(lake: Store, client_factory, model_id: str, cfg: dict) -> dict:
     for source in load_sources(lake):
         s, _ = ingest_source(lake, source)
         stats["ingest"][source.name] = s.as_dict()
+    # A provided ontology, including its mapping, is published before refine. Otherwise a CSV
+    # the mapping names is parsed as prose on the sweep that first sees it, and the table is
+    # not the source of those bytes.
+    provided_now = provided.apply(lake)
+    if provided_now:
+        stats["ontology"] = provided_now
     refined = refine_all(lake)
     stats["refined"] = sum(1 for r in refined if r["status"] == "refined")
     profile = load_profile(lake)
-    provided_now = provided.apply(lake)  # a provided ontology replaces discovery
-    if provided_now:
-        stats["ontology"] = provided_now
     if not versions.active_version(lake):
         n = len(silver_doc_ids(lake))
         if n < cfg["discovery_min_docs"]:
