@@ -93,7 +93,7 @@ arrow([(1084, 768), (952, 768)], "Retrieve", 1018, 760)
 # Footer notes
 notes = [
  ("Grounding", ["No statement without a source: a claim survives only if its quote is", "in a passage the caller may read, is ≥ 12 characters, and the", "guardrail scores it grounded. One repair turn, then it is removed."]),
- ("Valves", ["Per question: 16 tool calls, 14 model calls, 4000 output tokens", "per call, 1 repair turn. Optional monthly budget alert."]),
+ ("Valves", ["Per question: 16 tool calls, 14 model calls, 4000 output tokens", "per call, 1 repair turn. A mapped-table question cites a cell or a figure.", "Optional monthly budget alert."]),
  ("Sign-in, networking and cost", ["Cognito, or a host website that frames the pages (site_sign_in).", "No NAT gateway; Neptune and the graph tools reach S3 through a", "gateway endpoint. Neptune is the main fixed cost (can be off)."]),
 ]
 for i, (h, ls) in enumerate(notes):
