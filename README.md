@@ -68,7 +68,7 @@ A collection starts with an ontology one of two ways:
 | | How | Then |
 |---|---|---|
 | Bring one | Set the collection's `ontology_dir` to a directory holding `ontology.ttl` (and optionally `shapes.ttl`); `terraform apply` uploads it | The sweep publishes and activates it and extracts against it. Discovery never runs. To change it, bump `owl:versionInfo` and apply |
-| Discover one | Leave `ontology_dir` unset and upload documents | Discovery, then review, as below. `ontology_mode = "curated"` (the default) stops at a draft for a person to change and publish; `"auto"` publishes the draft as 0.1.0 straight away |
+| Discover one | Leave `ontology_dir` unset and upload documents | Discovery, then review, as described above. `ontology_mode = "curated"` (the default) stops at a draft for a person to change and publish; `"auto"` publishes the draft as 0.1.0 straight away |
 
 1. Discover. With no ontology, the first run writes a draft as described in [How an ontology is derived](#how-an-ontology-is-derived).
 2. Curate. The draft is Turtle (OWL plus generated SHACL) for a person to edit in git.
