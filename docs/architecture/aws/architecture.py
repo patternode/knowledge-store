@@ -101,7 +101,7 @@ for i, (h, ls) in enumerate(notes):
     out.append(f'<text x="{x+4}" y="866" class="nh">{h}</text>')
     for j, l in enumerate(ls):
         out.append(f'<text x="{x+4}" y="{888+j*18}" class="note">{l}</text>')
-out.append('<text x="28" y="990" class="foot">Design: docs/architectures/aws.md · Terraform: infra/modules/knowledge-store · Deployment guide: docs/deploy/aws</text>')
+out.append('<text x="28" y="990" class="foot">Design: docs/architecture/aws/aws.md · Terraform: infra/modules/knowledge-store · Deployment guide: docs/deploy/aws</text>')
 
 svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">
 <defs>
