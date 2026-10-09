@@ -1,6 +1,6 @@
 """Architecture briefing for the Knowledge Store.
 
-Six clips. The picture is a diagram of the flow, drawn in the Patternode brand
+Seven clips. The picture is a diagram of the flow, drawn in the Patternode brand
 (Midnight Terminal, IBM Plex, the mark). Two voice scripts are written from the
 same scenes: voice-pro.md for a professional narrator, voice-record.md to read
 yourself. Each script is continuous prose for the clip.
@@ -209,7 +209,7 @@ def pill(d, cx, cy, text, ring, a=1.0, fill=INK):
     center_text(d, cx, cy, text, fnt, col(IVORY, a))
 
 
-def page(d, x, y, w, h, title, accent, a=1.0, bars=4):
+def page(d, x, y, w, h, title, accent, a=1.0, bars=4, title_size=16):
     if a <= 0.02:
         return
     d.rounded_rectangle((x, y, x + w, y + h), radius=12, fill=col(INK, a), outline=col(accent, a), width=3)
@@ -218,9 +218,10 @@ def page(d, x, y, w, h, title, accent, a=1.0, bars=4):
         [(x + w - fold, y + 2), (x + w - 2, y + fold), (x + w - fold, y + fold)],
         fill=col(accent, a * 0.45),
     )
-    d.text((x + 16, y + 18), title, font=font(16, "sem"), fill=col(IVORY, a))
+    d.text((x + 16, y + 18), title, font=font(title_size, "sem"), fill=col(IVORY, a))
+    top = y + max(58, 26 + title_size)
     for i in range(bars):
-        yy = y + 58 + i * 18
+        yy = top + i * 18
         span = w - 36 - (10 if i == bars - 1 else 0)
         d.line((x + 16, yy, x + 16 + span * (0.72 if i == bars - 1 else 1), yy), fill=col(LINE, a), width=3)
 
@@ -364,6 +365,24 @@ def words(paragraphs: list[str]) -> int:
 
 SECTIONS = [
     {
+        "id": "collection",
+        "file": "00-the-collection.mp4",
+        "kicker": "The collection",
+        "picture": [
+            "Three story pages: Adventures, Memoirs, and Return, labeled as the collection used in this briefing.",
+            "A short line: a collection, also called a corpus, is the set of documents an agent answers from.",
+            "A quieter mark: this set is a stand-in, and the same pictures apply to any documents.",
+        ],
+        "pro": [
+            "The examples that follow use one collection. A collection, sometimes called a corpus, is the set of documents an agent is allowed to answer from. Here that set is three Sherlock Holmes books: the Adventures, the Memoirs, and the Return.",
+            "It is a stand-in. The same pictures apply to a company's own files, a research library, or any other collection. Nothing in the method depends on these particular stories.",
+        ],
+        "record": [
+            "These examples use one collection. A collection, sometimes called a corpus, is the set of documents an agent is allowed to answer from. Here, that set is three Sherlock Holmes books: the Adventures, the Memoirs, and the Return.",
+            "It is a stand-in. The same pictures apply to your own documents, a research library, or any other collection. Nothing in the method depends on these particular stories.",
+        ],
+    },
+    {
         "id": "usual",
         "file": "01-usual-path.mp4",
         "kicker": "The usual path",
@@ -478,6 +497,27 @@ def prepare(section):
 
 
 # --- scenes -----------------------------------------------------------------
+
+def draw_collection(d, t):
+    heading(d, "One collection", "Named before any example.")
+    a_pages = ease(t, 0.4, 3.2)
+    a_def = ease(t, 4.2, 8.5)
+    a_stand = ease(t, 18.5, 23.5)
+
+    titles = ["Adventures", "Memoirs", "Return"]
+    w, h, gap = 270, 300, 56
+    x0 = (W - (3 * w + 2 * gap)) / 2
+    y0 = 250
+    for i, name in enumerate(titles):
+        page(d, x0 + i * (w + gap), y0, w, h, name, BLUE, a_pages, bars=4, title_size=28)
+    stage(d, W / 2, y0 + h + 28, "THIS BRIEFING", BLUE, a_pages)
+
+    if a_def > 0.02:
+        center_text(d, W / 2, 700, "A collection, also called a corpus.", font(26, "med"), col(IVORY, a_def))
+        center_text(d, W / 2, 744, "The documents an agent answers from.", font(22), col(MUTED, a_def))
+    if a_stand > 0.02:
+        center_text(d, W / 2, 830, "A stand-in for any documents.", font(20), col(MUTED, a_stand))
+
 
 def draw_usual(d, t):
     heading(d, "The usual path", "Chunks nearest in meaning. A sentence written from them.")
@@ -724,6 +764,7 @@ def draw_questions(d, t):
 
 
 DRAW = {
+    "collection": draw_collection,
     "usual": draw_usual,
     "graph": draw_graph,
     "together": draw_together,
@@ -819,7 +860,7 @@ def write_docs():
     script = [
         "# Knowledge Store briefing",
         "",
-        "Six clips. The picture is an architecture diagram of the flow.",
+        f"{['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][len(SECTIONS)]} clips. The picture is an architecture diagram of the flow.",
         "",
         "Two complete reads, one per clip, in prose:",
         "",
