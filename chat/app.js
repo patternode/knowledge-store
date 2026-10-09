@@ -89,11 +89,74 @@ function main() {
         onclick: (e) => { e.preventDefault(); flashCard(turn, n); } }, `[${n}]`)
       : h('span', { class: 'cite dead', title: 'This source is not listed' }, `[${n}]`)));
   }
-  function answerBody(turn, r) {
-    const sources = Array.isArray(r.sources) ? r.sources : [];
+  // The agent returns numbered sources. The portal tool loop returns citations and writes
+  // [p:<id>] in the answer. Both are shown the same way: the answer, then a card per source.
+  function groundedSources(r) {
+    const listed = (Array.isArray(r.sources) ? r.sources : []).slice().sort((a, b) => (a.n || 0) - (b.n || 0));
+    if (listed.length) return listed;
+    const cites = (Array.isArray(r.citations) ? r.citations : []).filter((c) => c && typeof c === 'object');
+    if (!cites.length) return [];
+    const byId = new Map(cites.map((c) => [c.id || c.passage_id, c]));
+    const order = [], seen = new Set();
+    const re = /\[p:([^\]\s]+)\]/g;
+    let m;
+    while ((m = re.exec(str(r.answer)))) if (!seen.has(m[1])) { seen.add(m[1]); order.push(m[1]); }
+    for (const id of byId.keys()) if (id && !seen.has(id)) { seen.add(id); order.push(id); }
+    return order.map((id, i) => {
+      const c = byId.get(id) || {};
+      return { n: i + 1, passage_id: id, doc: c.doc, title: c.title, name: c.name,
+        text: c.text || '', quotes: Array.isArray(c.quotes) ? c.quotes : [] };
+    });
+  }
+  function inlineParts(text, cite) {
+    const out = [], re = /\[p:([^\]\s]+)\]|\*\*([^*]+)\*\*|`([^`]+)`/g;
+    let last = 0, m;
+    while ((m = re.exec(text))) {
+      if (m.index > last) out.push(text.slice(last, m.index));
+      if (m[1]) out.push(cite(m[1]));
+      else if (m[2]) out.push(h('strong', { text: m[2] }));
+      else out.push(h('code', { text: m[3] }));
+      last = re.lastIndex;
+    }
+    if (last < text.length) out.push(text.slice(last));
+    return out;
+  }
+  function proseAnswer(turn, text, sources) {
+    const known = new Set(sources.map((s) => s.n));
+    const nOf = new Map(sources.filter((s) => s.passage_id).map((s) => [s.passage_id, s.n]));
+    const cite = (pid) => {
+      const n = nOf.get(pid);
+      return n != null ? citeLinks(turn, [n], known) : h('span', { class: 'cite dead', title: 'This source is not listed' }, `[${pid}]`);
+    };
+    const md = h('div', { class: 'answer-text md' });
+    const bullet = /^\s*(?:[-*•]|\d+[.)])\s+/;
+    let para = null, list = null;
+    for (const raw of String(text || '').split('\n')) {
+      const line = raw.trimEnd();
+      if (!line.trim()) { para = list = null; continue; }
+      if (/^\s*(?:[-*_]\s*){3,}$/.test(line)) { para = list = null; md.append(h('hr')); continue; }
+      if (/^#{1,6}\s/.test(line)) {
+        para = list = null;
+        md.append(h('h4', null, inlineParts(line.replace(/^#+\s*/, ''), cite)));
+        continue;
+      }
+      if (bullet.test(line)) {
+        const tag = /^\s*\d/.test(line) ? 'ol' : 'ul';
+        if (!list || list.tagName !== tag.toUpperCase()) { para = null; list = h(tag); md.append(list); }
+        list.append(h('li', null, inlineParts(line.replace(bullet, ''), cite)));
+        continue;
+      }
+      list = null;
+      if (!para) { para = h('p'); md.append(para); } else para.append(h('br'));
+      para.append(...inlineParts(line, cite).flat());
+    }
+    if (!md.childNodes.length) md.append(h('p', { text: str(text) }));
+    return md;
+  }
+  function answerBody(turn, r, sources) {
     const known = new Set(sources.map((s) => s.n));
     const claims = Array.isArray(r.claims) ? r.claims.filter((c) => c && str(c.text).trim()) : [];
-    if (!claims.length) return h('p', { class: 'answer-text', text: str(r.answer) });
+    if (!claims.length) return proseAnswer(turn, str(r.answer), sources);
     return h('p', { class: 'answer-text' }, claims.map((c, i) => [i ? ' ' : null,
       h('span', { class: 'claim' }, str(c.text).trim(), citeLinks(turn, (c.sources || []).filter((x) => x != null), known))]));
   }
@@ -128,16 +191,16 @@ function main() {
   }
   function renderDone(turn, r) {
     const claims = Array.isArray(r.claims) ? r.claims : [];
-    const sources = (Array.isArray(r.sources) ? r.sources : []).slice().sort((a, b) => a.n - b.n);
+    const sources = groundedSources(r);
     const out = [];
     if (r.blocked) {
       out.push(h('div', { class: 'refusal' }, h('p', { class: 'label', text: 'This question cannot be answered here' }), h('p', { text: str(r.answer) })));
     } else if (r.abstained) {
       const gaps = (r.gaps || []).map(str).filter((g) => g.trim());
-      out.push(h('div', { class: 'abstain' }, answerBody(turn, r),
+      out.push(h('div', { class: 'abstain' }, answerBody(turn, r, sources),
         gaps.length ? [h('p', { class: 'label', text: 'What the sources don\'t cover' }), h('ul', null, gaps.map((g) => h('li', { text: g })))] : null));
     } else {
-      out.push(answerBody(turn, r));
+      out.push(answerBody(turn, r, sources));
     }
     if (sources.length) {
       out.push(h('h3', { class: 'sources-title', text: sources.length === 1 ? 'Source' : 'Sources' }),
