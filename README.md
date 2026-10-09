@@ -216,6 +216,11 @@ sharepoint = "my_package.sharepoint:SharePointAdapter"
 A source can be `scope = "private"`. Its facts are shown only to portal users who may read private
 content: the `private-readers` Cognito group, or the private roles of `site_sign_in`.
 
+A table is not this path. CSV and JSON in the lake are parsed as text and extracted like prose, so
+a filter or a total has no cell to cite. The draft for looking structured data up in the
+ontology's terms, and for how AWS Context Ontology Accelerator fits that draft, is
+[docs/architectures/structured.md](docs/architectures/structured.md).
+
 ## Evaluate
 
 Measure the agent against questions with known answers, including some the sources cannot
