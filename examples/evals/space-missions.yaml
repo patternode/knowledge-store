@@ -280,13 +280,98 @@ questions:
   - mars/perseverance-and-ingenuity.md
   note: Tianwen-1 launched July 23, 2020; Perseverance July 30, 2020. Needs dates from both documents; tianwen-1-and-zhurong.txt
     only says they arrived in the same window.
+# Catalog questions. The prose does not state these figures. A right answer cites the mapped
+# table (the logical name, or tables/<file>.csv). The structured block is what the offline
+# smoke test asks the snapshot; it is not sent to the model.
 - id: u01
   kind: lookup
-  question: How much did the Juno mission cost?
+  question: What sample cost does the catalog give Juno?
   expected: "1100"
   must:
   - ["1100"]
+  sources:
+  - missions
+  - tables/missions.csv
   note: No prose document gives a budget. The catalog cell sample_cost_million_usd for juno is 1100, an invented figure.
+  structured:
+    tool: lookup_rows
+    type: Mission
+    filters:
+      - {attribute: name, op: eq, value: Juno}
+    expect:
+      sampleCostMillionUsd: "1100"
+- id: s02
+  kind: list
+  question: Which missions launched on an Atlas V?
+  expected: Curiosity, Perseverance, Juno, New Horizons, OSIRIS-REx
+  must:
+  - - Curiosity
+  - - Perseverance
+  - - Juno
+  - - New Horizons
+  - - OSIRIS-REx
+    - OSIRIS REx
+    - OSIRISREx
+  sources:
+  - missions
+  - tables/missions.csv
+  note: The catalog's vehicle_family is Atlas V for these five, including the 411 and 551 variants. The same five are in the prose; this question is the sample that should cite the table.
+  structured:
+    tool: lookup_rows
+    type: Mission
+    filters:
+      - {attribute: vehicleFamily, op: eq, value: Atlas V}
+    names: [Curiosity, Perseverance, OSIRIS-REx, Juno, New Horizons]
+- id: s03
+  kind: aggregate
+  question: How many catalogued missions launched on an Atlas V?
+  expected: "5"
+  must:
+  - - "5"
+    - five
+  sources:
+  - missions
+  - tables/missions.csv
+  note: The named metric atlas_v_launches. Ingenuity is not a catalog row, so 5, not 6.
+  structured:
+    tool: aggregate
+    metric: atlas_v_launches
+    figure: 5
+- id: s04
+  kind: aggregate
+  question: What total sample cost does the catalog give the Atlas V missions?
+  expected: "7800"
+  must:
+  - - "7800"
+  sources:
+  - missions
+  - tables/missions.csv
+  note: Sum of sample_cost_million_usd where vehicle_family is Atlas V. 2700 + 2500 + 800 + 1100 + 700. Invented figures.
+  structured:
+    tool: aggregate
+    type: Mission
+    op: sum
+    attribute: sampleCostMillionUsd
+    filters:
+      - {attribute: vehicleFamily, op: eq, value: Atlas V}
+    figure: 7800
+- id: s05
+  kind: lookup
+  question: What name does the catalog give the launch vehicle atlas-v-551?
+  expected: Atlas V 551
+  must:
+  - - Atlas V 551
+  sources:
+  - launch_vehicles
+  - tables/launch_vehicles.csv
+  note: The vehicle table, not the Juno document. Juno's vehicle_id cell points here.
+  structured:
+    tool: lookup_rows
+    type: LaunchVehicle
+    filters:
+      - {attribute: vehicleId, op: eq, value: atlas-v-551}
+    expect:
+      name: Atlas V 551
 - id: u02
   kind: unanswerable
   question: When is the Artemis III crewed Moon landing planned?
