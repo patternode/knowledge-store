@@ -5,6 +5,11 @@ register aggregates them across documents by normalised term, with document coun
 evidence, and marks those that are already covered by a synonym of an existing term (a hint
 that a synonym, not a term, is missing).
 
+Questions add to it too. When the chat cannot answer, the workbench's analyst proposes the terms
+it would need, and a curator can keep its report as an ontology request (knowledge_store.workbench).
+Each requested term joins the register with how many requests asked for it and the questions
+behind them, and a revision considers it even if no document has used it yet: a person asked.
+
 A revision proposal feeds the register to the consolidation step with the current ontology in
 context, and writes a draft next version as a minor bump (additions only; the prompt keeps
 existing terms unchanged). The draft is diffed against the active version, so the curator
@@ -18,7 +23,7 @@ import datetime as dt
 import json
 from collections import defaultdict
 
-from .. import layout
+from .. import layout, workbench
 from ..config import Profile
 from ..store import Store, put_json
 from . import discover, model, versions, writer
@@ -52,8 +57,19 @@ def build_register(lake: Store, version: str) -> dict:
         rows.append({"kind": kind, "term": t["term"], "also": sorted(t["names"] - {t["term"]}),
                      "docs": len(t["docs"]), "definitions": t["definitions"], "evidence": t["evidence"],
                      "nearest": max(t["nearest"], key=t["nearest"].get) if t["nearest"] else None,
-                     "covered_by": idx.get(norm)})
-    rows.sort(key=lambda r: (-r["docs"], r["kind"], r["term"]))
+                     "covered_by": idx.get(norm), "asked": 0, "questions": []})
+    by_key = {(r["kind"], model.normalise(r["term"])): r for r in rows}
+    for q in workbench.requested_terms(lake):
+        r = by_key.get((q["kind"], model.normalise(q["term"])))
+        if r is None:
+            r = {"kind": q["kind"], "term": q["term"], "also": [], "docs": 0, "definitions": [], "evidence": [],
+                 "nearest": q["nearest"], "covered_by": idx.get(model.normalise(q["term"])), "asked": 0, "questions": []}
+            rows.append(r)
+            by_key[(q["kind"], model.normalise(q["term"]))] = r
+        r["asked"] += q["asked"]
+        r["questions"] = (r["questions"] + q["questions"])[:5]
+        r["definitions"] = (r["definitions"] + [d for d in q["definitions"] if d not in r["definitions"]])[:3]
+    rows.sort(key=lambda r: (-r["docs"], -r["asked"], r["kind"], r["term"]))
     reg = {"version": version, "built_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
            "documents": len({e["doc_id"] for r in rows for e in r["evidence"]}), "terms": rows}
     put_json(lake, layout.CANDIDATE_REGISTER, reg)
@@ -66,7 +82,7 @@ def propose_revision(client, model_id: str, lake: Store, profile: Profile, *, mi
     if not active:
         raise ValueError("no active ontology: run discovery and publish a version first")
     reg = build_register(lake, active)
-    keep = [t for t in reg["terms"] if t["docs"] >= min_docs and not t["covered_by"]]
+    keep = [t for t in reg["terms"] if (t["docs"] >= min_docs or t.get("asked")) and not t["covered_by"]]
     if not keep:
         return {"kind": "revision", "status": "nothing_to_propose", "register_terms": len(reg["terms"])}
     prior, _ = versions.load_version(lake, active)
@@ -75,14 +91,16 @@ def propose_revision(client, model_id: str, lake: Store, profile: Profile, *, mi
     for t in keep:
         agg[kinds[t["kind"]]].append({"name": t["term"], "also": t["also"], "docs": t["docs"], "stability": 1.0,
                                       "definitions": t["definitions"],
-                                      "examples": [e["text"] for e in t["evidence"][:3]], "nearest": t["nearest"]})
+                                      "examples": [e["text"] for e in t["evidence"][:3]]
+                                      + [f"asked: {q}" for q in t.get("questions", [])[:2]], "nearest": t["nearest"]})
     defn, usage = discover.consolidate(client, model_id, agg, profile, prior=prior,
                                        target_classes=len(prior.classes) + 5)
     major, minor, _ = map(int, active.split("."))
     version = f"{major}.{minor + 1}.0"
     ttl = writer.ontology_ttl(defn, namespace=prior.namespace, version=version, label=prior.label or profile.name,
                               comment=f"Revision proposed {dt.date.today().isoformat()} from {len(keep)} candidate "
-                                      f"terms seen in at least {min_docs} documents. Curate before publishing.",
+                                      f"terms seen in at least {min_docs} documents or asked for in an ontology request. "
+                                      "Curate before publishing.",
                               prior=prior)
     spec = model.load(data=ttl)
     d = versions.diff(prior, spec)

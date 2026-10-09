@@ -124,7 +124,7 @@ holds two client-credentials clients, `<name>-site-public` (scopes `agent.invoke
 | | |
 |---|---|
 | **Job** | A static chat page and its API on one URL. The API checks the person's daily quota, then answers asynchronously by asking the agent as that person, with their own access token. Until the agent runs, it answers with its own tool loop. It also gives a person a short-lived link to a source document they may read. |
-| **AWS** | Three request paths:<br>• **CloudFront** serves `/*` from a private S3 bucket (`<name>-site-<account>`, through origin access control) and sends `/api/*` to API Gateway.<br>• **API Gateway** is an HTTP API with a Cognito JWT authorizer on every route, throttled to 20 requests a second.<br>• **The Lambda** is `<name>-portal-api` (Python 3.12, a zip built by Terraform), with reserved concurrency as the concurrency valve.<br>DynamoDB `<name>-chat` (on demand, with a TTL) holds answers and quotas. With `portal_domain`, CloudFront serves your domain with your ACM certificate. |
+| **AWS** | Three request paths:<br>• **CloudFront** serves `/*` from a private S3 bucket (`<name>-site-<account>`, through origin access control) and sends `/api/*` to API Gateway.<br>• **API Gateway** is an HTTP API with a Cognito JWT authorizer on every route, throttled to 20 requests a second.<br>• **The Lambda** is `<name>-portal-api` (Python 3.12, a zip built by Terraform), with reserved concurrency as the concurrency valve.<br>DynamoDB `<name>-chat` (on demand, with a TTL) holds answers, their steps while they run, quotas, and the workbench's ontology use totals (which never expire). With `portal_domain`, CloudFront serves your domain with your ACM certificate. |
 | **Terraform** | [`modules/portal`](../../../infra/modules/portal/main.tf): `aws_cloudfront_distribution.this`, `aws_apigatewayv2_*`, `aws_lambda_function.api`, `aws_dynamodb_table.chat`. `aws_s3_object.config` writes the page's `config.json` (sign-in endpoints and redirect URL). |
 | **Your inputs** | `portal_title`, `portal_domain`, `daily_questions`, `valves.chat_concurrency`, `chat_model_id`, `llm_provider`, `log_retention_days` |
 
@@ -182,7 +182,7 @@ actions, or the component fails at run time.
 | `<name>-pipe` | EventBridge Pipes | Receive from the uploads queue; run the pipeline task; pass its two roles |
 | `<name>-scheduler` | EventBridge Scheduler | Run the pipeline task; pass its two roles |
 | `<name>-knowledge-base` | Bedrock | Invoke the embedding model; read the lake's `kb/` prefix; write and query the vector index |
-| `<name>-portal-api` | Lambda | Read the lake's served layers; read and write the chat table; invoke Bedrock models; invoke itself (for asynchronous answers); write logs |
+| `<name>-portal-api` | Lambda | Read the lake's served layers; write ontology requests (`collections/*/ontology/requests/*`, the workbench); read and write the chat table; invoke Bedrock models; invoke itself (for asynchronous answers); write logs |
 | `<name>-tools-graph` | Lambda | Read the lake's gold, ontology and config layers; connect to Neptune and read data only; VPC networking and logs |
 | `<name>-tools-passages` | Lambda | Read the lake's gold, silver and config layers; `bedrock:Retrieve` on the Knowledge Base; logs |
 | `<name>-agent-interceptor` | Lambda | Write logs |

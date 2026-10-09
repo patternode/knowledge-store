@@ -5,13 +5,22 @@
  * attributes only. The answer is rendered from its structured claims, never parsed as markdown.
  *
  * Sign-in, the API client and the helpers are in common.js, which the ontology page shares.
+ *
+ * The workbench (the panel beside the chat) shows the selected question's steps while the agent
+ * works: each search, read and check, polled from GET /api/chat while it runs, then the ontology
+ * terms the answer used. A question has a mode: "ask" answers it; "gaps" asks the analyst what it
+ * would take to answer it (ontology extensions, data, missed extraction), which a curator can keep
+ * as an ontology request.
  */
 function main() {
   'use strict';
   const { $, h, clear, lstore, safeUrl, sleep, str, auth, api, COLL_KEY } = window.KS;
   // ---- state ------------------------------------------------------------------------------
-  const S = { collections: [], id: null, private: false, gen: 0, busy: false, turns: [], seq: 0 };
-  const HISTORY_TURNS = 6, POLL_MS = 2000, POLL_LIMIT_MS = 5 * 60 * 1000;
+  const S = { collections: [], id: null, private: false, gen: 0, busy: false, turns: [], seq: 0, selected: null };
+  const HISTORY_TURNS = 6, POLL_MS = 1500, POLL_LIMIT_MS = 10 * 60 * 1000;
+  const BENCH_KEY = 'ks.chat.bench';
+  const secs = (ms) => `${(Number(ms || 0) / 1000).toFixed(1)} s`;
+  const plural = (k, one, many) => `${k} ${k === 1 ? one : (many || one + 's')}`;
 
   function notice(...kids) { const n = $('#notice'); n.hidden = !kids.length; clear(n, kids); }
   function setBusy(on) {
@@ -135,71 +144,277 @@ function main() {
         h('ol', { class: 'cards' }, sources.map((s) => sourceCard(turn, s, claims))));
     }
     if (r.ontology_version) out.push(h('p', { class: 'meta', text: `Ontology version ${str(r.ontology_version)}` }));
+    out.push(turnActions(turn));
     clear(turn.body, out);
     turn.body.classList.remove('pending');
   }
+  // ---- what would it take: the analyst's report --------------------------------------------
+  const VERDICT = {
+    answerable: 'The graph can answer it now',
+    data_missing: 'Data is missing',
+    ontology_missing: 'The ontology needs extending',
+    extraction_missed: 'Extraction missed it',
+    out_of_scope: 'Out of scope for this collection',
+  };
+  const ontologyLink = (kind, name) => {
+    const q = new URLSearchParams({ [kind === 'classes' ? 'class' : 'prop']: name });
+    if (S.collections.length > 1) q.set('c', S.id);
+    return `ontology.html?${q}`;
+  };
+  function reportSection(title, items) {
+    return items.length ? [h('h4', { text: title }), h('ul', { class: 'report-list' }, items)] : null;
+  }
+  function renderReport(turn, r) {
+    const rep = r.report || {}, o = rep.ontology || {};
+    const li = (...kids) => h('li', null, kids);
+    const why = (x) => (x.why ? h('span', { class: 'muted', text: ` Why: ${str(x.why)}` }) : null);
+    const status = h('p', { class: 'card-status', role: 'status' });
+    let keep = null;
+    if (S.private) {
+      keep = h('button', { class: 'btn', type: 'button' }, 'Keep as an ontology request');
+      keep.addEventListener('click', async () => {
+        keep.disabled = true; status.textContent = 'Keeping the request.';
+        try {
+          const k = await api('/requests', { c: S.id }, { method: 'POST', body: { question: turn.question, report: rep, ontology_version: r.ontology_version } });
+          status.textContent = `Kept as request ${str(k.id)}. It joins the candidate register, so the next revision (knowledge-store candidates --propose) considers it.`;
+        } catch (e) { keep.disabled = false; status.textContent = e.message; }
+      });
+    }
+    const rewrites = (rep.rewrites || []).map((q) => li(h('button', { class: 'linkish', type: 'button',
+      onclick: () => { setMode('ask'); $('#question').value = str(q); $('#question').focus(); } }, str(q))));
+    clear(turn.body,
+      h('div', { class: `report ${str(rep.verdict)}` },
+        h('p', { class: 'label', text: VERDICT[rep.verdict] || 'Report' }),
+        rep.summary ? h('p', { class: 'answer-text', text: str(rep.summary) }) : null,
+        reportSection('Classes to add', (o.classes || []).map((c) => li(h('b', { text: str(c.name) }),
+          c.parent ? [', a kind of ', h('a', { href: ontologyLink('classes', c.parent), text: str(c.parent) })] : null,
+          `: ${str(c.definition)}`, why(c)))),
+        reportSection('Relations to add', (o.relations || []).map((p) => li(h('b', { text: str(p.name) }),
+          ` (${str(p.domain) || 'any'} → ${str(p.range) || 'any'}): ${str(p.definition)}`, why(p)))),
+        reportSection('Attributes to add', (o.attributes || []).map((p) => li(h('b', { text: str(p.name) }),
+          ` (of ${str(p.domain) || 'any'}, ${str(p.datatype) || 'string'}): ${str(p.definition)}`, why(p)))),
+        reportSection('Already in the ontology', (rep.existing || []).map((x) => li(h('b', { text: str(x.term) }),
+          x.kind ? ` (${str(x.kind)})` : '', x.use ? `: ${str(x.use)}` : ''))),
+        reportSection('Data to add', (rep.data || []).map((x) => li(str(x.what), x.where ? h('span', { class: 'muted', text: ` Where: ${str(x.where)}` }) : null, why(x)))),
+        reportSection('In the passages, missing from the graph', (rep.extraction || []).map((x) => li(str(x.what),
+          x.passage_id ? h('span', { class: 'mono small muted', text: ` ${str(x.passage_id)}` }) : null, why(x)))),
+        reportSection('Questions it can answer now', rewrites),
+        h('div', { class: 'card-actions' }, keep,
+          keep ? null : h('p', { class: 'small muted', text: 'Curators (people with private access) can keep this as an ontology request.' }), status)),
+      r.ontology_version ? h('p', { class: 'meta', text: `Ontology version ${str(r.ontology_version)}` }) : null,
+      turnActions(turn));
+    turn.body.classList.remove('pending');
+  }
+
+  // Under every finished turn: show its steps in the workbench, and, for an answer, ask what it
+  // would take to answer it better (offered first when the agent could not answer).
+  function turnActions(turn) {
+    const show = h('button', { class: 'btn small', type: 'button' }, `Steps (${(turn.steps || []).length})`);
+    show.addEventListener('click', () => { selectTurn(turn); setBench(true); });
+    let gaps = null;
+    if (turn.mode === 'ask') {
+      const r = turn.result || {};
+      const weak = r.abstained || !(r.claims || r.citations || []).length;
+      gaps = h('button', { class: `btn small${weak ? ' primary' : ''}`, type: 'button' }, 'What would it take to answer this?');
+      gaps.addEventListener('click', () => askGaps(turn));
+    }
+    return h('div', { class: 'turn-actions' }, show, gaps);
+  }
+
   function renderFailed(turn, message, canRetry) {
     const retry = canRetry ? h('button', { class: 'btn', type: 'button' }, 'Try again') : null;
     if (retry) retry.addEventListener('click', () => { if (!S.busy) runTurn(turn); });
-    clear(turn.body, h('div', { class: 'failed' }, h('p', { text: message }), retry));
+    clear(turn.body, h('div', { class: 'failed' }, h('p', { text: message }), retry), (turn.steps || []).length ? turnActions(turn) : null);
     turn.body.classList.remove('pending');
   }
 
   // ---- asking -------------------------------------------------------------------------
   function recentTurns() { // not history(): that would hide window.history inside this scope
-    return S.turns.filter((t) => t.done).slice(-HISTORY_TURNS).map((t) => ({ q: t.question, a: t.answer }));
+    return S.turns.filter((t) => t.done && t.mode === 'ask').slice(-HISTORY_TURNS).map((t) => ({ q: t.question, a: t.answer }));
+  }
+  const mode = () => (document.querySelector('input[name=mode]:checked') || {}).value || 'ask';
+  function setMode(m) {
+    const r = document.querySelector(`input[name=mode][value=${m}]`);
+    if (r) r.checked = true;
+    showMode();
+  }
+  function showMode() {
+    const gaps = mode() === 'gaps';
+    $('#question').placeholder = gaps ? 'A question the graph cannot answer yet' : 'Ask a question about the documents';
+    $('#hint').textContent = gaps
+      ? 'The analyst explores the graph and reports what this question needs: ontology extensions, data to add, and facts extraction missed. It changes nothing.'
+      : 'Answers come only from the documents in this collection, and every statement links to its source.';
+  }
+  function newTurn(question, turnMode, about) {
+    const key = ++S.seq;
+    const body = h('div', { class: 'a' });
+    const label = turnMode === 'gaps' ? 'What would it take to answer' : 'You asked';
+    const el = h('article', { class: `turn ${turnMode}`, 'aria-label': `Question ${key}` },
+      h('div', { class: 'q' }, h('p', { class: turnMode === 'gaps' ? 'q-label' : 'sr-only', text: label }), h('p', { text: question })), body);
+    $('#log').append(el);
+    $('#intro').hidden = true;
+    const turn = { key, question, mode: turnMode, about, el, body, done: false, answer: '', steps: [], hits: null,
+      result: null, status: 'pending', started: 0, history: turnMode === 'ask' ? recentTurns() : [] };
+    S.turns.push(turn);
+    selectTurn(turn);
+    runTurn(turn);
+    return turn;
   }
   function ask() {
     const ta = $('#question'), question = ta.value.trim();
     if (!question || S.busy || !S.id) return;
-    const key = ++S.seq;
-    const body = h('div', { class: 'a' });
-    const el = h('article', { class: 'turn', 'aria-label': `Question ${key}` },
-      h('div', { class: 'q' }, h('p', { class: 'sr-only', text: 'You asked' }), h('p', { text: question })), body);
-    $('#log').append(el);
-    $('#intro').hidden = true;
-    const turn = { key, question, el, body, done: false, answer: '', history: recentTurns() };
-    S.turns.push(turn);
     ta.value = '';
-    runTurn(turn);
+    newTurn(question, mode(), null);
+  }
+  function askGaps(turn) {
+    if (S.busy) return;
+    const r = turn.result || {};
+    newTurn(turn.question, 'gaps', { answer: turn.answer, gaps: (r.gaps || []).map(str),
+      steps: (turn.steps || []).filter((s) => s.kind === 'tool').map((s) => str(s.title)) });
   }
   async function runTurn(turn) {
-    const gen = S.gen, started = Date.now();
+    const gen = S.gen;
+    turn.started = Date.now(); turn.status = 'pending'; turn.steps = []; turn.done = false;
     setBusy(true);
-    const elapsed = h('span', { text: 'Working on your answer.' });
-    clear(turn.body, h('div', { class: 'progress', role: 'status' }, h('span', { class: 'spinner', 'aria-hidden': 'true' }), elapsed));
+    const progressText = h('span', { text: turn.mode === 'gaps' ? 'Exploring the graph.' : 'Reading the documents.' });
+    clear(turn.body, h('div', { class: 'progress', role: 'status' }, h('span', { class: 'spinner', 'aria-hidden': 'true' }), progressText));
     turn.body.classList.add('pending');
     turn.el.scrollIntoView({ block: 'nearest' });
-    const tick = setInterval(() => { elapsed.textContent = `Working on your answer (${Math.round((Date.now() - started) / 1000)} s). The first question after a break can take a minute.`; }, 1000);
+    const showProgress = () => {
+      const last = turn.steps[turn.steps.length - 1];
+      const took = Math.round((Date.now() - turn.started) / 1000);
+      const waiting = last ? str(last.title) : (turn.mode === 'gaps' ? 'Exploring the graph' : 'Reading the documents');
+      const cold = !last && turn.mode !== 'gaps' ? '. The first question after a break can take a minute.' : '';
+      progressText.textContent = `${waiting} (${took} s)${cold}`;
+      if (S.selected === turn) renderBench();
+    };
+    const tick = setInterval(showProgress, 1000);
+    renderBench();
     try {
       let id;
       try {
-        ({ id } = await api('/chat', { c: S.id }, { method: 'POST', body: { question: turn.question, history: turn.history } }));
+        ({ id } = await api('/chat', { c: S.id }, { method: 'POST',
+          body: { question: turn.question, history: turn.history, mode: turn.mode, about: turn.about || undefined } }));
       } catch (e) {
         if (e.status === 429) return renderFailed(turn, `${(e.body && e.body.error) || 'You have reached today\'s question limit.'} The limit resets tomorrow.`, false);
         if (e.status === 400) return renderFailed(turn, (e.body && e.body.error) || 'The question could not be accepted.', false);
         throw e;
       }
       let r = null, errors = 0;
-      while (Date.now() - started < POLL_LIMIT_MS) {
+      while (Date.now() - turn.started < POLL_LIMIT_MS) {
         await sleep(POLL_MS);
         if (gen !== S.gen) return;
         try { r = await api('/chat', { c: S.id, id }); errors = 0; } catch (e) { if (e.status === 401 || ++errors >= 3) throw e; continue; }
+        if (r && Array.isArray(r.steps)) { turn.steps = r.steps; turn.status = r.status === 'running' ? 'running' : turn.status; showProgress(); }
         if (r && (r.status === 'done' || r.status === 'failed')) break;
         r = null;
       }
       if (gen !== S.gen) return;
-      if (!r) return renderFailed(turn, 'No answer after five minutes. The agent may still be working; try again in a moment.', true);
-      if (r.status === 'failed') return renderFailed(turn, r.error || 'The answer failed.', true);
-      renderDone(turn, r);
-      turn.done = true; turn.answer = str(r.answer);
-      announce(r.blocked ? 'The question was declined.' : `Answer ready. ${turn.answer}`);
+      if (!r) { turn.status = 'failed'; return renderFailed(turn, 'No answer after ten minutes. The agent may still be working; try again in a moment.', true); }
+      turn.result = r; turn.steps = r.steps || turn.steps; turn.hits = r.ontology_hits || null;
+      if (r.status === 'failed') { turn.status = 'failed'; return renderFailed(turn, r.error || 'The answer failed.', true); }
+      turn.status = 'done'; turn.done = true;
+      if (turn.mode === 'gaps') {
+        renderReport(turn, r);
+        announce(`Report ready: ${VERDICT[(r.report || {}).verdict] || 'see the report'}.`);
+      } else {
+        turn.answer = str(r.answer);
+        window.KS.addSessionUsage(S.id, turn.hits);
+        renderDone(turn, r);
+        announce(r.blocked ? 'The question was declined.' : `Answer ready. ${turn.answer}`);
+      }
     } catch (e) {
-      if (gen === S.gen) renderFailed(turn, e.message || 'Something went wrong.', true);
+      if (gen === S.gen) { turn.status = 'failed'; renderFailed(turn, e.message || 'Something went wrong.', true); }
     } finally {
       clearInterval(tick);
-      if (gen === S.gen) { setBusy(false); if (!turn.done) announce('The question did not get an answer.'); }
+      if (gen === S.gen) {
+        setBusy(false);
+        if (!turn.done) announce('The question did not get an answer.');
+        if (S.selected === turn) renderBench();
+      }
     }
+  }
+
+  // ---- the workbench ---------------------------------------------------------------------
+  const KIND_LABEL = { classes: 'Classes', relations: 'Relations', attributes: 'Attributes' };
+  const LEVEL_LABEL = { queried: 'asked for', read: 'read', cited: 'cited' };
+  function termChip(kind, name, levels) {
+    const strongest = levels.includes('cited') ? 'cited' : levels.includes('queried') ? 'queried' : 'read';
+    return h('a', { class: `term ${strongest}`, href: ontologyLink(kind, name), title: `${name}: ${levels.map((l) => LEVEL_LABEL[l]).join(', ')}` },
+      h('span', { text: name }), h('span', { class: 'term-level', text: levels.map((l) => LEVEL_LABEL[l]).join(' · ') }));
+  }
+  function stepItem(s) {
+    const terms = Object.entries(s.terms || {}).flatMap(([k, names]) => (names || []).map((n) => h('span', { class: 'term-mini', title: KIND_LABEL[k] || k, text: n })));
+    const input = s.input && Object.keys(s.input).length
+      ? h('details', { class: 'step-input' }, h('summary', { text: 'Input' }), h('pre', { text: JSON.stringify(s.input, null, 1) })) : null;
+    return h('li', { class: `step ${str(s.kind)}${s.error ? ' error' : ''}` },
+      h('span', { class: 'step-dot', 'aria-hidden': 'true' }),
+      h('div', { class: 'step-body' },
+        h('p', { class: 'step-title' }, h('span', { text: str(s.title) }), h('span', { class: 'step-time', text: secs(s.ms) })),
+        s.detail ? h('p', { class: 'step-detail', text: str(s.detail) }) : null,
+        s.error ? h('p', { class: 'step-detail error', text: str(s.error) }) : null,
+        terms.length ? h('p', { class: 'step-terms' }, terms) : null,
+        input));
+  }
+  function renderBench() {
+    const t = S.selected;
+    const stepsBox = $('#bench-steps'), termsBox = $('#bench-terms');
+    if (!t) {
+      clear(stepsBox, h('h3', { id: 'bench-steps-title', text: 'Steps' }),
+        h('p', { class: 'small muted', text: 'Ask a question to see what the agent does: each search, each read and each check, as it happens.' }));
+      termsBox.hidden = true;
+      return renderSession();
+    }
+    const running = t.status === 'pending' || t.status === 'running';
+    const took = Math.round(((running ? Date.now() : t.started + ((t.steps[t.steps.length - 1] || {}).ms || 0)) - t.started) / 1000);
+    const tools = t.steps.filter((s) => s.kind === 'tool').length, models = t.steps.filter((s) => s.kind === 'model').length;
+    const statusLine = running
+      ? h('p', { class: 'bench-status' }, h('span', { class: 'spinner', 'aria-hidden': 'true' }), ` Working for ${took} s: ${plural(tools, 'tool call')} so far`)
+      : h('p', { class: 'bench-status' }, t.status === 'failed' ? 'Stopped' : 'Done',
+        `: ${plural(tools, 'tool call')}, ${plural(models, 'model call')}${t.result && t.result.ms ? `, ${secs(t.result.ms)}` : ''}`);
+    clear(stepsBox,
+      h('h3', { id: 'bench-steps-title', text: t.mode === 'gaps' ? 'Steps: what would it take' : 'Steps' }),
+      h('p', { class: 'bench-q', text: t.question }),
+      statusLine,
+      t.steps.length ? h('ol', { class: 'steps' }, t.steps.map(stepItem))
+        : h('p', { class: 'small muted', text: running ? 'Waiting for the first step.' : 'This answer reported no steps.' }));
+    const hits = t.hits || {};
+    const groups = Object.keys(KIND_LABEL).filter((k) => Object.keys(hits[k] || {}).length);
+    termsBox.hidden = !groups.length;
+    if (groups.length) {
+      clear(termsBox, h('h3', { id: 'bench-terms-title', text: t.mode === 'gaps' ? 'Ontology the analyst looked at' : 'Ontology used' }),
+        h('p', { class: 'small muted', text: 'Asked for: the agent searched by it. Read: it came back in what the agent read. Cited: a fact of it is in a passage the answer cites. Select one to see it in the ontology.' }),
+        groups.map((k) => [h('h4', { text: KIND_LABEL[k] }),
+          h('p', { class: 'terms' }, Object.entries(hits[k]).map(([name, levels]) => termChip(k, name, levels)))]));
+    }
+    renderSession();
+  }
+  function renderSession() {
+    const u = window.KS.sessionUsage(S.id), box = $('#bench-session');
+    box.hidden = !u.questions;
+    if (!u.questions) return;
+    const rows = Object.keys(KIND_LABEL).flatMap((k) => Object.entries(u[k] || {}).map(([name, c]) => ({ k, name, c, n: Math.max(c.queried, c.read, c.cited) })))
+      .sort((a, b) => b.c.cited - a.c.cited || b.n - a.n || a.name.localeCompare(b.name)).slice(0, 10);
+    const q = new URLSearchParams({ overlay: 'session' });
+    if (S.collections.length > 1) q.set('c', S.id);
+    clear(box, h('h3', { id: 'bench-session-title', text: 'This session' }),
+      h('p', { class: 'small muted', text: `${plural(u.questions, 'question')} answered. The terms they used most:` }),
+      h('table', { class: 'kv small' }, h('thead', null, h('tr', null, ['Term', 'Read', 'Cited'].map((x) => h('th', { scope: 'col', text: x })))),
+        h('tbody', null, rows.map((r) => h('tr', null, h('td', null, h('a', { href: ontologyLink(r.k, r.name), text: r.name })),
+          h('td', { class: 'num-cell', text: String(r.c.read) }), h('td', { class: 'num-cell', text: String(r.c.cited) }))))),
+      h('p', null, h('a', { href: `ontology.html?${q}` }, 'Show this session on the ontology')));
+  }
+  function selectTurn(turn) {
+    for (const t of S.turns) t.el.classList.toggle('selected', t === turn);
+    S.selected = turn;
+    renderBench();
+  }
+  const wide = () => matchMedia('(min-width: 1100px)').matches;
+  function setBench(open, remember) {
+    $('#bench').hidden = !open;
+    $('#workspace').classList.toggle('bench-off', !open);
+    $('#bench-open').setAttribute('aria-expanded', String(open));
+    if (remember && wide()) lstore.set(BENCH_KEY, open ? 'open' : 'closed');
   }
 
   // ---- collections ---------------------------------------------------------------------
@@ -218,10 +433,11 @@ function main() {
   }
   function switchCollection(id) {
     if (S.busy || id === S.id) return;
-    S.id = id; S.gen++; S.turns = [];
+    S.id = id; S.gen++; S.turns = []; S.selected = null;
     lstore.set(COLL_KEY, id);
     clear($('#log'));
     showCollection();
+    renderBench();
     $('#question').focus();
   }
 
@@ -232,6 +448,14 @@ function main() {
       if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); ask(); }
     });
     $('#coll-select').addEventListener('change', (e) => switchCollection(e.target.value));
+    for (const r of document.querySelectorAll('input[name=mode]')) r.addEventListener('change', showMode);
+    $('#bench-close').addEventListener('click', () => { setBench(false, true); $('#bench-open').focus(); });
+    $('#bench-open').addEventListener('click', () => {
+      const open = $('#bench').hidden;
+      setBench(open, true);
+      if (open) $('#bench-close').focus();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !wide() && !$('#bench').hidden) setBench(false); });
   }
   function signedOut(started) {
     $('#signin').hidden = started.cfg.mode === 'site';
@@ -275,6 +499,10 @@ function main() {
     notice();
     showCollection();
     $('#ask').hidden = false;
+    $('#bench-open').hidden = false;
+    setBench(wide() && lstore.get(BENCH_KEY) !== 'closed');
+    renderBench();
+    showMode();
     // ?ask= fills the box (the ontology page links here with a question), and never sends it
     const asked = new URLSearchParams(location.search).get('ask');
     if (asked) { $('#question').value = asked.slice(0, 2000); window.history.replaceState(null, '', location.pathname); }

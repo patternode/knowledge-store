@@ -39,6 +39,30 @@ backend does not use the provider's profile, so a profile set only on the provid
 state to whatever account the default credentials belong to. With `AWS_PROFILE`, both use the
 same account, and the same files work in CI.
 
+## Parameters and secrets
+
+Parameters go in `main.tf` and are committed: region, account guard, `name`, `admin_email`,
+collections, models and switches. None of them is a secret. With `site_sign_in`, the website's
+JWKS is a public key set, so it is committed too.
+
+Secrets never go in `main.tf`, `backend.hcl` or a tfvars file. The stack takes them by
+reference:
+
+| Secret | Where it lives | What `main.tf` holds |
+|---|---|---|
+| AWS credentials | `AWS_PROFILE`, SSO, or an OIDC role in CI (`AWS_ROLE_ARN`, see the workflow) | nothing |
+| Anthropic API key, with `llm_provider = "anthropic"` | a Secrets Manager secret you create | `anthropic_api_key_secret_arn` |
+| The portal's service clients, with `site_sign_in` | Secrets Manager, created by the stack | nothing |
+| Cognito passwords | Cognito, emailed to `admin_email` | nothing |
+
+To use the Anthropic API:
+
+```bash
+aws secretsmanager create-secret --name knowledge-store/anthropic-api-key --secret-string "$ANTHROPIC_API_KEY"
+```
+
+then set `llm_provider = "anthropic"` and `anthropic_api_key_secret_arn` to the ARN it prints.
+
 ## What goes where
 
 | Here, in your repository | In Knowledge Store (upstream) |

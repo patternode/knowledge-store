@@ -12,9 +12,9 @@
     knowledge-store candidates [--min-docs 2] [--propose]    the register, and a draft revision from it
     knowledge-store status
 
---lake is s3://bucket, az://account/container, gs://bucket or a local directory; it defaults
+--lake is s3://bucket or a local directory; it defaults
 to $LAKE_URI. -c names the collection (default: default); knowledge-store collections lists
-them. Model calls use $LLM_PROVIDER (bedrock, anthropic, foundry or vertex) and
+them. Model calls use $LLM_PROVIDER (bedrock or anthropic) and
 $EXTRACTION_MODEL_ID.
 """
 
@@ -106,9 +106,6 @@ def main(argv: list[str] | None = None) -> int:
     from .pipeline import extract, ingest, project, refine, run
 
     if args.cmd == "run":
-        if os.environ.get("LAKE_QUEUE_URL"):  # an Azure job started by upload notifications
-            from .hosts.azure import drain
-            logging.getLogger("cli").info("drained %d upload notifications", drain())
         _print(run.run(root, _client, args.model, [args.collection] if args.collection else None))
     elif args.cmd == "ingest":
         out = {}
@@ -174,7 +171,7 @@ def main(argv: list[str] | None = None) -> int:
             if not v:
                 ap.error("no active ontology")
             reg = candidates.build_register(lake, v)
-            _print([{k: t[k] for k in ("kind", "term", "docs", "covered_by", "nearest")} for t in reg["terms"][:50]])
+            _print([{k: t.get(k) for k in ("kind", "term", "docs", "asked", "covered_by", "nearest")} for t in reg["terms"][:50]])
     elif args.cmd == "collections":
         _print([{"id": c, "status": (json.loads(collections.scoped(root, c).get(layout.STATUS))
                                      if collections.scoped(root, c).exists(layout.STATUS) else {"stage": "never_run"}).get("stage")}

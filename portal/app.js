@@ -45,7 +45,7 @@
   const PALETTE = ['#0099c0', '#7077ff', '#e69f00', '#e8457c', '#009e73', '#d55e00', '#56b4e9', '#b07cd8', '#a89200', '#7e8aa7'];
   function hash(s) { let x = 2166136261; for (const ch of String(s)) { x ^= ch.codePointAt(0); x = Math.imul(x, 16777619); } return x >>> 0; }
 
-  // ---- config and sign-in (OIDC authorization code with PKCE: Cognito or Entra ID) ------
+  // ---- config and sign-in (OIDC authorization code with PKCE: Cognito) ------
   let cfg = { mode: 'local', apiBase: '/api' };
   const TOK = 'kl.tokens', PKCE = 'kl.pkce';
   const b64url = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -100,7 +100,7 @@
       return this.refreshing;
     },
     // The token the API accepts. Cognito: the ID token, because API Gateway's JWT authorizer checks
-    // aud, which only the ID token carries. Entra ID: the access token issued for the API.
+    // aud, which only the ID token carries.
     async apiToken() {
       let t = this.tokens;
       if (!t) return null;

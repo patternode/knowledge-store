@@ -26,27 +26,56 @@
     </span>
     <span class="coll-name" id="coll-name" hidden></span>
     <span class="pill" id="private-pill" hidden>Private access</span>
+    <button class="btn small bench-open" id="bench-open" type="button" aria-controls="bench" aria-expanded="false" hidden>Workbench</button>
     <span class="user" id="user"></span>
     <button class="btn" id="signin" type="button" hidden>Sign in</button>
     <button class="btn" id="signout" type="button" hidden>Sign out</button>
   </div>
 </header>
 
-<main id="main">
-  <div id="notice" class="notice" hidden></div>
-  <p class="intro" id="intro" hidden></p>
-  <div id="log" class="log"></div>
-  <div id="announce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
-</main>
+<div class="workspace" id="workspace">
+  <div class="chat-col">
+    <main id="main">
+      <div id="notice" class="notice" hidden></div>
+      <p class="intro" id="intro" hidden></p>
+      <div id="log" class="log"></div>
+      <div id="announce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+    </main>
 
-<form id="ask" class="ask" hidden>
-  <label class="sr-only" for="question">Your question</label>
-  <div class="ask-row">
-    <textarea id="question" rows="2" maxlength="2000" placeholder="Ask a question about the documents" aria-describedby="hint keys"></textarea>
-    <button class="btn primary" id="send" type="submit">Send</button>
+    <form id="ask" class="ask" hidden>
+      <fieldset class="modes">
+        <legend class="sr-only">What to do with the question</legend>
+        <label class="mode"><input type="radio" name="mode" value="ask" checked> Ask</label>
+        <label class="mode"><input type="radio" name="mode" value="gaps"> What would it take?</label>
+      </fieldset>
+      <label class="sr-only" for="question">Your question</label>
+      <div class="ask-row">
+        <textarea id="question" rows="2" maxlength="2000" placeholder="Ask a question about the documents" aria-describedby="hint keys"></textarea>
+        <button class="btn primary" id="send" type="submit">Send</button>
+      </div>
+      <p class="hint" id="hint">Answers come only from the documents in this collection, and every statement links to its source.</p>
+      <p class="sr-only" id="keys">Enter sends. Shift and Enter starts a new line.</p>
+    </form>
   </div>
-  <p class="hint" id="hint">Answers come only from the documents in this collection, and every statement links to its source.</p>
-  <p class="sr-only" id="keys">Enter sends. Shift and Enter starts a new line.</p>
-</form>
+
+  <aside class="bench" id="bench" aria-labelledby="bench-title" hidden>
+    <div class="bench-head">
+      <h2 id="bench-title">Workbench</h2>
+      <button class="btn small" id="bench-close" type="button" aria-controls="bench">Hide</button>
+    </div>
+    <div class="bench-body">
+      <section id="bench-steps" aria-labelledby="bench-steps-title" aria-live="polite">
+        <h3 id="bench-steps-title">Steps</h3>
+        <p class="small muted">Ask a question to see what the agent does: each search, each read and each check, as it happens.</p>
+      </section>
+      <section id="bench-terms" aria-labelledby="bench-terms-title" hidden>
+        <h3 id="bench-terms-title">Ontology used</h3>
+      </section>
+      <section id="bench-session" aria-labelledby="bench-session-title" hidden>
+        <h3 id="bench-session-title">This session</h3>
+      </section>
+    </div>
+  </aside>
+</div>
 </body>
 </html>

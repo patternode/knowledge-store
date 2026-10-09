@@ -112,7 +112,7 @@ def test_roles_are_the_labs_to_map(site, monkeypatch):
 
 @pytest.mark.parametrize("bad", [
     {"iss": "https://elsewhere.example"},
-    {"aud": "lab:earnings"},
+    {"aud": "lab:other"},
     {"exp": int(time.time()) - 120},
     {"nbf": int(time.time()) + 600},
     {"sub": ""},

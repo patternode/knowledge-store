@@ -42,7 +42,8 @@ def test_questions_go_to_the_agent_as_the_person(mixed, monkeypatch):
     r = handler.handler(event("POST", "/api/chat", body={"question": "Who launched Mission Alpha?"}), None)
     assert r["statusCode"] == 202
     cid = json.loads(r["body"])["id"]
-    assert asked == [("tok-123", {"question": "Who launched Mission Alpha?", "collection": "m", "history": []})]
+    assert asked == [("tok-123", {"question": "Who launched Mission Alpha?", "collection": "m", "mode": "ask",
+                                  "history": [], "about": None})]
     assert "tok-123" not in json.dumps(state.items)          # the token is passed on, never stored
     got = handler.handler(event("GET", "/api/chat", qs={"id": cid}), None)
     assert json.loads(got["body"])["answer"].startswith("Agency Nova")

@@ -4,15 +4,22 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 ## [Unreleased]
 
+### Removed
+
+- The Azure deployment (`deploy/azure/`) and its code: the Blob Storage lake, the `foundry` model provider, Entra ID sign-in for AGE, the Azure host, token verification (`authn.py`) and the MCP server it served (`tools/mcp.py`). The `azure` extra is gone.
+- Google Cloud: the Cloud Storage lake, the `vertex` model provider, the Spanner Graph rendition and the `gcp` extra.
+- The reference architectures for Azure and Google Cloud. AWS is the one supported deployment; the graph and document backends stay, in `docs/architectures/backends.md`.
+
 ### Added since 0.1.2
 
+- The workbench beside the chat ([docs/workbench.md](docs/workbench.md)). It shows the agent's steps as they happen (the agent streams them, and the portal keeps them with the pending answer). "What would it take?" runs an analyst that reports the ontology extensions, data and missed extraction a question needs, and curators can keep its report as an ontology request, which the candidate register reads (`asked`). The ontology terms each answer asked for, read and cited are counted per collection (all time and per month), with a question overlay on the ontology page.
 - On AWS, a minimal GraphRAG reference architecture: the sweep loads the gold RDF into Amazon Neptune (one named graph per document, and the ontology), and the agent's graph tools query it with fixed SPARQL built from the ontology (`knowledge_graph`, on by default).
 - A Bedrock Knowledge Base on S3 Vectors over every passage, one vector per passage, for search by meaning (`knowledge_base`, on by default).
 - The agent is now a chat agent behind the portal: answers are claims with verbatim quotes, every citation is checked against the passage the caller can read, failures get one repair turn, and only checked claims are shown, with links to their passages and documents. It declines when the sources cannot answer.
 - Valves: a Bedrock Guardrail on questions and on the grounding of claims, tool and model call limits per question, the chat API's reserved concurrency, and an optional monthly budget.
 - An evaluation framework (`python -m knowledge_store.evals`) with deterministic scoring, and an evaluation set for the space-missions example.
 - A minimal chat page (`chat/`), which replaces the explorer as the AWS portal.
-- An ontology page beside the chat (`chat/ontology.html`): the earnings lab's ontology view, made generic. The active ontology as a force-directed graph, with core classes, population arcs, declared relations and the relations seen in the data but not declared, and its statistics. The projection's ontology index gains `observed`, the class-to-class counts behind it.
+- An ontology page beside the chat (`chat/ontology.html`): the active ontology as a force-directed graph, with core classes, population arcs, declared relations and the relations seen in the data but not declared, and its statistics. The projection's ontology index gains `observed`, the class-to-class counts behind it.
 
 - Bring your own ontology: a collection's `ontology_dir` is published and activated in place of discovery, and changed by bumping its version.
 - A review pass after discovery that adds hierarchy, merges near-duplicates and fixes domains, ranges and datatypes, recorded edit by edit in the draft's report (`discovery.review`, on by default).

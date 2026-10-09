@@ -72,7 +72,7 @@ admin_email = "you@example.org" # the first portal user; Cognito emails them a t
 # force_destroy_lake  = false
 
 # --- graph, passages, agent ---------------------------------------------------------------------
-# knowledge_graph = { enabled = true, instance_class = "db.t4g.medium", serverless_min_ncu = 0, serverless_max_ncu = 8, deletion_protection = false }
+# knowledge_graph = { enabled = true, instance_class = "db.t3.medium", serverless_min_ncu = 0, serverless_max_ncu = 8, deletion_protection = false }
 # knowledge_base  = { enabled = true, embedding_model_id = "amazon.titan-embed-text-v2:0" }
 # agent           = { runtime = false, prod_version = "", model_id = "us.anthropic.claude-sonnet-5" } # runtime = true on the second apply
 # guardrail       = { enabled = true, grounding_threshold = 0.75 }

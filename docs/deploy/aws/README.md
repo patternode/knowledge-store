@@ -23,6 +23,48 @@ your machine: container images are built by CodeBuild inside your account.
 Allow about an hour for a first installation, most of it waiting: Neptune and CloudFront take a
 while to create, and the image builds take a few minutes each.
 
+## At a glance: your part and Terraform's part
+
+### What you do in your own infrastructure
+
+Terraform cannot do these, because they are decisions or settings that belong to your account
+and organisation:
+
+| Step | You do | Required? |
+|---|---|---|
+| [3](#3-prepare-the-account) | Credentials for the target account, with rights to create IAM roles, networking, CloudFront, Cognito, Lambda, ECS, Neptune, Bedrock and AgentCore resources | Yes |
+| [3.1](#31-bedrock-models) | Enable a Claude model and Titan Text Embeddings V2 in Bedrock, and find the Claude inference profile id for your region | Yes |
+| [4](#4-get-the-code-and-a-state-bucket) | A state bucket: an existing one, or one created by `infra/bootstrap` | Yes |
+| [3.3](#33-optional-a-certificate-for-the-portals-domain) | An ACM certificate in `us-east-1` for your own portal domain | Only for your own domain |
+| [3.4](#34-optional-an-existing-vpc) | A VPC and subnets with the routes the stack needs | Only to use your own network |
+| | An IAM permissions boundary policy that allows what [components.md](components.md#iam-roles) lists | Only if your organisation requires one |
+| [3.1](#31-bedrock-models) | An Anthropic API key in Secrets Manager | Only to call the Anthropic API instead of Bedrock |
+| [9](#9-optional-point-your-domain-at-the-portal) | A DNS record pointing your domain at CloudFront | Only for your own domain |
+| [10](#10-sign-in-and-add-people) | Add people to Cognito, and private readers to `private-readers` | Yes, after the first apply |
+| [11](#11-load-documents), [12](#12-give-each-collection-its-ontology) | Upload documents, and publish each collection's first ontology | Yes, after the first apply |
+
+### What you give Terraform
+
+Everything goes in `infra/stack/terraform.tfvars` (start from
+[`terraform.tfvars.example`](../../../infra/stack/terraform.tfvars.example)), except the state
+location, which goes in `infra/stack/backend.hcl`. Both files are gitignored.
+[parameters.md](parameters.md) explains every input.
+
+| | Parameters |
+|---|---|
+| Required | `admin_email` |
+| Required outside US regions | `extraction_model_id`, `chat_model_id`, `agent.model_id`: the default `us.` inference profile works only in US regions |
+| Usually set | `region`, `name`, `account_id` (a guard against the wrong account), `collections` |
+| Your organisation's controls | `network` (`existing` for your own VPC), `permissions_boundary`, `extra_tags`, `log_retention_days`, `budget`, `portal_domain` |
+| Sign-in through a website of your own | `site_sign_in` |
+| Cost and capacity | `knowledge_graph`, `knowledge_base`, `daily_questions`, `valves`, `schedule_expression` |
+| Second apply | `agent = { runtime = true }`, once the agent's image is built |
+
+There is no secret value in either file. Credentials come from your environment (`AWS_PROFILE`,
+SSO or a CI role), and Bedrock is reached through IAM. The one secret the stack can use, an
+Anthropic API key, stays in Secrets Manager: Terraform gets only its ARN
+(`anthropic_api_key_secret_arn`).
+
 ---
 
 ## 1. Before you start
@@ -172,13 +214,16 @@ only from the pipeline's tasks and the graph tools.
 
 ## 4. Get the code and a state bucket
 
-1. Clone the repository and check out a release that includes this guide:
+1. Clone the repository:
 
    ```bash
    git clone https://github.com/patternode/knowledge-store.git
    cd knowledge-store
-   git checkout <release tag>
    ```
+
+   Stay on `main` for now: the newest tag, v0.1.2, predates the knowledge graph, the passage index
+   and the chat agent this guide describes. Once v0.2.0 is tagged, check it out
+   (`git checkout v0.2.0`) so the deployment does not move when `main` does.
 
 2. Terraform keeps its state in S3.
    - If your organisation already has a state bucket, write `infra/stack/backend.hcl`:
@@ -459,6 +504,8 @@ master of the collection's ontology.
       link opens the source.
 - [ ] A question the documents cannot answer gets "the sources cannot answer this", not a guess.
 - [ ] A user outside `private-readers` does not see private sources.
+- [ ] The workbench beside the chat shows the agent's steps while it answers, and "What would it
+      take to answer this?" returns a report ([docs/workbench.md](../../workbench.md)).
 
 To measure answer quality, write an evaluation set (format in
 [docs/architectures/aws.md](../../architectures/aws.md#evaluation)) and run the `evaluate` output's
@@ -487,6 +534,14 @@ The portal then calls the `prod` endpoint, and new versions do not reach users u
 - `valves.max_tool_calls`, `valves.max_model_calls`, `valves.max_output_tokens`: per question
 - `schedule_enabled`: the periodic sweep
 - `budget`: a monthly cost alert
+
+**Refine the ontology from questions.** The chat's workbench shows which ontology terms
+questions use (the question overlay on the ontology page), and for a question that goes
+unanswered, what it would take: ontology extensions, data to add, or facts extraction missed. A
+member of `private-readers` can keep that report as an ontology request.
+`knowledge-store -c <collection> candidates --propose` then drafts the next ontology version from
+the requests and from the terms extraction found missing, for a curator to publish. See
+[docs/workbench.md](../../workbench.md).
 
 **Logs.**
 

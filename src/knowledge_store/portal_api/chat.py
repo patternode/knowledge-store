@@ -6,8 +6,11 @@ every answer cites passage ids, which the portal turns into links to the source 
 
 The model call goes to Bedrock (boto3's bedrock-runtime) or, with LLM_PROVIDER=anthropic, to the
 Anthropic Messages API over HTTPS with the request converted by knowledge_store.llm, so the
-Lambda needs no SDK beyond boto3. With foundry or vertex (Azure Functions, Cloud Run, which
-package their dependencies) it goes through the Anthropic SDK's client for that provider.
+Lambda needs no SDK beyond boto3.
+
+Each model call and tool call is recorded as a step, with the ontology terms it touched
+(knowledge_store.workbench), and reported through on_step as it happens. analyse() is the same loop
+as the workbench's analyst: it explores, then reports what it would take to answer a question.
 """
 
 from __future__ import annotations
@@ -16,7 +19,7 @@ import json
 import os
 import urllib.request
 
-from .. import llm
+from .. import llm, workbench
 from .index import Index
 
 MAX_STEPS = 10
@@ -129,16 +132,15 @@ def client():
     p = llm.provider()
     if p == llm.ANTHROPIC:
         return _Anthropic(llm.api_key())
-    if p in (llm.FOUNDRY, llm.VERTEX):
-        return llm.AnthropicConverse(client=llm.sdk_client(p, timeout=120, max_retries=3))
     import boto3
     from botocore.config import Config
     return boto3.client("bedrock-runtime", config=Config(read_timeout=120, retries={"max_attempts": 3}))
 
 
 def ask(idx: Index, question: str, history: list[dict] | None, *, private: bool, model_id: str | None = None,
-        brt=None) -> dict:
+        brt=None, on_step=None) -> dict:
     brt = brt or client()
+    rec = workbench.Recorder(on_step)
     model_id = model_id or os.environ.get("CHAT_MODEL_ID", "us.anthropic.claude-sonnet-5")
     system = [{"text": SYSTEM.format(profile=profile_text(idx), vocabulary=vocabulary(idx))},
               {"cachePoint": {"type": "default"}}]
@@ -149,7 +151,9 @@ def ask(idx: Index, question: str, history: list[dict] | None, *, private: bool,
                          {"role": "assistant", "content": [{"text": turn["a"]}]}]
     messages.append({"role": "user", "content": [{"text": question}]})
     trace, usage = [], {"inputTokens": 0, "outputTokens": 0}
+    rec.step("tool", f"Read the ontology (version {idx.version})")
     for _ in range(MAX_STEPS):
+        rec.model_call()
         resp = brt.converse(modelId=model_id, system=system, messages=messages, toolConfig=tool_config(),
                             inferenceConfig={"maxTokens": MAX_TOKENS})
         for k in usage:
@@ -159,16 +163,71 @@ def ask(idx: Index, question: str, history: list[dict] | None, *, private: bool,
         uses = [b["toolUse"] for b in msg["content"] if "toolUse" in b]
         if not uses:
             answer = "".join(b.get("text", "") for b in msg["content"]).strip()
-            return {"answer": answer, "citations": cited(idx, answer, private), "trace": trace, "usage": usage}
+            cites = cited(idx, answer, private)
+            rec.cite([c["id"] for c in cites])
+            rec.step("done", f"Answered, citing {len(cites)} passage{'s' if len(cites) != 1 else ''}")
+            return {"answer": answer, "citations": cites, "trace": trace, "usage": usage, "ontology_version": idx.version,
+                    "steps": rec.steps, "ontology_hits": rec.hits()}
         results = []
         for tu in uses:
             out = run_tool(idx, tu["name"], tu.get("input") or {}, private)
             trace.append({"tool": tu["name"], "input": tu.get("input")})
+            rec.tool(tu["name"], tu.get("input"), out)
             results.append({"toolResult": {"toolUseId": tu["toolUseId"],
                                            "content": [{"text": json.dumps(out, default=str)[:30000]}]}})
         messages.append({"role": "user", "content": results})
+    rec.step("error", "Ran out of steps before finding an answer")
     return {"answer": "I ran out of steps before finding an answer. Try a narrower question.",
-            "citations": [], "trace": trace, "usage": usage}
+            "citations": [], "trace": trace, "usage": usage, "steps": rec.steps, "ontology_hits": rec.hits()}
+
+
+REPORT_TOOL = {"toolSpec": {"name": "submit_report", "description": "Submit the report. Call it once, when you are done exploring.",
+                            "inputSchema": {"json": workbench.REPORT_SCHEMA}}}
+
+
+def analyse(idx: Index, question: str, about: dict | None, *, private: bool, model_id: str | None = None,
+            brt=None, on_step=None) -> dict:
+    """The workbench's analyst over the projection: explore with the chat's tools, then report
+    what it would take to answer the question, through the submit_report tool."""
+    brt = brt or client()
+    rec = workbench.Recorder(on_step)
+    model_id = model_id or os.environ.get("CHAT_MODEL_ID", "us.anthropic.claude-sonnet-5")
+    system = [{"text": workbench.ANALYST.format(collection=profile_text(idx), version=idx.version, ontology=vocabulary(idx))},
+              {"cachePoint": {"type": "default"}}]
+    messages = [{"role": "user", "content": [{"text": workbench.analyst_prompt(question, about)}]}]
+    config = tool_config()
+    config["tools"].append(REPORT_TOOL)
+    rec.step("tool", f"Read the ontology (version {idx.version})")
+    # No forced tool choice: the newest models refuse it. Near the step limit the analyst is told to report.
+    for i in range(MAX_STEPS + 2):
+        rec.model_call()
+        resp = brt.converse(modelId=model_id, system=system, messages=messages, inferenceConfig={"maxTokens": 4000},
+                            toolConfig=config)
+        msg = resp["output"]["message"]
+        messages.append(msg)
+        uses = [b["toolUse"] for b in msg["content"] if "toolUse" in b]
+        report = next((tu.get("input") for tu in uses if tu["name"] == "submit_report"), None)
+        if report is not None:
+            report = workbench.clean_report(report)
+            o = report["ontology"]
+            rec.step("done", f"Reported: {report['verdict'].replace('_', ' ')}",
+                     f"{len(o['classes'])} classes, {len(o['relations'])} relations, {len(o['attributes'])} attributes proposed")
+            return {"mode": "gaps", "report": report, "ontology_version": idx.version, "steps": rec.steps,
+                    "ontology_hits": rec.hits()}
+        if not uses:
+            messages.append({"role": "user", "content": [{"text": "Submit the report with submit_report."}]})
+            continue
+        results = []
+        for tu in uses:
+            out = run_tool(idx, tu["name"], tu.get("input") or {}, private)
+            rec.tool(tu["name"], tu.get("input"), out)
+            results.append({"toolResult": {"toolUseId": tu["toolUseId"],
+                                           "content": [{"text": json.dumps(out, default=str)[:30000]}]}})
+        if i >= MAX_STEPS - 1:
+            results.append({"text": "Stop exploring now and submit the report with submit_report."})
+        messages.append({"role": "user", "content": results})
+    rec.step("error", "The analyst did not submit a report")
+    return {"error": "The analyst did not submit a report. Try again, or ask a narrower question.", "steps": rec.steps}
 
 
 def cited(idx: Index, answer: str, private: bool) -> list[dict]:

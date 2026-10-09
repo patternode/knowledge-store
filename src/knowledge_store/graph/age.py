@@ -1,5 +1,5 @@
-"""The graph projection in PostgreSQL with Apache AGE (Azure Database for PostgreSQL, or any
-PostgreSQL with the extension).
+"""The graph projection in PostgreSQL with Apache AGE (any PostgreSQL with the
+extension).
 
 AGE holds each loaded graph as a graph of its own, so a load creates one and a drop removes it.
 AGE gives a vertex one label, so every node is :Entity and its classes are in `types`; each
@@ -8,10 +8,8 @@ tables with plain SQL (the fast path AGE documents for bulk loads); queries use 
 their values passed as parameters.
 
     AGE_DSN     a libpq connection string: host=... dbname=... user=...
-    AGE_ENTRA   1 to sign in with an Entra token as the password (the managed identity on Azure)
-    AGE_LOAD    0 where the server preloads the extension (Azure does), so LOAD 'age' is not run
-    AGE_READERS roles granted read access to each graph loaded, comma-separated (on Azure, the
-                API's managed identity; created as an Entra principal if it does not exist)
+    AGE_LOAD    0 where the server preloads the extension, so LOAD 'age' is not run
+    AGE_READERS roles granted read access to each graph loaded, comma-separated
 
 The loader runs as an administrator: it creates the extension and each graph. The readers get
 only USAGE and SELECT, on AGE's catalog and on each graph as it is loaded.
@@ -26,8 +24,6 @@ import threading
 
 from . import safe_name
 
-ENTRA_SCOPE = "https://ossrdbms-aad.database.windows.net/.default"
-
 
 def _agtype(value):
     """AGE prints a scalar as its JSON text; a value may come back as a string or already parsed."""
@@ -38,29 +34,22 @@ class AgeStore:
     name = "age"
     rendition = "age/schema.sql"
 
-    def __init__(self, dsn: str, *, password_provider=None, load_extension: bool = True, readers=()):
-        self.dsn, self.password_provider, self.load_extension = dsn, password_provider, load_extension
+    def __init__(self, dsn: str, *, load_extension: bool = True, readers=()):
+        self.dsn, self.load_extension = dsn, load_extension
         self.readers = [r for r in readers if r]
         self._local = threading.local()
 
     @classmethod
     def from_env(cls) -> "AgeStore":
-        provider = None
-        if os.environ.get("AGE_ENTRA") == "1":
-            from azure.identity import DefaultAzureCredential
-            cred = DefaultAzureCredential()
-            provider = lambda: cred.get_token(ENTRA_SCOPE).token  # noqa: E731
-        return cls(os.environ["AGE_DSN"], password_provider=provider, load_extension=os.environ.get("AGE_LOAD") != "0",
+        return cls(os.environ["AGE_DSN"], load_extension=os.environ.get("AGE_LOAD") != "0",
                    readers=[r.strip() for r in os.environ.get("AGE_READERS", "").split(",")])
 
     def _conn(self):
-        """One connection per thread. An Entra token expires, so a closed connection is reopened
-        with a fresh one."""
+        """One connection per thread; a closed connection is reopened."""
         import psycopg
         c = getattr(self._local, "conn", None)
         if c is None or c.closed:
-            kw = {"password": self.password_provider()} if self.password_provider else {}
-            c = psycopg.connect(self.dsn, autocommit=True, **kw)
+            c = psycopg.connect(self.dsn, autocommit=True)
             if self.load_extension:
                 c.execute("LOAD 'age'")
             c.execute('SET search_path = ag_catalog, "$user", public')
@@ -115,9 +104,7 @@ class AgeStore:
         from psycopg import sql
         for r in self.readers:
             if not conn.execute("SELECT 1 FROM pg_roles WHERE rolname = %s", (r,)).fetchone():
-                if not self.password_provider:
-                    raise RuntimeError(f"AGE_READERS names {r!r}, which is not a role")
-                conn.execute("SELECT * FROM pgaadauth_create_principal(%s, false, false)", (r,))
+                raise RuntimeError(f"AGE_READERS names {r!r}, which is not a role")
             who = sql.Identifier(r)
             for stmt in ("GRANT USAGE ON SCHEMA {s} TO {r}", "GRANT SELECT ON ALL TABLES IN SCHEMA {s} TO {r}"):
                 for schema in ("ag_catalog", graph):
