@@ -27,23 +27,28 @@ still reaches the ontology only when a person publishes a version.
 Structured lookup is a second way to fill and read the same ontology, for sources whose schema
 is already known.
 
-## A table is a source, not a document
+## A mapped CSV stays a file
 
-An adapter lists items and fetches bytes. A table does not fit that contract: its identity is a
-relation, its version is a snapshot, and its rows are records rather than a file to parse. A
-structured source is a catalog entry in `config/sources.json`, beside the document sources:
+The first structured source is a CSV (or TSV, or a JSON array of objects) already in the
+landing folder, fetched by the same adapter as the documents. The mapping names it. Ingest
+still content-addresses the bytes, and that hash is the snapshot. Refine and extract skip a
+file the mapping names. A CSV the mapping does not name stays prose, so a document that
+happens to contain commas is undisturbed.
 
-| Field | Meaning |
-|---|---|
-| `type` | `table` for an object already in the lake (CSV, TSV, or a JSON array of objects), `glue` or `athena` for a catalog table |
-| `location` | Lake key, Glue table, or Athena database and table |
-| `key` | Columns that identify a row |
-| `scope` | `public` or `private`, the same flag documents use |
-| `snapshot` | Filled by the sweep: content hash for a lake file, Glue or Athena version for a catalog |
+Structured and unstructured are two readings of one landing tree. The Holmes sample is both:
+story files from `examples/sherlock-holmes/fetch.py`, and two catalog CSVs beside them. A
+question cites a passage from a story and a cell from a CSV. See
+[examples/sherlock-holmes](../../examples/sherlock-holmes/README.md).
 
-A `.csv` that a mapping names is not refined and not extracted. A `.csv` that no mapping names
-keeps today's path, so a prose file with a comma in it is undisturbed. Registering the source
-is the curator's act, the same way `ontology_dir` opts out of discovery.
+| Mapping field | For a CSV in the lake | Later, for a live table |
+|---|---|---|
+| `location` | Path of the file (`tables/stories.csv`) | `coa:<dataSourceId>` once that table is an approved accelerator source |
+| `logical_table` | The name R2RML and the metric use (`stories`) | The same name. The live table has to be called this |
+| `key` | Columns that identify a row | Unchanged |
+| `scope` | `public` or `private`, the same flag documents use | Unchanged |
+
+No new adapter is required for the CSV. A Glue or JDBC source is the live case, and it is the
+accelerator's source scan, not a second parser here.
 
 ## The mapping is part of the version
 
@@ -51,37 +56,41 @@ People edit a mapping next to the ontology master. The master stays OWL. The map
 table fills which class, and it is published with the version, immutable once published.
 
 ```yaml
-# ontology/mappings.yaml
+# ontology/mappings.yaml, as in examples/sherlock-holmes
 tables:
-  launches:
-    source: launches
-    class: Mission
-    key: [mission]
+  stories:
+    location: tables/stories.csv
+    logical_table: stories
+    class: Story
+    key: [story_id]
     columns:
-      mission: {attribute: name}
-      vehicle: {attribute: launchVehicle}
-      launched: {attribute: launchDate, datatype: xsd:date}
-      target: {relation: target, range: Body, match: label}
-metrics:
-  launches_by_vehicle:
-    definition: How many missions each rocket launched.
-    class: Mission
-    aggregate: count
-    group_by: launchVehicle
+      title: {attribute: title}
+      client: {attribute: client}
+      strand_issue: {relation: publishedIn, range: StrandIssue, match: issueId}
 ```
+
+The worked files, including the issue table the relation joins to, are
+[`examples/sherlock-holmes/ontology/mappings.yaml`](../../examples/sherlock-holmes/ontology/mappings.yaml).
 
 `knowledge-store ontology publish` checks the mapping the way review checks an edit. A class,
 attribute, relation, or datatype the ontology does not have is refused. A column datatype that
-disagrees with the attribute's datatype is refused. A relation's range must be a class. A metric
-may only aggregate a mapped attribute, and may group by one mapped attribute.
+disagrees with the attribute's datatype is refused. A relation's range must be a class. The metric file's `source_table` must be a
+`logical_table`, and each ontology concept it names must be a class.
 
 The release renders the mapping, as it renders every other consumer form
 (`ontology/renditions.py`):
 
 | Rendition | For |
 |---|---|
-| `structured/mapping.json` | The sweep and the tools: class, key, columns, metrics |
-| `r2rml/mapping.ttl` | A virtual backend, or a Context Ontology Accelerator namespace, generated and never edited |
+| `structured/mapping.json` | The sweep and the tools: class, key, columns, logical table |
+| `r2rml/mapping.ttl` | The same triples maps the accelerator writes for Ontop. Generated, never edited. The Holmes sample checks an illustrative copy in [`ontology/r2rml-mapping.ttl`](../../examples/sherlock-holmes/ontology/r2rml-mapping.ttl) |
+
+Metrics are a second curated file, not a rendition. The Holmes sample uses the accelerator's
+OSI v1.0 import, with `vendor_name: COA` under `custom_extensions`
+([`metrics.osi.yaml`](../../examples/sherlock-holmes/ontology/metrics.osi.yaml)). The
+expression is a complete read-only `SELECT`. Publish checks that its `source_table` is a
+`logical_table` in the mapping and that each `ontology_concepts` entry is a class. The local
+checker recomputes the figure from the snapshot. The `SELECT` is what a later import runs.
 
 Two releases of the same master and the same mapping render the same files. The agent rendition
 gains one line per mapped type: the source and the snapshot the active version was bound to, so
@@ -106,7 +115,7 @@ Each row becomes an entity whose IRI is the class plus the key columns, not the 
 label. That is the resolution rule for structured entities, and it is why "NASA" in a table and
 "National Aeronautics and Space Administration" in a document stay two nodes until a mapping or
 a document says they are the same. Attributes become assertions. A relation column matches the
-object by the named field (`label` above) inside the same snapshot, and a miss is recorded in
+object by the field named in `match` inside the same snapshot, and a miss is recorded in
 the bind report rather than invented.
 
 SHACL runs on the snapshot graph with the ontology shapes plus the cell shape below. A snapshot
@@ -208,7 +217,9 @@ judges the number.
 
 Some tables should not be copied: they are large, or the answer is wrong if it is an hour old.
 The virtual backend runs the same `lookup_rows` and `aggregate` calls as SQL against Athena or
-Glue, through a template fixed by the mapping. The model never sees the SQL. The checker
+Glue, through a template fixed by the mapping. The template names `logical_table`, the same
+string the CSV mapping already uses, so the calls do not change when `location` becomes a live
+source. The model never sees the SQL. The checker
 re-executes the same template against the same snapshot id and fails closed if the source has
 moved. Paths that cross a live row and a document entity resolve the row's key into the graph
 first (`lookup_rows` by key, then `neighbourhood`), which keeps traversal in Neptune.
@@ -269,23 +280,35 @@ living in JDBC and Glue. It is a poor fit for a lake of documents plus a few tab
 
 ### What this extension takes from it
 
-Four ideas, each already shaped like something this store does.
+Two artifacts from the accelerator's repository, and the rule for when the rest of it joins.
 
-Mappings are a rendition. R2RML is the portable form. The curated file is the smaller YAML above,
-checked against `OntologySpec` at publish, and `r2rml/mapping.ttl` is generated beside
-`neo4j/mapping.json`. Ontop is one consumer of that rendition, and this module does not have to
-run it.
+The mapping rendition is R2RML, the file the accelerator's ontology engine writes and its
+virtual knowledge graph reads. One triples map per table, the key as an IRI template
+(`rr:template`), each column a predicate (`rr:column`), a foreign key a join
+(`rr:joinCondition`). The Holmes file
+[`r2rml-mapping.ttl`](../../examples/sherlock-holmes/ontology/r2rml-mapping.ttl) is that shape.
+Publish generates it from `mappings.yaml`. Ontop is the program that executes it against a live
+database, and this module does not run Ontop to answer from a CSV.
 
-Governed metrics are the accelerator's first tier: a named aggregate published with the ontology,
-deterministic, with no model call on the execution path, and recomputed by the checker. The
-`aggregate` tool runs a metric by name. An ad hoc aggregate is allowed only inside the operators
-and the single group-by the tool schema lists. That schema is the firewall for as long as the
-model cannot edit SQL.
+The metric file is OSI v1.0 with a `custom_extensions` block of `vendor_name: COA`, copied from
+`packages/metric-service/examples/sample-osi-import.yaml`. It carries `data_source_id`,
+`source_table`, and `ontology_concepts` (the accelerator stores the last as
+`ov:governedMetricFor`). The expression is a complete read-only `SELECT`, which is what the
+accelerator's validator accepts. The Holmes file
+[`metrics.osi.yaml`](../../examples/sherlock-holmes/ontology/metrics.osi.yaml) is that shape.
+The `aggregate` tool runs the metric by name and the checker recomputes the figure from the
+snapshot. An ad hoc aggregate stays inside the operators and the single group-by the tool
+schema lists.
 
-The tier order lives in the prompt the agent already has: metrics, then row filters, then the
-graph and the passages. The workbench shows which one ran. A second orchestrator that classifies
-the question and falls through strategies would hide that trail and could return text the
-grounding check never saw.
+The table name is the hinge. `logical_table`, `rr:tableName`, and `source_table` are the same
+string. A CSV in the lake answers while `location` is a file path. Replacing `location` with
+`coa:<dataSourceId>`, and importing the same OSI file, is the live step. The IRI templates and
+the `SELECT` do not change.
+
+Left until that step: source scan and review, ontology induction, the Ontop service,
+natural-language SQL, Cedar, OpenSearch embeddings of metric names, and the MCP tools `query`
+and `translate_sparql`. The tier order stays in the prompt this agent already has: the named
+metric, then row filters, then the graph and the passages. The workbench shows which one ran.
 
 Unmapped columns join the candidate register. They do not open a second induction pipeline.
 
@@ -326,14 +349,17 @@ Context, and this module keeps its document record, its citation check, and its 
 
 ## Order of work
 
-1. Check the mapping at publish, and write the two renditions. No new source and no new tool. A
-   collection with no `mappings.yaml` publishes as it does now.
-2. Lake tables: `type: table` sources, the `bind` stage, `ks:Cell` in core 1.1.0,
-   `describe_structured`, `lookup_rows`, `aggregate` over the snapshot, and cell checks in
-   `agent/grounding.py`. Document extraction is untouched.
-3. Named metrics in the mapping, recomputed by the checker, shown as their own step.
-4. A virtual backend behind those same tools, Athena first. The accelerator's MCP is that
-   backend when the estate is already its namespace, with cell checks still local.
+1. Check `mappings.yaml` at publish and write the R2RML rendition. Accept `metrics.osi.yaml`
+   when its table and classes match the mapping. A collection with neither file publishes as it
+   does now.
+2. Bind every CSV the mapping names. Same landing adapter, no new source type. `ks:Cell` in
+   core 1.1.0, `describe_structured`, `lookup_rows`, `aggregate` over the snapshot, and cell
+   checks in `agent/grounding.py`. The Holmes catalog is the fixture. Document extraction is
+   untouched.
+3. Run a named metric by recomputing its `SELECT` against the snapshot, and show it as its own
+   step.
+4. A live table whose name is still `logical_table`. Point `location` at `coa:<dataSourceId>`,
+   import the OSI file, and accept accelerator results only when they carry cells.
 
 Each step is separately shippable. None of them replaces the passage tools, the gold files
 extracted from documents, or the rule that a statement is shown only after code has checked its

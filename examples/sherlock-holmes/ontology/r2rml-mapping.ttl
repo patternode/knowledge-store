@@ -1,0 +1,69 @@
+# Illustrative rendition of mappings.yaml. Publish would write this; it is checked
+# in here so the Holmes sample shows the file a virtual knowledge graph reads.
+# Context Ontology Accelerator generates the same shape (rr:TriplesMap per table,
+# rr:template from the key, rr:column for each attribute, rr:joinCondition for a
+# foreign key) and Ontop executes it. This sample does not run Ontop.
+#
+# Table names are the logical_table values. A live source serves those names; the
+# IRI templates do not change.
+
+@prefix rr:  <http://www.w3.org/ns/r2rml#> .
+@prefix o:   <https://example.org/holmes#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<#StoryMap>
+    rr:logicalTable [ rr:tableName "stories" ] ;
+    rr:subjectMap [
+        rr:template "https://example.org/holmes/story/{story_id}" ;
+        rr:class o:Story
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:storyId ;
+        rr:objectMap [ rr:column "story_id" ]
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:title ;
+        rr:objectMap [ rr:column "title" ]
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:collection ;
+        rr:objectMap [ rr:column "collection" ]
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:client ;
+        rr:objectMap [ rr:column "client" ]
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:crime ;
+        rr:objectMap [ rr:column "crime" ]
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:publishedIn ;
+        rr:objectMap [
+            rr:parentTriplesMap <#IssueMap> ;
+            rr:joinCondition [ rr:child "strand_issue" ; rr:parent "issue_id" ]
+        ]
+    ] .
+
+<#IssueMap>
+    rr:logicalTable [ rr:tableName "strand_issues" ] ;
+    rr:subjectMap [
+        rr:template "https://example.org/holmes/issue/{issue_id}" ;
+        rr:class o:StrandIssue
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:issueId ;
+        rr:objectMap [ rr:column "issue_id" ]
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:year ;
+        rr:objectMap [ rr:column "year" ; rr:datatype xsd:integer ]
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:month ;
+        rr:objectMap [ rr:column "month" ; rr:datatype xsd:integer ]
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:magazine ;
+        rr:objectMap [ rr:column "magazine" ]
+    ] .

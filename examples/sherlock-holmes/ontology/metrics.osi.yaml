@@ -1,0 +1,42 @@
+# OSI v1.0 metric file, the shape Context Ontology Accelerator imports
+# (packages/metric-service/examples/sample-osi-import.yaml).
+#
+# Locally the checker recomputes the figure from the CSV snapshot. The SELECT is
+# stored verbatim so a later POST /namespaces/{ns}/import-osi can run it on an
+# approved source whose table is still named "stories". data_source_id is the
+# lake source today and the accelerator's data source id once that table is live.
+# vendor_name: COA is required; a top-level x_coa: key is ignored by the importer.
+
+osi_spec_version: "1.0"
+
+datasets:
+  - name: stories
+    data_source_id: holmes-tables
+    description: "One row per short story in the Holmes sample catalog."
+
+metrics:
+  - name: strand_stories_1891
+    description: "How many catalogued stories first appeared in The Strand Magazine in 1891."
+    expression:
+      dialects:
+        - dialect: ANSI_SQL
+          expression: "SELECT COUNT(*) FROM stories WHERE strand_issue LIKE '1891-%'"
+        - dialect: TRINO
+          expression: "SELECT COUNT(*) FROM stories WHERE strand_issue LIKE '1891-%'"
+    ai_context:
+      synonyms:
+        - "stories published in 1891"
+        - "Strand stories from 1891"
+      instructions: "Use for how many catalogued stories first appeared in 1891. The count is over the stories table, not over the story texts."
+      examples:
+        - "How many of these stories came out in The Strand in 1891?"
+    custom_extensions:
+      - vendor_name: COA
+        data:
+          data_source_id: holmes-tables
+          source_table: stories
+          unit: count
+          return_type: integer
+          time_dimension: year
+          ontology_concepts:
+            - Story
