@@ -24,7 +24,9 @@ ontology page's one library, D3, is served from this folder (`vendor/`).
   each model call's thinking time and tokens. Under the list every type is counted, including
   zeros, and each tool is counted by how many times it was called. It also shows the ontology
   terms the answer used and this session's totals. A step's input says whether the call was a
-  knowledge graph query, a vector query or a keyword passage search. A citation opens that source in the
+  knowledge graph query, a vector query or a keyword passage search. The cost table names each model
+  round for the tool that followed it, such as Thinking, then a word search, and the step badge
+  stays Keyword search. A citation opens that source in the
   panel beside the conversation; choosing it again hides the panel. Below 1100 pixels the sources
   panel is a drawer. "What would it take?" asks the analyst
   and renders its report ([docs/workbench.md](../docs/workbench.md)). Below 1280 pixels the
