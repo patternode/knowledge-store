@@ -118,6 +118,14 @@ The Knowledge Base on S3 Vectors costs cents a month at rest, against hundreds o
 for an OpenSearch Serverless index. Turn it off (`knowledge_base.enabled = false`) for a
 collection where questions name things; passage search then falls back to keywords.
 
+## Structured data
+
+CSV and JSON are parsed as text and extracted like any other document. Filters, totals, and
+values that must match a cell need a source that keeps its schema. The draft for that lookup,
+including the space-missions catalog whose answers cite CSV cells as well as passages, and where
+AWS Context Ontology Accelerator fits a later live source, is
+[Structured lookup](structured.md).
+
 ## Evaluation
 
 An evaluation set is a YAML file of questions, each with the facts a right answer states, a

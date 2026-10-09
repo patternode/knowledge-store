@@ -38,6 +38,31 @@ def test_steps_and_terms_from_real_tool_results(mixed):
     assert rec.hits()["relations"][rel["p"]] == ["read", "cited"]
 
 
+def test_a_model_step_records_how_long_it_thought_and_its_tokens():
+    rec = workbench.Recorder()
+    rec.model_call()
+    rec.price_model({"inputTokens": 10, "outputTokens": 2, "cacheReadInputTokens": 0, "cacheWriteInputTokens": 0},
+                    "us.anthropic.claude-sonnet-4-5-20250929-v1:0", "bedrock")
+    rec.model_call()
+    rec.price_model({}, "us.anthropic.claude-sonnet-4-5-20250929-v1:0", "bedrock")
+    thought, silent = rec.steps
+    assert thought["took_ms"] >= 0 and thought["usage"]["inputTokens"] == 10 and thought["usd"] > 0
+    assert silent["took_ms"] >= 0 and "usage" not in silent and "usd" not in silent
+
+
+def test_a_step_says_whether_the_query_was_the_graph_or_the_vectors():
+    rec = workbench.Recorder()
+    graph = rec.tool("search_entities", {"query": "Alpha", "type": "Mission"}, {"items": [], "total": 0})
+    vector = rec.tool("search_passages", {"query": "gravity assist"},
+                      {"passages": [{"title": "Voyager"}], "method": "vector"})
+    keyword = rec.tool("search_passages", {"query": "gravity assist"}, {"passages": []})
+    read = rec.tool("read_passages", {"ids": ["p1"]}, {"passages": [{"id": "p1"}]})
+    assert graph["source"] == "graph" and "source" not in graph["input"]
+    assert vector["source"] == "vector" and vector["title"].startswith("Vector search of passages")
+    assert keyword["source"] == "keyword" and keyword["title"].startswith("Keyword search of passages")
+    assert "source" not in read
+
+
 def test_a_failing_tool_is_a_step_and_touches_nothing():
     rec = workbench.Recorder()
     s = rec.tool("get_entity", {"id": "nope"}, {"error": "no entity 'nope'"})
@@ -165,6 +190,27 @@ class Scripted:
 
 def tool_use(name, args, i="t1"):
     return [{"toolUse": {"toolUseId": i, "name": name, "input": args}}]
+
+
+def test_a_sample_question_may_link_a_table_without_putting_the_url_in_the_question():
+    from pathlib import Path
+    from knowledge_store.config import profile_from_dict
+    root = Path(__file__).resolve().parents[1]
+    profile = profile_from_dict(json.loads((root / "examples/space-missions/profile.json").read_text()))
+    samples = profile.sample_questions()
+    assert [q["text"] for q in samples] == [
+        "Which rocket launched Juno?",
+        "What sample cost does the catalog give Juno?",
+        "Which missions launched on an Atlas V?",
+        "Which launched first, Voyager 1 or Voyager 2?",
+    ]
+    assert [q["level"] for q in samples] == ["low", "low", "medium", "high"]
+    linked = [q for q in samples if "link" in q]
+    assert len(linked) == 1
+    assert linked[0]["link"].endswith("/examples/space-missions/tables/missions.csv")
+    assert linked[0]["link_label"] == "missions.csv"
+    assert "http" not in linked[0]["text"]
+    assert "link" not in profile.to_dict()["example_questions"][0]
 
 
 def test_sample_questions_keep_a_named_level_and_otherwise_spread():

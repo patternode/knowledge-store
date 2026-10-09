@@ -141,7 +141,9 @@ def sweep_once(lake: Store, client_factory, model_id: str, cfg: dict) -> dict:
     rows = extract_all(lake, client_factory(), model_id, profile, workers=cfg["extraction_workers"])
     stats["extracted"] = sum(1 for r in rows if r["status"] == "extracted")
     stats["rejected"] = sum(1 for r in rows if r["status"] == "rejected")
-    if rows or not lake.exists(layout.index_key(versions.active_version(lake), "summary")):
+    from ..structured.bind import bind
+    stats["bind"] = bind(lake)
+    if rows or stats["bind"].get("written") or not lake.exists(layout.index_key(versions.active_version(lake), "summary")):
         candidates.build_register(lake, versions.active_version(lake))
         stats["projection"] = project(lake)
     for name, step in (("graph", load_graph), ("documents", load_documents), ("sparql", load_sparql),

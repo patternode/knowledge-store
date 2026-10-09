@@ -1,0 +1,19 @@
+mission_id,name,agency,vehicle_id,vehicle_family,launch_date,target,sample_cost_million_usd
+chandrayaan-3,Chandrayaan-3,ISRO,lvm3,LVM3,2023-07-14,Moon,90
+perseverance,Perseverance,NASA,atlas-v,Atlas V,2020-07-30,Mars,2700
+tianwen-1,Tianwen-1,CNSA,long-march-5,Long March 5,2020-07-23,Mars,180
+curiosity,Curiosity,NASA,atlas-v,Atlas V,2011-11-26,Mars,2500
+james-webb,James Webb Space Telescope,NASA,ariane-5,Ariane 5,2021-12-25,Sun-Earth L2,10000
+dawn,Dawn,NASA,delta-ii,Delta II,2007-09-27,Vesta and Ceres,470
+rosetta,Rosetta,ESA,ariane-5,Ariane 5,2004-03-02,67P,1500
+osiris-rex,OSIRIS-REx,NASA,atlas-v-411,Atlas V,2016-09-08,Bennu,800
+hayabusa2,Hayabusa2,JAXA,h-iia,H-IIA,2014-12-03,Ryugu,150
+parker-solar-probe,Parker Solar Probe,NASA,delta-iv-heavy,Delta IV Heavy,2018-08-12,Sun,1500
+bepicolombo,BepiColombo,ESA,ariane-5,Ariane 5,2018-10-20,Mercury,1600
+voyager-2,Voyager 2,NASA,titan-iiie,Titan IIIE,1977-08-20,outer planets,200
+juno,Juno,NASA,atlas-v-551,Atlas V,2011-08-05,Jupiter,1100
+cassini-huygens,Cassini-Huygens,NASA,titan-ivb,Titan IVB,1997-10-15,Saturn,3300
+new-horizons,New Horizons,NASA,atlas-v-551,Atlas V,2006-01-19,Pluto,700
+galileo,Galileo,NASA,shuttle-atlantis,Space Shuttle,1989-10-18,Jupiter,1400
+voyager-1,Voyager 1,NASA,titan-iiie,Titan IIIE,1977-09-05,outer planets,200
+europa-clipper,Europa Clipper,NASA,falcon-heavy,Falcon Heavy,2024-10-14,Europa,5000

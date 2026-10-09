@@ -26,15 +26,28 @@ MIN_QUOTE_CHARS = 12
 ABSTAIN = "I can't answer that from the sources in this collection."
 
 
+class FilterRef(BaseModel):
+    attribute: str = ""
+    op: str = "eq"
+    value: str = ""
+
+
 class Citation(BaseModel):
-    passage_id: str = Field(description="the id of a passage you read in this conversation")
-    quote: str = Field(description="words copied exactly from that passage's text that state the claim: "
+    passage_id: str = Field(default="", description="the id of a passage you read in this conversation, when the claim comes from a document")
+    quote: str = Field(default="", description="words copied exactly from that passage's text that state the claim: "
                                    "a phrase or a sentence, never paraphrased")
+    cell_id: str = Field(default="", description="the cell id a lookup_rows value carried (c:...), when the claim comes from a table")
+    value: str = Field(default="", description="the cell's value, copied from the tool result")
+    metric_id: str = Field(default="", description="the id an aggregate result carried (m:...), when the claim is a figure")
+    figure: str = Field(default="", description="the figure, copied from the tool result")
+    mapped_type: str = Field(default="", description="the mapped type, when the figure is an ad hoc aggregate rather than a named metric")
+    attribute: str = Field(default="", description="the attribute an ad hoc sum, min, max or avg was taken over")
+    filters: list[FilterRef] = Field(default_factory=list, description="the filters the figure was computed with, when it is not a named metric")
 
 
 class Claim(BaseModel):
     text: str = Field(description="one statement that answers part of the question, in plain words")
-    citations: list[Citation] = Field(description="at least one passage that states it, with the quote")
+    citations: list[Citation] = Field(description="at least one citation: a passage and a quote, a cell and its value, or a metric and its figure")
 
 
 class GroundedAnswer(BaseModel):
@@ -61,21 +74,82 @@ def quote_in(quote: str, passage: str) -> bool:
     return len(q) >= MIN_QUOTE_CHARS and q in normalise(passage)
 
 
-def check(answer: GroundedAnswer, passages: dict[str, dict]) -> tuple[list[Claim], list[dict]]:
+def _passage_ok(cit: Citation, passages: dict[str, dict], i: int, failures: list[dict]) -> bool:
+    p = passages.get(cit.passage_id)
+    if p is None:
+        failures.append({"claim": i, "passage_id": cit.passage_id, "reason": "no such passage, or not readable"})
+        return False
+    if not quote_in(cit.quote, p.get("text", "")):
+        failures.append({"claim": i, "passage_id": cit.passage_id, "quote": cit.quote[:200],
+                         "reason": "quote not found in the passage" if len(normalise(cit.quote)) >= MIN_QUOTE_CHARS
+                         else "quote too short"})
+        return False
+    return True
+
+
+def _cell_ok(cit: Citation, cells: dict[str, dict], i: int, failures: list[dict]) -> bool:
+    from ..structured.query import values_equal
+    cell = cells.get(cit.cell_id)
+    if cell is None:
+        failures.append({"claim": i, "cell_id": cit.cell_id, "reason": "no such cell, or not readable"})
+        return False
+    if not values_equal(cit.value, str(cell.get("value", "")), cell.get("datatype") or "string"):
+        failures.append({"claim": i, "cell_id": cit.cell_id, "value": cit.value[:200],
+                         "reason": "value does not equal the cell"})
+        return False
+    return True
+
+
+def _metric_ok(cit: Citation, metrics: dict[str, dict], i: int, failures: list[dict]) -> bool:
+    from ..structured.query import values_equal
+    metric = metrics.get(cit.metric_id)
+    if metric is None:
+        failures.append({"claim": i, "metric_id": cit.metric_id, "reason": "no such metric, or not readable"})
+        return False
+    if not values_equal(cit.figure, str(metric.get("figure", "")), "decimal" if _numeric(cit.figure) else "string"):
+        failures.append({"claim": i, "metric_id": cit.metric_id, "figure": str(cit.figure)[:80],
+                         "reason": "figure does not match the snapshot"})
+        return False
+    return True
+
+
+def _numeric(text: str) -> bool:
+    try:
+        from decimal import Decimal
+        Decimal(str(text).strip())
+        return True
+    except Exception:
+        return False
+
+
+def check(answer: GroundedAnswer, passages: dict[str, dict], cells: dict[str, dict] | None = None,
+          metrics: dict[str, dict] | None = None) -> tuple[list[Claim], list[dict]]:
     """The claims that survive, with only their good citations; and every failure, with why.
-    passages: id -> the passage as read_passages returned it to this caller."""
+
+    A passage citation is checked against the passage text. A cell citation is checked against
+    the snapshot. A metric citation is checked against the figure recomputed from that snapshot.
+    A claim that cites both a passage and a cell has to pass both. cells and metrics are what
+    the tools returned when the checker re-read them: id -> the cell or the metric.
+    """
+    cells, metrics = cells or {}, metrics or {}
     kept, failures = [], []
     for i, c in enumerate(answer.claims):
         good = []
         for cit in c.citations:
-            p = passages.get(cit.passage_id)
-            if p is None:
-                failures.append({"claim": i, "passage_id": cit.passage_id, "reason": "no such passage, or not readable"})
-            elif not quote_in(cit.quote, p.get("text", "")):
-                failures.append({"claim": i, "passage_id": cit.passage_id, "quote": cit.quote[:200],
-                                 "reason": "quote not found in the passage" if len(normalise(cit.quote)) >= MIN_QUOTE_CHARS
-                                 else "quote too short"})
-            else:
+            used = False
+            ok = True
+            if cit.passage_id or cit.quote:
+                used = True
+                ok = _passage_ok(cit, passages, i, failures) and ok
+            if cit.cell_id or cit.value:
+                used = True
+                ok = _cell_ok(cit, cells, i, failures) and ok
+            if cit.metric_id or cit.figure:
+                used = True
+                ok = _metric_ok(cit, metrics, i, failures) and ok
+            if not used:
+                failures.append({"claim": i, "reason": "citation names neither a passage, a cell nor a metric"})
+            elif ok:
                 good.append(cit)
         if good and c.text.strip():
             kept.append(Claim(text=c.text.strip(), citations=good))
@@ -85,43 +159,84 @@ def check(answer: GroundedAnswer, passages: dict[str, dict]) -> tuple[list[Claim
 
 
 def repair_prompt(failures: list[dict]) -> str:
-    lines = [f"- claim {f['claim']}: {f['reason']}" + (f" (passage {f['passage_id']})" if f.get("passage_id") else "")
+    lines = [f"- claim {f['claim']}: {f['reason']}"
+             + (f" (passage {f['passage_id']})" if f.get("passage_id") else "")
+             + (f" (cell {f['cell_id']})" if f.get("cell_id") else "")
+             + (f" (metric {f['metric_id']})" if f.get("metric_id") else "")
              + (f": {f['quote']!r}" if f.get("quote") else "") for f in failures]
-    return ("Some citations did not check out against the passages:\n" + "\n".join(lines) +
-            "\n\nRead the passages again with read_passages and answer again. Copy each quote exactly from the "
-            "passage text. Drop any claim you cannot quote; if nothing is left, set answerable to false.")
+    return ("Some citations did not check out:\n" + "\n".join(lines) +
+            "\n\nRead the passages again with read_passages, and re-read table cells with lookup_rows. "
+            "Copy each quote exactly from the passage text, and each cell value exactly from the tool. "
+            "Drop any claim you cannot cite; if nothing is left, set answerable to false.")
 
 
-def render(claims: list[Claim], passages: dict[str, dict], gaps: list[str]) -> dict:
+def render(claims: list[Claim], passages: dict[str, dict], gaps: list[str],
+           cells: dict[str, dict] | None = None) -> dict:
     """The answer shown to the person: the claims in order, each with numbered links to its
     sources, and the sources with the quotes that support the answer."""
     if not claims:
         return {"answer": ABSTAIN, "abstained": True, "claims": [], "sources": [], "gaps": gaps}
+    cells = cells or {}
     order: dict[str, int] = {}
     quotes: dict[str, list[str]] = {}
     out_claims, parts = [], []
     for c in claims:
         ns = []
         for cit in c.citations:
-            n = order.setdefault(cit.passage_id, len(order) + 1)
-            if n not in ns:
-                ns.append(n)
-            qs = quotes.setdefault(cit.passage_id, [])
-            if cit.quote not in qs:
-                qs.append(cit.quote)
-        out_claims.append({"text": c.text, "sources": ns,
-                           "citations": [{"passage_id": x.passage_id, "quote": x.quote} for x in c.citations]})
+            if cit.passage_id:
+                n = order.setdefault(cit.passage_id, len(order) + 1)
+                if n not in ns:
+                    ns.append(n)
+                qs = quotes.setdefault(cit.passage_id, [])
+                if cit.quote not in qs:
+                    qs.append(cit.quote)
+            if cit.cell_id:
+                n = order.setdefault(cit.cell_id, len(order) + 1)
+                if n not in ns:
+                    ns.append(n)
+                qs = quotes.setdefault(cit.cell_id, [])
+                if cit.value not in qs:
+                    qs.append(cit.value)
+            if cit.metric_id:
+                n = order.setdefault(cit.metric_id, len(order) + 1)
+                if n not in ns:
+                    ns.append(n)
+                qs = quotes.setdefault(cit.metric_id, [])
+                if cit.figure not in qs:
+                    qs.append(cit.figure)
+        cited = [{"passage_id": x.passage_id, "quote": x.quote} for x in c.citations if x.passage_id]
+        cited += [{"cell_id": x.cell_id, "value": x.value} for x in c.citations if x.cell_id]
+        cited += [{"metric_id": x.metric_id, "figure": x.figure} for x in c.citations if x.metric_id]
+        out_claims.append({"text": c.text, "sources": ns, "citations": cited})
         parts.append(c.text.rstrip() + " " + "".join(f"[{n}]" for n in ns))
     sources = []
     for pid, n in sorted(order.items(), key=lambda kv: kv[1]):
-        p = passages[pid]
-        sources.append({"n": n, "passage_id": pid, "doc": p.get("doc"), "title": p.get("title"), "name": p.get("name"),
-                        "text": p.get("text", ""), "quotes": quotes[pid], "source_uri": p.get("source_uri")})
+        if pid in passages:
+            p = passages[pid]
+            sources.append({"n": n, "passage_id": pid, "doc": p.get("doc"), "title": p.get("title"), "name": p.get("name"),
+                            "text": p.get("text", ""), "quotes": quotes[pid], "source_uri": p.get("source_uri")})
+        elif pid in cells:
+            c = cells[pid]
+            sources.append({"n": n, "passage_id": pid, "kind": "cell", "title": f"{c.get('column')} = {c.get('value')}",
+                            "text": f"{c.get('column')}: {c.get('value')}", "quotes": quotes[pid],
+                            "name": c.get("table"), "row": list(c.get("row") or [])})
+        else:
+            sources.append({"n": n, "passage_id": pid, "kind": "metric", "title": pid,
+                            "text": quotes[pid][0] if quotes[pid] else "", "quotes": quotes[pid]})
     return {"answer": " ".join(parts), "abstained": False, "claims": out_claims, "sources": sources, "gaps": gaps}
 
 
 def cited_ids(answer: GroundedAnswer) -> list[str]:
-    return list(dict.fromkeys(c.passage_id for cl in answer.claims for c in cl.citations))
+    return list(dict.fromkeys(c.passage_id for cl in answer.claims for c in cl.citations if c.passage_id))
+
+
+def cited_cells(answer: GroundedAnswer) -> list[str]:
+    return list(dict.fromkeys(c.cell_id for cl in answer.claims for c in cl.citations if c.cell_id))
+
+
+def cited_metrics(answer: GroundedAnswer) -> list[tuple[str, str]]:
+    """(metric id, figure) for each metric a claim cites."""
+    return list(dict.fromkeys((c.metric_id, c.figure) for cl in answer.claims for c in cl.citations if c.metric_id))
 
 
 # --- the analyst's report (workbench.REPORT_SCHEMA, as models for structured output) ---------------

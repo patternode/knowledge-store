@@ -26,6 +26,8 @@
     </span>
     <span class="coll-name" id="coll-name" hidden></span>
     <span class="pill" id="private-pill" hidden>Private access</span>
+    <button class="btn small" id="sources-open" type="button" aria-controls="sources" aria-expanded="false" hidden>Sources</button>
+    <button class="btn small" id="demo" type="button" aria-pressed="false" hidden>Demonstrate</button>
     <button class="btn small bench-open" id="bench-open" type="button" aria-controls="bench" aria-expanded="false" hidden>Workbench</button>
     <span class="user" id="user"></span>
     <button class="btn" id="signin" type="button" hidden>Sign in</button>
@@ -33,13 +35,14 @@
   </div>
 </header>
 
-<div class="workspace" id="workspace">
+<div class="workspace demo-off" id="workspace">
   <aside class="samples" id="samples" aria-labelledby="samples-title" hidden>
     <h2 id="samples-title">Sample questions</h2>
     <p class="small muted" id="samples-note">Choosing one fills the question box. It is not sent until you press Send.</p>
     <div id="samples-list"></div>
   </aside>
   <div class="chat-col">
+    <div class="talk">
     <main id="main">
       <div id="notice" class="notice" hidden></div>
       <p class="intro" id="intro" hidden></p>
@@ -58,9 +61,19 @@
         <textarea id="question" rows="2" maxlength="2000" placeholder="Ask a question about the documents" aria-describedby="hint keys"></textarea>
         <button class="btn primary" id="send" type="submit">Send</button>
       </div>
-      <p class="hint" id="hint">Answers come only from the documents in this collection, and every statement links to its source.</p>
+      <p class="hint" id="hint">Answers come only from this collection, and every statement links to its source.</p>
       <p class="sr-only" id="keys">Enter sends. Shift and Enter starts a new line.</p>
     </form>
+    </div>
+
+    <aside class="sources" id="sources" aria-labelledby="sources-title" hidden>
+      <div class="sources-head">
+        <h2 id="sources-title">Sources</h2>
+        <button class="btn small" id="sources-close" type="button" aria-controls="sources">Hide</button>
+      </div>
+      <p class="sources-q" id="sources-q"></p>
+      <div id="sources-body"></div>
+    </aside>
   </div>
 
   <aside class="bench" id="bench" aria-labelledby="bench-title" hidden>
@@ -70,17 +83,36 @@
     </div>
     <div class="bench-body">
       <section id="bench-steps" aria-labelledby="bench-steps-title" aria-live="polite">
-        <h3 id="bench-steps-title">Steps</h3>
-        <p class="small muted">Ask a question to see what the agent does: each search, each read and each check, as it happens.</p>
+        <details class="bench-fold">
+          <summary><h3 id="bench-steps-title">Steps</h3></summary>
+          <div class="bench-fold-body">
+            <p class="small muted">Ask a question to see what the agent does: each search, each read and each check, as it happens.</p>
+          </div>
+        </details>
       </section>
-      <section id="bench-cost" aria-labelledby="bench-cost-title" hidden>
-        <h3 id="bench-cost-title">Cost</h3>
+      <section id="bench-cost" aria-labelledby="bench-cost-title">
+        <details class="bench-fold">
+          <summary><h3 id="bench-cost-title">Cost</h3></summary>
+          <div class="bench-fold-body">
+            <p class="small muted">The price appears when the question finishes.</p>
+          </div>
+        </details>
       </section>
-      <section id="bench-terms" aria-labelledby="bench-terms-title" hidden>
-        <h3 id="bench-terms-title">Ontology used</h3>
+      <section id="bench-terms" aria-labelledby="bench-terms-title">
+        <details class="bench-fold">
+          <summary><h3 id="bench-terms-title">Ontology used</h3></summary>
+          <div class="bench-fold-body">
+            <p class="small muted">The terms a question uses appear here.</p>
+          </div>
+        </details>
       </section>
-      <section id="bench-session" aria-labelledby="bench-session-title" hidden>
-        <h3 id="bench-session-title">This session</h3>
+      <section id="bench-session" aria-labelledby="bench-session-title">
+        <details class="bench-fold">
+          <summary><h3 id="bench-session-title">This session</h3></summary>
+          <div class="bench-fold-body">
+            <p class="small muted">No questions in this session yet.</p>
+          </div>
+        </details>
       </section>
     </div>
   </aside>

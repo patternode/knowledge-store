@@ -32,9 +32,12 @@ SYSTEM = """You answer questions about a document collection using its knowledge
 The graph's ontology (types, relations and attributes):
 {vocabulary}
 
-Use the tools to find entities and their facts, and to search the source passages. Answer only from what
-the tools return. Cite the passages behind each claim as [p:<passage id>]. If the graph and passages do not
-answer the question, say so plainly and say what is missing (a type, a relation, or a document), which helps
+Use the tools to find entities and their facts, to look up mapped tables, and to search the source passages.
+A filter or a total over a mapped table goes to aggregate or lookup_rows, and the claim cites the cell
+(`c:...`) or the metric (`m:...`). Passage quotes remain the citation for anything extraction produced.
+Answer only from what the tools return. Cite passages as [p:<passage id>], cells as [c:<cell id>] and
+metrics as [m:<metric id>]. If the graph, the tables and the passages do not
+answer the question, say so plainly and say what is missing (a type, a relation, a table, or a document), which helps
 the ontology improve. Be concise."""
 
 TOOLS = [
@@ -49,6 +52,15 @@ TOOLS = [
      "input": {"query": {"type": "string"}, "limit": {"type": "integer"}}, "required": ["query"]},
     {"name": "read_passages", "description": "The full text of passages by id.",
      "input": {"ids": {"type": "array", "items": {"type": "string"}}}, "required": ["ids"]},
+    {"name": "describe_structured", "description": "The mapped tables and named metrics, with the snapshot each is bound to.",
+     "input": {}, "required": []},
+    {"name": "lookup_rows", "description": "Rows of one mapped type. filters are {attribute, op, value}; op is eq, neq, lt, lte, gt, gte or prefix. Each value has its cell id.",
+     "input": {"type": {"type": "string"}, "filters": {"type": "array"}, "limit": {"type": "integer"}},
+     "required": ["type"]},
+    {"name": "aggregate", "description": "A figure: a metric name, or type plus op (count, sum, min, max, avg), an attribute, an optional group_by and filters.",
+     "input": {"metric": {"type": "string"}, "type": {"type": "string"}, "op": {"type": "string"},
+               "attribute": {"type": "string"}, "group_by": {"type": "string"}, "filters": {"type": "array"}},
+     "required": []},
 ]
 
 
@@ -100,6 +112,17 @@ def run_tool(idx: Index, name: str, args: dict, private: bool) -> dict:
         out = [idx.passage_view(p) for p in (args.get("ids") or [])[:10]
                if p in idx.passages and idx.visible(idx.passages[p], private)]
         return {"passages": out}
+    if name in ("describe_structured", "lookup_rows", "aggregate"):
+        from ..structured import query
+        if name == "describe_structured":
+            return query.describe(idx.lake)
+        if name == "lookup_rows":
+            return query.lookup_rows(idx.lake, args.get("type") or "", args.get("filters") or [],
+                                     limit=min(int(args.get("limit") or query.ROW_CAP), 100), private=private,
+                                     cell_ids=args.get("cell_ids") or None)
+        return query.aggregate(idx.lake, metric=args.get("metric") or "", type_name=args.get("type") or "",
+                               op=args.get("op") or "", attribute=args.get("attribute") or "",
+                               group_by=args.get("group_by") or "", filters=args.get("filters") or [], private=private)
     return {"error": f"unknown tool {name}"}
 
 
@@ -261,6 +284,32 @@ def analyse(idx: Index, question: str, about: dict | None, *, private: bool, mod
 
 
 def cited(idx: Index, answer: str, private: bool) -> list[dict]:
+    """The sources an answer named. A passage is [p:<id>]. A cell is [c:<cell id>], and the cell
+    id already begins with c:, so the marker is [c:c:...]. A metric is [m:<metric id>] the same way."""
     import re
-    ids = list(dict.fromkeys(re.findall(r"\[p:([^\]\s]+)\]", answer)))
-    return [idx.passage_view(p) for p in ids if p in idx.passages and idx.visible(idx.passages[p], private)]
+    out = []
+    seen = set()
+    for kind, rest in re.findall(r"\[([pcm]):([^\]\s]+)\]", answer):
+        if kind == "p":
+            ident = rest
+        else:
+            ident = rest if rest.startswith(f"{kind}:") else f"{kind}:{rest}"
+        if ident in seen:
+            continue
+        seen.add(ident)
+        if kind == "p":
+            if ident in idx.passages and idx.visible(idx.passages[ident], private):
+                out.append(idx.passage_view(ident))
+        elif kind == "c":
+            from ..structured import query
+            found = query.lookup_rows(idx.lake, "", cell_ids=[ident], private=private).get("cells") or []
+            if not found:
+                continue
+            cell = found[0]
+            out.append({"id": ident, "kind": "cell", "name": cell.get("table"),
+                        "title": f"{cell.get('column')} = {cell.get('value')}",
+                        "text": f"{cell.get('column')}: {cell.get('value')}",
+                        "quotes": [str(cell.get("value"))], "row": cell.get("row") or []})
+        else:
+            out.append({"id": ident, "kind": "metric", "title": ident, "text": "", "quotes": []})
+    return out

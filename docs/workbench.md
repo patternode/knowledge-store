@@ -1,6 +1,6 @@
 # The workbench
 
-The chat page has three parts. On the left are sample questions, grouped low, medium and high, from the collection's profile. In the middle is the chat: ask, get an answer built from checked claims, with every statement linked to its passage. On the right is a workbench for the people who look after the collection. There they can watch what the agent does, find out why a question went unanswered, see what the question cost, and see which parts of the ontology the questions actually use.
+The chat page opens as the chat alone, which is how someone asking a question sees it. Demonstrate, in the header, shows the other two parts, and User view hides them again. The choice is remembered in that browser. On the left are sample questions, grouped low, medium and high, from the collection's profile. In the middle is the chat: ask, get an answer built from checked claims, with every statement linked to its passage. On the right is a workbench for the people who look after the collection. There they can watch what the agent does, find out why a question went unanswered, see what the question cost, and see which parts of the ontology the questions actually use.
 
 Everything here is in this repository and needs no settings. A deployment gets it by moving its module pin to a release that has it.
 
@@ -10,8 +10,8 @@ Every question records its steps as they happen:
 
 | Step | What it says |
 |---|---|
-| tool | The tool call and its arguments, in words ("Searched entities for "Voyager" of type Mission: 3 found"), what came back, the ontology terms it touched and how long it took. Open the input to see the exact arguments. |
-| model | A model call: the agent deciding what to do next. |
+| tool | The tool call and its arguments, in words ("Searched entities for "Voyager" of type Mission: 3 found"), what came back, the ontology terms it touched and how long it took. Open the input to see the exact arguments. That input is labeled Knowledge graph query for an entity, neighbourhood or path lookup, Vector query when a passage search used the knowledge base, Keyword passage search when it searched the stored text, and Structured lookup for a mapped table. |
+| model | A model call: the agent deciding what to do next. The line under it is how long that call thought, the tokens it reported (input, output, cache write, cache read, including zeros), and its list price. |
 | check | The cited passages being read back and every quote checked against them. |
 | repair | Citations that failed, sent back to the agent once to fix. |
 | guardrail | The Bedrock Guardrail declining the question, or removing a claim it found ungrounded. |
@@ -24,14 +24,17 @@ How the steps reach the page:
 3. The portal writes the steps so far into the pending answer in the chat table, at most once a second, so a poll shows them. Without the agent, the portal's own tool loop records the same steps.
 4. The workbench shows the selected question's steps live. Inline, the pending answer shows the latest step and the time so far.
 
-The steps answer the question a long wait raises: is it stuck, searching for the wrong type, reading the wrong documents, or failing its citations? The step budget (`valves`) is visible too: a question that hits `max_tool_calls` shows it.
+Steps, cost, the ontology terms and this session are each a section. They start collapsed. Open one to read it. A section you open stays open while that question's steps update.
+
+The steps answer the question a long wait raises: is it stuck, searching for the wrong type, reading the wrong documents, or failing its citations? Each step is coloured by its type: model thinking, a knowledge graph query, a vector query, a keyword search, a structured lookup, a passage read, an ontology read, a check, a repair, the guardrail, any other tool, and how it finished. Under the list, every one of those types is counted, including the ones this question did not use, then each tool by how many times it was called, then the tokens across the model calls. The cost table names each model call for the tool that followed it: Thinking, then the knowledge graph; Thinking, then a vector search; Thinking, then a word search; Thinking, then a structured lookup; Thinking, then a passage read; Thinking, then the ontology; Thinking, then another tool. A model call with no tool after it is Thinking, then the answer. One call that used several tools is split evenly across them. The step list keeps the tool's own name, so a word match over stored passages is still badged Keyword search. That search is not charged. The answer itself is repeated under that table. The step budget (`valves`) is visible too: a question that hits `max_tool_calls` shows it. The portal's own loop stops after 10 model rounds. The agent stops after `max_model_calls` (14) and refuses further tools after `max_tool_calls` (16).
 
 ## What the question cost
 
-A finished question shows its list price in the workbench, split two ways:
+A finished question shows its list price in the workbench, split three ways:
 
 - By token kind: input, output, cache write and cache read, with the token count beside the price.
 - By model call: each Thinking step carries that call's own price, and the cost section lists them again.
+- By what the model did next: the same price, named for the tool that followed the call. Thinking, then a word search is the model round that wrote a keyword query. The Keyword search step under it is the tool, and that tool is free. Thinking, then a structured lookup is the model round that read a mapped table. The Structured lookup step under it is the tool, and that tool is free.
 
 The price is the list price in `ledger.py` (Bedrock regional inference includes the 10% premium). Searches and passage reads are not charged. A guardrail check is named when one ran, and is not in the price. Credits, discounts and tax are not included. A question that reported no token use says so, rather than showing zero.
 

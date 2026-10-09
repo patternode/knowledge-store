@@ -40,6 +40,23 @@ KINDS = ("classes", "relations", "attributes")
 VERDICTS = ("answerable", "data_missing", "ontology_missing", "extraction_missed", "out_of_scope")
 
 GRAPH_TOOLS = {"search_entities", "list_entities", "get_entity", "neighbourhood", "find_paths"}
+STRUCTURED_TOOLS = {"describe_structured", "lookup_rows", "aggregate"}
+
+
+def query_source(name: str, out: dict) -> str | None:
+    """Where a tool call looked: the knowledge graph, a mapped table, the vector index, or keyword text.
+
+    search_passages is a vector query only when the tool says so (method "vector", the
+    Knowledge Base). The portal's own loop searches stored passage text and leaves method
+    unset, which is a keyword search, not a vector one.
+    """
+    if name in GRAPH_TOOLS:
+        return "graph"
+    if name in STRUCTURED_TOOLS:
+        return "structured"
+    if name == "search_passages":
+        return "vector" if (out or {}).get("method") == "vector" else "keyword"
+    return None
 
 
 def bare(name: str) -> str:
@@ -101,19 +118,23 @@ class Recorder:
         return self.step("model", "Thinking" if self.model_calls == 1 else f"Thinking (model call {self.model_calls})")
 
     def price_model(self, usage: dict | None, model_id: str | None, provider: str = "bedrock") -> None:
-        """Attach one model call's tokens and list price to the latest model step that has none.
-        An empty usage is left off: the call did not report tokens, which is not the same as zero."""
+        """Attach one model call's thinking time, and its tokens and list price when it reported them.
+
+        The time is from the Thinking step to this call, which returns after the model. An empty
+        usage is left off: the call did not report tokens, which is not the same as zero."""
+        now = round(1000 * (time.monotonic() - self.started))
+        target = next((s for s in reversed(self.steps) if s.get("kind") == "model" and "took_ms" not in s), None)
+        if target is None:
+            return
+        target["took_ms"] = max(0, now - int(target.get("ms") or 0))
         if not isinstance(usage, dict) or not usage:
             return
         from . import ledger
         kept = {k: int(usage.get(k) or 0) for k in USAGE_KEYS}
         priced = ledger.cost_parts(model_id or "", kept, provider=provider) if model_id else None
-        for s in reversed(self.steps):
-            if s.get("kind") == "model" and "usage" not in s:
-                s["usage"] = kept
-                if priced:
-                    s["usd"] = priced["usd"]
-                return
+        target["usage"] = kept
+        if priced:
+            target["usd"] = priced["usd"]
 
     def tool(self, name: str, args: dict | None, out, ms: int | None = None) -> dict:
         name, args, out = bare(name), dict(args or {}), _parse(out)
@@ -122,6 +143,7 @@ class Recorder:
         touched = self._touch(name, args, out)
         title, detail, count = describe(name, args, out)
         return self.step("tool", title, detail, tool=name, input={k: v for k, v in args.items() if k != "collection"},
+                         source=query_source(name, out),
                          count=count, error=_short(out.get("error"), 200) if out.get("error") else None,
                          terms={k: sorted(v) for k, v in touched.items() if v}, took_ms=ms)
 
@@ -134,7 +156,17 @@ class Recorder:
 
     def _touch(self, name: str, args: dict, out: dict) -> dict:
         touched: dict[str, set[str]] = {}
-        if name not in GRAPH_TOOLS or out.get("error"):
+        if name not in GRAPH_TOOLS and name not in STRUCTURED_TOOLS or out.get("error"):
+            return touched
+        if name in STRUCTURED_TOOLS:
+            self._add("classes", "queried", args.get("type"), touched)
+            self._add("attributes", "queried", args.get("attribute"), touched)
+            self._add("attributes", "queried", args.get("group_by"), touched)
+            for f in args.get("filters") or []:
+                if isinstance(f, dict):
+                    self._add("attributes", "queried", f.get("attribute"), touched)
+            for row in (out.get("rows") or []):
+                self._add("classes", "read", row.get("type") or args.get("type"), touched)
             return touched
         if name in ("search_entities", "list_entities") and args.get("type"):
             self._add("classes", "queried", args["type"], touched)
@@ -222,10 +254,19 @@ def describe(name: str, args: dict, out: dict) -> tuple[str, str | None, int | N
     if name == "search_passages":
         ps = out.get("passages") or []
         titles = ", ".join(dict.fromkeys(_short(p.get("title") or p.get("doc"), 40) for p in ps[:6]))
-        return f"Searched passages for “{_short(args.get('query'), 60)}”: {len(ps)} found", titles or None, len(ps)
+        kind = "Vector search" if out.get("method") == "vector" else "Keyword search"
+        return f"{kind} of passages for “{_short(args.get('query'), 60)}”: {len(ps)} found", titles or None, len(ps)
     if name == "read_passages":
         ps = out.get("passages") or []
         return f"Read {len(ps)} passage{'s' if len(ps) != 1 else ''}", None, len(ps)
+    if name == "describe_structured":
+        return f"Read the mapped tables: {len(out.get('types') or [])}", None, len(out.get("types") or [])
+    if name == "lookup_rows":
+        rows = out.get("rows") or out.get("cells") or []
+        return f"Looked up {out.get('type') or 'cells'}: {len(rows)}", None, len(rows)
+    if name == "aggregate":
+        label = out.get("metric") or out.get("op") or "aggregate"
+        return f"Structured lookup: {label} = {out.get('figure')}", None, None
     return f"Called {name}", None, None
 
 

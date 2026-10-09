@@ -65,6 +65,11 @@ def project(lake: Store) -> dict | None:
             if key.endswith(".nq"):
                 ds.parse(data=lake.get(key).decode(), format="nquads")
                 doc_ids.add(layout.doc_id_from_key(key))
+    from ..structured.bind import binding as structured_binding
+    for entry in structured_binding(lake, version).values():
+        key = entry.get("graph")
+        if key and lake.exists(key):
+            ds.parse(data=lake.get(key).decode(), format="nquads")
 
     docs = {}
     for d in sorted(doc_ids):
@@ -80,7 +85,12 @@ def project(lake: Store) -> dict | None:
         passage_doc[str(p)] = _short(str(doc), base + "doc/")
 
     entities: dict[str, dict] = {}
-    for s in set(ds.subjects(KL.mentionedIn, None)):
+    typed = set(ds.subjects(KL.mentionedIn, None))
+    for s, _, t in ds.triples((None, RDF.type, None)):
+        local = model.local_name(t)
+        if str(t).startswith(spec.namespace) and local in spec.classes:
+            typed.add(s)
+    for s in typed:
         iri = str(s)
         types = sorted({model.local_name(t) for t in ds.objects(s, RDF.type)
                         if str(t).startswith(spec.namespace) and model.local_name(t) in spec.classes})
@@ -89,11 +99,14 @@ def project(lake: Store) -> dict | None:
         most = [t for t in types if not any(t != u and spec.is_a(u, t) for u in types)]
         pids = sorted({_short(str(p), base + "passage/") for p in ds.objects(s, KL.mentionedIn)})
         edocs = sorted({passage_doc.get(base + "passage/" + p, "") for p in pids} - {""})
+        scope = str(ds.value(s, KL.scope) or "")
+        if not scope:
+            scope = "public" if any(docs.get(d, {}).get("scope") == "public" for d in edocs) else "private"
         entities[iri] = {"id": _short(iri, base), "type": most[0], "types": types,
                          "label": str(ds.value(s, RDFS.label) or iri.rsplit("/", 1)[-1]),
                          "aliases": sorted({str(a) for a in ds.objects(s, SKOS.altLabel)}),
                          "attributes": [], "out": [], "in": [], "passages": pids, "docs": edocs,
-                         "scope": "public" if any(docs.get(d, {}).get("scope") == "public" for d in edocs) else "private"}
+                         "scope": scope}
 
     cited: set[str] = set()
     prop_counts: Counter = Counter()

@@ -70,7 +70,7 @@ def label_of(local: str) -> str:
 # --- renderers ----------------------------------------------------------------------------------
 
 
-def _agent_md(spec: model.OntologySpec) -> str:
+def _agent_md(spec: model.OntologySpec, mapping=None) -> str:
     lines = [f"# {spec.label or 'Ontology'} {spec.version}", "",
              "Types, relations and attributes of the knowledge graph. Names on the left are what queries and tools use.", "",
              "## Types"]
@@ -95,6 +95,8 @@ def _agent_md(spec: model.OntologySpec) -> str:
         lines += ["", "## Attributes"]
         for p in sorted(spec.attributes.values(), key=lambda t: t.local):
             lines.append(f"- {p.local} ({p.range[0] if p.range else 'string'}) of {'|'.join(p.domain) or 'any'}. {p.definition}".rstrip())
+    from ..structured.mapping import agent_lines
+    lines += agent_lines(mapping)
     return "\n".join(lines) + "\n"
 
 
@@ -222,12 +224,13 @@ def render_schema(spec: model.OntologySpec, path: str) -> str:
     return SCHEMAS[path](spec)
 
 
-def render_all(spec: model.OntologySpec, ttl: bytes, shapes: bytes | None) -> dict[str, bytes]:
+def render_all(spec: model.OntologySpec, ttl: bytes, shapes: bytes | None, mapping=None) -> dict[str, bytes]:
     from ..extract.schema import tool_spec
+    from ..structured.mapping import r2rml
     j = lambda o: (json.dumps(o, indent=2, sort_keys=False) + "\n").encode()  # noqa: E731
     out = {
         "owl/ontology.ttl": _owl(spec, ttl),
-        "agent/ontology.md": _agent_md(spec).encode(),
+        "agent/ontology.md": _agent_md(spec, mapping).encode(),
         "agent/ontology.json": j(_agent_json(spec)),
         "neo4j/schema.cypher": _neo4j_cypher(spec).encode(),
         "neo4j/mapping.json": j(_neo4j_mapping(spec)),
@@ -239,6 +242,9 @@ def render_all(spec: model.OntologySpec, ttl: bytes, shapes: bytes | None) -> di
     if shapes:
         Graph().parse(data=shapes.decode(), format="turtle")  # a release never ships shapes that do not parse
         out["owl/shapes.ttl"] = shapes
+    if mapping is not None:
+        out["structured/mapping.json"] = j(mapping.to_json())
+        out["r2rml/mapping.ttl"] = r2rml(spec, mapping).encode()
     return out
 
 

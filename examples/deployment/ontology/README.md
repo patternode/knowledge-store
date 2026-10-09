@@ -5,9 +5,15 @@ One directory per collection, holding the master that people edit and release:
 ```
 ontology/
   <collection id>/
-    ontology.ttl      # the master: OWL, with owl:versionInfo set to the version it will be
-    shapes.ttl        # optional SHACL; generated from the ontology when absent
+    ontology.ttl       # the master: OWL, with owl:versionInfo set to the version it will be
+    shapes.ttl         # optional SHACL; generated from the ontology when absent
+    mappings.yaml      # optional: turns structured lookup on for this collection
+    metrics.osi.yaml   # optional: named figures, recomputed from the snapshot
 ```
+
+A collection whose directory has no `mappings.yaml` publishes and answers as before. The mapped
+CSVs are uploaded with the documents. The space-missions sample is that option:
+[`examples/space-missions`](../../space-missions).
 
 A collection gets its first ontology one of two ways.
 

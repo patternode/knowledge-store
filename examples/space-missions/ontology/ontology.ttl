@@ -1,0 +1,72 @@
+@prefix o:    <https://example.org/missions#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+<https://example.org/missions> a owl:Ontology ;
+    rdfs:label "Space missions sample"@en ;
+    owl:versionInfo "1.0.0" ;
+    owl:versionIRI <https://example.org/missions/1.0.0> ;
+    rdfs:comment "Ontology for the space-missions sample: prose documents, plus a catalog of the same missions as tables."@en .
+
+o:Mission a owl:Class ;
+    rdfs:label "Mission"@en ;
+    skos:definition "One mission in the sample catalog."@en .
+
+o:LaunchVehicle a owl:Class ;
+    rdfs:label "Launch vehicle"@en ;
+    skos:definition "The rocket a mission launched on."@en .
+
+o:launchedOn a owl:ObjectProperty ;
+    rdfs:label "launchedOn"@en ;
+    skos:definition "The launch vehicle recorded for a mission."@en ;
+    rdfs:domain o:Mission ;
+    rdfs:range o:LaunchVehicle .
+
+o:name a owl:DatatypeProperty ;
+    rdfs:label "name"@en ;
+    skos:definition "The catalog name of a mission or a launch vehicle."@en ;
+    rdfs:range xsd:string .
+
+o:agency a owl:DatatypeProperty ;
+    rdfs:label "agency"@en ;
+    skos:definition "The agency the catalog records as flying the mission."@en ;
+    rdfs:domain o:Mission ;
+    rdfs:range xsd:string .
+
+o:vehicleFamily a owl:DatatypeProperty ;
+    rdfs:label "vehicleFamily"@en ;
+    skos:definition "The launch-vehicle family, used to count missions that share one."@en ;
+    rdfs:domain o:Mission ;
+    rdfs:range xsd:string .
+
+o:launchDate a owl:DatatypeProperty ;
+    rdfs:label "launchDate"@en ;
+    skos:definition "The launch date recorded in the catalog."@en ;
+    rdfs:domain o:Mission ;
+    rdfs:range xsd:date .
+
+o:target a owl:DatatypeProperty ;
+    rdfs:label "target"@en ;
+    skos:definition "The catalog's short label for what a mission studies. A document may name more bodies than this cell."@en ;
+    rdfs:domain o:Mission ;
+    rdfs:range xsd:string .
+
+o:sampleCostMillionUsd a owl:DatatypeProperty ;
+    rdfs:label "sampleCostMillionUsd"@en ;
+    skos:definition "An invented sample cost in millions of US dollars. It is not a real budget, and no prose document in the corpus states it."@en ;
+    rdfs:domain o:Mission ;
+    rdfs:range xsd:integer .
+
+o:vehicleId a owl:DatatypeProperty ;
+    rdfs:label "vehicleId"@en ;
+    skos:definition "Stable id of a launch vehicle, also the key of its catalog row."@en ;
+    rdfs:domain o:LaunchVehicle ;
+    rdfs:range xsd:string .
+
+o:family a owl:DatatypeProperty ;
+    rdfs:label "family"@en ;
+    skos:definition "The family a launch vehicle belongs to."@en ;
+    rdfs:domain o:LaunchVehicle ;
+    rdfs:range xsd:string .

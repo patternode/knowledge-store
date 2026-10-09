@@ -46,6 +46,8 @@ module "knowledge_store" {
       }
       # ontology_mode = "auto"   # publish the first discovered ontology unreviewed
       # ontology_dir  = "ontology/default"   # bring your own ontology instead (see ontology/README.md)
+      # Structured lookup is on when that directory also holds mappings.yaml. A collection
+      # without it is unchanged. The space-missions sample is examples/space-missions.
     }
   }
 
