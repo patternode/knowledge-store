@@ -1,0 +1,41 @@
+# OSI v1.0 metric file, the shape Context Ontology Accelerator imports
+# (packages/metric-service/examples/sample-osi-import.yaml).
+#
+# Locally the checker recomputes the figure from the CSV snapshot. The SELECT is
+# stored verbatim so a later POST /namespaces/{ns}/import-osi can run it on an
+# approved source whose table is still named "missions". data_source_id is the
+# lake source today and the accelerator's data source id once that table is live.
+# vendor_name: COA is required; a top-level x_coa: key is ignored by the importer.
+
+osi_spec_version: "1.0"
+
+datasets:
+  - name: missions
+    data_source_id: missions-tables
+    description: "One row per mission in the space-missions sample catalog."
+
+metrics:
+  - name: atlas_v_launches
+    description: "How many catalogued missions launched on a vehicle in the Atlas V family."
+    expression:
+      dialects:
+        - dialect: ANSI_SQL
+          expression: "SELECT COUNT(*) FROM missions WHERE vehicle_family = 'Atlas V'"
+        - dialect: TRINO
+          expression: "SELECT COUNT(*) FROM missions WHERE vehicle_family = 'Atlas V'"
+    ai_context:
+      synonyms:
+        - "Atlas V missions"
+        - "missions launched on Atlas V"
+      instructions: "Use for how many catalogued missions used an Atlas V. Count the missions table. Variants such as Atlas V 551 are in that family."
+      examples:
+        - "How many missions in the catalog launched on an Atlas V?"
+    custom_extensions:
+      - vendor_name: COA
+        data:
+          data_source_id: missions-tables
+          source_table: missions
+          unit: count
+          return_type: integer
+          ontology_concepts:
+            - Mission

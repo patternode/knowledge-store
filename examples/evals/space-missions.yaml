@@ -281,10 +281,12 @@ questions:
   note: Tianwen-1 launched July 23, 2020; Perseverance July 30, 2020. Needs dates from both documents; tianwen-1-and-zhurong.txt
     only says they arrived in the same window.
 - id: u01
-  kind: unanswerable
+  kind: lookup
   question: How much did the Juno mission cost?
-  answerable: false
-  note: No document gives a mission's cost.
+  expected: "1100"
+  must:
+  - ["1100"]
+  note: No prose document gives a budget. The catalog cell sample_cost_million_usd for juno is 1100, an invented figure.
 - id: u02
   kind: unanswerable
   question: When is the Artemis III crewed Moon landing planned?

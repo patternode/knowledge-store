@@ -459,7 +459,8 @@ Upload large sets in a few batches rather than many single files: each upload ev
 short-lived task. Only one task sweeps at a time; the others exit at once.
 
 To try the stack before your own content is ready, upload the sample in
-[`examples/space-missions`](../../../examples/space-missions).
+[`examples/space-missions`](../../../examples/space-missions), including `tables/`. Those CSVs
+stay tables when the collection's ontology directory holds the mapping.
 
 ---
 
@@ -473,7 +474,7 @@ one. How that ontology is derived, from the documents or from a file you bring, 
 |---|---|---|
 | **Curated** (default) | `ontology_mode = "curated"` | Once at least `discovery.min_docs` documents (5) are in, the sweep discovers a draft ontology, reviews it, and waits for a person to publish it |
 | **Automatic** | `ontology_mode = "auto"` | The first discovered draft is published unreviewed. This suits a trial. |
-| **Your own** | `ontology_dir = "<dir>"` | Terraform uploads your `ontology.ttl` (and optional `shapes.ttl`). The sweep publishes it as the version its `owl:versionInfo` names, and discovery never runs. To change it, edit it, bump `owl:versionInfo`, and apply. |
+| **Your own** | `ontology_dir = "<dir>"` | Terraform uploads your `ontology.ttl` (and optional `shapes.ttl`). The sweep publishes it as the version its `owl:versionInfo` names, and discovery never runs. To change it, edit it, bump `owl:versionInfo`, and apply. Add `mappings.yaml` and, optionally, `metrics.osi.yaml` to turn structured lookup on for this collection only. |
 
 To curate a draft:
 

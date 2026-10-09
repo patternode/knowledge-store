@@ -147,6 +147,10 @@ select {
 .sample.low { border-left: 4px solid var(--calm-border); }
 .sample.medium { border-left: 4px solid var(--action); }
 .sample.high { border-left: 4px solid #2fa59a; }
+.sample-link {
+  display: inline-block; margin: -2px 0 10px; font-size: 0.78rem;
+}
+.sample-link:hover { text-decoration: underline; }
 
 /* conversation */
 main { flex: 1; width: 100%; max-width: 820px; margin: 0 auto; padding: 32px 24px 16px; }
@@ -279,6 +283,7 @@ mark { background: var(--mark); color: var(--mark-text); border-radius: 2px; pad
 .t-graph { --step: var(--q-graph); }
 .t-vector { --step: var(--q-vector); }
 .t-keyword { --step: var(--q-keyword); }
+.t-structured { --step: #2fa59a; }
 .t-read { --step: var(--q-read); }
 .t-ontology { --step: var(--q-ontology); }
 .t-check, .t-repair { --step: var(--calm-border); }
@@ -305,6 +310,7 @@ mark { background: var(--mark); color: var(--mark-text); border-radius: 2px; pad
 .step-summary th { font-weight: 550; text-align: left; }
 .step-summary .kv th { white-space: normal; }
 .step-summary tr.t-graph th, .step-summary tr.t-vector th, .step-summary tr.t-keyword th,
+.step-summary tr.t-structured th,
 .step-summary tr.t-read th, .step-summary tr.t-ontology th, .step-summary tr.t-other th { color: var(--step); }
 .step-swatch { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--step, var(--border)); vertical-align: 1px; }
 .bench-answer { white-space: pre-wrap; }

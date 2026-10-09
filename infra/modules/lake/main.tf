@@ -136,5 +136,5 @@ resource "aws_s3_object" "collection_ontology" {
   key          = "collections/${split("/", each.key)[0]}/config/ontology/${split("/", each.key)[1]}"
   source       = each.value
   etag         = filemd5(each.value)
-  content_type = "text/turtle"
+  content_type = endswith(each.key, ".yaml") ? "application/yaml" : "text/turtle"
 }

@@ -1,0 +1,12 @@
+{
+  "name": "Space missions",
+  "description": "Missions, launch vehicles and what the documents say about them. A catalog of the same missions is in two CSV files. The sample costs there are invented.",
+  "key_terms": ["mission", "launch vehicle", "agency", "gravity assist"],
+  "ontology_base": "https://example.org/missions#",
+  "example_questions": [
+    "[low] Which rocket launched Juno?",
+    "[low] What sample cost does the catalog give Juno? [missions.csv](https://github.com/patternode/knowledge-store/blob/main/examples/space-missions/tables/missions.csv)",
+    "[medium] Which missions launched on an Atlas V?",
+    "[high] Which launched first, Voyager 1 or Voyager 2?"
+  ]
+}

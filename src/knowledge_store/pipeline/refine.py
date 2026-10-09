@@ -47,10 +47,18 @@ def refine_one(lake: Store, meta: dict) -> dict:
 
 
 def refine_all(lake: Store, *, reparse: bool = False, limit: int | None = None) -> list[dict]:
+    from ..structured.bind import mapped_doc_ids
+    mapped = mapped_doc_ids(lake)
     rows = []
     for doc_id, meta in bronze_objects(lake).items():
         if limit is not None and len(rows) >= limit:
             break
+        if doc_id in mapped:
+            if not lake.exists(layout.skipped_key(doc_id)):
+                row = {"doc_id": doc_id, "status": "mapped", "reason": "a mapping names this file, so it is a table, not a document"}
+                put_json(lake, layout.skipped_key(doc_id), row)
+                rows.append(row)
+            continue
         if not reparse and (lake.exists(layout.doc_key(doc_id)) or lake.exists(layout.skipped_key(doc_id))):
             continue
         row = refine_one(lake, meta)

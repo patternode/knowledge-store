@@ -29,6 +29,9 @@ log = logging.getLogger("provided")
 
 ONTOLOGY_KEY = f"{layout.CONFIG_ONTOLOGY}/ontology.ttl"
 SHAPES_KEY = f"{layout.CONFIG_ONTOLOGY}/shapes.ttl"
+MAPPING_KEY = f"{layout.CONFIG_ONTOLOGY}/mappings.yaml"
+METRICS_KEY = f"{layout.CONFIG_ONTOLOGY}/metrics.osi.yaml"
+_EXTRA = (("mappings.yaml", MAPPING_KEY), ("metrics.osi.yaml", METRICS_KEY))
 
 
 def _semver(v: str) -> tuple[int, ...]:
@@ -60,6 +63,14 @@ def apply(lake: Store) -> dict | None:
         if published != hashlib.sha256(ttl).hexdigest():
             raise ValueError(f"the provided ontology changed but its owl:versionInfo is still {version}, which is "
                              "published and immutable: bump the version")
+        for name, key in _EXTRA:
+            if not lake.exists(key):
+                continue
+            digest = hashlib.sha256(lake.get(key)).hexdigest()
+            recorded = (versions.manifest(lake, version).get("sha256") or {}).get(name)
+            if recorded and recorded != digest:
+                raise ValueError(f"the provided {name} changed but owl:versionInfo is still {version}, which is "
+                                 "published and immutable: bump the version")
         if active != version and (active is None or _semver(version) > _semver(active)):
             versions.activate_version(lake, version)
             log.info("activated provided ontology %s", version)
@@ -71,6 +82,9 @@ def apply(lake: Store) -> dict | None:
     with tempfile.TemporaryDirectory() as tmp:
         Path(tmp, "ontology.ttl").write_bytes(ttl)
         Path(tmp, "shapes.ttl").write_bytes(shapes if shapes is not None else writer.shapes_ttl(spec).encode())
+        for name, key in _EXTRA:
+            if lake.exists(key):
+                Path(tmp, name).write_bytes(lake.get(key))
         m = versions.publish(lake, tmp, by="configuration (ontology_dir)",
                              note="provided ontology" + ("" if shapes is not None else "; shapes generated"),
                              activate=True)

@@ -6,7 +6,8 @@ context.client_context.custom["bedrockAgentCoreToolName"] as "<target>___<tool>"
 Two toolsets, one per Lambda (TOOLSET), because they need different networks:
 
     graph      list_collections, describe_ontology, search_entities, list_entities, get_entity,
-               neighbourhood, find_paths. With NEPTUNE_ENDPOINT set they query Neptune
+               neighbourhood, find_paths, describe_structured, lookup_rows, aggregate. With
+               NEPTUNE_ENDPOINT set the entity tools query Neptune
                (graph/sparql.py), so this Lambda runs in the VPC beside it, with no route out.
     passages   search_passages, read_passages. Search goes to the Knowledge Base when
                KNOWLEDGE_BASE_ID is set (tools/passages.py), so this Lambda runs outside the VPC.
@@ -78,11 +79,28 @@ TOOLS = {
                       "citing it.",
                       {"collection": {"type": "string"}, "ids": {"type": "array", "items": {"type": "string"}}},
                       ["collection", "ids"]),
+    "describe_structured": ("The mapped tables and named metrics of a collection: each type, its key, its columns, "
+                            "its source and the snapshot it is bound to. Read it before a filter or a total.",
+                            {"collection": {"type": "string"}}, ["collection"]),
+    "lookup_rows": ("Rows of one mapped type. A filter is an attribute, an operator (eq, neq, lt, lte, gt, gte, prefix) "
+                    "and a value. Each value comes back with its cell id. Pass cell_ids to re-read cells for a citation check.",
+                    {"collection": {"type": "string"}, "type": {"type": "string"},
+                     "filters": {"type": "array", "items": {"type": "object"}},
+                     "limit": {"type": "integer"},
+                     "cell_ids": {"type": "array", "items": {"type": "string"}}},
+                    ["collection"]),
+    "aggregate": ("A figure from a mapped table: a metric name, or a type with op (count, sum, min, max, avg), "
+                  "an attribute, one optional group_by, and the same filters as lookup_rows. The figure is recomputed "
+                  "from the snapshot.",
+                  {"collection": {"type": "string"}, "metric": {"type": "string"}, "type": {"type": "string"},
+                   "op": {"type": "string"}, "attribute": {"type": "string"}, "group_by": {"type": "string"},
+                   "filters": {"type": "array", "items": {"type": "object"}}, "snapshot": {"type": "string"}},
+                  ["collection"]),
 }
 
 TOOLSETS = {
     "graph": ["list_collections", "describe_ontology", "search_entities", "list_entities", "get_entity",
-              "neighbourhood", "find_paths"],
+              "neighbourhood", "find_paths", "describe_structured", "lookup_rows", "aggregate"],
     "passages": ["search_passages", "read_passages"],
 }
 TOOLSETS["all"] = TOOLSETS["graph"] + TOOLSETS["passages"]
@@ -136,6 +154,18 @@ def call(root, name: str, args: dict) -> dict:
         v = json.loads(store.get(layout.ONTOLOGY_ACTIVE))["version"]
         key = f"{layout.ontology_version_prefix(v)}/renditions/agent/ontology.md"
         return {"collection": cid, "version": v, "ontology": store.get(key).decode()}
+    if name in ("describe_structured", "lookup_rows", "aggregate"):
+        from ..structured import query
+        if name == "describe_structured":
+            return query.describe(store)
+        if name == "lookup_rows":
+            return query.lookup_rows(store, args.get("type") or "", args.get("filters") or [],
+                                     limit=int(args.get("limit") or query.ROW_CAP), private=private,
+                                     cell_ids=args.get("cell_ids") or None)
+        return query.aggregate(store, metric=args.get("metric") or "", type_name=args.get("type") or "",
+                               op=args.get("op") or "", attribute=args.get("attribute") or "",
+                               group_by=args.get("group_by") or "", filters=args.get("filters") or [],
+                               private=private, snapshot=args.get("snapshot") or "")
     if name in TOOLSETS["passages"]:
         idx = index.load(store, cid)
         if name == "read_passages":

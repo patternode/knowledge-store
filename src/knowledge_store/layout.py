@@ -13,6 +13,9 @@
     gold/<version>/extractions/<doc_id>.json    the model's result, repairs and usage, for audit
     gold/<version>/rejected/<doc_id>.json   what failed validation and why
     gold/<version>/candidates/<doc_id>.jsonl    terms the ontology has no word for, seen in this document
+    gold/<version>/structured/binding.json      the snapshot each mapped table is bound to
+    gold/<version>/structured/<source>/<snapshot>.nq    one table snapshot, as RDF
+    gold/<version>/structured/<source>/<snapshot>.jsonl the cells of that snapshot, for the citation check
     gold/<version>/index/*.json             projection the portal serves (rebuildable from graph/)
     ontology/versions/<version>/ontology.ttl, shapes.ttl, manifest.json   immutable once published
     ontology/active.json                    {"version": ...}: the version extraction runs against
@@ -109,6 +112,18 @@ def rejected_key(version: str, doc_id: str) -> str:
 
 def candidates_key(version: str, doc_id: str) -> str:
     return f"{GOLD}/{version}/candidates/{doc_id}.jsonl"
+
+
+def structured_binding_key(version: str) -> str:
+    return f"{GOLD}/{version}/structured/binding.json"
+
+
+def structured_graph_key(version: str, source: str, snapshot: str) -> str:
+    return f"{GOLD}/{version}/structured/{source}/{snapshot}.nq"
+
+
+def structured_cells_key(version: str, source: str, snapshot: str) -> str:
+    return f"{GOLD}/{version}/structured/{source}/{snapshot}.jsonl"
 
 
 def index_key(version: str, name: str) -> str:

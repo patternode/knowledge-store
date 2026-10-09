@@ -16,8 +16,8 @@
 <https://w3id.org/knowledge-store/core>
     a owl:Ontology ;
     rdfs:label "Knowledge Store core vocabulary"@en ;
-    owl:versionInfo "1.0.0" ;
-    owl:versionIRI <https://w3id.org/knowledge-store/core/1.0.0> ;
+    owl:versionInfo "1.1.0" ;
+    owl:versionIRI <https://w3id.org/knowledge-store/core/1.1.0> ;
     rdfs:seeAlso <https://github.com/patternode/knowledge-store/blob/main/docs/core-vocabulary.md> .
 
 ks:Document a owl:Class ;
@@ -38,12 +38,19 @@ ks:ExtractionRun a owl:Class ;
 ks:Assertion a owl:Class ;
     rdfs:subClassOf rdf:Statement ;
     rdfs:label "Assertion"@en ;
-    rdfs:comment "A reified attribute or relation, carrying the passages it is stated in and the run that extracted it."@en .
+    rdfs:comment "A reified attribute or relation, carrying the passages or the cells it is stated in and the run that recorded it."@en .
+
+ks:Cell a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "Cell"@en ;
+    rdfs:comment "One column of one row of one table snapshot: the unit a table fact cites."@en .
 
 ks:partOf a owl:ObjectProperty ; rdfs:domain ks:Passage ; rdfs:range ks:Document .
 ks:mentionedIn a owl:ObjectProperty ; rdfs:range ks:Passage ;
     rdfs:comment "An entity is named in this passage."@en .
 ks:extractedFrom a owl:ObjectProperty ; rdfs:subPropertyOf prov:wasDerivedFrom ; rdfs:domain ks:Assertion ; rdfs:range ks:Passage .
+ks:recordedIn a owl:ObjectProperty ; rdfs:subPropertyOf prov:wasDerivedFrom ; rdfs:domain ks:Assertion ; rdfs:range ks:Cell ;
+    rdfs:comment "An assertion is the value of this cell. A sibling of ks:extractedFrom, for a table rather than a passage."@en .
 ks:extractedBy a owl:ObjectProperty ; rdfs:subPropertyOf prov:wasGeneratedBy ; rdfs:range ks:ExtractionRun .
 ks:document a owl:ObjectProperty ; rdfs:range ks:Document .
 
@@ -52,6 +59,11 @@ ks:scope a owl:DatatypeProperty ; rdfs:domain ks:Document ; rdfs:range xsd:strin
     rdfs:comment "public or private: private documents' facts are served to private-scope users only."@en .
 ks:seq a owl:DatatypeProperty ; rdfs:domain ks:Passage ; rdfs:range xsd:integer .
 ks:contentHash a owl:DatatypeProperty ; rdfs:range xsd:string .
+ks:column a owl:DatatypeProperty ; rdfs:domain ks:Cell ; rdfs:range xsd:string .
+ks:cellValue a owl:DatatypeProperty ; rdfs:domain ks:Cell ; rdfs:range xsd:string .
+ks:snapshot a owl:DatatypeProperty ; rdfs:domain ks:Cell ; rdfs:range xsd:string ;
+    rdfs:comment "The content hash of the table this cell was copied from."@en .
+ks:rowKey a owl:DatatypeProperty ; rdfs:domain ks:Cell ; rdfs:range xsd:string .
 ks:modelId a owl:DatatypeProperty ; rdfs:domain ks:ExtractionRun ; rdfs:range xsd:string .
 ks:promptVersion a owl:DatatypeProperty ; rdfs:domain ks:ExtractionRun ; rdfs:range xsd:string .
 ks:ontologyVersion a owl:DatatypeProperty ; rdfs:range xsd:string .
