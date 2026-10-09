@@ -122,8 +122,8 @@ collection where questions name things; passage search then falls back to keywor
 
 CSV and JSON are parsed as text and extracted like any other document. Filters, totals, and
 values that must match a cell need a source that keeps its schema. The draft for that lookup,
-including a Holmes catalog whose answers cite CSV cells as well as passages, and where AWS
-Context Ontology Accelerator fits a later live source, is
+including the space-missions catalog whose answers cite CSV cells as well as passages, and where
+AWS Context Ontology Accelerator fits a later live source, is
 [Structured lookup](structured.md).
 
 ## Evaluation

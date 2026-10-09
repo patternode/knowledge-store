@@ -35,15 +35,16 @@ still content-addresses the bytes, and that hash is the snapshot. Refine and ext
 file the mapping names. A CSV the mapping does not name stays prose, so a document that
 happens to contain commas is undisturbed.
 
-Structured and unstructured are two readings of one landing tree. The Holmes sample is both:
-story files from `examples/sherlock-holmes/fetch.py`, and two catalog CSVs beside them. A
-question cites a passage from a story and a cell from a CSV. See
-[examples/sherlock-holmes](../../examples/sherlock-holmes/README.md).
+Structured and unstructured are two readings of one landing tree. The space-missions sample is
+both: the prose and JSON documents already in that corpus, and two invented catalog CSVs beside
+them. A question cites a passage from a document and a cell from a CSV. See
+[examples/space-missions](../../examples/space-missions/README.md). The Sherlock Holmes folder
+stays a fetch of the stories only.
 
 | Mapping field | For a CSV in the lake | Later, for a live table |
 |---|---|---|
-| `location` | Path of the file (`tables/stories.csv`) | `coa:<dataSourceId>` once that table is an approved accelerator source |
-| `logical_table` | The name R2RML and the metric use (`stories`) | The same name. The live table has to be called this |
+| `location` | Path of the file (`tables/missions.csv`) | `coa:<dataSourceId>` once that table is an approved accelerator source |
+| `logical_table` | The name R2RML and the metric use (`missions`) | The same name. The live table has to be called this |
 | `key` | Columns that identify a row | Unchanged |
 | `scope` | `public` or `private`, the same flag documents use | Unchanged |
 
@@ -56,21 +57,21 @@ People edit a mapping next to the ontology master. The master stays OWL. The map
 table fills which class, and it is published with the version, immutable once published.
 
 ```yaml
-# ontology/mappings.yaml, as in examples/sherlock-holmes
+# ontology/mappings.yaml, as in examples/space-missions
 tables:
-  stories:
-    location: tables/stories.csv
-    logical_table: stories
-    class: Story
-    key: [story_id]
+  missions:
+    location: tables/missions.csv
+    logical_table: missions
+    class: Mission
+    key: [mission_id]
     columns:
-      title: {attribute: title}
-      client: {attribute: client}
-      strand_issue: {relation: publishedIn, range: StrandIssue, match: issueId}
+      name: {attribute: name}
+      sample_cost_million_usd: {attribute: sampleCostMillionUsd, datatype: xsd:integer}
+      vehicle_id: {relation: launchedOn, range: LaunchVehicle, match: vehicleId}
 ```
 
-The worked files, including the issue table the relation joins to, are
-[`examples/sherlock-holmes/ontology/mappings.yaml`](../../examples/sherlock-holmes/ontology/mappings.yaml).
+The worked files, including the launch-vehicle table the relation joins to, are
+[`examples/space-missions/ontology/mappings.yaml`](../../examples/space-missions/ontology/mappings.yaml).
 
 `knowledge-store ontology publish` checks the mapping the way review checks an edit. A class,
 attribute, relation, or datatype the ontology does not have is refused. A column datatype that
@@ -83,11 +84,11 @@ The release renders the mapping, as it renders every other consumer form
 | Rendition | For |
 |---|---|
 | `structured/mapping.json` | The sweep and the tools: class, key, columns, logical table |
-| `r2rml/mapping.ttl` | The same triples maps the accelerator writes for Ontop. Generated, never edited. The Holmes sample checks an illustrative copy in [`ontology/r2rml-mapping.ttl`](../../examples/sherlock-holmes/ontology/r2rml-mapping.ttl) |
+| `r2rml/mapping.ttl` | The same triples maps the accelerator writes for Ontop. Generated, never edited. The space-missions sample checks an illustrative copy in [`ontology/r2rml-mapping.ttl`](../../examples/space-missions/ontology/r2rml-mapping.ttl) |
 
-Metrics are a second curated file, not a rendition. The Holmes sample uses the accelerator's
+Metrics are a second curated file, not a rendition. The space-missions sample uses the accelerator's
 OSI v1.0 import, with `vendor_name: COA` under `custom_extensions`
-([`metrics.osi.yaml`](../../examples/sherlock-holmes/ontology/metrics.osi.yaml)). The
+([`metrics.osi.yaml`](../../examples/space-missions/ontology/metrics.osi.yaml)). The
 expression is a complete read-only `SELECT`. Publish checks that its `source_table` is a
 `logical_table` in the mapping and that each `ontology_concepts` entry is a class. The local
 checker recomputes the figure from the snapshot. The `SELECT` is what a later import runs.
@@ -285,8 +286,8 @@ Two artifacts from the accelerator's repository, and the rule for when the rest 
 The mapping rendition is R2RML, the file the accelerator's ontology engine writes and its
 virtual knowledge graph reads. One triples map per table, the key as an IRI template
 (`rr:template`), each column a predicate (`rr:column`), a foreign key a join
-(`rr:joinCondition`). The Holmes file
-[`r2rml-mapping.ttl`](../../examples/sherlock-holmes/ontology/r2rml-mapping.ttl) is that shape.
+(`rr:joinCondition`). The space-missions file
+[`r2rml-mapping.ttl`](../../examples/space-missions/ontology/r2rml-mapping.ttl) is that shape.
 Publish generates it from `mappings.yaml`. Ontop is the program that executes it against a live
 database, and this module does not run Ontop to answer from a CSV.
 
@@ -294,8 +295,8 @@ The metric file is OSI v1.0 with a `custom_extensions` block of `vendor_name: CO
 `packages/metric-service/examples/sample-osi-import.yaml`. It carries `data_source_id`,
 `source_table`, and `ontology_concepts` (the accelerator stores the last as
 `ov:governedMetricFor`). The expression is a complete read-only `SELECT`, which is what the
-accelerator's validator accepts. The Holmes file
-[`metrics.osi.yaml`](../../examples/sherlock-holmes/ontology/metrics.osi.yaml) is that shape.
+accelerator's validator accepts. The space-missions file
+[`metrics.osi.yaml`](../../examples/space-missions/ontology/metrics.osi.yaml) is that shape.
 The `aggregate` tool runs the metric by name and the checker recomputes the figure from the
 snapshot. An ad hoc aggregate stays inside the operators and the single group-by the tool
 schema lists.
@@ -354,7 +355,7 @@ Context, and this module keeps its document record, its citation check, and its 
    does now.
 2. Bind every CSV the mapping names. Same landing adapter, no new source type. `ks:Cell` in
    core 1.1.0, `describe_structured`, `lookup_rows`, `aggregate` over the snapshot, and cell
-   checks in `agent/grounding.py`. The Holmes catalog is the fixture. Document extraction is
+   checks in `agent/grounding.py`. The space-missions catalog is the fixture. Document extraction is
    untouched.
 3. Run a named metric by recomputing its `SELECT` against the snapshot, and show it as its own
    step.
