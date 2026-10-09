@@ -6,12 +6,17 @@
  *
  * Sign-in, the API client and the helpers are in common.js, which the ontology page shares.
  *
+ * The page opens as the chat alone. Demonstrate, in the header, shows the sample questions and
+ * the workbench; User view hides them again. The choice is remembered in this browser.
+ *
  * Sample questions sit to the left of the chat, grouped low, medium and high, from the collection's
  * profile (or three general ones when it has none). Choosing one fills the box and does not send it.
  *
  * The workbench (the panel beside the chat) shows the selected question's steps while the agent
  * works: each search, read and check, polled from GET /api/chat while it runs, then the ontology
  * terms the answer used, and what the question cost, split by token kind and by model call.
+ * A step's input says whether that call was a knowledge graph query, a vector query, or a
+ * keyword passage search.
  * A question has a mode: "ask" answers it; "gaps" asks the analyst what it
  * would take to answer it (ontology extensions, data, missed extraction), which a curator can keep
  * as an ontology request.
@@ -23,6 +28,13 @@ function main() {
   const S = { collections: [], id: null, private: false, gen: 0, busy: false, turns: [], seq: 0, selected: null };
   const HISTORY_TURNS = 6, POLL_MS = 1500, POLL_LIMIT_MS = 10 * 60 * 1000;
   const BENCH_KEY = 'ks.chat.bench';
+  const DEMO_KEY = 'ks.chat.demo';
+  const GRAPH_TOOLS = new Set(['search_entities', 'list_entities', 'get_entity', 'neighbourhood', 'find_paths']);
+  const SOURCE_LABEL = {
+    graph: 'Knowledge graph query',
+    vector: 'Vector query',
+    keyword: 'Keyword passage search',
+  };
   const secs = (ms) => `${(Number(ms || 0) / 1000).toFixed(1)} s`;
   const plural = (k, one, many) => `${k} ${k === 1 ? one : (many || one + 's')}`;
 
@@ -410,12 +422,22 @@ function main() {
     return h('a', { class: `term ${strongest}`, href: ontologyLink(kind, name), title: `${name}: ${levels.map((l) => LEVEL_LABEL[l]).join(', ')}` },
       h('span', { text: name }), h('span', { class: 'term-level', text: levels.map((l) => LEVEL_LABEL[l]).join(' · ') }));
   }
+  function querySource(s) {
+    if (s.source === 'graph' || s.source === 'vector' || s.source === 'keyword') return s.source;
+    const tool = str(s.tool);
+    if (tool === 'search_passages') return 'keyword';
+    if (GRAPH_TOOLS.has(tool)) return 'graph';
+    return '';
+  }
   function stepItem(s) {
     const terms = Object.entries(s.terms || {}).flatMap(([k, names]) => (names || []).map((n) => h('span', { class: 'term-mini', title: KIND_LABEL[k] || k, text: n })));
+    const source = querySource(s);
     const input = s.input && Object.keys(s.input).length
-      ? h('details', { class: 'step-input' }, h('summary', { text: 'Input' }), h('pre', { text: JSON.stringify(s.input, null, 1) })) : null;
+      ? h('details', { class: `step-input${source ? ' ' + source : ''}` },
+        h('summary', { text: SOURCE_LABEL[source] || 'Input' }),
+        h('pre', { text: JSON.stringify(s.input, null, 1) })) : null;
     const spend = s.kind === 'model' && s.usd != null ? `${usdText(s.usd)} · ` : '';
-    return h('li', { class: `step ${str(s.kind)}${s.error ? ' error' : ''}` },
+    return h('li', { class: `step ${str(s.kind)}${source ? ' q-' + source : ''}${s.error ? ' error' : ''}` },
       h('span', { class: 'step-dot', 'aria-hidden': 'true' }),
       h('div', { class: 'step-body' },
         h('p', { class: 'step-title' }, h('span', { text: str(s.title) }),
@@ -521,6 +543,18 @@ function main() {
     renderBench();
   }
   const wide = () => matchMedia('(min-width: 1280px)').matches;
+  function setDemo(on, remember) {
+    $('#workspace').classList.toggle('demo-off', !on);
+    $('#samples').hidden = !on;
+    const btn = $('#demo');
+    btn.setAttribute('aria-pressed', String(on));
+    btn.textContent = on ? 'User view' : 'Demonstrate';
+    btn.title = on ? 'Hide the sample questions and the workbench' : 'Show the sample questions and the workbench';
+    $('#bench-open').hidden = !on;
+    if (on) setBench(wide(), false);
+    else setBench(false, false);
+    if (remember) lstore.set(DEMO_KEY, on ? 'on' : 'off');
+  }
   function setBench(open, remember) {
     $('#bench').hidden = !open;
     $('#workspace').classList.toggle('bench-off', !open);
@@ -571,7 +605,7 @@ function main() {
     const c = current();
     const fromProfile = Array.isArray(c.example_questions) && c.example_questions.length > 0;
     const items = sampleItems(c);
-    $('#samples').hidden = false;
+    $('#samples').hidden = $('#workspace').classList.contains('demo-off');
     $('#samples-note').textContent = fromProfile
       ? 'From this collection. Choosing one fills the question box. It is not sent until you press Send.'
       : 'Examples for any collection. Choosing one fills the question box. It is not sent until you press Send.';
@@ -606,6 +640,12 @@ function main() {
     });
     $('#coll-select').addEventListener('change', (e) => switchCollection(e.target.value));
     for (const r of document.querySelectorAll('input[name=mode]')) r.addEventListener('change', showMode);
+    $('#demo').addEventListener('click', () => {
+      const on = $('#demo').getAttribute('aria-pressed') !== 'true';
+      setDemo(on, true);
+      if (on && wide()) $('#bench-close').focus();
+      else if (!on) $('#question').focus();
+    });
     $('#bench-close').addEventListener('click', () => { setBench(false, true); $('#bench-open').focus(); });
     $('#bench-open').addEventListener('click', () => {
       const open = $('#bench').hidden;
@@ -656,8 +696,8 @@ function main() {
     notice();
     showCollection();
     $('#ask').hidden = false;
-    $('#bench-open').hidden = false;
-    setBench(wide() && lstore.get(BENCH_KEY) !== 'closed');
+    $('#demo').hidden = false;
+    setDemo(lstore.get(DEMO_KEY) === 'on', false);
     renderBench();
     showMode();
     // ?ask= fills the box (the ontology page links here with a question), and never sends it

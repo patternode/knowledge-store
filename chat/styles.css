@@ -111,6 +111,7 @@ select {
 /* samples, the chat, and the workbench */
 .workspace { flex: 1; display: grid; grid-template-columns: 260px minmax(0, 1fr) 400px; align-items: start; min-width: 0; }
 .workspace.bench-off { grid-template-columns: 260px minmax(0, 1fr); }
+.workspace.demo-off { grid-template-columns: minmax(0, 1fr); }
 .chat-col { min-width: 0; display: flex; flex-direction: column; min-height: calc(100vh - 64px); }
 
 .samples {
@@ -256,6 +257,9 @@ mark { background: var(--mark); color: var(--mark-text); border-radius: 2px; pad
 .step-terms { margin-top: 3px !important; display: flex; flex-wrap: wrap; gap: 4px; }
 .term-mini { font-size: 0.72rem; background: var(--surface-2); border-radius: 999px; padding: 0 7px; color: var(--muted); }
 .step-input summary { cursor: pointer; color: var(--muted); font-size: 0.78rem; }
+.step-input.graph summary { color: var(--action); }
+.step-input.vector summary { color: #2fa59a; }
+.step-input.keyword summary { color: var(--focus); }
 .step-input pre { margin: 4px 0 0; padding: 6px 8px; background: var(--surface-2); border-radius: 6px; font-size: 0.75rem; white-space: pre-wrap; }
 .terms { display: flex; flex-wrap: wrap; gap: 6px; }
 .term {
@@ -290,13 +294,14 @@ textarea {
 /* below 1280px the workbench is a drawer, and the samples stay beside the chat */
 @media (max-width: 1279px) {
   .workspace, .workspace.bench-off { grid-template-columns: 240px minmax(0, 1fr); }
+  .workspace.demo-off { grid-template-columns: minmax(0, 1fr); }
   .bench { position: fixed; top: 0; right: 0; bottom: 0; width: min(440px, 100%); height: auto; z-index: 20;
     box-shadow: -8px 0 24px rgba(0, 0, 0, 0.25); }
 }
 
 /* below 800px the samples sit above the chat */
 @media (max-width: 799px) {
-  .workspace, .workspace.bench-off { grid-template-columns: minmax(0, 1fr); }
+  .workspace, .workspace.bench-off, .workspace.demo-off { grid-template-columns: minmax(0, 1fr); }
   .samples { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
 }
 
