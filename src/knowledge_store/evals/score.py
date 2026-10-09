@@ -48,6 +48,9 @@ class Question:
     private: bool = False
     expected: str = ""
     note: str = ""
+    # How an offline smoke test reads this question from a mapped table. The scorer ignores it.
+    # A live eval still scores the answer text; source names may be the logical table.
+    structured: dict | None = None
 
 
 @dataclass

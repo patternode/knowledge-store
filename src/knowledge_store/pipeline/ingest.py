@@ -58,6 +58,13 @@ def ingest_source(lake: Store, source: SourceConfig, *, limit: int | None = None
         if lake.exists(meta_key):
             stats.duplicate += 1
             status = "duplicate"
+            # The same bytes under a second name stay one object. Bind has to see every name:
+            # the first upload is often not the path the mapping names.
+            meta = json.loads(lake.get(meta_key))
+            keys = list(dict.fromkeys([*(meta.get("source_keys") or [meta.get("source_key")]), item.key]))
+            if keys != meta.get("source_keys"):
+                meta["source_keys"] = keys
+                put_json(lake, meta_key, meta)
         else:
             ext = item.extension()
             lake.put(layout.bronze_content_key(source.name, digest, ext), data,
@@ -65,6 +72,7 @@ def ingest_source(lake: Store, source: SourceConfig, *, limit: int | None = None
             put_json(lake, meta_key, {
                 "doc_id": digest, "source": source.name, "adapter": source.type, "scope": source.scope,
                 "source_key": item.key, "source_uri": item.uri, "source_version": item.version,
+                "source_keys": [item.key],
                 "name": item.name, "ext": ext, "content_type": item.content_type, "bytes": len(data),
                 "metadata": item.metadata, "fetched_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
             })
