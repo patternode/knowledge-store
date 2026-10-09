@@ -12,6 +12,8 @@
     GET  /api/paths?from=&to=&hops=&limit=
     GET  /api/drafts                 discovery and revision drafts awaiting curation
     GET  /api/document?doc=          a link to open a source document (its URL, or a short-lived link)
+    GET  /api/table?location=        a short-lived link to the bound snapshot of a mapped table, by the
+                                     location its mapping names (tables/<name>.csv), in the caller's scope
     POST /api/chat {question, history, mode, about}   -> {id}; answered asynchronously
     GET  /api/chat?id=               -> {status, steps, answer, ...}: status is pending, running
                                         (steps so far), done or failed
@@ -140,6 +142,25 @@ def document_link(lk, doc_id: str, private: bool) -> dict | None:
     url = root.s3.generate_presigned_url("get_object", ExpiresIn=600, Params={
         "Bucket": root.bucket, "Key": key, "ResponseContentDisposition": f'inline; filename="{name}"'})
     return {**out, "url": url}
+
+
+def table_link(lk, location: str, private: bool) -> dict | None:
+    """A short-lived link to the snapshot a mapped table is bound to, found by the location its
+    mapping names. None if no table has that location, or the caller may not read it."""
+    from ..structured.bind import binding
+    hit = next((b for b in binding(lk).values() if b.get("location") == location), None)
+    if not hit or not (private or hit.get("scope", "public") == "public"):
+        return None
+    meta_key = layout.bronze_meta_key(hit["source"], hit["snapshot"])
+    root = getattr(lk, "whole", lk)
+    if not lk.exists(meta_key) or not hasattr(root, "s3"):
+        return {"location": location, "name": location.rsplit("/", 1)[-1]}
+    meta = json.loads(lk.get(meta_key))
+    key = getattr(lk, "prefix", "") + layout.bronze_content_key(hit["source"], hit["snapshot"], meta.get("ext", ""))
+    name = location.rsplit("/", 1)[-1].replace('"', "")
+    url = root.s3.generate_presigned_url("get_object", ExpiresIn=600, Params={
+        "Bucket": root.bucket, "Key": key, "ResponseContentDisposition": f'inline; filename="{name}"'})
+    return {"location": location, "name": name, "url": url}
 
 
 def _json(lake_, key, default=None):
@@ -284,6 +305,9 @@ def handler(event, context):
             if not qs.get("id") or "/" in qs["id"] or not lk.exists(key):
                 return reply(404, {"error": "no such draft"})
             return reply(200, {"id": qs["id"], "ttl": lk.get(key).decode()})
+        if path == "/table":
+            link = table_link(lk, qs.get("location", ""), private)
+            return reply(200, link) if link else reply(404, {"error": "no such table"})
         if path == "/document":
             link = document_link(lk, qs.get("doc", ""), private)
             return reply(200, link) if link else reply(404, {"error": "no such document"})

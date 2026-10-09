@@ -302,10 +302,15 @@ def query_cost(steps, *, model_id: str | None, usage: dict | None = None, provid
             reported.append(u)
         calls.append({"n": s.get("n"), "title": s.get("title"),
                       "usd": s.get("usd"), "tokens": sum(int(u.get(k) or 0) for k in USAGE_KEYS) if u else None})
+    # Per-call usage is the finer record, but a call can go unreported (structured output fires no
+    # per-call hook, and neither does a call that raised), so the larger of the two totals is kept.
+    whole = _sum_usage([usage]) if isinstance(usage, dict) and usage else None
     if reported:
         total = _sum_usage(reported)
-    elif isinstance(usage, dict) and usage:
-        total = _sum_usage([usage])
+        if whole and sum(whole.values()) > sum(total.values()):
+            total = whole
+    elif whole:
+        total = whole
     else:
         return None
     priced = ledger.cost_parts(model_id or "", total, provider=provider) if model_id else None

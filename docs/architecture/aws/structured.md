@@ -123,8 +123,21 @@ the bind report rather than invented.
 SHACL runs on the snapshot graph with the ontology shapes plus the cell shape below. A snapshot
 that fails is not activated. The previous snapshot stays readable: a citation names the snapshot
 it was checked against, the way a passage citation names a document id. New answers use the
-snapshot `ontology/active` binding points at. Bind is skipped when the snapshot hash is
-unchanged.
+snapshot `ontology/active` binding points at. Bind keeps the held snapshot only when three
+things are unchanged: the file's hash, the table's mapping (the binding stores a hash of it) and
+the table's scope. A column mapped in a later version, or a table made private, is bound again.
+
+Values are stored in one canonical form: `1,100` and `$1,100` are `1100`, `14 July 2023` is
+`2023-07-14`. The cell keeps the file's text as `raw`. Filters, totals and the citation check
+all read the canonical value. A value that is not its column's type is a miss in the bind
+report; its cell is kept but marked invalid, a total leaves it out and says how many it
+skipped, and a claim cannot cite it.
+
+Every key column gets a cell, so a filter can name the key and a count sees every row, even a
+row whose other columns are empty. A key of several columns joins its parts with commas, each
+part's own commas escaped, so `x,1` and `x,2` stay two rows. A file is refused, and reported
+as missing, when it names a column twice, when it is not UTF-8, or when it passes 50 MB or
+200,000 rows. Headers are matched with their surrounding spaces trimmed.
 
 Copied rows join the graph the tools already query, so `neighbourhood` and `find_paths` cross a
 document fact and a table fact. The projection indexes them with the document entities. A table
@@ -176,16 +189,22 @@ A claim may cite either kind:
 | Citation | Checked by |
 |---|---|
 | Passage id and a quote | The passage exists, the caller may read it, the quote occurs in it, the quote is long enough |
-| Cell id and a value | The cell exists in that snapshot, the caller may read the source, the value equals the cell. Numbers compare as decimals. Dates compare as dates |
-| Metric or aggregate, with its filters | The checker recomputes the figure over that snapshot and those filters, and the stated figure matches |
+| Cell id and a value | The cell exists in that snapshot, the caller may read the source, the cell holds a valid value, and the value equals it. Numbers compare as numbers (`1,100` is 1100). Dates compare as dates |
+| Metric or aggregate, with its filters | The checker recomputes the figure from what this citation says (its metric, or its type, attribute, filters and group-by) over that snapshot, and the stated figure matches. The recomputed id must be the id the citation names. An average may be stated rounded to the places it gives |
 
 A claim that mixes a passage and a cell must pass both checks. A cell citation does not pass
 the twelve-character quote rule, and a passage quote does not stand in for a cell. The guardrail's
-contextual grounding check still sees the claim against the returned text, which for a cell is
-the column name and the value. One repair turn, as today. A claim with nothing left is dropped.
+contextual grounding check sees the claim against what it cites: for a cell, the table, the row
+key and the whole row, so the entity the value belongs to is in the source; for a figure, what
+it was computed over and the figure. One repair turn, as today. A claim with nothing left is
+dropped.
 
 The citation id in an answer is `c:<source>/<snapshot>/<logical_table>/<key>/<column>` for a
-cell and `m:<metric>/<snapshot>` for a metric, next to `p:<passage id>`. The logical table is
+cell, `m:<metric>/<snapshot>` for a named metric and `m:<op>:<digest>/<snapshot>` for an ad hoc
+aggregate, next to `p:<passage id>`. The digest covers the type, the attribute, the filters and
+the group-by, so two different totals over one snapshot never share an id. One group of a grouped
+figure is cited by the figure's id with `group_by` and `group`. A public caller is not told a
+private table exists: `describe_structured` leaves it, and every metric over it, out. The logical table is
 the one the mapping names, so the space-missions catalog cites
 `c:missions-tables/<snapshot>/missions/juno/vehicle_id`.
 

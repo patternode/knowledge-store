@@ -24,7 +24,7 @@ import logging
 import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from rdflib import RDF, RDFS, Dataset, URIRef
+from rdflib import RDF, RDFS, Dataset
 
 from .. import layout, ledger
 from ..config import Profile

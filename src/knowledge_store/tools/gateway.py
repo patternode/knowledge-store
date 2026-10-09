@@ -157,10 +157,10 @@ def call(root, name: str, args: dict) -> dict:
     if name in ("describe_structured", "lookup_rows", "aggregate"):
         from ..structured import query
         if name == "describe_structured":
-            return query.describe(store)
+            return query.describe(store, private=private)
         if name == "lookup_rows":
             return query.lookup_rows(store, args.get("type") or "", args.get("filters") or [],
-                                     limit=int(args.get("limit") or query.ROW_CAP), private=private,
+                                     limit=args.get("limit") or query.ROW_CAP, private=private,
                                      cell_ids=args.get("cell_ids") or None)
         return query.aggregate(store, metric=args.get("metric") or "", type_name=args.get("type") or "",
                                op=args.get("op") or "", attribute=args.get("attribute") or "",

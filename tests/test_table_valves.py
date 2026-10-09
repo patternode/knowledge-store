@@ -108,7 +108,10 @@ def test_a_table_query_is_grounded_against_the_cell_or_the_figure(tmp_path):
         citations=[Citation(cell_id=cell["cell"], value="1100")])])
     out = app.answer(question, "missions", None, Tools(root), guardrail=guard, agent_factory=lambda: Scripted(stated))
     assert not out["abstained"] and out["sources"][0]["kind"] == "cell"
-    assert guard.calls == [(question, stated.claims[0].text, ["sample_cost_million_usd: 1100"])]
+    # the guardrail sees the whole row, so the entity the value belongs to is in its source
+    (q, text, sources), = guard.calls
+    assert (q, text) == (question, stated.claims[0].text)
+    assert "row juno" in sources[0] and "name: Juno" in sources[0] and "sample_cost_million_usd: 1100" in sources[0]
     assert any(s["kind"] == "tool" and s.get("tool") == "describe_structured" for s in out["steps"])
 
     figure = aggregate(lake, metric="atlas_v_launches")
@@ -119,4 +122,7 @@ def test_a_table_query_is_grounded_against_the_cell_or_the_figure(tmp_path):
         citations=[Citation(metric_id=figure["id"], figure="5")])])
     out = app.answer(count_q, "missions", None, Tools(root), guardrail=guard, agent_factory=lambda: Scripted(counted))
     assert not out["abstained"] and out["sources"][0]["kind"] == "metric"
-    assert guard.calls == [(count_q, counted.claims[0].text, ["5"])]
+    (q, text, sources), = guard.calls
+    assert (q, text) == (count_q, counted.claims[0].text)
+    assert sources[0].startswith("The atlas_v_launches") and "vehicle_family eq Atlas V" in sources[0]
+    assert sources[0].endswith(" is 5.")
