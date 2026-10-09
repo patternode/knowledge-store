@@ -29,8 +29,10 @@ MEDIA = ROOT / "media"
 NARRATION = ROOT / "assets" / "narration"
 STAGING = Path("/tmp/ks-narrated")
 
-VOICE = "en-US-ChristopherNeural"
+VOICE = "en-IE-ConnorNeural"
 RATE = "-10%"
+# 80% of the raw take. That is the level approved on the Connor sample.
+VOLUME = 0.8
 HEAD = 0.8
 PAUSE = 0.45
 # When a take would run past the clip, speed it enough to leave this breath.
@@ -155,6 +157,7 @@ def fit_speech(speech: Path, duration: float, dest: Path) -> float:
         "ffmpeg", "-y", "-loglevel", "error", "-i", str(src),
         "-filter:a",
         (
+            f"volume={VOLUME},"
             f"aformat=sample_fmts=s16:sample_rates={SAMPLE_RATE}:channel_layouts=stereo,"
             f"adelay={delay_ms}|{delay_ms},"
             f"apad=whole_dur={duration:.6f},"
