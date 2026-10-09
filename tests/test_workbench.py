@@ -192,6 +192,27 @@ def tool_use(name, args, i="t1"):
     return [{"toolUse": {"toolUseId": i, "name": name, "input": args}}]
 
 
+def test_a_sample_question_may_link_a_table_without_putting_the_url_in_the_question():
+    from pathlib import Path
+    from knowledge_store.config import profile_from_dict
+    root = Path(__file__).resolve().parents[1]
+    profile = profile_from_dict(json.loads((root / "examples/space-missions/profile.json").read_text()))
+    samples = profile.sample_questions()
+    assert [q["text"] for q in samples] == [
+        "Which rocket launched Juno?",
+        "What sample cost does the catalog give Juno?",
+        "Which missions launched on an Atlas V?",
+        "Which launched first, Voyager 1 or Voyager 2?",
+    ]
+    assert [q["level"] for q in samples] == ["low", "low", "medium", "high"]
+    linked = [q for q in samples if "link" in q]
+    assert len(linked) == 1
+    assert linked[0]["link"].endswith("/examples/space-missions/tables/missions.csv")
+    assert linked[0]["link_label"] == "missions.csv"
+    assert "http" not in linked[0]["text"]
+    assert "link" not in profile.to_dict()["example_questions"][0]
+
+
 def test_sample_questions_keep_a_named_level_and_otherwise_spread():
     from knowledge_store.config import profile_from_dict
     named = profile_from_dict({"example_questions": [

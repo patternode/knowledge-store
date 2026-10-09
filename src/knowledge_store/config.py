@@ -21,6 +21,10 @@ from .store import Store
 
 LEVELS = ("low", "medium", "high")
 _MARK = re.compile(r"^\[(low|medium|high)\]\s*", re.IGNORECASE)
+# A sample question may end with a markdown link. The link is not part of the question the box
+# receives. https only, or a tables/*.csv path in the collection. No other scheme.
+_SAMPLE_LINK = re.compile(
+    r"\s*\[([^\]\n]{1,80})\]\((https://[^\s)]+|tables/[A-Za-z0-9][A-Za-z0-9._-]*\.csv)\)\s*$")
 
 
 @dataclass(frozen=True)
@@ -41,6 +45,10 @@ class Profile:
     # Parallel to example_questions. "" means the profile did not name a level; sample_questions()
     # then spreads the list across low, medium and high.
     question_levels: tuple[str, ...] = ()
+    # Parallel to example_questions. "" means the question has no link. A link is a table the
+    # question is about, shown beside it and not sent as the question.
+    question_links: tuple[str, ...] = ()
+    question_link_labels: tuple[str, ...] = ()
     ontology_base: str = "https://example.org/ontology/lab#"
     language: str = "en"
 
@@ -60,39 +68,74 @@ class Profile:
         """[{text, level}] for the chat's sample rail. A level the profile names is kept. When none
         are named, the list is spread across low, medium and high in the order given."""
         levels = self.question_levels + ("",) * len(self.example_questions)
-        return assign_levels(list(zip(self.example_questions, levels)))
+        links = self.question_links + ("",) * len(self.example_questions)
+        labels = self.question_link_labels + ("",) * len(self.example_questions)
+        return assign_levels(list(zip(self.example_questions, levels, links, labels)))
 
 
 DEFAULT_SOURCES = (SourceConfig(name="uploads", type="s3_landing", options={"prefix": layout.LANDING + "/"}),)
 
 
-def parse_example_questions(raw) -> tuple[tuple[str, str], ...]:
-    """(text, level) from a profile list. A string may start with [low], [medium] or [high], which
-    sets the level and is not part of the question, so a deployer can label questions without
-    changing the Terraform type (a list of strings). An object is {"text", "level"}."""
+def _allowed_link(link: str) -> bool:
+    return bool(re.fullmatch(r"https://[^\s)]+|tables/[A-Za-z0-9][A-Za-z0-9._-]*\.csv", link))
+
+
+def _split_sample_link(text: str) -> tuple[str, str, str]:
+    """(question, href, label). A trailing markdown link is taken off the question."""
+    m = _SAMPLE_LINK.search(text)
+    if not m:
+        return text, "", ""
+    return text[:m.start()].strip(), m.group(2), m.group(1).strip()
+
+
+def parse_example_questions(raw) -> tuple[tuple[str, str, str, str], ...]:
+    """(text, level, link, link label) from a profile list. A string may start with [low], [medium]
+    or [high], which sets the level and is not part of the question, so a deployer can label
+    questions without changing the Terraform type (a list of strings). It may end with a markdown
+    link, which is not part of the question either. An object is {"text", "level", "link"}."""
     out = []
     for item in raw or []:
+        link, label = "", ""
         if isinstance(item, str):
             text = item.strip()
             mark = _MARK.match(text)
             level = mark.group(1).lower() if mark else ""
             if mark:
                 text = text[mark.end():].strip()
+            text, link, label = _split_sample_link(text)
         elif isinstance(item, dict):
             text = str(item.get("text") or item.get("question") or "").strip()
             level = str(item.get("level") or "").strip().lower()
             level = level if level in LEVELS else ""
+            text, found, found_label = _split_sample_link(text)
+            link = str(item.get("link") or found or "").strip()
+            label = str(item.get("link_label") or found_label or "").strip()
+            if link and not _allowed_link(link):
+                link, label = "", ""
+            elif link and not label:
+                label = link.rsplit("/", 1)[-1]
         else:
             continue
         if text:
-            out.append((text, level))
+            out.append((text, level, link, label))
     return tuple(out)
 
 
 def assign_levels(pairs) -> list[dict]:
-    """[{text, level}]. Named levels stay. When none are named, the first third is low, the last
+    """[{text, level, link?}]. Named levels stay. When none are named, the first third is low, the last
     third is high and the middle is medium, with at least one of each once there are three."""
-    rows = [{"text": text, "level": level if level in LEVELS else ""} for text, level in pairs if text]
+    rows = []
+    for item in pairs:
+        text, level = item[0], item[1]
+        if not text:
+            continue
+        row = {"text": text, "level": level if level in LEVELS else ""}
+        link = item[2] if len(item) > 2 else ""
+        label = item[3] if len(item) > 3 else ""
+        if link:
+            row["link"] = link
+            row["link_label"] = label or link.rsplit("/", 1)[-1]
+        rows.append(row)
     if not rows or any(r["level"] for r in rows):
         for r in rows:
             if not r["level"]:
@@ -126,8 +169,10 @@ def profile_from_dict(d: dict) -> Profile:
         name=d.get("name") or Profile.name,
         description=d.get("description") or Profile.description,
         key_terms=tuple(d.get("key_terms") or ()),
-        example_questions=tuple(text for text, _ in questions),
-        question_levels=tuple(level for _, level in questions),
+        example_questions=tuple(text for text, *_ in questions),
+        question_levels=tuple(level for _, level, *_ in questions),
+        question_links=tuple(link for *_, link, _label in questions),
+        question_link_labels=tuple(label for *_, label in questions),
         ontology_base=d.get("ontology_base") or Profile.ontology_base,
         language=d.get("language") or "en",
     )

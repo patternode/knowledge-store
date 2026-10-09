@@ -44,6 +44,39 @@ The mapping, the ontology, the OSI metric file, and the illustrative R2RML rendi
 database: replace `location` with `coa:<dataSourceId>` and import
 [`ontology/metrics.osi.yaml`](ontology/metrics.osi.yaml) unchanged.
 
+## Sample questions
+
+[`profile.json`](profile.json) is the collection profile. When this collection is selected, the
+chat lists these questions. Choosing one fills the box. The cost question also links to
+[`tables/missions.csv`](tables/missions.csv). That link is not part of the question.
+
+| Level | Question |
+|---|---|
+| Low | Which rocket launched Juno? |
+| Low | What sample cost does the catalog give Juno? ([missions.csv](tables/missions.csv)) |
+| Medium | Which missions launched on an Atlas V? |
+| High | Which launched first, Voyager 1 or Voyager 2? |
+
+Set the profile on the collection (the `example_questions` in `profile.json` are the list, including
+the markdown link, which Terraform accepts as a string):
+
+```hcl
+collections = {
+  missions = {
+    profile = {
+      name        = "Space missions"
+      description = "Missions, launch vehicles and what the documents say about them."
+      example_questions = [
+        "[low] Which rocket launched Juno?",
+        "[low] What sample cost does the catalog give Juno? [missions.csv](https://github.com/patternode/knowledge-store/blob/main/examples/space-missions/tables/missions.csv)",
+        "[medium] Which missions launched on an Atlas V?",
+        "[high] Which launched first, Voyager 1 or Voyager 2?",
+      ]
+    }
+  }
+}
+```
+
 ## License
 
 This corpus is dedicated to the public domain under CC0. You may copy, modify, and redistribute

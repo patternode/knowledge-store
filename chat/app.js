@@ -800,9 +800,17 @@ function main() {
   ];
   function sampleItems(c) {
     const raw = Array.isArray(c.example_questions) ? c.example_questions : [];
-    const items = raw.map((x) => (typeof x === 'string' ? { text: x, level: 'medium' } : { text: str(x && x.text), level: str(x && x.level) || 'medium' }))
+    const items = raw.map((x) => (typeof x === 'string'
+      ? { text: x, level: 'medium' }
+      : { text: str(x && x.text), level: str(x && x.level) || 'medium',
+          link: str(x && x.link), link_label: str(x && x.link_label) }))
       .filter((x) => x.text);
     return items.length ? items : SAMPLE_FALLBACK;
+  }
+  function safeSampleLink(link) {
+    const s = str(link);
+    if (!/^https:\/\/[a-z0-9.-]+(?:\/[^\s]*)?$/i.test(s) || /[<>"']/.test(s)) return '';
+    return s;
   }
   function useSample(text) {
     setMode('ask');
@@ -827,7 +835,11 @@ function main() {
         qs.map((q) => {
           const b = h('button', { class: `sample ${lv.id}`, type: 'button' }, q.text);
           b.addEventListener('click', () => useSample(q.text));
-          return b;
+          const href = safeSampleLink(q.link);
+          const link = href
+            ? h('a', { class: 'sample-link', href, target: '_blank', rel: 'noopener noreferrer' }, q.link_label || 'Open')
+            : null;
+          return link ? h('div', null, b, link) : b;
         }));
     }));
   }

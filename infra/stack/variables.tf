@@ -45,7 +45,8 @@ variable "collections" {
     hyphens). Per collection, all optional:
       profile  what the collection is about: {name, description, key_terms, example_questions,
                ontology_base}. It guides prompts and the portal; it is not the ontology.
-               A sample question may start with [low], [medium] or [high].
+               A sample question may start with [low], [medium] or [high], and may end with
+               a markdown link [label](https://...), shown under the question and not sent.
       sources  where content comes from. Default: [{name = "uploads", type = "s3_landing",
                options = {prefix = "landing/<id>/"}}]. An s3_landing source with
                options.bucket reads another bucket; the pipeline is granted read access to it.
