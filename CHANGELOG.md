@@ -4,6 +4,10 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 ## [Unreleased]
 
+### Fixed
+
+- A mapped CSV is found when it is uploaded into the collection's landing folder, not only when its key ends with the mapping's `tables/` path. The same bytes uploaded again under the mapped path stay visible. Two files of that name are reported rather than one being chosen. A `mappings.yaml` added beside an already published ontology version is reported instead of ignored, and the sweep publishes that ontology before it parses uploads.
+
 ### Removed
 
 - The Azure deployment (`deploy/azure/`) and its code: the Blob Storage lake, the `foundry` model provider, Entra ID sign-in for AGE, the Azure host, token verification (`authn.py`) and the MCP server it served (`tools/mcp.py`). The `azure` extra is gone.
