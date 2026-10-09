@@ -43,6 +43,13 @@
         <label class="sr-only" for="onto-find">Find a class</label>
         <input id="onto-find" type="search" placeholder="Find a class" autocomplete="off">
         <button class="stage-btn" id="onto-fit" type="button" title="Fit the whole ontology in view">Fit</button>
+        <label class="sr-only" for="onto-overlay">Show how questions use the ontology</label>
+        <select id="onto-overlay" class="stage-select" title="Show how often questions used each class and property">
+          <option value="">No question overlay</option>
+          <option value="all">Questions: all time</option>
+          <option value="month">Questions: this month</option>
+          <option value="session">Questions: this session</option>
+        </select>
       </div>
       <div class="tip" id="onto-tip" role="tooltip" hidden></div>
       <div class="legend" id="onto-legend">
@@ -52,6 +59,7 @@
         <span><svg width="10" height="10" aria-hidden="true"><circle cx="5" cy="5" r="4" fill="#c88a1e" stroke="#ffcf66" stroke-width="1.5"/></svg> core: the most connected classes</span>
         <span>the pill counts entities; the <span class="arc-key">arc</span> shows how populated, against the largest class</span>
         <span>small dashed ring: no entities yet</span>
+        <span class="usage-key" hidden><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="#2fd3c0" stroke-width="3"/></svg> question overlay: the thicker the ring, the more questions used the class; the number counts them</span>
       </div>
     </div>
   </section>
@@ -62,10 +70,12 @@
       <button role="tab" id="tab-classes" aria-controls="panel-classes" aria-selected="true" data-tab="classes">Classes</button>
       <button role="tab" id="tab-properties" aria-controls="panel-properties" aria-selected="false" tabindex="-1" data-tab="properties">Properties</button>
       <button role="tab" id="tab-selected" aria-controls="panel-selected" aria-selected="false" tabindex="-1" data-tab="selected">Selected</button>
+      <button role="tab" id="tab-requests" aria-controls="panel-requests" aria-selected="false" tabindex="-1" data-tab="requests" hidden>Requests</button>
     </div>
     <div role="tabpanel" class="panel" id="panel-classes" aria-labelledby="tab-classes" tabindex="0"></div>
     <div role="tabpanel" class="panel" id="panel-properties" aria-labelledby="tab-properties" tabindex="0" hidden></div>
     <div role="tabpanel" class="panel" id="panel-selected" aria-labelledby="tab-selected" tabindex="0" hidden></div>
+    <div role="tabpanel" class="panel" id="panel-requests" aria-labelledby="tab-requests" tabindex="0" hidden></div>
   </aside>
 </div>
 <div id="announce" class="sr-only" aria-live="polite" aria-atomic="true"></div>

@@ -15,7 +15,6 @@ version renders the master into forms for each consumer, stored beside it in the
     neo4j/schema.md                      the graph schema as (:A)-[:REL]->(:B), for Cypher agents
     age/schema.sql                       the same projection in PostgreSQL with Apache AGE: the graph,
                                          its labels and indexes, for a graph name the loader fills in
-    spanner/schema.sql                   the node and edge tables and the property graph for Spanner Graph
     extraction/tool.json                 the JSON Schema of the extraction tool call
     jsonld/context.jsonld                a JSON-LD context mapping term names to IRIs
 
@@ -183,49 +182,6 @@ def _age_sql(spec: model.OntologySpec) -> str:
     return "\n".join(out) + "\n"
 
 
-def _spanner_sql(spec: model.OntologySpec) -> str:
-    """Spanner Graph maps tables to a property graph. The tables do not depend on the ontology
-    (classes are in `types`, relations in `p`, attributes in `attributes`), so a release never
-    needs a schema change. Graphs are told apart by `g`."""
-    return f"""-- Generated from the master ontology {spec.version}. Do not edit: regenerate from the master.
-CREATE TABLE Entity (
-  g STRING(256) NOT NULL,
-  id STRING(1024) NOT NULL,
-  iri STRING(MAX),
-  name STRING(MAX),
-  type STRING(MAX),
-  types ARRAY<STRING(MAX)>,
-  aliases ARRAY<STRING(MAX)>,
-  scope STRING(16),
-  docs INT64,
-  links INT64,
-  mentioned_in ARRAY<STRING(MAX)>,
-  attributes JSON,
-) PRIMARY KEY (g, id);
-
-CREATE TABLE Relation (
-  g STRING(256) NOT NULL,
-  id STRING(1024) NOT NULL,
-  p STRING(256) NOT NULL,
-  o STRING(1024) NOT NULL,
-  passages ARRAY<STRING(MAX)>,
-  scope STRING(16),
-) PRIMARY KEY (g, id, p, o),
-  INTERLEAVE IN PARENT Entity ON DELETE CASCADE;
-
-CREATE INDEX RelationByObject ON Relation (g, o);
-
-CREATE PROPERTY GRAPH KnowledgeGraph
-  NODE TABLES (Entity KEY (g, id) LABEL Entity PROPERTIES ALL COLUMNS)
-  EDGE TABLES (
-    Relation KEY (g, id, p, o)
-      SOURCE KEY (g, id) REFERENCES Entity (g, id)
-      DESTINATION KEY (g, o) REFERENCES Entity (g, id)
-      LABEL Relation PROPERTIES ALL COLUMNS
-  );
-"""
-
-
 def _neo4j_md(spec: model.OntologySpec) -> str:
     lines = [f"# Graph schema {spec.version}", "", "Node labels (every node is also :Entity, with name, iri):"]
     for c in sorted(spec.classes.values(), key=lambda t: t.local):
@@ -258,7 +214,7 @@ def _owl(spec: model.OntologySpec, ttl: bytes) -> bytes:
     return ttl
 
 
-SCHEMAS = {"neo4j/schema.cypher": _neo4j_cypher, "age/schema.sql": _age_sql, "spanner/schema.sql": _spanner_sql}
+SCHEMAS = {"neo4j/schema.cypher": _neo4j_cypher, "age/schema.sql": _age_sql}
 
 
 def render_schema(spec: model.OntologySpec, path: str) -> str:
@@ -277,7 +233,6 @@ def render_all(spec: model.OntologySpec, ttl: bytes, shapes: bytes | None) -> di
         "neo4j/mapping.json": j(_neo4j_mapping(spec)),
         "neo4j/schema.md": _neo4j_md(spec).encode(),
         "age/schema.sql": _age_sql(spec).encode(),
-        "spanner/schema.sql": _spanner_sql(spec).encode(),
         "extraction/tool.json": j(tool_spec(spec)),
         "jsonld/context.jsonld": j(_jsonld_context(spec)),
     }

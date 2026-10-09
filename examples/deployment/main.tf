@@ -50,6 +50,7 @@ module "knowledge_store" {
   }
 
   # llm_provider        = "bedrock"
+  # anthropic_api_key_secret_arn = "arn:aws:secretsmanager:..."  # with "anthropic": the key's secret, never the key (README.md)
   # extraction_model_id = "us.anthropic.claude-sonnet-5"
   # chat_model_id       = "us.anthropic.claude-sonnet-5"
   # portal_title        = "Knowledge Store"

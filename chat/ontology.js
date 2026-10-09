@@ -1,10 +1,9 @@
 /* Knowledge Store ontology page: the active ontology of a collection as a force-directed graph,
  * with its statistics. Plain ES2020 and D3 (vendor/d3.min.js), no build step.
  *
- * The view is the earnings lab's ontology view, made generic. Classes are spheres coloured by
- * their root class; subclass links are solid and pale, declared relations run from domain to
- * range, and relations the data uses between classes the ontology does not declare for them are
- * dashed, weighted by use. Three tiers, by place in the ontology rather than by size:
+ * Classes are spheres coloured by their root class; subclass links are solid and pale, declared
+ * relations run from domain to range, and relations the data uses between classes the ontology
+ * does not declare for them are dashed, weighted by use. Three tiers, by place in the ontology rather than by size:
  *   core        the most connected classes (by declared and seen links): larger, gold, pulled to
  *               the centre (the most connected of all most strongly), links between two of them
  *               drawn heavier
@@ -13,6 +12,11 @@
  * Population is shown separately: the pill counts a class's entities (subtypes included), and a
  * thin arc round the node says how populated it is against the largest class, on a log scale so
  * small classes still show.
+ *
+ * The question overlay shows how the chat's questions used the ontology (the workbench): for each
+ * class, a ring whose width and number say in how many questions it was asked for, read or cited,
+ * over all time, this month (GET /api/usage) or this browser session (sessionStorage, kept by the
+ * chat page). Curators also get a Requests tab: the gap reports kept from the chat.
  *
  * Every name and definition comes from the ontology, which a model may have proposed, so text
  * reaches the page through textContent only (h() and D3's .text()), never innerHTML.
@@ -30,7 +34,18 @@ function main() {
   function notice(...kids) { const el = $('#notice'); el.hidden = !kids.length; clear(el, kids); }
 
   // ---- state ------------------------------------------------------------------------------
-  const S = { collections: [], id: null, private: false, gen: 0, onto: null, summary: null, view: null };
+  const S = { collections: [], id: null, private: false, gen: 0, onto: null, summary: null, view: null, overlay: '', usage: null };
+  const OVERLAY_KEY = 'ks.onto.overlay';
+  const OVERLAY_LABEL = { all: 'all time', month: 'this month', session: 'this session' };
+  // In how many questions a term was used at all (asked for, read or cited), and cited.
+  const used = (c) => (c ? Math.max(c.queried || 0, c.read || 0, c.cited || 0) : 0);
+  const useOf = (kind, name) => (S.usage && S.usage[kind] && S.usage[kind][name]) || null;
+  const propUse = (name) => useOf('relations', name) || useOf('attributes', name);
+  function useLine(c) {
+    if (!S.usage) return null;
+    if (!used(c)) return h('span', { class: 'use-line', text: `not used by questions (${OVERLAY_LABEL[S.overlay]})` });
+    return h('span', { class: 'use-line', text: `in ${plural(used(c), 'question')}: asked for ${n(c.queried)}, read ${n(c.read)}, cited ${n(c.cited)}` });
+  }
 
   // ---- the ontology, indexed ------------------------------------------------------------
   function model(o) {
@@ -300,7 +315,28 @@ function main() {
       if (found) flyTo(found);
       return found;
     }
-    return { highlightClass, highlightProperty, reset, find, fit: () => fit(true), flyTo: (id) => oById.has(id) && flyTo(oById.get(id)),
+    // The question overlay: a ring round each class, as thick as its share of the most used class,
+    // with the count above it; classes no question used are faded, and used relations drawn bright.
+    function applyUsage() {
+      onode.selectAll('.ouse, .ouse-n').remove();
+      onode.classed('unasked', false);
+      olink.classed('asked', false).style('stroke-width', (d) => (d.kind === 'seen' ? Math.min(4, 0.8 + Math.log2(1 + d.count) * 0.5) : null));
+      if (!S.usage) return;
+      const max = Math.max(1, ...onodes.map((d) => used(useOf('classes', d.id))));
+      const share = (d) => used(useOf('classes', d.id)) / max;
+      const asked = onode.filter((d) => used(useOf('classes', d.id)) > 0);
+      // a band outside the population arc (which ends 7.5 px out), as wide as the class's share
+      const band = (d) => 2 + 7 * share(d);
+      asked.insert('circle', ':first-child').attr('class', 'ouse').attr('r', (d) => radius(d) + 10 + band(d) / 2)
+        .style('stroke-width', (d) => `${band(d)}px`);
+      asked.append('text').attr('class', 'ouse-n').attr('text-anchor', 'middle')
+        .attr('dy', (d) => radius(d) + 26 + band(d)).text((d) => n(used(useOf('classes', d.id))));
+      onode.classed('unasked', (d) => !used(useOf('classes', d.id)));
+      const pmax = Math.max(1, ...olinks.filter((l) => l.prop).map((l) => used(propUse(l.prop))));
+      olink.filter((l) => l.prop && used(propUse(l.prop)) > 0).classed('asked', true)
+        .style('stroke-width', (l) => `${1.4 + 4 * used(propUse(l.prop)) / pmax}px`);
+    }
+    return { highlightClass, highlightProperty, reset, find, fit: () => fit(true), applyUsage, flyTo: (id) => oById.has(id) && flyTo(oById.get(id)),
       tiers: { core: CORE, hub: HUB, tierOf: (id) => tierOf(oById.get(id)) }, links: olinks };
   }
 
@@ -329,7 +365,24 @@ function main() {
         tile(n(counts.documents), 'documents', 'Documents extracted with this ontology')),
       h('p', { class: 'small muted' },
         `${plural(populated, 'class', 'classes')} of ${n(M.classes.size)} have entities; ${n(usedProps)} of ${n(M.relations.length + M.attributes.length)} properties are used. `,
-        seen ? `The data links classes ${plural(seen, 'way')} the ontology does not declare (dashed).` : 'Every link the data makes between classes is declared.'));
+        seen ? `The data links classes ${plural(seen, 'way')} the ontology does not declare (dashed).` : 'Every link the data makes between classes is declared.'),
+      usageNote(M));
+  }
+  function usageNote(M) {
+    if (!S.usage) return null;
+    const classes = [...M.classes.keys()];
+    const reached = classes.filter((c) => used(useOf('classes', c)) > 0);
+    const never = classes.filter((c) => !used(useOf('classes', c)) && (M.classes.get(c).count || 0) > 0);
+    const top = reached.slice().sort((a, b) => used(useOf('classes', b)) - used(useOf('classes', a))).slice(0, 5);
+    if (!S.usage.questions) {
+      return h('p', { class: 'small muted usage-note', text: `No questions recorded ${OVERLAY_LABEL[S.overlay]} yet. Answered questions add to these totals.` });
+    }
+    return h('div', { class: 'small usage-note' },
+      h('p', null, `${plural(S.usage.questions, 'question')} ${OVERLAY_LABEL[S.overlay]} used ${n(reached.length)} of ${n(classes.length)} classes. Most used: `,
+        top.flatMap((c, i) => [i ? ', ' : null, classChip(M, c)]), '.'),
+      never.length ? h('p', { class: 'muted' }, `Populated but never used by a question: `, never.slice(0, 8).flatMap((c, i) => [i ? ', ' : null, classChip(M, c)]),
+        never.length > 8 ? ` and ${n(never.length - 8)} more.` : '.') : null,
+      h('p', { class: 'muted', text: 'These count what people asked about, which is not the same as what the ontology does well: an unused class may still be needed, and a much-used one may answer badly.' }));
   }
 
   function renderClasses(M, V) {
@@ -348,7 +401,8 @@ function main() {
             M.label(r.name) !== r.name ? h('span', { class: 'mono', text: r.name }) : null,
             M.parentsOf(r.name).length ? ` kind of ${M.parentsOf(r.name).map(M.label).join(', ')}` : null,
             tier === 'core' ? h('span', { class: 'tag core', text: 'core' }) : null,
-            (r.synonyms || []).length ? h('span', { class: 'aka', text: `also: ${r.synonyms.join(', ')}` }) : null),
+            (r.synonyms || []).length ? h('span', { class: 'aka', text: `also: ${r.synonyms.join(', ')}` }) : null,
+            useLine(useOf('classes', r.name))),
           bar));
         card.firstChild.style.borderLeftColor = r.count ? M.colour(r.name) : 'var(--border)';
         return card;
@@ -361,11 +415,13 @@ function main() {
     clear($('#panel-properties'),
       h('p', { class: 'small muted', text: 'How often each property was asserted. Relations link two entities; attributes record a value. Select one to see where it runs in the graph.' }),
       h('table', { class: 'kv' },
-        h('thead', null, h('tr', null, ['Property', 'Facts', 'From → to'].map((t) => h('th', { scope: 'col', text: t })))),
+        h('thead', null, h('tr', null, ['Property', 'Facts', ...(S.usage ? ['Questions'] : []), 'From → to'].map((t) => h('th', { scope: 'col', text: t })))),
         h('tbody', null, props.map((p) => h('tr', null,
           h('td', null, h('button', { class: 'linkish', type: 'button', onclick: () => selectProperty(p.name) }, p.label || p.name),
             h('span', { class: 'mono small muted', text: ` ${p.kind}` })),
           h('td', { class: 'num-cell' }, p.count ? n(p.count) : h('span', { class: 'muted', text: 'unused' })),
+          S.usage ? h('td', { class: 'num-cell', title: 'questions that used it; cited in brackets' },
+            used(propUse(p.name)) ? `${n(used(propUse(p.name)))} (${n((propUse(p.name) || {}).cited || 0)})` : h('span', { class: 'muted', text: '0' })) : null,
           h('td', { class: 'small' }, (p.domain || []).map(M.label).join(' or ') || 'any', ' → ',
             p.kind === 'relation' ? ((p.range || []).map(M.label).join(' or ') || 'any') : str(p.datatype)))))));
   }
@@ -377,6 +433,54 @@ function main() {
       b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1;
       $(`#panel-${b.dataset.tab}`).hidden = !on;
     }
+    if (tab === 'requests') loadRequests();
+  }
+
+  // ---- the question overlay -------------------------------------------------------------
+  async function setOverlay(value) {
+    S.overlay = OVERLAY_LABEL[value] ? value : '';
+    lstore.set(OVERLAY_KEY, S.overlay);
+    $('#onto-overlay').value = S.overlay;
+    document.querySelector('.usage-key').hidden = !S.overlay;
+    const gen = S.gen;
+    if (!S.overlay) S.usage = null;
+    else if (S.overlay === 'session') S.usage = window.KS.sessionUsage(S.id);
+    else {
+      try { S.usage = await api('/usage', { c: S.id, window: S.overlay }); } catch (e) {
+        S.usage = null;
+        if (gen === S.gen) announce(`The question totals could not be loaded: ${e.message}`);
+      }
+    }
+    if (gen !== S.gen || !S.model || !S.view) return;
+    S.view.applyUsage();
+    renderStats(S.model, S.view);
+    renderClasses(S.model, S.view);
+    renderProperties(S.model);
+    const p = new URLSearchParams(location.search);
+    route({ class: p.get('class'), prop: p.get('prop') });
+    if (S.overlay) announce(`Question overlay: ${OVERLAY_LABEL[S.overlay]}, ${plural((S.usage || {}).questions || 0, 'question')}.`);
+  }
+
+  // ---- requests kept from the chat (curators) --------------------------------------------
+  const VERDICT = { answerable: 'answerable now', data_missing: 'data missing', ontology_missing: 'ontology extension',
+    extraction_missed: 'extraction missed it', out_of_scope: 'out of scope' };
+  async function loadRequests() {
+    const box = $('#panel-requests');
+    if (!S.private) return;
+    clear(box, h('p', { class: 'small muted', text: 'Loading the requests.' }));
+    let r;
+    try { r = await api('/requests', { c: S.id }); } catch (e) { return clear(box, h('p', { class: 'error', text: e.message })); }
+    const reqs = (r && r.requests) || [];
+    const terms = (rep) => ['classes', 'relations', 'attributes'].flatMap((k) => ((rep.ontology || {})[k] || []).map((x) => `${str(x.name)} (${k.slice(0, -1).replace('classe', 'class')})`));
+    clear(box,
+      h('p', { class: 'small muted', text: 'Gap reports that curators kept from the chat ("What would it take?"). Their proposed terms join the candidate register, so the next revision (knowledge-store candidates --propose) considers them.' }),
+      reqs.length ? reqs.map((q) => {
+        const rep = q.report || {};
+        return h('div', { class: 'req' }, h('h4', { text: str(q.question) }),
+          h('p', { class: 'small muted', text: `${VERDICT[rep.verdict] || str(rep.verdict)} · ${str(q.at).slice(0, 10)} · ontology ${str(q.ontology_version || '?')}` }),
+          rep.summary ? h('p', { class: 'small', text: str(rep.summary) }) : null,
+          terms(rep).length ? h('ul', { class: 'small' }, terms(rep).map((x) => h('li', { text: x }))) : null);
+      }) : h('p', { class: 'muted', text: 'No requests yet. In the chat, ask "What would it take?" about a question, then keep the report.' }));
   }
   function detail(...kids) { clear($('#panel-selected'), h('div', { class: 'node-detail' }, kids)); activate('selected'); }
   const section = (title, ...kids) => (kids.flat().filter(Boolean).length ? [h('h4', { text: title }), ...kids] : null);
@@ -408,6 +512,7 @@ function main() {
       h('h4', { text: 'In the graph' }),
       h('p', null, plural(c.count || 0, 'entity', 'entities'), c.count ? ' (subtypes included). ' : '. ',
         c.count ? h('a', { href: `./?ask=${encodeURIComponent(`What ${M.label(name)} entities are there?`)}` }, 'Ask about them in the chat') : null),
+      S.usage ? section(`In questions (${OVERLAY_LABEL[S.overlay]})`, h('p', null, useLine(useOf('classes', name)))) : null,
       section('Subclasses', subs.length ? h('p', null, sig(M, subs)) : null),
       section('Relations from it', out.length ? h('table', { class: 'kv' }, out.map((p) => propRow(p, ['to ', sig(M, p.range)]))) : null),
       section('Relations to it', inn.length ? h('table', { class: 'kv' }, inn.map((p) => propRow(p, ['from ', sig(M, p.domain)]))) : null),
@@ -434,6 +539,7 @@ function main() {
       h('p', null, sig(M, p.domain), ' → ', rel ? sig(M, p.range) : h('span', { class: 'mono', text: str(p.datatype) })),
       h('h4', { text: 'In the graph' }),
       h('p', { text: `${plural(p.count || 0, 'fact')} asserted.` }),
+      S.usage ? section(`In questions (${OVERLAY_LABEL[S.overlay]})`, h('p', null, useLine(propUse(name)))) : null,
       section('Also seen between', seen.length ? h('table', { class: 'kv' }, seen.map((e) => h('tr', null,
         h('td', null, classChip(M, e.domain), ' → ', classChip(M, e.range)), h('td', { class: 'num-cell', text: n(e.count) })))) : null));
     announce(`${p.label || p.name} selected: ${plural(p.count || 0, 'fact')}.`);
@@ -445,6 +551,7 @@ function main() {
     if (S.id && S.collections.length > 1) q.set('c', S.id);
     if (sel.class) q.set('class', sel.class);
     if (sel.prop) q.set('prop', sel.prop);
+    if (S.overlay) q.set('overlay', S.overlay);
     const qs = q.toString();
     window.history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
   }
@@ -476,10 +583,14 @@ function main() {
       return notice(h('h2', { text: 'The ontology is empty' }), h('p', { text: 'The active ontology version declares no classes.' }));
     }
     S.view = buildView(S.model);
+    $('#tab-requests').hidden = !S.private;
     renderStats(S.model, S.view);
     renderClasses(S.model, S.view);
     renderProperties(S.model);
     activate('classes');
+    const wanted = new URLSearchParams(location.search).get('overlay');
+    await setOverlay(wanted !== null ? wanted : (lstore.get(OVERLAY_KEY) || ''));
+    if (gen !== S.gen) return;
     const p = new URLSearchParams(location.search);
     if (p.get('class')) setTimeout(() => select(p.get('class')), 0);
     else if (p.get('prop')) setTimeout(() => selectProperty(p.get('prop')), 0);
@@ -506,12 +617,14 @@ function main() {
       if (e.key === 'Escape') { findEl.value = ''; if (S.view) { S.view.find(''); S.view.reset(); } }
     });
     $('#onto-fit').addEventListener('click', () => S.view && S.view.fit());
+    $('#onto-overlay').addEventListener('change', (e) => setOverlay(e.target.value));
     const tabs = [...document.querySelectorAll('[role=tab]')];
     for (const b of tabs) {
       b.addEventListener('click', () => activate(b.dataset.tab));
       b.addEventListener('keydown', (e) => {
-        const i = tabs.indexOf(b), j = e.key === 'ArrowRight' ? (i + 1) % tabs.length : e.key === 'ArrowLeft' ? (i + tabs.length - 1) % tabs.length : -1;
-        if (j >= 0) { e.preventDefault(); activate(tabs[j].dataset.tab); tabs[j].focus(); }
+        const shown = tabs.filter((x) => !x.hidden), i = shown.indexOf(b);
+        const j = e.key === 'ArrowRight' ? (i + 1) % shown.length : e.key === 'ArrowLeft' ? (i + shown.length - 1) % shown.length : -1;
+        if (j >= 0) { e.preventDefault(); activate(shown[j].dataset.tab); shown[j].focus(); }
       });
     }
     let t = null, size = innerWidth; // a new width lays the graph out again (a height change alone does not)
@@ -519,7 +632,7 @@ function main() {
       clearTimeout(t);
       t = setTimeout(() => {
         if (innerWidth === size || !S.model || $('#onto').hidden) return;
-        size = innerWidth; S.gen++; S.view = buildView(S.model); route({});
+        size = innerWidth; S.gen++; S.view = buildView(S.model); S.view.applyUsage(); route({});
       }, 300);
     });
   }

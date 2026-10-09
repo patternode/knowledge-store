@@ -1,7 +1,7 @@
 """The ports each cloud plugs into: object stores, model providers, claims and chat state.
 
 One contract per port, run against every adapter. Local, S3 (moto) and in-memory adapters always
-run; Azure Blob, Cloud Storage and MongoDB run against the emulators in tests/emulators.yml when
+run; MongoDB runs against the emulators in tests/emulators.yml when
 their variables are set, and are skipped otherwise.
 """
 
@@ -15,20 +15,12 @@ import pytest
 
 from knowledge_store import claims, ledger, llm
 from knowledge_store.portal_api import state
-from knowledge_store.store import BlobStore, GcsStore, LocalStore, PrefixStore, S3Store, store_from_uri
-
-# Azurite's published development account; not a secret.
-AZURITE_KEY = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
-
-
-def azurite_connection(url: str) -> str:
-    return f"DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey={AZURITE_KEY};BlobEndpoint={url};"
-
+from knowledge_store.store import LocalStore, PrefixStore, S3Store, store_from_uri
 
 # --- object stores ------------------------------------------------------------------------
 
 
-@pytest.fixture(params=["local", "s3", "blob", "gcs"])
+@pytest.fixture(params=["local", "s3"])
 def store(request, tmp_path, monkeypatch):
     kind = request.param
     if kind == "local":
@@ -41,23 +33,6 @@ def store(request, tmp_path, monkeypatch):
         with mock_aws():
             boto3.client("s3").create_bucket(Bucket="lake")
             yield S3Store("lake")
-    elif kind == "blob":
-        url = os.environ.get("AZURITE_BLOB_URL")
-        if not url:
-            pytest.skip("AZURITE_BLOB_URL is not set")
-        monkeypatch.setenv("AZURE_STORAGE_CONNECTION_STRING", azurite_connection(url))
-        container = f"lake{uuid.uuid4().hex[:12]}"
-        s = BlobStore("devstoreaccount1", container)
-        s.c.create_container()
-        yield s
-        s.c.delete_container()
-    else:
-        if not os.environ.get("STORAGE_EMULATOR_HOST"):
-            pytest.skip("STORAGE_EMULATOR_HOST is not set")
-        bucket = f"lake-{uuid.uuid4().hex[:12]}"
-        s = GcsStore(bucket)
-        s.client.create_bucket(bucket)
-        yield s
 
 
 def test_store_put_get_exists_delete(store):
@@ -104,57 +79,26 @@ def test_prefix_store_over_each_adapter(store):
 
 
 def test_store_from_uri(monkeypatch, tmp_path):
-    pytest.importorskip("azure.storage.blob", reason="the azure extra is not installed")
-    pytest.importorskip("google.cloud.storage", reason="the gcp extra is not installed")
-    monkeypatch.setenv("AZURE_STORAGE_CONNECTION_STRING", azurite_connection("http://127.0.0.1:10000/devstoreaccount1"))
-    monkeypatch.setenv("STORAGE_EMULATOR_HOST", "http://127.0.0.1:4443")
-    b = store_from_uri("az://devstoreaccount1/lake")
-    assert isinstance(b, BlobStore) and b.uri("k") == "az://devstoreaccount1/lake/k"
-    g = store_from_uri("gs://lake")
-    assert isinstance(g, GcsStore) and g.uri("k") == "gs://lake/k"
     assert isinstance(store_from_uri(str(tmp_path)), LocalStore)
-    with pytest.raises(ValueError):
-        store_from_uri("az://account-only")
 
 
 # --- model providers ----------------------------------------------------------------------
 
 
-def test_foundry_client_with_key_and_with_entra(monkeypatch):
-    pytest.importorskip("azure.identity", reason="the azure extra is not installed")
-    monkeypatch.setenv("ANTHROPIC_FOUNDRY_RESOURCE", "ks-test")
-    monkeypatch.setenv("ANTHROPIC_FOUNDRY_API_KEY", "test-key")
-    c = llm.sdk_client(llm.FOUNDRY)
-    assert str(c.base_url).startswith("https://ks-test.services.ai.azure.com/anthropic")
-    monkeypatch.delenv("ANTHROPIC_FOUNDRY_API_KEY")
-    c = llm.sdk_client(llm.FOUNDRY)
-    assert c._azure_ad_token_provider is not None  # managed identity, no key
-
-
-def test_vertex_client(monkeypatch):
-    monkeypatch.setenv("CLOUD_ML_REGION", "us-east5")
-    monkeypatch.setenv("ANTHROPIC_VERTEX_PROJECT_ID", "ks-test")
-    c = llm.sdk_client(llm.VERTEX)
-    assert "us-east5" in str(c.base_url)
-
-
 def test_providers_share_the_messages_path(monkeypatch):
-    monkeypatch.setenv("LLM_PROVIDER", "foundry")
-    monkeypatch.setenv("ANTHROPIC_FOUNDRY_RESOURCE", "ks-test")
-    monkeypatch.setenv("ANTHROPIC_FOUNDRY_API_KEY", "test-key")
+    monkeypatch.setenv("LLM_PROVIDER", "anthropic")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
     client = llm.runtime_client()
-    assert isinstance(client._inner, llm.AnthropicConverse) and client._provider == "foundry"
-    with pytest.raises(NotImplementedError):
-        llm.strands_model("claude-sonnet-5")
+    assert isinstance(client._inner, llm.AnthropicConverse) and client._provider == "anthropic"
     monkeypatch.setenv("LLM_PROVIDER", "openai")
     with pytest.raises(ValueError):
         llm.provider()
 
 
-def test_vertex_model_ids():
+def test_dated_model_ids():
     assert llm.rejects_sampling("claude-sonnet-5@20260101")
     assert ledger.price_key("claude-sonnet-4-5@20250929") == "claude-sonnet-4-5"
-    assert llm.model_name("us.anthropic.claude-sonnet-5") == "claude-sonnet-5"  # the default Foundry deployment name
+    assert llm.model_name("us.anthropic.claude-sonnet-5") == "claude-sonnet-5"
 
 
 # --- claims -------------------------------------------------------------------------------
@@ -170,7 +114,7 @@ def test_claims_default_to_cognito(monkeypatch):
     assert not claims.private_reader({"scope": "knowledge-store/tools.private"})
 
 
-def test_claims_for_entra(monkeypatch):
+def test_claims_are_configurable(monkeypatch):
     monkeypatch.setenv("SUBJECT_CLAIM", "oid,sub")
     monkeypatch.setenv("GROUPS_CLAIM", "roles")
     monkeypatch.setenv("PRIVATE_GROUP", "private-reader")
@@ -241,6 +185,20 @@ def test_chat_round_trip_and_owner(chat):
     assert chat.get_chat("missing") is None
 
 
+def test_usage_counters_add_up_by_collection_and_bucket(chat):
+    one = {"classes|Mission|read": 1, "relations|launchedBy|cited": 1, "classes|Odd.Name$|queried": 1, "questions": 1}
+    threads = [threading.Thread(target=lambda: chat.add_usage("m", ["all", "2026-10"], one)) for _ in range(6)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    chat.add_usage("m", ["all"], {"classes|Mission|read": 1, "questions": 1})
+    assert chat.get_usage("m", "all") == {"classes|Mission|read": 7, "relations|launchedBy|cited": 6,
+                                          "classes|Odd.Name$|queried": 6, "questions": 7}
+    assert chat.get_usage("m", "2026-10")["questions"] == 6
+    assert chat.get_usage("other", "all") == {}
+
+
 def test_quota_holds_under_concurrency(chat):
     taken = []
     threads = [threading.Thread(target=lambda: taken.append(chat.take_quota("alice", "2026-09-30", 5)))
@@ -268,7 +226,7 @@ def test_expired_mongo_chat_reads_as_missing():
         def find_one(self, flt):
             return self.docs.get(flt["_id"])
 
-    s = state.MongoState({"chat": Coll(), "quota": Coll()})
+    s = state.MongoState({"chat": Coll(), "quota": Coll(), "usage": Coll()})
     s.put_chat("q", "alice", {"status": "done"})
     assert s.get_chat("q")
     s.chat.docs["q"]["expires_at"] = dt.datetime.now(dt.timezone.utc) - dt.timedelta(seconds=1)
@@ -278,6 +236,6 @@ def test_expired_mongo_chat_reads_as_missing():
 def test_state_from_env(monkeypatch):
     monkeypatch.setenv("CHAT_STATE", "memory")
     assert isinstance(state.from_env(), state.MemoryState)
-    monkeypatch.setenv("CHAT_STATE", "cosmos")
+    monkeypatch.setenv("CHAT_STATE", "redis")
     with pytest.raises(ValueError):
         state.from_env()

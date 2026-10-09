@@ -9,7 +9,7 @@ belongs to. As with the graph, a load is checked by count before the lake's poin
 
 DocIndex serves the same methods as the in-memory Index and gives the same answers, reading only
 what a request needs. Search uses token arrays with multikey indexes, not $text or Atlas Search,
-so it runs on MongoDB Atlas, Azure Cosmos DB for MongoDB and Firestore alike.
+so it runs on MongoDB and services compatible with it alike.
 """
 
 from __future__ import annotations

@@ -188,6 +188,10 @@ def test_tool_and_model_budgets():
 def test_limits_attach_to_a_strands_agent():
     strands = pytest.importorskip("strands")
     assert app.add_limits(strands.Agent(callback_handler=None)) == {"tool_calls": 0, "model_calls": 0, "tools_refused": 0}
+    from knowledge_store import workbench
+    rec = workbench.Recorder()
+    app.add_limits(strands.Agent(callback_handler=None), rec)
+    assert rec.live  # the hooks report the agent's calls, so nothing is backfilled afterwards
 
 
 def test_local_tools_expose_every_gateway_tool(mixed):
@@ -196,3 +200,47 @@ def test_local_tools_expose_every_gateway_tool(mixed):
     t = app.LocalTools(root, private=False)
     assert sorted(x.tool_name for x in t.tools) == sorted(gateway.TOOLS)
     assert t.call("describe_ontology", {"collection": "m"})["version"]
+
+
+# --- the workbench: steps, the ontology terms used, the analyst, streaming --------------------------------
+
+def test_an_answer_reports_its_steps_and_the_terms_it_cited(mixed):
+    root, _ = mixed
+    p = passage_with(root, "Mission Alpha was launched by Agency Nova", private=False)
+    ent = gateway.call(root, "search_entities", {"collection": "m", "query": "Mission Alpha"})["items"][0]
+    agent = Scripted(GroundedAnswer(answerable=True, claims=[
+        claim("Agency Nova launched Mission Alpha.", p["id"], "Mission Alpha was launched by Agency Nova")]))
+    agent.messages = [  # what the model did, as the agent's conversation holds it
+        {"role": "assistant", "content": [{"toolUse": {"toolUseId": "t1", "name": "get_entity", "input": {"collection": "m", "id": ent["id"]}}}]},
+        {"role": "user", "content": [{"toolResult": {"toolUseId": "t1", "content": [
+            {"text": __import__("json").dumps(gateway.call(root, "get_entity", {"collection": "m", "id": ent["id"]}))}]}}]}]
+    seen = []
+    out = app.answer("Who launched Mission Alpha?", "m", None, Tools(root), agent_factory=lambda: agent, on_step=seen.append)
+    kinds = [s["kind"] for s in out["steps"]]
+    assert kinds[0] == "tool" and kinds[-1] == "done" and "check" in kinds and seen == out["steps"]
+    assert any("cited" in levels for levels in out["ontology_hits"].get("relations", {}).values())
+
+
+def test_the_analyst_reports_what_is_missing(mixed):
+    root, _ = mixed
+    report = grounding.GapReport(verdict="ontology_missing", summary="Costs are not modelled.",
+                                 ontology=grounding.OntologyChange(attributes=[grounding.NewAttribute(
+                                     name="launchCost", domain="Mission", datatype="decimal", definition="d")]))
+    agent = Scripted(report)
+    out = app.analyse("What did Mission Alpha cost?", "m", Tools(root), about={"gaps": ["the cost"]}, agent_factory=lambda: agent)
+    assert out["mode"] == "gaps" and out["report"]["verdict"] == "ontology_missing"
+    assert out["report"]["ontology"]["attributes"][0]["name"] == "launchCost"
+    assert "the cost" in agent.prompts[0] and out["steps"][-1]["kind"] == "done"
+    assert app.run({"mode": "gaps", "question": "", "collection": "m"}, Tools(root))["error"]
+
+
+def test_streamed_runs_report_steps_then_the_result():
+    def work(on_step):
+        on_step({"n": 1})
+        on_step({"n": 2})
+        return {"answer": "yes"}
+    assert list(app.streamed(work)) == [{"step": {"n": 1}}, {"step": {"n": 2}}, {"result": {"answer": "yes"}}]
+
+    def broken(on_step):
+        raise RuntimeError("boom")
+    assert "boom" in list(app.streamed(broken))[-1]["result"]["error"]

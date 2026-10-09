@@ -1,10 +1,20 @@
 """The chat agent, on AgentCore Runtime: a question in, a grounded answer with its sources out.
 
-    request   {"question": "...", "collection": "missions", "history": [{"q": "...", "a": "..."}]}
+    request   {"question": "...", "collection": "missions", "history": [{"q": "...", "a": "..."}],
+               "mode": "ask" (the default) or "gaps", "about": {...}, "stream": false}
     response  {"answer": "... [1][2] ...", "abstained": false,
                "claims": [{"text", "sources": [1, 2], "citations": [{"passage_id", "quote"}]}],
                "sources": [{"n", "passage_id", "doc", "title", "text", "quotes", "source_uri"}],
-               "gaps": [...], "grounding": {...}, "ontology_version": "1.2.0", "tool_calls": [...], "usage": {...}}
+               "gaps": [...], "grounding": {...}, "ontology_version": "1.2.0", "tool_calls": [...], "usage": {...},
+               "steps": [...], "ontology_hits": {...}}
+
+With "stream": true the response is a stream of server-sent events: {"step": {...}} for each step as
+it happens (knowledge_store.workbench), then {"result": {...}} with the response above. The portal
+asks this way, so a person watches the steps while the agent works.
+
+With "mode": "gaps" the agent does not answer: it explores the same tools as an analyst and reports
+what it would take to answer the question (analyse()). "about" carries what the chat agent said
+when it was asked, if it was.
 
 How it answers:
 
@@ -34,10 +44,13 @@ from __future__ import annotations
 import json
 import logging
 import os
+import queue
+import threading
 import time
 
+from .. import workbench
 from . import grounding, valves
-from .grounding import GroundedAnswer
+from .grounding import GapReport, GroundedAnswer
 
 log = logging.getLogger("agent")
 
@@ -94,11 +107,24 @@ def limit_hooks() -> tuple[dict, object, object]:
     return counts, before_tool, before_model
 
 
-def add_limits(agent) -> dict:
-    from strands.hooks import BeforeModelCallEvent, BeforeToolCallEvent
+def add_limits(agent, recorder: "workbench.Recorder | None" = None) -> dict:
+    """The limits, and with a recorder, the hooks that report each model and tool call as a step."""
+    from strands.hooks import AfterToolCallEvent, BeforeModelCallEvent, BeforeToolCallEvent
     counts, before_tool, before_model = limit_hooks()
     agent.add_hook(before_tool, BeforeToolCallEvent)
     agent.add_hook(before_model, BeforeModelCallEvent)
+    if recorder is not None:
+        def model_step(event) -> None:
+            recorder.model_call()
+
+        def tool_step(event) -> None:
+            tu = event.tool_use or {}
+            took = round(1000 * event.duration) if getattr(event, "duration", None) else None
+            recorder.tool(tu.get("name", ""), tu.get("input"), event.result, took)
+
+        agent.add_hook(model_step, BeforeModelCallEvent)
+        agent.add_hook(tool_step, AfterToolCallEvent)
+        recorder.live = True
     return counts
 
 
@@ -117,19 +143,23 @@ def _read(tools, collection: str, ids: list[str]) -> dict[str, dict]:
 
 
 def answer(question: str, collection: str, history: list[dict] | None, tools, *, model=None,
-           guardrail: "valves.Guardrail | None" = None, agent_factory=None) -> dict:
-    """One question, answered and checked. tools: .tools (for the agent) and .call(name, args)."""
+           guardrail: "valves.Guardrail | None" = None, agent_factory=None, on_step=None) -> dict:
+    """One question, answered and checked. tools: .tools (for the agent) and .call(name, args).
+    on_step, if given, is called with each step as it happens (knowledge_store.workbench)."""
     started = time.monotonic()
     question = (question or "").strip()
     if not question or len(question) > valves.MAX_QUESTION_CHARS:
         return {"error": f"ask a question of up to {valves.MAX_QUESTION_CHARS} characters"}
+    rec = workbench.Recorder(on_step)
     if guardrail:
         blocked = guardrail.question(question)
         if blocked:
-            return {**grounding.render([], {}, []), "answer": blocked, "blocked": True}
+            rec.step("guardrail", "The guardrail declined the question")
+            return {**grounding.render([], {}, []), "answer": blocked, "blocked": True, "steps": rec.steps}
     onto = tools.call("describe_ontology", {"collection": collection})
+    rec.tool("describe_ontology", {"collection": collection}, onto)
     if "error" in onto:
-        return {"error": onto["error"]}
+        return {"error": onto["error"], "steps": rec.steps}
     system = SYSTEM.format(collection=collection, version=onto["version"], ontology=onto["ontology"])
     if agent_factory is None:
         from strands import Agent
@@ -139,15 +169,21 @@ def answer(question: str, collection: str, history: list[dict] | None, tools, *,
                          messages=history_messages(history), structured_output_model=GroundedAnswer,
                          callback_handler=None)
     agent = agent_factory()
-    counts = add_limits(agent) if hasattr(agent, "add_hook") else {}
+    counts = add_limits(agent, rec) if hasattr(agent, "add_hook") else {}
     report: dict = {"repairs": 0, "failures": [], "guardrail_dropped": []}
     try:
         result = agent(f"Question about collection {collection!r}: {question}").structured_output
-        passages = _read(tools, collection, grounding.cited_ids(result))
+        rec.backfill(getattr(agent, "messages", []) or [])
+        cited = grounding.cited_ids(result)
+        rec.step("check", f"Checking {len(cited)} cited passage{'s' if len(cited) != 1 else ''} against the claims",
+                 f"{len(result.claims)} claim{'s' if len(result.claims) != 1 else ''} proposed")
+        passages = _read(tools, collection, cited)
         kept, failures = grounding.check(result, passages)
         report["failures"] = failures
         while failures and report["repairs"] < valves.GROUNDING_REPAIRS:
             report["repairs"] += 1
+            rec.step("repair", f"{len(failures)} citation{'s' if len(failures) != 1 else ''} failed the check; asking for a repair",
+                     "; ".join(str(f.get("reason", "")) for f in failures[:4] if isinstance(f, dict)) or None)
             again = agent(grounding.repair_prompt(failures)).structured_output
             passages.update(_read(tools, collection, [i for i in grounding.cited_ids(again) if i not in passages]))
             kept2, failures2 = grounding.check(again, passages)
@@ -158,9 +194,12 @@ def answer(question: str, collection: str, history: list[dict] | None, tools, *,
                 break
     except Exception as e:  # a limit, a model error or an unparseable answer: say so, claim nothing
         log.exception("agent failed")
+        rec.backfill(getattr(agent, "messages", []) or [])
+        rec.step("error", "The agent stopped before answering", f"{type(e).__name__}: {str(e)[:200]}")
         out = grounding.render([], {}, [])
         return {**out, "error": f"{type(e).__name__}: {str(e)[:300]}", "grounding": report,
-                "limits": counts, "ms": round(1000 * (time.monotonic() - started))}
+                "limits": counts, "ms": round(1000 * (time.monotonic() - started)),
+                "steps": rec.steps, "ontology_hits": rec.hits()}
     if not result.answerable:
         kept = []
     if guardrail and kept:
@@ -168,16 +207,95 @@ def answer(question: str, collection: str, history: list[dict] | None, tools, *,
         for c in kept:
             ok, score = guardrail.grounded(question, c.text, [passages[x.passage_id].get("text", "") for x in c.citations])
             (survivors if ok else report["guardrail_dropped"]).append(c if ok else {"text": c.text, "score": score})
+        if len(survivors) < len(kept):
+            rec.step("guardrail", f"The grounding guardrail removed {len(kept) - len(survivors)} claim(s)")
         kept = survivors
     out = grounding.render(kept, passages, list(result.gaps))
+    rec.cite([x.passage_id for c in kept for x in c.citations])
     report.update(claims_proposed=len(result.claims), claims_shown=len(kept))
+    if kept:
+        rec.step("done", f"Answered with {len(kept)} checked claim{'s' if len(kept) != 1 else ''} "
+                         f"from {len(out['sources'])} source{'s' if len(out['sources']) != 1 else ''}")
+    else:
+        rec.step("done", "Could not answer from the sources",
+                 "; ".join(str(g) for g in result.gaps[:4]) or None)
     msgs = getattr(agent, "messages", []) or []
     trace = [{"tool": b["toolUse"]["name"], "input": b["toolUse"]["input"]}
              for m in msgs for b in m.get("content", []) if isinstance(b, dict) and "toolUse" in b]
     metrics = getattr(getattr(agent, "event_loop_metrics", None), "accumulated_usage", None)
     return {**out, "grounding": report, "ontology_version": onto["version"], "collection": collection,
             "tool_calls": trace, "limits": counts, "usage": dict(metrics) if metrics else None,
-            "ms": round(1000 * (time.monotonic() - started))}
+            "ms": round(1000 * (time.monotonic() - started)), "steps": rec.steps, "ontology_hits": rec.hits()}
+
+
+def analyse(question: str, collection: str, tools, *, about: dict | None = None, model=None,
+            agent_factory=None, on_step=None) -> dict:
+    """What it would take to answer a question: the analyst explores the same tools and reports
+    ontology extensions, data to add and facts extraction missed (knowledge_store.workbench)."""
+    started = time.monotonic()
+    question = (question or "").strip()
+    if not question or len(question) > valves.MAX_QUESTION_CHARS:
+        return {"error": f"ask a question of up to {valves.MAX_QUESTION_CHARS} characters"}
+    rec = workbench.Recorder(on_step)
+    onto = tools.call("describe_ontology", {"collection": collection})
+    rec.tool("describe_ontology", {"collection": collection}, onto)
+    if "error" in onto:
+        return {"error": onto["error"], "steps": rec.steps}
+    system = workbench.ANALYST.format(collection=collection, version=onto["version"], ontology=onto["ontology"])
+    if agent_factory is None:
+        from strands import Agent
+
+        def agent_factory():
+            return Agent(model=model or bedrock_model(), tools=tools.tools, system_prompt=system,
+                         structured_output_model=GapReport, callback_handler=None)
+    agent = agent_factory()
+    counts = add_limits(agent, rec) if hasattr(agent, "add_hook") else {}
+    try:
+        result = agent(workbench.analyst_prompt(question, about)).structured_output
+        rec.backfill(getattr(agent, "messages", []) or [])
+    except Exception as e:
+        log.exception("analyst failed")
+        rec.backfill(getattr(agent, "messages", []) or [])
+        rec.step("error", "The analyst stopped before reporting", f"{type(e).__name__}: {str(e)[:200]}")
+        return {"error": f"{type(e).__name__}: {str(e)[:300]}", "steps": rec.steps, "limits": counts}
+    report = workbench.clean_report(result.model_dump() if hasattr(result, "model_dump") else dict(result))
+    o = report["ontology"]
+    rec.step("done", f"Reported: {report['verdict'].replace('_', ' ')}",
+             f"{len(o['classes'])} classes, {len(o['relations'])} relations, {len(o['attributes'])} attributes proposed")
+    return {"mode": "gaps", "report": report, "ontology_version": onto["version"], "collection": collection,
+            "limits": counts, "ms": round(1000 * (time.monotonic() - started)), "steps": rec.steps,
+            "ontology_hits": rec.hits()}
+
+
+def run(payload: dict, tools, *, guardrail=None, on_step=None) -> dict:
+    """One request, in either mode."""
+    if payload.get("mode") == "gaps":
+        return analyse(payload.get("question", ""), payload.get("collection", ""), tools,
+                       about=payload.get("about"), on_step=on_step)
+    return answer(payload.get("question", ""), payload.get("collection", ""), payload.get("history"), tools,
+                  guardrail=guardrail, on_step=on_step)
+
+
+def streamed(work):
+    """Run work(on_step) in a thread, yielding {"step": ...} for each step as it is recorded and
+    then {"result": ...}: the events of a streamed response."""
+    q: queue.Queue = queue.Queue()
+    done = object()
+
+    def go():
+        try:
+            q.put({"result": work(lambda s: q.put({"step": s}))})
+        except Exception as e:  # report to the caller rather than end the stream silently
+            log.exception("question failed")
+            q.put({"result": {"error": f"{type(e).__name__}: {str(e)[:300]}"}})
+        q.put(done)
+
+    threading.Thread(target=go, daemon=True).start()
+    while True:
+        item = q.get()
+        if item is done:
+            return
+        yield item
 
 
 # --- tools: in-process (local runs, evaluation) or through AgentCore Gateway (deployed) ---------
@@ -265,10 +383,15 @@ def make_app():
         token = _bearer(context)
         if not token:
             return {"error": "no caller token: the agent acts only as its caller"}
-        try:
+
+        def work(on_step=None):
             with GatewayTools(os.environ["GATEWAY_MCP_URL"], token) as tools:
-                return answer(payload.get("question", ""), payload.get("collection", ""), payload.get("history"),
-                              tools, guardrail=valves.Guardrail.from_env())
+                return run(payload, tools, guardrail=valves.Guardrail.from_env(), on_step=on_step)
+
+        if payload.get("stream"):
+            return streamed(work)  # a generator: the runtime sends it as server-sent events
+        try:
+            return work()
         except Exception as e:  # report to the caller rather than a bare 500
             log.exception("question failed")
             return {"error": f"{type(e).__name__}: {str(e)[:300]}"}

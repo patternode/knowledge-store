@@ -122,3 +122,62 @@ def render(claims: list[Claim], passages: dict[str, dict], gaps: list[str]) -> d
 
 def cited_ids(answer: GroundedAnswer) -> list[str]:
     return list(dict.fromkeys(c.passage_id for cl in answer.claims for c in cl.citations))
+
+
+# --- the analyst's report (workbench.REPORT_SCHEMA, as models for structured output) ---------------
+
+class NewClass(BaseModel):
+    name: str = Field(description="the class name, in the ontology's naming style")
+    parent: str = Field(default="", description="the existing class it is a kind of")
+    definition: str
+    why: str = Field(default="", description="what in the question needs it")
+
+
+class NewRelation(BaseModel):
+    name: str
+    domain: str = Field(default="", description="the class it runs from")
+    range: str = Field(default="", description="the class it runs to")
+    definition: str
+    why: str = ""
+
+
+class NewAttribute(BaseModel):
+    name: str
+    domain: str = Field(default="", description="the class it describes")
+    datatype: str = Field(default="string", description="string, integer, decimal, date or boolean")
+    definition: str
+    why: str = ""
+
+
+class OntologyChange(BaseModel):
+    classes: list[NewClass] = Field(default_factory=list)
+    relations: list[NewRelation] = Field(default_factory=list)
+    attributes: list[NewAttribute] = Field(default_factory=list)
+
+
+class ExistingTerm(BaseModel):
+    term: str
+    kind: str = Field(default="", description="class, relation or attribute")
+    use: str = Field(default="", description="how it would carry the answer")
+
+
+class DataNeed(BaseModel):
+    what: str = Field(description="the facts or documents that are missing")
+    where: str = Field(default="", description="the kind of source that would hold them")
+    why: str = ""
+
+
+class MissedFact(BaseModel):
+    what: str = Field(description="the fact a passage states that the graph lacks")
+    passage_id: str = ""
+    why: str = ""
+
+
+class GapReport(BaseModel):
+    verdict: str = Field(description="answerable, data_missing, ontology_missing, extraction_missed or out_of_scope")
+    summary: str = Field(description="two or three sentences: why it cannot be answered now, and what would fix it")
+    ontology: OntologyChange = Field(default_factory=OntologyChange)
+    existing: list[ExistingTerm] = Field(default_factory=list)
+    data: list[DataNeed] = Field(default_factory=list)
+    extraction: list[MissedFact] = Field(default_factory=list)
+    rewrites: list[str] = Field(default_factory=list, description="questions close to this one the graph answers now")

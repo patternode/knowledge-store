@@ -20,11 +20,6 @@ Optional, installed only with the extra that names them (see the README's Instal
 | Package | Extra | Licence |
 |---|---|---|
 | boto3, botocore | aws | Apache-2.0 |
-| azure-storage-blob, azure-storage-queue, azure-identity | azure | MIT |
-| azure-functions (the Azure Function App) | azure host | MIT |
-| google-cloud-storage, google-auth | gcp | Apache-2.0 |
-| PyJWT | azure, gcp | MIT |
-| cryptography (through PyJWT) | azure, gcp | Apache-2.0 or BSD-3-Clause |
 | pymongo | mongo | Apache-2.0 |
 | neo4j | neo4j | Apache-2.0 (parts under the Python Software Foundation License) |
 | psycopg, psycopg-binary | age | LGPL-3.0-only. It is installed by pip as an unmodified, separate library and imported at run time; this project does not include or change its code |

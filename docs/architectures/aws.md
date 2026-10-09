@@ -71,6 +71,9 @@ gateway endpoint. A NAT gateway (`network.enable_nat`), the VPC's range and zone
 7. Code checks every citation (see below). The answer shown is built only from the claims that
    pass, with numbered links to their passages and documents.
 
+The agent streams each of these steps to the portal as it happens, and the chat page's workbench
+shows them while the person waits ([docs/workbench.md](../workbench.md)).
+
 ## Grounding: no statement without a source
 
 The model's answer is never shown as written. It is a list of claims, each with citations
