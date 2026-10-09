@@ -17,7 +17,7 @@ A new agent should start at [HANDOFF.md](HANDOFF.md). That file holds both voice
 
 Read a clip straight through. Pause between its paragraphs. The picture is timed to the longer of the two reads.
 
-The voice on the assembly is still the professional read of [voice-pro.md](voice-pro.md) in the Microsoft Edge voice en-US-ChristopherNeural. The next narration uses Connor, en-IE-ConnorNeural, at the same pace and at 80 percent of that voice's raw level. [voice-record.md](voice-record.md) is still there if Dermot wants to replace that mix with his own recording. Edit [voice-pro.md](voice-pro.md) before the next narration. Those words are copied back into `build.py` before the picture is timed again.
+The voice on the assembly is the professional read of [voice-pro.md](voice-pro.md), spoken by Connor, the Microsoft Edge voice en-IE-ConnorNeural, a little slower than that voice's default and at 80 percent of its raw level. [voice-record.md](voice-record.md) is still there if Dermot wants to replace that mix with his own recording. A change to the spoken words belongs in [voice-pro.md](voice-pro.md), then in the `pro` paragraphs of `build.py`, so the picture is timed to the new read.
 
 The site serves `media/assembly.mp4` as `/media/knowledge-store-briefing.mp4`, linked from the Knowledge Store lab page. After a re-render, copy the assembly there.
 

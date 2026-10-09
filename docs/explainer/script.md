@@ -13,22 +13,22 @@ The clips are timed to the longer of the two reads, at about 130 words a minute,
 
 | In | Out | Clip | Picture |
 |---|---|---|---|
-| 0:00 | 0:21 | `00-purpose.mp4` | The purpose |
-| 0:21 | 0:56 | `00-the-collection.mp4` | The collection |
-| 0:56 | 1:36 | `01-usual-path.mp4` | The usual path |
-| 1:36 | 2:13 | `02-ontology-and-graph.mp4` | Ontology and graph |
-| 2:13 | 2:49 | `03-graph-and-vectors.mp4` | Graph and vectors |
-| 2:49 | 3:20 | `04-bring-ontology.mp4` | Bring the ontology |
-| 3:20 | 3:51 | `05-derive-ontology.mp4` | Derive the ontology |
-| 3:51 | 4:30 | `06-when-someone-asks.mp4` | The chat |
-| 4:30 | 5:07 | `07-what-is-better.mp4` | What is better |
-| 5:07 | 5:50 | `08-try-it.mp4` | Try it |
+| 0:00 | 0:31 | `00-purpose.mp4` | The purpose |
+| 0:31 | 1:06 | `00-the-collection.mp4` | The collection |
+| 1:06 | 1:59 | `01-usual-path.mp4` | The usual path |
+| 1:59 | 2:41 | `02-ontology-and-graph.mp4` | Ontology and graph |
+| 2:41 | 3:52 | `03-graph-and-vectors.mp4` | Graph and vectors |
+| 3:52 | 4:24 | `04-bring-ontology.mp4` | Bring the ontology |
+| 4:24 | 4:56 | `05-derive-ontology.mp4` | Derive the ontology |
+| 4:56 | 5:38 | `06-when-someone-asks.mp4` | The chat |
+| 5:38 | 6:15 | `07-what-is-better.mp4` | What is better |
+| 6:15 | 7:05 | `08-try-it.mp4` | Try it |
 
-Total picture: 5:50 (349.7 seconds).
+Total picture: 7:05 (425.2 seconds).
 
 ## 1. The purpose
 
-`00-purpose.mp4`, 0:00 to 0:21.
+`00-purpose.mp4`, 0:00 to 0:31.
 
 Picture:
 
@@ -37,7 +37,7 @@ Picture:
 
 ## 2. The collection
 
-`00-the-collection.mp4`, 0:21 to 0:56.
+`00-the-collection.mp4`, 0:31 to 1:06.
 
 Picture:
 
@@ -47,7 +47,7 @@ Picture:
 
 ## 3. The usual path
 
-`01-usual-path.mp4`, 0:56 to 1:36.
+`01-usual-path.mp4`, 1:06 to 1:59.
 
 Picture:
 
@@ -56,7 +56,7 @@ Picture:
 
 ## 4. Ontology and graph
 
-`02-ontology-and-graph.mp4`, 1:36 to 2:13.
+`02-ontology-and-graph.mp4`, 1:59 to 2:41.
 
 Picture:
 
@@ -65,16 +65,17 @@ Picture:
 
 ## 5. Graph and vectors
 
-`03-graph-and-vectors.mp4`, 2:13 to 2:49.
+`03-graph-and-vectors.mp4`, 2:41 to 3:52.
 
 Picture:
 
-- A question that names Moriarty walks the graph to The Final Problem and the passage.
-- A question that only describes the waterfall searches the vectors, lands on the same passage, and returns to the same fact.
+- One line: the same fact can be reached by walking the names, or by matching a description to the passage.
+- A question that names Moriarty walks the person node, along appears in, to the story and the falls. The passage is already on that fact.
+- A question that only describes two rivals at a waterfall is matched to the Reichenbach passage, which is already linked to Moriarty.
 
 ## 6. Bring the ontology
 
-`04-bring-ontology.mp4`, 2:49 to 3:20.
+`04-bring-ontology.mp4`, 3:52 to 4:24.
 
 Picture:
 
@@ -83,7 +84,7 @@ Picture:
 
 ## 7. Derive the ontology
 
-`05-derive-ontology.mp4`, 3:20 to 3:51.
+`05-derive-ontology.mp4`, 4:24 to 4:56.
 
 Picture:
 
@@ -92,7 +93,7 @@ Picture:
 
 ## 8. The chat
 
-`06-when-someone-asks.mp4`, 3:51 to 4:30.
+`06-when-someone-asks.mp4`, 4:56 to 5:38.
 
 Picture:
 
@@ -102,7 +103,7 @@ Picture:
 
 ## 9. What is better
 
-`07-what-is-better.mp4`, 4:30 to 5:07.
+`07-what-is-better.mp4`, 5:38 to 6:15.
 
 Picture:
 
@@ -112,7 +113,7 @@ Picture:
 
 ## 10. Try it
 
-`08-try-it.mp4`, 5:07 to 5:50.
+`08-try-it.mp4`, 6:15 to 7:05.
 
 Picture:
 

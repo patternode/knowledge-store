@@ -4,7 +4,7 @@ This packet is enough for a new agent to finish the briefing without the convers
 
 ## What this briefing is for
 
-The briefing is about 5:50. It opens by saying why it is worth hearing, then names the collection the examples use, and says that collection is a stand-in. It is for people, including executives, who only broadly understand AI agents. The shape is a purpose, a setting, a problem, a turn, how this lab builds the graph, a close, and how to try the public repository. After it, it should be clear what is better when a graph and vectors work together, and what to do next on any collection. It does not show the product being operated.
+The briefing is about 7:05. It opens by saying why it is worth hearing, then names the collection the examples use, and says that collection is a stand-in. It is for people, including executives, who only broadly understand AI agents. The shape is a purpose, a setting, a problem, a turn, how this lab builds the graph, a close, and how to try the public repository. After it, it should be clear what is better when a graph and vectors work together, and what to do next on any collection. It does not show the product being operated.
 
 The running example is the first sample question on the Knowledge Store dashboard: where Professor Moriarty appears. The decline is where he was born. Do not put a swamp adder, The Speckled Band, or Holmes's mother back on screen. Those examples were replaced because the adder reads as either a snake or an adding machine.
 
@@ -14,25 +14,25 @@ The picture is rendered in the Patternode brand (Midnight Terminal navy, IBM Ple
 
 Work lives on `cursor/knowledge-store-explainer-e63b` in the knowledge-store repository. The draft pull request is https://github.com/patternode/knowledge-store/pull/41. Its base branch is `main`. Do not open a second pull request, and do not create a new branch for this briefing.
 
-Ten clips, then the assembly (5:50, 349.7 seconds):
+Ten clips, then the assembly (7:05, 425.2 seconds):
 
 | Assembly in | Assembly out | File |
 |---|---|---|
-| 0:00 | 0:21 | `docs/explainer/media/00-purpose.mp4` |
-| 0:21 | 0:56 | `docs/explainer/media/00-the-collection.mp4` |
-| 0:56 | 1:36 | `docs/explainer/media/01-usual-path.mp4` |
-| 1:36 | 2:13 | `docs/explainer/media/02-ontology-and-graph.mp4` |
-| 2:13 | 2:49 | `docs/explainer/media/03-graph-and-vectors.mp4` |
-| 2:49 | 3:20 | `docs/explainer/media/04-bring-ontology.mp4` |
-| 3:20 | 3:51 | `docs/explainer/media/05-derive-ontology.mp4` |
-| 3:51 | 4:30 | `docs/explainer/media/06-when-someone-asks.mp4` |
-| 4:30 | 5:07 | `docs/explainer/media/07-what-is-better.mp4` |
-| 5:07 | 5:50 | `docs/explainer/media/08-try-it.mp4` |
-| 0:00 | 5:50 | `docs/explainer/media/assembly.mp4` |
+| 0:00 | 0:31 | `docs/explainer/media/00-purpose.mp4` |
+| 0:31 | 1:06 | `docs/explainer/media/00-the-collection.mp4` |
+| 1:06 | 1:59 | `docs/explainer/media/01-usual-path.mp4` |
+| 1:59 | 2:41 | `docs/explainer/media/02-ontology-and-graph.mp4` |
+| 2:41 | 3:52 | `docs/explainer/media/03-graph-and-vectors.mp4` |
+| 3:52 | 4:24 | `docs/explainer/media/04-bring-ontology.mp4` |
+| 4:24 | 4:56 | `docs/explainer/media/05-derive-ontology.mp4` |
+| 4:56 | 5:38 | `docs/explainer/media/06-when-someone-asks.mp4` |
+| 5:38 | 6:15 | `docs/explainer/media/07-what-is-better.mp4` |
+| 6:15 | 7:05 | `docs/explainer/media/08-try-it.mp4` |
+| 0:00 | 7:05 | `docs/explainer/media/assembly.mp4` |
 
 Both voice scripts are written. `docs/explainer/script.md` is the timeline and the on-screen picture notes. `docs/explainer/voice-pro.md` is the professional narrator. `docs/explainer/voice-record.md` is the read-yourself twin. `docs/explainer/build.py` generates those three files from its `SECTIONS` list. `docs/explainer/README.md` is the short entry point.
 
-The mixed voice on the assembly is still the professional read of `voice-pro.md` in en-US-ChristopherNeural, at rate -10%. Speech starts 0.8 seconds into each clip. A take that would run past its clip is sped enough to finish with a short breath. The other clips are left at the spoken pace, and the time after the last word stays silent. The next narration uses Connor, en-IE-ConnorNeural, at the same rate, with the level at 80 percent of the raw take. Do not regenerate that mix until the professional script has been edited. `voice-record.md` is still there if Dermot wants to replace this mix with his own recording.
+The mixed voice on the assembly is the professional read of `voice-pro.md`, spoken by Connor, en-IE-ConnorNeural, at rate -10%, with the level at 80 percent of the raw take. Speech starts 0.8 seconds into each clip. A take that would run past its clip is sped enough to finish with a short breath. The other clips are left at the spoken pace, and the time after the last word stays silent. `voice-record.md` is still there if Dermot wants to replace this mix with his own recording.
 
 Paragraph takes, one wav per paragraph, are in `docs/explainer/assets/narration/`. `python3 docs/explainer/narrate.py` joins them with a short pause, fits each take to its clip, and remuxes the existing picture without redrawing a frame. `python3 docs/explainer/narrate.py --synthesize` calls edge-tts again and replaces those wavs. There was no recording by Dermot on disk, so the mix uses the synthesized professional read. After this story change the wavs were synthesized again. The close has one paragraph. Do not leave an older second close take in that folder.
 
@@ -50,53 +50,53 @@ From `voice-pro.md`. For a narrator in the style of a serious technical film: un
 
 #### 1. The purpose
 
-Clip `00-purpose.mp4`. Assembly 0:00 to 0:21.
+Clip `00-purpose.mp4`. Assembly 0:00 to 0:31.
 
-This briefing shows how an agent can answer from documents without inventing what they never said. The usual way fails. A graph and a vector search belong together. Then, how to try this open-source store on your own documents.
+This briefing introduces the concepts behind the Patternode Knowledge Store lab, provided as open source on GitHub. It shows how an agent can answer from source content without inventing what was never said in the source text. We discuss how the usual approach fails, how graph and vector search belong together and how to try this open-source store on your own documents.
 
 #### 2. The collection
 
-Clip `00-the-collection.mp4`. Assembly 0:21 to 0:56.
+Clip `00-the-collection.mp4`. Assembly 0:31 to 1:06.
 
-The examples that follow use one collection. A collection, sometimes called a corpus, is the set of documents an agent is allowed to answer from. Here that set is three Sherlock Holmes books: the Adventures, the Memoirs, and the Return.
-
-It is a stand-in for any documents. The usual way, then why a graph belongs with the vectors, then how a collection becomes that graph, then what to do next.
+A collection, sometimes called a corpus, is the set of documents an agent is allowed to answer from. Here we use the full text of three Sherlock Holmes books: the Adventures, the Memoirs, and the Return. These are provided in the Knowledge Store lab. This example collection is a stand-in for any set of documents.
 
 #### 3. The usual path
 
-Clip `01-usual-path.mp4`. Assembly 0:56 to 1:36.
+Clip `01-usual-path.mp4`. Assembly 1:06 to 1:59.
 
-An agent that answers from a company's own documents usually takes one path. The documents are cut into chunks and stored as vectors. A question retrieves the nearest chunks, and the agent writes a sentence.
+An agent that answers from a company's own documents usually takes one path. The documents are cut into chunks and stored as vectors. A question retrieves the nearest chunks, and the agent writes a sentence. A naive or blunt force approach is to have the agent retrieve unindexed text via tools an ad hoc manner.
 
-The question is where Professor Moriarty was born. The stories never say. The nearest chunk calls him a man of good birth and excellent education. The model can still write that phrase, and attach a citation afterwards. The words were there. They do not name a place.
+Say a user in a chat session asks where Professor Moriarty was born. The stories never say where. The nearest chunk calls him a man of good birth and excellent education. The model can still write that phrase, and attach a citation afterwards. The words were there. But they do not name a place.
 
 #### 4. Ontology and graph
 
-Clip `02-ontology-and-graph.mp4`. Assembly 1:36 to 2:13.
+Clip `02-ontology-and-graph.mp4`. Assembly 1:59 to 2:41.
 
-An ontology is the picture of what a collection is allowed to say. It names the kinds of things, and the links between them. A person. A story. A place. A person appears in a story. A person meets someone at a place.
+An ontology is the picture of what concepts a collection contains. It names the kinds of things, and the links between them. A person. A story. A place. A person appears in a story. A person meets someone at a place.
 
-A knowledge graph is that picture, filled in. Professor Moriarty appears in The Final Problem. That story brings him and Holmes to the Reichenbach Falls. Each fact points at a passage.
+A knowledge graph is that picture, filled in. Professor Moriarty appears in The Final Problem. That story brings him and Holmes to the Reichenbach Falls. Each fact points to a passage. In a knowledge graph, facts are expressed as nodes and relationships as links between nodes.
 
 #### 5. Graph and vectors
 
-Clip `03-graph-and-vectors.mp4`. Assembly 2:13 to 2:49.
+Clip `03-graph-and-vectors.mp4`. Assembly 2:41 to 3:52.
 
-When a question names things, the graph is the path. Where does Professor Moriarty appear walks from the person, along appears in, to the story, and on to the falls. The passage comes with the fact.
+The same fact can be reached by walking the names in the graph, or by matching a description of the scene to the passage.
 
-Instead, two rivals fall together at a waterfall. The vectors find that passage by meaning and return to the same fact. The graph holds the connection. The vectors hold the wording the question never used.
+When a question includes names that are in the graph, the agent can walk the graph. A search for "Where does Professor Moriarty appear?" starts at the person node, follows the "appears in" link to the story node, and continues to Reichenbach Falls as a location type fact. The passage is already attached to that final fact.
+
+That walk can start only when the question contains those names. Someone who does not remember them might describe the scene instead, and ask about two rivals falling at a waterfall. Those words are not nodes. The agent compares them with the passages by meaning, and the passage about the Reichenbach Falls matches. That passage is already linked to Moriarty, so the answer is the same fact.
 
 #### 6. Bring the ontology
 
-Clip `04-bring-ontology.mp4`. Assembly 2:49 to 3:20.
+Clip `04-bring-ontology.mp4`. Assembly 3:52 to 4:24.
 
 If you already have the vocabulary, you bring the ontology with the documents. They are divided into passages. Extraction reads each passage through the ontology you brought.
 
-A fact is kept only when the passage contains it. The Final Problem names Moriarty and the Reichenbach Falls, so that fact stays. The lab builds the graph, and one vector for each passage.
+A fact is kept in the graph only when a passage contains it. The Final Problem names Moriarty and the Reichenbach Falls, so that fact stays. The lab builds the graph, and one vector for each passage.
 
 #### 7. Derive the ontology
 
-Clip `05-derive-ontology.mp4`. Assembly 3:20 to 3:51.
+Clip `05-derive-ontology.mp4`. Assembly 4:24 to 4:56.
 
 If you do not bring an ontology, the documents arrive on their own. The lab reads a sample and proposes the kinds of things they mention, and the links that should be allowed. A person publishes that draft.
 
@@ -104,23 +104,23 @@ Then the same extraction runs. The graph and the vectors are built the same way.
 
 #### 8. The chat
 
-Clip `06-when-someone-asks.mp4`. Assembly 3:51 to 4:30.
+Clip `06-when-someone-asks.mp4`. Assembly 4:56 to 5:38.
 
-A person types a message in the chat. Where does Professor Moriarty appear walks from the person to the story, and the cited passage is read. It is in The Final Problem, so the statement stays. The result is that story, with the passage beside it.
+A person types a message in the chat as "Where does Professor Moriarty appear?". The agent walks from the person to the story, and the cited passage is read. It is in The Final Problem, so the statement stays. The result is that story, with the passage beside it.
 
-Where he was born takes the same path. It meets the phrase a man of good birth, and nothing that names a place. The result is a decline. The sources do not say.
+Where he was born takes the same path. It meets the phrase a man of good birth, and nothing that names a place. The result is a decline. The sources do not say. So no hallucination results.
 
 #### 9. What is better
 
-Clip `07-what-is-better.mp4`. Assembly 4:30 to 5:07.
+Clip `07-what-is-better.mp4`. Assembly 5:38 to 6:15.
 
-A graph and the vectors do different work. The graph holds what is connected to what, and of what kind. The vectors hold wording the question never used. A result comes back only when a passage supports it. The Final Problem stays, because that story says where Moriarty appears. Where he was born does not, because the collection never names a place. A sentence no longer receives a citation after it has been written.
+A graph and the vectors do different work. The graph holds what is connected to what, and of what kind. The vectors hold wording that the question never used. A result comes back only when a passage supports it. The Final Problem stays in the results, because that story says where Moriarty appears. Where he was born does not, because the collection never names a place.
 
 #### 10. Try it
 
-Clip `08-try-it.mp4`. Assembly 5:07 to 5:50.
+Clip `08-try-it.mp4`. Assembly 6:15 to 7:05.
 
-Here is what we just covered. Nearest words can attach a citation to the wrong fact. A graph holds the connection, and vectors find the wording. A result stays only when a passage supports it. Professor Moriarty appears in The Final Problem, at the Reichenbach Falls. Where he was born, the sources do not say.
+Here is what we just covered. Nearest words can attach a citation to the wrong fact. A graph holds the connection, and vectors find the wording. A result stays only when a passage supports it. Professor Moriarty appears in The Final Problem, at the Reichenbach Falls. Where he was born, the sources do not say. Try it out in your own AWS infrastructure using the Knowledge Store lab from Patternode on GitHub.
 
 To try it, go to the public repository, github.com/patternode/knowledge-store. Clone it. It is open source. The deploy guide shows how to run it in your own AWS account, on your own documents.
 
@@ -130,13 +130,13 @@ From `voice-record.md`. Read each clip straight through, as if explaining the di
 
 #### 1. The purpose
 
-Clip `00-purpose.mp4`. Assembly 0:00 to 0:21.
+Clip `00-purpose.mp4`. Assembly 0:00 to 0:31.
 
 This briefing shows how an agent can answer from your own documents without inventing what they never said. The usual way fails. A graph and a vector search belong together. Then, how to try this open-source store yourself.
 
 #### 2. The collection
 
-Clip `00-the-collection.mp4`. Assembly 0:21 to 0:56.
+Clip `00-the-collection.mp4`. Assembly 0:31 to 1:06.
 
 These examples use one collection. A collection, sometimes called a corpus, is the set of documents an agent is allowed to answer from. Here, that set is three Sherlock Holmes books: the Adventures, the Memoirs, and the Return.
 
@@ -144,7 +144,7 @@ It is a stand-in for your own documents. The usual way, then why a graph belongs
 
 #### 3. The usual path
 
-Clip `01-usual-path.mp4`. Assembly 0:56 to 1:36.
+Clip `01-usual-path.mp4`. Assembly 1:06 to 1:59.
 
 An agent answering from your own documents usually works like this. The pages are cut into chunks and stored as vectors. A question pulls back the nearest chunks, and the agent writes a sentence.
 
@@ -152,7 +152,7 @@ Ask where Professor Moriarty was born. The stories never say. The nearest chunk 
 
 #### 4. Ontology and graph
 
-Clip `02-ontology-and-graph.mp4`. Assembly 1:36 to 2:13.
+Clip `02-ontology-and-graph.mp4`. Assembly 1:59 to 2:41.
 
 An ontology is a picture of what these documents are allowed to mean. The kinds of things, and the links you permit. A person. A story. A place. A person appears in a story. A person meets someone at a place.
 
@@ -160,7 +160,7 @@ The knowledge graph is that picture filled in. Professor Moriarty appears in The
 
 #### 5. Graph and vectors
 
-Clip `03-graph-and-vectors.mp4`. Assembly 2:13 to 2:49.
+Clip `03-graph-and-vectors.mp4`. Assembly 2:41 to 3:52.
 
 Ask where Professor Moriarty appears, and the graph is enough. Person, appears in, story, meets at the falls, and the passage is already on the fact.
 
@@ -168,7 +168,7 @@ Instead, two rivals fall together at a waterfall. The vectors find that passage 
 
 #### 6. Bring the ontology
 
-Clip `04-bring-ontology.mp4`. Assembly 2:49 to 3:20.
+Clip `04-bring-ontology.mp4`. Assembly 3:52 to 4:24.
 
 This is the path when you bring the ontology. Documents stay as they arrived and are split into passages to cite. Extraction reads each passage in the types you brought.
 
@@ -176,7 +176,7 @@ A fact is kept only when the passage contains it. The Final Problem names Moriar
 
 #### 7. Derive the ontology
 
-Clip `05-derive-ontology.mp4`. Assembly 3:20 to 3:51.
+Clip `05-derive-ontology.mp4`. Assembly 4:24 to 4:56.
 
 This is the path when you do not bring an ontology. The documents come in. A sample is read, and the lab proposes the kinds of things they talk about. You publish that draft.
 
@@ -184,7 +184,7 @@ Then the same extraction runs. The graph and the vectors are built the same way.
 
 #### 8. The chat
 
-Clip `06-when-someone-asks.mp4`. Assembly 3:51 to 4:30.
+Clip `06-when-someone-asks.mp4`. Assembly 4:56 to 5:38.
 
 Someone types in the chat. Where does Professor Moriarty appear goes from the person to the story, and the passage on that fact is read. The Final Problem does name him, so the statement stays. You see that story, with the passage beside it.
 
@@ -192,13 +192,13 @@ Ask where he was born. It meets a man of good birth, not a place. The chat decli
 
 #### 9. What is better
 
-Clip `07-what-is-better.mp4`. Assembly 4:30 to 5:07.
+Clip `07-what-is-better.mp4`. Assembly 5:38 to 6:15.
 
 A graph and the vectors do different work. The graph holds what is connected to what, and of what kind. The vectors hold wording the question never used. A result comes back only when a passage supports it. The Final Problem stays, because that story says where Moriarty appears. Where he was born does not, because the collection never names a place. A sentence no longer gets a citation after it has been written.
 
 #### 10. Try it
 
-Clip `08-try-it.mp4`. Assembly 5:07 to 5:50.
+Clip `08-try-it.mp4`. Assembly 6:15 to 7:05.
 
 Here is what we just covered. Nearest words can attach a citation to the wrong fact. A graph holds the connection, and vectors find the wording. A result stays only when a passage supports it. Professor Moriarty appears in The Final Problem, at the Reichenbach Falls. Where he was born, the sources do not say.
 
@@ -270,7 +270,7 @@ The first command rewrites the three generated docs. The second also re-encodes 
 
 ## What is left
 
-- [x] The mixed voice on the current assembly is the professional read of `docs/explainer/voice-pro.md` (edge-tts, en-US-ChristopherNeural, rate -10%), for the Moriarty cut. The picture is 5:50. The next mix is Connor, en-IE-ConnorNeural, at 80 percent level. Wait for edits to `voice-pro.md` before running `python3 docs/explainer/narrate.py --synthesize`. Copy those edits into the `pro` paragraphs in `build.py` first, or `build.py` will overwrite the script. `docs/explainer/voice-record.md` is still there if Dermot wants to replace that mix with his own recording. Paragraph wavs are in `docs/explainer/assets/narration/`.
+- [x] The mixed voice is the professional read of `docs/explainer/voice-pro.md` (edge-tts, en-IE-ConnorNeural, rate -10%, level 80 percent). The picture is 7:05. Copy any later edit of `voice-pro.md` into the `pro` paragraphs in `build.py` before `python3 docs/explainer/build.py`, or that command overwrites the script. `docs/explainer/voice-record.md` is still there if Dermot wants to replace that mix with his own recording. Paragraph wavs are in `docs/explainer/assets/narration/`, and `python3 docs/explainer/narrate.py` rebuilds the mix from them.
 - [ ] Treat `docs/explainer/comfy-shots.md` as optional atmosphere. It may be stale relative to the ten-clip cut. Do not ask an image model to draw words. ComfyUI is not in this workspace.
 - [ ] Leave lab screen recordings out. Do not show the product being operated.
 - [ ] After any palette or layout change, check the late frames of each clip. Do not commit `docs/explainer/media/stills/` or any `__pycache__`.
