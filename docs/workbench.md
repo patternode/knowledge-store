@@ -11,7 +11,7 @@ Every question records its steps as they happen:
 | Step | What it says |
 |---|---|
 | tool | The tool call and its arguments, in words ("Searched entities for "Voyager" of type Mission: 3 found"), what came back, the ontology terms it touched and how long it took. Open the input to see the exact arguments. That input is labeled Knowledge graph query for an entity, neighbourhood or path lookup, Vector query when a passage search used the knowledge base, and Keyword passage search when it searched the stored text. |
-| model | A model call: the agent deciding what to do next. |
+| model | A model call: the agent deciding what to do next. The line under it is how long that call thought, the tokens it reported (input, output, cache write, cache read, including zeros), and its list price. |
 | check | The cited passages being read back and every quote checked against them. |
 | repair | Citations that failed, sent back to the agent once to fix. |
 | guardrail | The Bedrock Guardrail declining the question, or removing a claim it found ungrounded. |
@@ -24,7 +24,7 @@ How the steps reach the page:
 3. The portal writes the steps so far into the pending answer in the chat table, at most once a second, so a poll shows them. Without the agent, the portal's own tool loop records the same steps.
 4. The workbench shows the selected question's steps live. Inline, the pending answer shows the latest step and the time so far.
 
-The steps answer the question a long wait raises: is it stuck, searching for the wrong type, reading the wrong documents, or failing its citations? The step budget (`valves`) is visible too: a question that hits `max_tool_calls` shows it.
+The steps answer the question a long wait raises: is it stuck, searching for the wrong type, reading the wrong documents, or failing its citations? Each step is coloured by its type: model thinking, a knowledge graph query, a vector query, a keyword search, a passage read, an ontology read, a check, a repair, the guardrail, any other tool, and how it finished. Under the list, every one of those types is counted, including the ones this question did not use, then each tool by how many times it was called, then the tokens across the model calls. The cost by path charges each model call to the paths of the tools that followed it, split evenly when one call used several, and charges a model call with no tool after it to the answer. The answer itself is repeated under that table. The step budget (`valves`) is visible too: a question that hits `max_tool_calls` shows it. The portal's own loop stops after 10 model rounds. The agent stops after `max_model_calls` (14) and refuses further tools after `max_tool_calls` (16).
 
 ## What the question cost
 

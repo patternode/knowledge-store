@@ -15,8 +15,10 @@
  * The workbench (the panel beside the chat) shows the selected question's steps while the agent
  * works: each search, read and check, polled from GET /api/chat while it runs, then the ontology
  * terms the answer used, and what the question cost, split by token kind and by model call.
- * A step's input says whether that call was a knowledge graph query, a vector query, or a
- * keyword passage search.
+ * A step is coloured by what it was: model thinking, a knowledge graph query, a vector query,
+ * a keyword search, a passage read, an ontology read, or a check. The list ends with a count of
+ * every type, including the ones that did not happen, and of each tool that was called. A model
+ * step shows how long it thought and the tokens that call reported.
  *
  * Sources are not part of the conversation. They sit in a panel to the right of the questions
  * and answers, shown and hidden from a citation or from Sources. One source is open at a time.
@@ -39,6 +41,28 @@ function main() {
     vector: 'Vector query',
     keyword: 'Keyword passage search',
   };
+  // Every type is counted, including the ones this question did not use.
+  const STEP_TYPES = [
+    ['model', 'Model thinking'],
+    ['graph', 'Knowledge graph query'],
+    ['vector', 'Vector query'],
+    ['keyword', 'Keyword search'],
+    ['read', 'Passage read'],
+    ['ontology', 'Ontology read'],
+    ['check', 'Check'],
+    ['repair', 'Repair'],
+    ['guardrail', 'Guardrail'],
+    ['other', 'Other tool'],
+    ['done', 'Finished'],
+    ['error', 'Stopped'],
+  ];
+  const STEP_LABEL = Object.fromEntries(STEP_TYPES);
+  const TOKEN_KINDS = [
+    ['inputTokens', 'in'],
+    ['outputTokens', 'out'],
+    ['cacheWriteInputTokens', 'cache write'],
+    ['cacheReadInputTokens', 'cache read'],
+  ];
   const secs = (ms) => `${(Number(ms || 0) / 1000).toFixed(1)} s`;
   const plural = (k, one, many) => `${k} ${k === 1 ? one : (many || one + 's')}`;
 
@@ -479,23 +503,153 @@ function main() {
     if (GRAPH_TOOLS.has(tool)) return 'graph';
     return '';
   }
+  function stepType(s) {
+    if (STEP_LABEL[s.kind] && s.kind !== 'tool') return s.kind;
+    const source = querySource(s);
+    if (source) return source;
+    const tool = str(s.tool);
+    if (tool === 'read_passages') return 'read';
+    if (tool === 'describe_ontology') return 'ontology';
+    return 'other';
+  }
+  function tokenLine(usage) {
+    return TOKEN_KINDS.map(([key, label]) => `${Number(usage[key] || 0).toLocaleString()} ${label}`).join(' · ');
+  }
+  function modelUsage(s) {
+    const think = s.took_ms != null ? `${secs(s.took_ms)} thinking` : '';
+    const tokens = s.usage ? tokenLine(s.usage) : 'No token report for this call';
+    const price = s.usd != null ? usdText(s.usd) : '';
+    return [think, tokens, price].filter(Boolean).join(' · ');
+  }
   function stepItem(s) {
     const terms = Object.entries(s.terms || {}).flatMap(([k, names]) => (names || []).map((n) => h('span', { class: 'term-mini', title: KIND_LABEL[k] || k, text: n })));
+    const type = stepType(s);
     const source = querySource(s);
     const input = s.input && Object.keys(s.input).length
       ? h('details', { class: `step-input${source ? ' ' + source : ''}` },
         h('summary', { text: SOURCE_LABEL[source] || 'Input' }),
         h('pre', { text: JSON.stringify(s.input, null, 1) })) : null;
-    const spend = s.kind === 'model' && s.usd != null ? `${usdText(s.usd)} · ` : '';
-    return h('li', { class: `step ${str(s.kind)}${source ? ' q-' + source : ''}${s.error ? ' error' : ''}` },
+    const when = s.kind === 'tool' && s.took_ms != null ? `${secs(s.took_ms)} in the tool · ` : '';
+    return h('li', { class: `step ${str(s.kind)} t-${type}${s.error ? ' error' : ''}` },
       h('span', { class: 'step-dot', 'aria-hidden': 'true' }),
       h('div', { class: 'step-body' },
-        h('p', { class: 'step-title' }, h('span', { text: str(s.title) }),
-          h('span', { class: 'step-time', title: s.usd != null ? 'List price of this model call' : '', text: spend + secs(s.ms) })),
+        h('p', { class: 'step-title' },
+          h('span', { class: 'step-name' },
+            h('span', { class: 'step-kind', text: STEP_LABEL[type] || 'Step' }),
+            h('span', { text: str(s.title) })),
+          h('span', { class: 'step-time', title: 'Time from the start of the question', text: when + secs(s.ms) })),
+        s.kind === 'model' ? h('p', { class: 'step-usage', text: modelUsage(s) }) : null,
         s.detail ? h('p', { class: 'step-detail', text: str(s.detail) }) : null,
         s.error ? h('p', { class: 'step-detail error', text: str(s.error) }) : null,
         terms.length ? h('p', { class: 'step-terms' }, terms) : null,
         input));
+  }
+  const COST_PATHS = [
+    ['graph', 'Knowledge graph'],
+    ['vector', 'Vector'],
+    ['keyword', 'Keyword search'],
+    ['read', 'Passage read'],
+    ['ontology', 'Ontology read'],
+    ['other', 'Other tool'],
+    ['answer', 'Answer'],
+  ];
+  const PATH_IDS = new Set(COST_PATHS.map(([id]) => id).filter((id) => id !== 'answer'));
+  function costByPath(steps, done) {
+    const usd = Object.fromEntries(COST_PATHS.map(([id]) => [id, 0]));
+    const priced = Object.fromEntries(COST_PATHS.map(([id]) => [id, false]));
+    const unpriced = Object.fromEntries(COST_PATHS.map(([id]) => [id, false]));
+    let pending = null;
+    let paths = [];
+    function assign() {
+      if (!pending) { paths = []; return; }
+      const targets = [...new Set(paths)].filter((id) => PATH_IDS.has(id));
+      if (!targets.length) targets.push('answer');
+      if (pending.usd == null) {
+        for (const id of targets) unpriced[id] = true;
+      } else {
+        const share = pending.usd / targets.length;
+        for (const id of targets) { usd[id] += share; priced[id] = true; }
+      }
+      pending = null;
+      paths = [];
+    }
+    for (const s of steps) {
+      if (s.kind === 'model') {
+        assign();
+        pending = { usd: s.usd == null ? null : Number(s.usd) };
+      } else {
+        const type = stepType(s);
+        if (PATH_IDS.has(type)) paths.push(type);
+      }
+    }
+    if (done) assign();
+    return { usd, priced, unpriced };
+  }
+  function answerText(t) {
+    const running = t.status === 'pending' || t.status === 'running';
+    if (running) return '';
+    if (t.mode === 'gaps' && t.result && t.result.report) {
+      const report = t.result.report;
+      const verdict = VERDICT[report.verdict] || str(report.verdict) || 'Report';
+      return report.summary ? `${verdict}. ${str(report.summary)}` : verdict;
+    }
+    if (t.answer) return t.answer;
+    if (t.status === 'failed') return (t.result && t.result.error) || 'The question did not get an answer.';
+    return '';
+  }
+  function stepSummary(t) {
+    const steps = t.steps;
+    const counts = Object.fromEntries(STEP_TYPES.map(([id]) => [id, 0]));
+    const tools = {};
+    const tokens = Object.fromEntries(TOKEN_KINDS.map(([key]) => [key, 0]));
+    let reported = 0;
+    for (const s of steps) {
+      counts[stepType(s)] += 1;
+      if (s.tool) tools[str(s.tool)] = (tools[str(s.tool)] || 0) + 1;
+      if (s.kind === 'model' && s.usage) {
+        reported += 1;
+        for (const key of Object.keys(tokens)) tokens[key] += Number(s.usage[key] || 0);
+      }
+    }
+    const toolRows = Object.entries(tools).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    const done = t.status !== 'pending' && t.status !== 'running';
+    const costs = costByPath(steps, done);
+    const countRow = (id, label) => h('tr', { class: `t-${id}` },
+      h('th', { scope: 'row' }, h('span', { class: 'step-swatch', 'aria-hidden': 'true' }), h('span', { text: label })),
+      h('td', { class: 'num-cell', text: String(counts[id]) }));
+    const priceCell = (id) => {
+      if (costs.priced[id] && costs.unpriced[id]) return `${usdText(costs.usd[id])} · some calls not priced`;
+      if (costs.priced[id]) return usdText(costs.usd[id]);
+      if (costs.unpriced[id]) return 'not priced';
+      return usdText(0);
+    };
+    const answer = answerText(t);
+    return h('div', { class: 'step-summary' },
+      h('h4', { text: 'Steps by type' }),
+      h('table', { class: 'kv small' },
+        h('thead', null, h('tr', null, [h('th', { scope: 'col', text: 'Type' }), h('th', { scope: 'col', text: 'Steps' })])),
+        h('tbody', null, STEP_TYPES.map(([id, label]) => countRow(id, label)))),
+      h('h4', { text: 'Tools called' }),
+      toolRows.length
+        ? h('table', { class: 'kv small' },
+          h('thead', null, h('tr', null, [h('th', { scope: 'col', text: 'Tool' }), h('th', { scope: 'col', text: 'Calls' })])),
+          h('tbody', null, toolRows.map(([name, n]) => h('tr', null,
+            h('th', { scope: 'row', text: name }), h('td', { class: 'num-cell', text: String(n) })))))
+        : h('p', { class: 'small muted', text: 'No tools were called.' }),
+      h('h4', { text: 'Model tokens' }),
+      h('p', { class: 'small', text: reported
+        ? tokenLine(tokens)
+        : 'No model call reported tokens.' }),
+      h('h4', { text: 'Cost by path' }),
+      h('p', { class: 'small muted', text: 'Each model call is charged to the paths of the tools that followed it, split evenly when there were several. A model call with no tool after it is the cost of the answer. Searches themselves are not charged.'
+        + (done ? '' : ' The model call still in progress is not in this table yet.') }),
+      h('table', { class: 'kv small' },
+        h('thead', null, h('tr', null, [h('th', { scope: 'col', text: 'Path' }), h('th', { scope: 'col', text: 'Price' })])),
+        h('tbody', null, COST_PATHS.map(([id, label]) => h('tr', { class: `t-${id === 'answer' ? 'done' : id}` },
+          h('th', { scope: 'row' }, h('span', { class: 'step-swatch', 'aria-hidden': 'true' }), h('span', { text: label })),
+          h('td', { class: 'num-cell', text: priceCell(id) }))))),
+      h('h4', { text: 'Answer' }),
+      h('p', { class: answer ? 'bench-answer' : 'small muted', text: answer || (done ? 'No answer was recorded.' : 'The answer appears when the question finishes.') }));
   }
   // List price. Under a cent, four places, so a split of small calls does not all read as the same amount.
   function usdText(n) {
@@ -559,7 +713,8 @@ function main() {
       h('p', { class: 'bench-q', text: t.question }),
       statusLine,
       t.steps.length ? h('ol', { class: 'steps' }, t.steps.map(stepItem))
-        : h('p', { class: 'small muted', text: running ? 'Waiting for the first step.' : 'This answer reported no steps.' }));
+        : h('p', { class: 'small muted', text: running ? 'Waiting for the first step.' : 'This answer reported no steps.' }),
+      t.steps.length ? stepSummary(t) : null);
     renderCost(t);
     const hits = t.hits || {};
     const groups = Object.keys(KIND_LABEL).filter((k) => Object.keys(hits[k] || {}).length);
