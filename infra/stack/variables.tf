@@ -206,7 +206,7 @@ variable "agent" {
 }
 
 variable "guardrail" {
-  description = "a Bedrock Guardrail: screens each question, and checks each claim against the passages it cites"
+  description = "a Bedrock Guardrail: screens each question, and checks each claim against the passage, cell, or figure it cites"
   type = object({
     enabled             = optional(bool, true)
     grounding_threshold = optional(number, 0.75)

@@ -20,6 +20,7 @@ import os
 import urllib.request
 
 from .. import llm, workbench
+from ..agent import valves
 from .index import Index
 
 MAX_STEPS = 10
@@ -181,12 +182,19 @@ def _priced(rec: workbench.Recorder, model_id: str, usage: dict, reported: bool)
     return workbench.query_cost(rec.steps, model_id=model_id, usage=usage if reported else None, provider=spend_provider())
 
 
+def system_text(idx: Index) -> str:
+    """The portal prompt. A collection with the catalog's mapping is told which questions the tables answer."""
+    from ..structured.query import describe
+    return SYSTEM.format(profile=profile_text(idx), vocabulary=vocabulary(idx)) + valves.table_query_note(
+        valves.table_questions(describe(idx.lake)))
+
+
 def ask(idx: Index, question: str, history: list[dict] | None, *, private: bool, model_id: str | None = None,
         brt=None, on_step=None) -> dict:
     brt = brt or client()
     rec = workbench.Recorder(on_step)
     model_id = model_id or os.environ.get("CHAT_MODEL_ID", "us.anthropic.claude-sonnet-5")
-    system = [{"text": SYSTEM.format(profile=profile_text(idx), vocabulary=vocabulary(idx))},
+    system = [{"text": system_text(idx)},
               {"cachePoint": {"type": "default"}}]
     messages = []
     for turn in (history or [])[-6:]:
