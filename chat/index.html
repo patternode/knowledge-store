@@ -83,17 +83,36 @@
     </div>
     <div class="bench-body">
       <section id="bench-steps" aria-labelledby="bench-steps-title" aria-live="polite">
-        <h3 id="bench-steps-title">Steps</h3>
-        <p class="small muted">Ask a question to see what the agent does: each search, each read and each check, as it happens.</p>
+        <details class="bench-fold">
+          <summary><h3 id="bench-steps-title">Steps</h3></summary>
+          <div class="bench-fold-body">
+            <p class="small muted">Ask a question to see what the agent does: each search, each read and each check, as it happens.</p>
+          </div>
+        </details>
       </section>
-      <section id="bench-cost" aria-labelledby="bench-cost-title" hidden>
-        <h3 id="bench-cost-title">Cost</h3>
+      <section id="bench-cost" aria-labelledby="bench-cost-title">
+        <details class="bench-fold">
+          <summary><h3 id="bench-cost-title">Cost</h3></summary>
+          <div class="bench-fold-body">
+            <p class="small muted">The price appears when the question finishes.</p>
+          </div>
+        </details>
       </section>
-      <section id="bench-terms" aria-labelledby="bench-terms-title" hidden>
-        <h3 id="bench-terms-title">Ontology used</h3>
+      <section id="bench-terms" aria-labelledby="bench-terms-title">
+        <details class="bench-fold">
+          <summary><h3 id="bench-terms-title">Ontology used</h3></summary>
+          <div class="bench-fold-body">
+            <p class="small muted">The terms a question uses appear here.</p>
+          </div>
+        </details>
       </section>
-      <section id="bench-session" aria-labelledby="bench-session-title" hidden>
-        <h3 id="bench-session-title">This session</h3>
+      <section id="bench-session" aria-labelledby="bench-session-title">
+        <details class="bench-fold">
+          <summary><h3 id="bench-session-title">This session</h3></summary>
+          <div class="bench-fold-body">
+            <p class="small muted">No questions in this session yet.</p>
+          </div>
+        </details>
       </section>
     </div>
   </aside>
