@@ -24,6 +24,8 @@
  *
  * Sources are not part of the conversation. They sit in a panel to the right of the questions
  * and answers, shown and hidden from a citation or from Sources. One source is open at a time.
+ * The words the claim quotes are highlighted in the passage. A table citation shows that row,
+ * with the cited cell highlighted.
  * A question has a mode: "ask" answers it; "gaps" asks the analyst what it
  * would take to answer it (ontology extensions, data, missed extraction), which a curator can keep
  * as an ontology request.
@@ -81,25 +83,47 @@ function main() {
   const announce = (text) => { const a = $('#announce'); a.textContent = ''; setTimeout(() => { a.textContent = text; }, 50); };
 
   // ---- quotes in a passage -------------------------------------------------------------
-  // Matching ignores case and treats any run of whitespace as one space. norm() keeps, for each
-  // character of the normalised text, its index in the original, so a match maps back exactly.
-  function norm(s) {
+  // Matching follows the grounding check: case, spacing, curly quotes and dashes. Each folded
+  // character remembers its index in the original, so the highlight is the passage text.
+  const FOLD = {
+    '\u2018': "'", '\u2019': "'", '\u201a': "'", '\u201b': "'", '\u2032': "'",
+    '\u201c': '"', '\u201d': '"', '\u201e': '"', '\u2033': '"',
+    '\u2010': '-', '\u2011': '-', '\u2012': '-', '\u2013': '-', '\u2014': '-',
+    '\u2015': '-', '\u2212': '-', '\u00a0': ' ',
+  };
+  function foldChars(s) {
+    let out = '';
+    const map = [];
+    for (let i = 0; i < s.length; i++) {
+      let ch = s[i];
+      if (FOLD[ch]) ch = FOLD[ch];
+      else if (/[*_`#>|]/.test(ch)) ch = ' ';
+      else {
+        const n = ch.normalize('NFKC');
+        if (n !== ch) { for (const c of n) { out += c.toLowerCase(); map.push(i); } continue; }
+      }
+      out += ch.toLowerCase();
+      map.push(i);
+    }
+    return { text: out, map };
+  }
+  function squash(folded) {
     let out = '';
     const map = [];
     let space = false;
-    for (let i = 0; i < s.length; i++) {
-      const ch = s[i];
-      if (/\s/.test(ch)) { if (!space && out.length) { out += ' '; map.push(i); } space = true; continue; }
+    for (let i = 0; i < folded.text.length; i++) {
+      const ch = folded.text[i];
+      if (/\s/.test(ch)) { if (!space && out.length) { out += ' '; map.push(folded.map[i]); } space = true; continue; }
       space = false;
-      out += ch.toLowerCase(); map.push(i);
+      out += ch; map.push(folded.map[i]);
     }
     if (out.endsWith(' ')) { out = out.slice(0, -1); map.pop(); }
     return { text: out, map };
   }
   function highlight(text, quotes) {
-    const src = str(text), n = norm(src), ranges = [], missing = [];
+    const src = str(text), n = squash(foldChars(src)), ranges = [], missing = [];
     for (const q of quotes) {
-      const nq = norm(str(q)).text;
+      const nq = squash(foldChars(str(q))).text.replace(/^[\s.,;:'"()[\]]+|[\s.,;:'"()[\]]+$/g, '');
       if (!nq) continue;
       const at = n.text.indexOf(nq);
       if (at < 0) { missing.push(str(q)); continue; }
@@ -139,24 +163,34 @@ function main() {
     if (!cites.length) return [];
     const byId = new Map(cites.map((c) => [c.id || c.passage_id, c]));
     const order = [], seen = new Set();
-    const re = /\[p:([^\]\s]+)\]/g;
+    const re = /\[([pcm]):([^\]\s]+)\]/g;
     let m;
-    while ((m = re.exec(str(r.answer)))) if (!seen.has(m[1])) { seen.add(m[1]); order.push(m[1]); }
+    while ((m = re.exec(str(r.answer)))) {
+      const id = markerId(m[1], m[2]);
+      if (!seen.has(id)) { seen.add(id); order.push(id); }
+    }
     for (const id of byId.keys()) if (id && !seen.has(id)) { seen.add(id); order.push(id); }
     return order.map((id, i) => {
       const c = byId.get(id) || {};
-      return { n: i + 1, passage_id: id, doc: c.doc, title: c.title, name: c.name,
-        text: c.text || '', quotes: Array.isArray(c.quotes) ? c.quotes : [] };
+      return { n: i + 1, passage_id: id, doc: c.doc, title: c.title, name: c.name, kind: c.kind || '',
+        text: c.text || '', quotes: Array.isArray(c.quotes) ? c.quotes : [],
+        row: Array.isArray(c.row) ? c.row : [] };
     });
   }
+  // A passage marker is [p:<id>]. A cell id already starts with c:, so its marker is [c:c:...],
+  // and the same for a metric. The id the source carries is the cell or metric id.
+  function markerId(kind, rest) {
+    if (kind === 'p') return rest;
+    return rest.startsWith(`${kind}:`) ? rest : `${kind}:${rest}`;
+  }
   function inlineParts(text, cite) {
-    const out = [], re = /\[p:([^\]\s]+)\]|\*\*([^*]+)\*\*|`([^`]+)`/g;
+    const out = [], re = /\[([pcm]):([^\]\s]+)\]|\*\*([^*]+)\*\*|`([^`]+)`/g;
     let last = 0, m;
     while ((m = re.exec(text))) {
       if (m.index > last) out.push(text.slice(last, m.index));
-      if (m[1]) out.push(cite(m[1]));
-      else if (m[2]) out.push(h('strong', { text: m[2] }));
-      else out.push(h('code', { text: m[3] }));
+      if (m[1]) out.push(cite(markerId(m[1], m[2])));
+      else if (m[3]) out.push(h('strong', { text: m[3] }));
+      else out.push(h('code', { text: m[4] }));
       last = re.lastIndex;
     }
     if (last < text.length) out.push(text.slice(last));
@@ -201,17 +235,37 @@ function main() {
     return h('p', { class: 'answer-text' }, claims.map((c, i) => [i ? ' ' : null,
       h('span', { class: 'claim' }, str(c.text).trim(), citeLinks(turn, (c.sources || []).filter((x) => x != null), known))]));
   }
+  function cellTable(s) {
+    const row = (Array.isArray(s.row) ? s.row : []).filter((c) => c && str(c.column));
+    if (!row.length) return null;
+    return h('div', { class: 'cell-row-wrap' },
+      h('table', { class: 'cell-row' },
+        h('thead', null, h('tr', null, row.map((c) => h('th', { scope: 'col', text: str(c.column) })))),
+        h('tbody', null, h('tr', null, row.map((c) => {
+          const cited = str(c.cell) === str(s.passage_id);
+          const value = str(c.value);
+          return h('td', { class: cited ? 'cited' : '' }, cited ? h('mark', { text: value }) : value);
+        })))));
+  }
   function sourceBody(turn, s, claims) {
     const quotes = [...(s.quotes || [])];
-    for (const c of claims) for (const cit of c.citations || []) if (cit && cit.passage_id === s.passage_id && cit.quote) quotes.push(cit.quote);
+    for (const c of claims) for (const cit of c.citations || []) {
+      if (!cit) continue;
+      if (cit.passage_id === s.passage_id && cit.quote) quotes.push(cit.quote);
+      if (cit.cell_id === s.passage_id && cit.value) quotes.push(cit.value);
+    }
     const unique = [...new Set(quotes.map(str).filter((q) => q.trim()))];
-    const { nodes, missing } = highlight(s.text, unique);
+    const table = s.kind === 'cell' ? cellTable(s) : null;
+    const { nodes, missing } = table ? { nodes: [], missing: [] } : highlight(s.text, unique);
     const title = str(s.title || s.name || s.doc) || 'Untitled document';
     const status = h('p', { class: 'card-status', role: 'status' });
     const open = h('button', { class: 'btn', type: 'button', 'aria-label': `Open document: ${title}` }, 'Open document');
     open.addEventListener('click', () => openDocument(s.doc, open, status));
+    const passage = table || (nodes.length
+      ? h('blockquote', { class: 'passage' }, nodes)
+      : h('p', { class: 'small muted', text: 'This source has no passage text.' }));
     return h('div', { class: 'card source-body' },
-      nodes.length ? h('blockquote', { class: 'passage' }, nodes) : h('p', { class: 'small muted', text: 'This source has no passage text.' }),
+      passage,
       missing.length ? h('div', { class: 'missing' }, h('p', { text: 'Quoted from this source, not shown in the passage above:' }),
         h('ul', null, missing.map((q) => h('li', { text: q })))) : null,
       s.doc ? h('div', { class: 'card-actions' }, open, status) : null);
@@ -248,8 +302,10 @@ function main() {
     const current = S.sourceN != null ? document.getElementById(cardId(turn, S.sourceN)) : null;
     if (!current) return;
     current.classList.add('flash');
-    const delta = current.getBoundingClientRect().top - box.getBoundingClientRect().top;
-    box.scrollBy({ top: delta - 8, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    const markEl = current.querySelector('mark');
+    const target = markEl || current;
+    const delta = target.getBoundingClientRect().top - box.getBoundingClientRect().top;
+    box.scrollBy({ top: delta - (markEl ? 48 : 8), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     const row = current.querySelector('.source-row');
     if (row) row.focus({ preventScroll: true });
     setTimeout(() => current.classList.remove('flash'), 2000);

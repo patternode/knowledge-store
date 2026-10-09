@@ -206,6 +206,8 @@ def test_the_catalog_is_bound_skipped_and_queried(tmp_path):
 
     cells = lookup_rows(lake, "", cell_ids=[cost["cell"]])["cells"]
     assert cells[0]["value"] == "1100" and cells[0]["datatype"] == "integer"
+    assert any(col["column"] == "name" and col["value"] == "Juno" for col in cells[0]["row"])
+    assert any(col["cell"] == cost["cell"] and col["value"] == "1100" for col in cells[0]["row"])
     assert values_equal("1100", "1100", "integer") and not values_equal("999", "1100", "integer")
 
     via = gateway.call(root, "aggregate", {"collection": "missions", "metric": "atlas_v_launches"})
@@ -226,7 +228,7 @@ def test_the_catalog_is_bound_skipped_and_queried(tmp_path):
 def test_a_cited_figure_is_recomputed(tmp_path):
     pytest.importorskip("pydantic")
     from knowledge_store.agent import app as agent_app
-    from knowledge_store.agent.grounding import Citation, Claim, GroundedAnswer, check
+    from knowledge_store.agent.grounding import Citation, Claim, GroundedAnswer, check, render
     root, lake = _collection(tmp_path)
     versions.publish(lake, ONTO, by="test", activate=True)
     ingest_source(lake, SourceConfig("missions-tables", "local_dir",
@@ -238,6 +240,9 @@ def test_a_cited_figure_is_recomputed(tmp_path):
         text="The catalog gives Juno a sample cost of 1100.",
         citations=[Citation(cell_id=cost["cell"], value="1100")])]), {}, {cost["cell"]: cell})
     assert kept and not failures
+    shown = render(kept, {}, [], {cost["cell"]: cell})
+    assert shown["sources"][0]["kind"] == "cell"
+    assert any(col["column"] == "sample_cost_million_usd" and col["value"] == "1100" for col in shown["sources"][0]["row"])
     dropped, why = check(GroundedAnswer(answerable=True, claims=[Claim(
         text="The catalog gives Juno a sample cost of 999.",
         citations=[Citation(cell_id=cost["cell"], value="999")])]), {}, {cost["cell"]: cell})
