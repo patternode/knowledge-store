@@ -7,8 +7,7 @@ every statement linked to the passage it comes from.
 
 You deploy it with the Terraform in this repository and your own parameters. Nothing is built on
 your machine: container images are built by CodeBuild inside your account. How the system is put
-together, including the diagram, is in [Architecture](../../architecture/README.md). A short film
-of the same ideas is the [briefing](../../explainer/README.md).
+together, including the diagram, is in [Architecture](../../architecture/README.md).
 
 | In this pack | What it is |
 |---|---|

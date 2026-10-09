@@ -10,8 +10,6 @@ It runs on AWS, in one account from one Terraform stack, or on your own machine 
 folder. Model calls go to Claude through Amazon Bedrock, so no data leaves your account, or to
 the Anthropic API.
 
-A short briefing of these concepts, with the video, is in [docs/explainer](docs/explainer/README.md).
-
 ## What it does
 
 ```
