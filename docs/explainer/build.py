@@ -311,44 +311,42 @@ def dots(d, cx, cy, rx, ry, n, a, hot, ring=BLUE, hot_color=CYAN):
 
 
 def schema(d, origin, a=1.0, scale=1.0):
-    """Three-type ontology: Person, Case, Cause."""
+    """Three-type ontology: Person, Story, Place."""
     if a <= 0.02:
         return
     ox, oy = origin
     person = (ox, oy)
-    case = (ox - 170 * scale, oy + 168 * scale)
-    cause = (ox + 170 * scale, oy + 168 * scale)
+    story = (ox - 170 * scale, oy + 168 * scale)
+    place = (ox + 170 * scale, oy + 168 * scale)
     nw, nh = 168 * scale, 64 * scale
-    arrow(d, (person[0] - 20, person[1] + nh / 2), (case[0] + 30, case[1] - nh / 2), col(GOLD, a), width=3, prog=a)
-    arrow(d, (person[0] + 20, person[1] + nh / 2), (cause[0] - 30, cause[1] - nh / 2), col(GOLD, a), width=3, prog=a)
+    arrow(d, (person[0] - 20, person[1] + nh / 2), (story[0] + 30, story[1] - nh / 2), col(GOLD, a), width=3, prog=a)
+    arrow(d, (person[0] + 20, person[1] + nh / 2), (place[0] - 30, place[1] - nh / 2), col(GOLD, a), width=3, prog=a)
     node(d, *person, nw, nh, "Person", GOLD, a)
-    node(d, *case, nw, nh, "Case", GOLD, a)
-    node(d, *cause, nw, nh, "Cause", GOLD, a)
+    node(d, *story, nw, nh, "Story", GOLD, a)
+    node(d, *place, nw, nh, "Place", GOLD, a)
     if a > 0.7:
-        center_text(d, (person[0] + case[0]) / 2 - 28, (person[1] + case[1]) / 2, "investigates", font(15, "med"), col(GOLD, a))
-        center_text(d, (person[0] + cause[0]) / 2 + 36, (person[1] + cause[1]) / 2, "killed by", font(15, "med"), col(GOLD, a))
+        center_text(d, (person[0] + story[0]) / 2 - 28, (person[1] + story[1]) / 2, "appears in", font(15, "med"), col(GOLD, a))
+        center_text(d, (person[0] + place[0]) / 2 + 36, (person[1] + place[1]) / 2, "meets at", font(15, "med"), col(GOLD, a))
 
 
 def instance_graph(d, origin, a=1.0):
     if a <= 0.02:
         return
     ox, oy = origin
-    holmes = (ox - 150, oy)
-    band = (ox + 170, oy)
-    roylott = (ox - 150, oy + 150)
-    adder = (ox + 170, oy + 150)
-    arrow(d, (holmes[0] + 78, holmes[1]), (band[0] - 100, band[1]), col(TEAL, a), width=3, prog=min(1, a * 1.3))
-    arrow(d, (roylott[0] + 78, roylott[1]), (adder[0] - 110, adder[1]), col(TEAL, a), width=3, prog=min(1, a * 1.3))
-    node(d, *holmes, 150, 58, "Holmes", TEAL, a)
-    node(d, *band, 190, 58, "Speckled Band", TEAL, a)
-    node(d, *roylott, 150, 58, "Roylott", TEAL, a)
-    node(d, *adder, 200, 58, "Swamp adder", TEAL, a)
+    moriarty = (ox - 170, oy)
+    story = (ox + 190, oy)
+    falls = (ox + 190, oy + 150)
+    arrow(d, (moriarty[0] + 90, moriarty[1]), (story[0] - 140, story[1]), col(TEAL, a), width=3, prog=min(1, a * 1.3))
+    arrow(d, (story[0], story[1] + 36), (falls[0], falls[1] - 36), col(TEAL, a), width=3, prog=min(1, a * 1.3))
+    node(d, *moriarty, 170, 58, "Moriarty", TEAL, a)
+    node(d, *story, 270, 58, "The Final Problem", TEAL, a)
+    node(d, *falls, 250, 58, "Reichenbach", TEAL, a)
     if a > 0.65:
-        center_text(d, (holmes[0] + band[0]) / 2, holmes[1] - 28, "investigates", font(15, "med"), col(TEAL, a))
-        center_text(d, (roylott[0] + adder[0]) / 2, roylott[1] - 28, "killed by", font(15, "med"), col(TEAL, a))
+        center_text(d, (moriarty[0] + story[0]) / 2, moriarty[1] - 28, "appears in", font(15, "med"), col(TEAL, a))
+        center_text(d, story[0] - 64, (story[1] + falls[1]) / 2, "meets at", font(15, "med"), col(TEAL, a))
 
 
-def passage_mark(d, x, y, a, label="Speckled Band"):
+def passage_mark(d, x, y, a, label="Final Problem"):
     if a <= 0.02:
         return
     page(d, x, y, 150, 92, label, BLUE, a, bars=2)
@@ -364,6 +362,21 @@ def words(paragraphs: list[str]) -> int:
 
 
 SECTIONS = [
+    {
+        "id": "purpose",
+        "file": "00-purpose.mp4",
+        "kicker": "The purpose",
+        "picture": [
+            "One line: an agent that does not invent what the documents never said.",
+            "Three beats: the usual way, a graph with vectors, then how to try the open-source store.",
+        ],
+        "pro": [
+            "This briefing shows how an agent can answer from documents without inventing what they never said. The usual way fails. A graph and a vector search belong together. Then, how to try this open-source store on your own documents.",
+        ],
+        "record": [
+            "This briefing shows how an agent can answer from your own documents without inventing what they never said. The usual way fails. A graph and a vector search belong together. Then, how to try this open-source store yourself.",
+        ],
+    },
     {
         "id": "collection",
         "file": "00-the-collection.mp4",
@@ -387,16 +400,16 @@ SECTIONS = [
         "file": "01-usual-path.mp4",
         "kicker": "The usual path",
         "picture": [
-            "Three story collections become a field of vectors. The question is Holmes's mother's name.",
-            "The lit chunks are about Helen Stoner's mother. A sentence is written from them, and a citation is pinned on afterwards.",
+            "Three story collections become a field of vectors. The question is where Professor Moriarty was born.",
+            "The lit chunk says he is a man of good birth. A sentence is written from it, and a citation is pinned on afterwards.",
         ],
         "pro": [
             "An agent that answers from a company's own documents usually takes one path. The documents are cut into chunks and stored as vectors. A question retrieves the nearest chunks, and the agent writes a sentence.",
-            "The question is the name of Sherlock Holmes's mother. The stories never give it. The nearest chunks are about other mothers, including Helen Stoner's mother, Mrs Stoner. The model can still write that name, and attach a citation afterwards. The words were there. The relationship was not.",
+            "The question is where Professor Moriarty was born. The stories never say. The nearest chunk calls him a man of good birth and excellent education. The model can still write that phrase, and attach a citation afterwards. The words were there. They do not name a place.",
         ],
         "record": [
             "An agent answering from your own documents usually works like this. The pages are cut into chunks and stored as vectors. A question pulls back the nearest chunks, and the agent writes a sentence.",
-            "The stories never name Sherlock Holmes's mother. The nearest chunks are about other mothers, including Helen Stoner's mother, Mrs Stoner. From those words the model can write that name, and a citation gets attached afterwards. The words were there. They were about someone else.",
+            "Ask where Professor Moriarty was born. The stories never say. The nearest chunk calls him a man of good birth. From those words the model can write that phrase, and a citation gets attached afterwards. The words were there. They do not name a place.",
         ],
     },
     {
@@ -404,16 +417,16 @@ SECTIONS = [
         "file": "02-ontology-and-graph.mp4",
         "kicker": "Ontology and graph",
         "picture": [
-            "Left, an ontology draws itself: Person, Case, Cause, and the two links that are allowed.",
-            "Right, the same picture filled in. Holmes investigates the Speckled Band. Roylott is killed by a swamp adder. A passage sits on the fact.",
+            "Left, an ontology draws itself: Person, Story, Place, and the two links that are allowed.",
+            "Right, the same picture filled in. Moriarty appears in The Final Problem, and meets Holmes at the Reichenbach Falls. A passage sits on the fact.",
         ],
         "pro": [
-            "An ontology is the picture of what a collection is allowed to say. It names the kinds of things, and the links between them. A person. A case. A cause. A person investigates a case. A person is killed by a cause.",
-            "A knowledge graph is that picture, filled in. Holmes investigates the Speckled Band. Dr Roylott is killed by a swamp adder. Each fact points at a passage.",
+            "An ontology is the picture of what a collection is allowed to say. It names the kinds of things, and the links between them. A person. A story. A place. A person appears in a story. A person meets someone at a place.",
+            "A knowledge graph is that picture, filled in. Professor Moriarty appears in The Final Problem. That story brings him and Holmes to the Reichenbach Falls. Each fact points at a passage.",
         ],
         "record": [
-            "An ontology is a picture of what these documents are allowed to mean. The kinds of things, and the links you permit. A person. A case. A cause. A person investigates a case. A person is killed by a cause.",
-            "The knowledge graph is that picture filled in. Holmes investigates the Speckled Band. Dr Roylott is killed by a swamp adder. Every fact points at a passage.",
+            "An ontology is a picture of what these documents are allowed to mean. The kinds of things, and the links you permit. A person. A story. A place. A person appears in a story. A person meets someone at a place.",
+            "The knowledge graph is that picture filled in. Professor Moriarty appears in The Final Problem. That story brings him and Holmes to the Reichenbach Falls. Every fact points at a passage.",
         ],
     },
     {
@@ -421,16 +434,16 @@ SECTIONS = [
         "file": "03-graph-and-vectors.mp4",
         "kicker": "Graph and vectors",
         "picture": [
-            "A question that names Roylott walks the graph to the swamp adder and the passage.",
-            "A question that only describes the death searches the vectors, lands on the same passage, and returns to the same fact.",
+            "A question that names Moriarty walks the graph to The Final Problem and the passage.",
+            "A question that only describes the waterfall searches the vectors, lands on the same passage, and returns to the same fact.",
         ],
         "pro": [
-            "When a question names things, the graph is the path. What killed Dr Roylott walks from the person, along killed by, to the cause. The passage comes with the fact.",
-            "Instead, a doctor dies of a snake in his own room. The vectors find that passage by meaning and return to the same fact. The graph holds the connection. The vectors hold the wording the question never used.",
+            "When a question names things, the graph is the path. Where does Professor Moriarty appear walks from the person, along appears in, to the story, and on to the falls. The passage comes with the fact.",
+            "Instead, two rivals fall together at a waterfall. The vectors find that passage by meaning and return to the same fact. The graph holds the connection. The vectors hold the wording the question never used.",
         ],
         "record": [
-            "Ask what killed Dr Roylott, and the graph is enough. Person, killed by, cause, and the passage is already on the fact.",
-            "Instead, a doctor dies of a snake in his own room. The vectors find that passage by meaning and return to the same fact. The graph holds the connection. The vectors hold the wording the question never used.",
+            "Ask where Professor Moriarty appears, and the graph is enough. Person, appears in, story, meets at the falls, and the passage is already on the fact.",
+            "Instead, two rivals fall together at a waterfall. The vectors find that passage by meaning and return to the same fact. The graph holds the connection. The vectors hold the wording the question never used.",
         ],
     },
     {
@@ -443,11 +456,11 @@ SECTIONS = [
         ],
         "pro": [
             "If you already have the vocabulary, you bring the ontology with the documents. They are divided into passages. Extraction reads each passage through the ontology you brought.",
-            "A fact is kept only when the passage contains it. The swamp adder stays, because The Speckled Band says so. The lab builds the graph, and one vector for each passage.",
+            "A fact is kept only when the passage contains it. The Final Problem names Moriarty and the Reichenbach Falls, so that fact stays. The lab builds the graph, and one vector for each passage.",
         ],
         "record": [
             "This is the path when you bring the ontology. Documents stay as they arrived and are split into passages to cite. Extraction reads each passage in the types you brought.",
-            "A fact is kept only when the passage contains it. The Speckled Band names the swamp adder, so that fact stays. One vector is stored for each passage.",
+            "A fact is kept only when the passage contains it. The Final Problem names Moriarty and the falls, so that fact stays. One vector is stored for each passage.",
         ],
     },
     {
@@ -455,7 +468,7 @@ SECTIONS = [
         "file": "05-derive-ontology.mp4",
         "kicker": "Derive the ontology",
         "picture": [
-            "The other ingestion. Documents arrive with no ontology. A sample proposes Person, Case, and Cause.",
+            "The other ingestion. Documents arrive with no ontology. A sample proposes Person, Story, and Place.",
             "The proposals become a draft, a person publishes it, and that ontology drops into the same extraction. The graph and the vectors are built the same way.",
         ],
         "pro": [
@@ -472,17 +485,17 @@ SECTIONS = [
         "file": "06-when-someone-asks.mp4",
         "kicker": "The chat",
         "picture": [
-            "A chat message, What killed Dr Roylott, enters an agent that holds the ontology. The agent walks the graph, reads the cited passage, and a check keeps the statement because the quote is in the passage.",
-            "The result returns in the chat: a swamp adder, with the Speckled Band passage.",
-            "A second message, Holmes's mother's name, takes the same path. Nothing survives the check. The result in the chat is a decline.",
+            "A chat message, Where does Professor Moriarty appear, enters an agent that holds the ontology. The agent walks the graph, reads the cited passage, and a check keeps the statement because the quote is in the passage.",
+            "The result returns in the chat: The Final Problem, with that passage.",
+            "A second message, where he was born, takes the same path. Nothing survives the check. The result in the chat is a decline.",
         ],
         "pro": [
-            "A person types a message in the chat. What killed Dr Roylott walks from the person to the cause, and the cited passage is read. It is in The Speckled Band, so the statement stays. The result is a swamp adder, with that passage beside it.",
-            "Holmes's mother's name takes the same path. It meets other mothers, and nothing that names his. The result is a decline. The sources do not say.",
+            "A person types a message in the chat. Where does Professor Moriarty appear walks from the person to the story, and the cited passage is read. It is in The Final Problem, so the statement stays. The result is that story, with the passage beside it.",
+            "Where he was born takes the same path. It meets the phrase a man of good birth, and nothing that names a place. The result is a decline. The sources do not say.",
         ],
         "record": [
-            "Someone types in the chat. What killed Dr Roylott goes from the person to the cause, and the passage on that fact is read. The Speckled Band says swamp adder, so the statement stays. You see a swamp adder, with that passage beside it.",
-            "Ask for Holmes's mother's name. It meets other mothers, not his. The chat declines. The sources do not say.",
+            "Someone types in the chat. Where does Professor Moriarty appear goes from the person to the story, and the passage on that fact is read. The Final Problem does name him, so the statement stays. You see that story, with the passage beside it.",
+            "Ask where he was born. It meets a man of good birth, not a place. The chat declines. The sources do not say.",
         ],
     },
     {
@@ -490,18 +503,32 @@ SECTIONS = [
         "file": "07-what-is-better.mp4",
         "kicker": "What is better",
         "picture": [
-            "Left, the kept result: a swamp adder, with a small Speckled Band passage, in cyan.",
+            "Left, the kept result: The Final Problem, with that passage, in cyan.",
             "Beside it, the declined result: the sources do not say, in danger.",
             "One line: the graph is for the connection, and the vectors are for the wording.",
-            "Then two steps: bring or publish an ontology, and ask, keeping only what a passage supports.",
         ],
         "pro": [
-            "A graph and the vectors do different work. The graph holds what is connected to what, and of what kind. The vectors hold wording the question never used. A result comes back only when a passage supports it. The swamp adder stays, because the Speckled Band says so. Holmes's mother's name does not, because the collection never gives it. A sentence no longer receives a citation after it has been written.",
-            "The next step is the same on any collection. Bring an ontology, or let the documents propose one and have a person publish it. Then ask. What the sources support is returned, with the passage beside it. What they do not say is left unsaid.",
+            "A graph and the vectors do different work. The graph holds what is connected to what, and of what kind. The vectors hold wording the question never used. A result comes back only when a passage supports it. The Final Problem stays, because that story says where Moriarty appears. Where he was born does not, because the collection never names a place. A sentence no longer receives a citation after it has been written.",
         ],
         "record": [
-            "A graph and the vectors do different work. The graph holds what is connected to what, and of what kind. The vectors hold wording the question never used. A result comes back only when a passage supports it. The swamp adder stays, because the Speckled Band says so. Holmes's mother's name does not, because the collection never gives it. A sentence no longer gets a citation after it has been written.",
-            "The next step is the same for your own documents. Bring an ontology, or let the documents propose one and you publish it. Then ask. What the sources support comes back, with the passage beside it. What they do not say is left unsaid.",
+            "A graph and the vectors do different work. The graph holds what is connected to what, and of what kind. The vectors hold wording the question never used. A result comes back only when a passage supports it. The Final Problem stays, because that story says where Moriarty appears. Where he was born does not, because the collection never names a place. A sentence no longer gets a citation after it has been written.",
+        ],
+    },
+    {
+        "id": "tryit",
+        "file": "08-try-it.mp4",
+        "kicker": "Try it",
+        "picture": [
+            "A one-line recap: Moriarty appears in The Final Problem. His birthplace is not in the sources.",
+            "Three steps: the public repository, clone it, your own AWS account.",
+        ],
+        "pro": [
+            "Here is what we just covered. Nearest words can attach a citation to the wrong fact. A graph holds the connection, and vectors find the wording. A result stays only when a passage supports it. Professor Moriarty appears in The Final Problem, at the Reichenbach Falls. Where he was born, the sources do not say.",
+            "To try it, go to the public repository, github.com/patternode/knowledge-store. Clone it. It is open source. The deploy guide shows how to run it in your own AWS account, on your own documents.",
+        ],
+        "record": [
+            "Here is what we just covered. Nearest words can attach a citation to the wrong fact. A graph holds the connection, and vectors find the wording. A result stays only when a passage supports it. Professor Moriarty appears in The Final Problem, at the Reichenbach Falls. Where he was born, the sources do not say.",
+            "To try it, go to the public repository, github.com/patternode/knowledge-store. Clone it. It is open source. The deploy guide shows how to run it in your own AWS account, on your own documents.",
         ],
     },
 ]
@@ -514,6 +541,44 @@ def prepare(section):
 
 
 # --- scenes -----------------------------------------------------------------
+
+def draw_purpose(d, t):
+    heading(d, "Why listen", "An agent that does not invent what the documents never said.")
+    a1 = ease(t, 0.6, 2.4)
+    a2 = ease(t, 3.2, 5.2)
+    a3 = ease(t, 6.0, 8.2)
+    beats = [
+        (a1, "The usual way", CORAL),
+        (a2, "Graph and vectors", TEAL),
+        (a3, "Try it on your documents", GOLD),
+    ]
+    gap = 48
+    widths = []
+    fnt = font(22, "sem")
+    for _, text, _ in beats:
+        widths.append(fnt.getlength(text) + 48)
+    group = sum(widths) + gap * (len(beats) - 1)
+    x = (W - group) / 2
+    y = 520
+    for (a, text, ring), w in zip(beats, widths):
+        pill(d, x + w / 2, y, text, ring, a)
+        if a > 0.7 and text != beats[-1][1]:
+            pass
+        x += w + gap
+    # Arrows between the beats, once each pair is visible.
+    x = (W - group) / 2
+    for i, ((a, _, ring), w) in enumerate(zip(beats, widths)):
+        if i < len(beats) - 1 and min(a, beats[i + 1][0]) > 0.4:
+            arrow(
+                d,
+                (x + w + 6, y),
+                (x + w + gap - 6, y),
+                col(MUTED, min(a, beats[i + 1][0])),
+                width=3,
+                prog=min(a, beats[i + 1][0]),
+            )
+        x += w + gap
+
 
 def draw_collection(d, t):
     heading(d, "One collection", "Named before any example.")
@@ -552,16 +617,16 @@ def draw_usual(d, t):
     arrow(d, (330, 520), (470, 520), col(BLUE, a_field), prog=a_field)
     dots(d, 680, 520, 150, 120, 36, a_field, hot={2, 7, 11, 18} if a_hit > 0.2 else set(), hot_color=ROSE)
     if a_hit > 0.2:
-        pill(d, 680, 700, "her mother, Mrs Stoner", ROSE, a_hit)
+        pill(d, 680, 700, "a man of good birth", ROSE, a_hit)
         stage(d, 680, 820, "VECTORS", BLUE, a_field)
 
     arrow(d, (860, 520), (1040, 470), col(CORAL, a_answer), prog=a_answer)
     if a_answer > 0.05:
         d.rounded_rectangle((1060, 300, 1820, 760), radius=12, fill=col(INK, a_answer), outline=col(CORAL, a_answer), width=3)
         d.text((1100, 340), "QUESTION", font=font(14, "mono"), fill=col(DIM, a_answer))
-        d.text((1100, 372), "Holmes's mother's name?", font=font(28, "sem"), fill=col(IVORY, a_answer))
+        d.text((1100, 372), "Where was Moriarty born?", font=font(28, "sem"), fill=col(IVORY, a_answer))
         d.text((1100, 460), "WRITTEN ANSWER", font=font(14, "mono"), fill=col(CORAL, a_answer))
-        d.text((1100, 500), "Mrs Stoner", font=font(52, "sem"), fill=col(IVORY, a_answer))
+        d.text((1100, 500), "Of good birth", font=font(48, "sem"), fill=col(IVORY, a_answer))
         if a_cite > 0.05:
             pill(d, 1360, 660, "Citation attached afterwards", CORAL, a_cite, fill=RAISED)
             dashed(d, (820, 700), (1060, 620), col(CORAL, a_cite), width=3)
@@ -591,20 +656,20 @@ def draw_together(d, t):
     a_bot = ease(t, 11.5, 14.5)
     a_back = ease(t, 15.5, 19.5)
 
-    pill(d, 230, 340, "What killed Roylott?", TEAL, a_top)
-    stage(d, 230, 392, "NAMES SOMETHING", TEAL, a_top)
-    arrow(d, (400, 340), (500, 340), col(TEAL, a_walk), prog=a_walk)
-    node(d, 600, 340, 160, 64, "Roylott", TEAL, a_walk)
-    arrow(d, (690, 340), (820, 340), col(TEAL, a_walk), prog=max(0.0, (a_walk - 0.25) / 0.75))
-    center_text(d, 755, 308, "killed by", font(15, "med"), col(TEAL, max(0.0, a_walk - 0.3)))
-    node(d, 960, 340, 210, 64, "Swamp adder", TEAL, max(0.0, (a_walk - 0.4) / 0.6))
-    arrow(d, (1075, 340), (1280, 360), col(BLUE, a_page), prog=a_page)
-    passage_mark(d, 1290, 300, a_page, "Speckled Band")
-    stage(d, 1365, 268, "SAME PASSAGE", BLUE, a_page)
+    pill(d, 250, 340, "Where does Moriarty appear?", TEAL, a_top)
+    stage(d, 250, 392, "NAMES SOMETHING", TEAL, a_top)
+    arrow(d, (460, 340), (540, 340), col(TEAL, a_walk), prog=a_walk)
+    node(d, 640, 340, 180, 64, "Moriarty", TEAL, a_walk)
+    arrow(d, (740, 340), (860, 340), col(TEAL, a_walk), prog=max(0.0, (a_walk - 0.25) / 0.75))
+    center_text(d, 800, 308, "appears in", font(15, "med"), col(TEAL, max(0.0, a_walk - 0.3)))
+    node(d, 1020, 340, 280, 64, "The Final Problem", TEAL, max(0.0, (a_walk - 0.4) / 0.6))
+    arrow(d, (1170, 340), (1320, 360), col(BLUE, a_page), prog=a_page)
+    passage_mark(d, 1330, 300, a_page, "Final Problem")
+    stage(d, 1405, 268, "SAME PASSAGE", BLUE, a_page)
 
     d.line((80, 520, 1840, 520), fill=col(LINE, 0.9), width=1)
 
-    pill(d, 340, 700, "A doctor dies of a snake in his own room", BLUE, a_bot)
+    pill(d, 320, 700, "Two rivals fall at a waterfall", BLUE, a_bot)
     stage(d, 340, 752, "DESCRIBES A SITUATION", BLUE, a_bot)
     arrow(d, (640, 700), (760, 730), col(BLUE, a_bot), prog=a_bot)
     dots(d, 980, 760, 150, 80, 28, a_bot, hot={4, 9, 15, 21})
@@ -637,7 +702,7 @@ def draw_bring(d, t):
     stage(d, 520, 700, "PASSAGES", BLUE, a_pass)
 
     # Ontology brought in from above.
-    for name, x in (("Person", 700), ("Case", 860), ("Cause", 1020)):
+    for name, x in (("Person", 700), ("Story", 860), ("Place", 1020)):
         pill(d, x, 214, name, GOLD, a_ont)
     node(d, 860, 330, 250, 84, "Ontology", GOLD, a_ont, sub="you bring this")
     arrow(d, (860, 378), (860, 475), col(GOLD, a_ont), prog=a_ont)
@@ -648,14 +713,14 @@ def draw_bring(d, t):
     arrow(d, (970, 500), (1240, 300), col(TEAL, a_out), prog=a_out)
     arrow(d, (970, 580), (1380, 770), col(BLUE, a_out), prog=a_out)
 
-    node(d, 1360, 280, 170, 56, "Roylott", TEAL, a_out)
-    node(d, 1700, 280, 210, 56, "Swamp adder", TEAL, a_out)
-    arrow(d, (1455, 280), (1585, 280), col(TEAL, a_out), prog=a_out, width=3)
+    node(d, 1280, 280, 180, 56, "Moriarty", TEAL, a_out)
+    node(d, 1640, 280, 280, 56, "The Final Problem", TEAL, a_out)
+    arrow(d, (1380, 280), (1490, 280), col(TEAL, a_out), prog=a_out, width=3)
     if a_out > 0.4:
-        center_text(d, 1520, 248, "killed by", font(14, "med"), col(TEAL, a_out))
+        center_text(d, 1435, 248, "appears in", font(14, "med"), col(TEAL, a_out))
     stage(d, 1530, 348, "KNOWLEDGE GRAPH", TEAL, a_out)
     arrow(d, (1700, 314), (1700, 418), col(BLUE, a_out), width=3, prog=a_out)
-    passage_mark(d, 1610, 418, a_out, "Speckled Band")
+    passage_mark(d, 1560, 418, a_out, "Final Problem")
 
     dots(d, 1500, 780, 170, 72, 26, a_out, hot={3, 8, 14})
     stage(d, 1500, 880, "ONE VECTOR PER PASSAGE", BLUE, a_out)
@@ -683,7 +748,7 @@ def draw_derive(d, t):
     stage(d, 300, 230, "SAMPLE", GOLD, a_sample)
 
     arrow(d, (230, 265), (330, 265), col(GOLD, a_terms), prog=a_terms)
-    for name, x in (("Person", 430), ("Case", 600), ("Cause", 770)):
+    for name, x in (("Person", 430), ("Story", 600), ("Place", 770)):
         pill(d, lerp(300, x, a_terms), 265, name, GOLD, a_terms)
 
     arrow(d, (860, 265), (960, 265), col(GOLD, a_draft), prog=a_draft)
@@ -702,11 +767,11 @@ def draw_derive(d, t):
 
     arrow(d, (1440, 630), (730, 820), col(TEAL, a_out), prog=a_out)
     arrow(d, (1600, 630), (1660, 800), col(BLUE, a_out), prog=a_out)
-    node(d, 820, 820, 160, 56, "Roylott", TEAL, a_out)
-    node(d, 1160, 820, 210, 56, "Swamp adder", TEAL, a_out)
-    arrow(d, (910, 820), (1045, 820), col(TEAL, a_out), prog=a_out, width=3)
+    node(d, 760, 820, 180, 56, "Moriarty", TEAL, a_out)
+    node(d, 1160, 820, 280, 56, "The Final Problem", TEAL, a_out)
+    arrow(d, (860, 820), (1010, 820), col(TEAL, a_out), prog=a_out, width=3)
     if a_out > 0.35:
-        center_text(d, 975, 788, "killed by", font(14, "med"), col(TEAL, a_out))
+        center_text(d, 935, 788, "appears in", font(14, "med"), col(TEAL, a_out))
     stage(d, 990, 888, "KNOWLEDGE GRAPH", TEAL, a_out)
     dots(d, 1680, 840, 120, 52, 18, a_out, hot={2, 6, 11})
     stage(d, 1680, 920, "VECTORS", BLUE, a_out)
@@ -734,37 +799,37 @@ def draw_questions(d, t):
     a_out2 = ease(t, 28.2, 32.0)
 
     # Both messages enter the left side of the agent, above its caption.
-    chat_bubble(d, (64, 240, 420, 360), "MESSAGE", "What killed Dr Roylott?", IVORY, a_msg, size=24)
-    arrow(d, (420, 300), (480, 300), col(GOLD, a_agent), prog=a_agent, width=3)
+    chat_bubble(d, (64, 230, 460, 370), "MESSAGE", "Where does Moriarty appear?", IVORY, a_msg, size=22)
+    arrow(d, (460, 300), (480, 300), col(GOLD, a_agent), prog=a_agent, width=3)
 
     d.rounded_rectangle((480, 220, 850, 450), radius=12, fill=col(INK, a_agent), outline=col(GOLD, a_agent), width=3)
     if a_agent > 0.1:
         center_text(d, 665, 278, "Agent", font(26, "sem"), col(IVORY, a_agent))
-        for name, x in (("Person", 559), ("Case", 668), ("Cause", 774)):
+        for name, x in (("Person", 559), ("Story", 668), ("Place", 774)):
             pill(d, x, 358, name, GOLD, a_agent)
         stage(d, 665, 466, "HOLDS THE ONTOLOGY", GOLD, a_agent)
 
     # Named lookup: the fact, the passage under it, then the check.
     arrow(d, (850, 300), (940, 300), col(TEAL, a_find), prog=a_find, width=3)
-    node(d, 1020, 300, 160, 56, "Roylott", TEAL, a_find)
-    arrow(d, (1100, 300), (1180, 300), col(TEAL, a_find), width=3, prog=a_find)
+    node(d, 1000, 300, 170, 56, "Moriarty", TEAL, a_find)
+    arrow(d, (1090, 300), (1160, 300), col(TEAL, a_find), width=3, prog=a_find)
     if a_find > 0.45:
-        center_text(d, 1140, 248, "killed by", font(14, "med"), col(TEAL, a_find))
-    node(d, 1285, 300, 210, 56, "Swamp adder", TEAL, a_find)
-    passage_mark(d, 1210, 348, a_find, "Speckled Band")
-    stage(d, 1285, 456, "GRAPH AND PASSAGE", TEAL, a_find)
+        center_text(d, 1125, 248, "appears in", font(14, "med"), col(TEAL, a_find))
+    node(d, 1310, 300, 260, 56, "Final Problem", TEAL, a_find)
+    passage_mark(d, 1185, 350, a_find, "Final Problem")
+    stage(d, 1285, 492, "GRAPH AND PASSAGE", TEAL, a_find)
 
-    arrow(d, (1390, 300), (1470, 300), col(TEAL, a_keep), prog=a_keep, width=3)
+    arrow(d, (1450, 300), (1470, 300), col(TEAL, a_keep), prog=a_keep, width=3)
     node(d, 1540, 300, 140, 56, "Kept", TEAL, a_keep)
     arrow(d, (1540, 328), (1540, 515), col(TEAL, a_out), prog=a_out, width=3)
 
     # Result in the chat. The passage sits clear of the sentence.
-    chat_bubble(d, (1220, 515, 1856, 675), "RESULT", "A swamp adder.", TEAL, a_out, size=28)
+    chat_bubble(d, (1220, 515, 1856, 675), "RESULT", "The Final Problem.", TEAL, a_out, size=26)
     if a_out > 0.4:
-        passage_mark(d, 1682, 555, a_out, "Speckled Band")
+        passage_mark(d, 1682, 555, a_out, "Final Problem")
 
     # Second message. The path steps down beside the agent, not across its caption.
-    chat_bubble(d, (64, 720, 420, 845), "MESSAGE", "Holmes's mother's name?", IVORY, a_msg2, size=22)
+    chat_bubble(d, (64, 720, 420, 845), "MESSAGE", "Where was he born?", IVORY, a_msg2, size=22)
     arrow(d, (420, 782), (480, 400), col(GOLD, a_find2), prog=a_find2, width=3)
     poly_arrow(
         d,
@@ -773,7 +838,7 @@ def draw_questions(d, t):
         width=3,
         prog=a_find2,
     )
-    node(d, 1095, 782, 210, 64, "Other mothers", CORAL, a_find2, sub="not his")
+    node(d, 1095, 782, 210, 64, "Good birth", CORAL, a_find2, sub="not a place")
     arrow(d, (1200, 782), (1270, 782), col(CORAL, a_drop), prog=a_drop, width=3)
     node(d, 1350, 782, 160, 58, "Removed", CORAL, a_drop)
     arrow(d, (1430, 782), (1500, 782), col(CORAL, a_out2), prog=a_out2, width=3)
@@ -792,8 +857,8 @@ def draw_close(d, t):
     if a_keep > 0.02:
         d.rounded_rectangle((80, 220, 920, 530), radius=12, fill=col(INK, a_keep), outline=col(TEAL, a_keep), width=3)
         d.text((112, 246), "RESULT", font=font(14, "mono"), fill=col(TEAL, a_keep))
-        d.text((112, 292), "A swamp adder.", font=font(42, "sem"), fill=col(IVORY, a_keep))
-    page(d, 112, 380, 250, 116, "Speckled Band", TEAL, a_page, bars=2, title_size=18)
+        d.text((112, 292), "The Final Problem.", font=font(40, "sem"), fill=col(IVORY, a_keep))
+    page(d, 112, 380, 280, 116, "Final Problem", TEAL, a_page, bars=2, title_size=18)
 
     if a_drop > 0.02:
         d.rounded_rectangle((1000, 220, 1840, 530), radius=12, fill=col(INK, a_drop), outline=col(CORAL, a_drop), width=3)
@@ -826,7 +891,44 @@ def draw_close(d, t):
     )
 
 
+def draw_try(d, t):
+    heading(d, "Try it", "The public repository. Your own documents.")
+    a_line = ease(t, 0.4, 2.2)
+    a1 = ease(t, 3.0, 5.0)
+    a2 = ease(t, 5.4, 7.4)
+    a3 = ease(t, 7.8, 10.0)
+    line = "Moriarty appears in The Final Problem. His birthplace is not in the sources."
+    fnt = font(22, "med")
+    d.text(((W - fnt.getlength(line)) / 2, 250), line, font=fnt, fill=col(IVORY, a_line))
+
+    steps = [
+        (a1, "1", "Public repo", "patternode/knowledge-store"),
+        (a2, "2", "Clone it", "It is open source"),
+        (a3, "3", "Your AWS account", "Your own documents"),
+    ]
+    w, gap = 420, 48
+    x0 = (W - (3 * w + 2 * gap)) / 2
+    for i, (a, num, title, sub) in enumerate(steps):
+        x = x0 + i * (w + gap)
+        if a <= 0.02:
+            continue
+        d.rounded_rectangle((x, 380, x + w, 620), radius=12, fill=col(INK, a), outline=col(CYAN if i == 2 else GOLD, a), width=3)
+        d.text((x + 24, 410), num, font=font(18, "mono"), fill=col(CYAN, a))
+        d.text((x + 24, 460), title, font=font(28, "sem"), fill=col(IVORY, a))
+        d.text((x + 24, 520), sub, font=font(18), fill=col(MUTED, a))
+        if i < 2 and min(a, steps[i + 1][0]) > 0.3:
+            arrow(
+                d,
+                (x + w + 6, 500),
+                (x + w + gap - 6, 500),
+                col(MUTED, min(a, steps[i + 1][0])),
+                width=3,
+                prog=min(a, steps[i + 1][0]),
+            )
+
+
 DRAW = {
+    "purpose": draw_purpose,
     "collection": draw_collection,
     "usual": draw_usual,
     "graph": draw_graph,
@@ -835,6 +937,7 @@ DRAW = {
     "derive": draw_derive,
     "questions": draw_questions,
     "close": draw_close,
+    "tryit": draw_try,
 }
 
 

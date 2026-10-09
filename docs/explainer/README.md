@@ -1,8 +1,8 @@
 # Briefing
 
-An architecture briefing for people who know what an AI agent is. The picture opens on the collection the examples use, three books of Sherlock Holmes stories, and treats that set as a stand-in for any documents. The picture shows the usual way an agent answers from documents, what an ontology and a knowledge graph add, why vector search stays beside the graph, and the two ways this lab builds that graph. It is drawn in the Patternode brand: Midnight Terminal on the navy ground, IBM Plex, and the mark.
+An architecture briefing for people who know what an AI agent is. It opens by saying why the briefing is worth hearing, then names the collection the examples use: three books of Sherlock Holmes stories, a stand-in for any documents. The picture shows the usual way an agent answers from documents, what an ontology and a knowledge graph add, why vector search stays beside the graph, and the two ways this lab builds that graph. It closes on how to try the public repository. It is drawn in the Patternode brand: Midnight Terminal on the navy ground, IBM Plex, and the mark.
 
-One path brings an ontology with the documents. Extraction reads the passages through it. The other path starts from documents alone: a sample proposes the vocabulary, a person publishes it, and the same extraction runs. The chat is the proof, a swamp adder with the Speckled Band passage, and a decline when the sources do not say. The last clip says what is better with a graph and the vectors together, and what to do next on any collection.
+It opens with why the briefing is worth hearing, then names the collection. One path brings an ontology with the documents. Extraction reads the passages through it. The other path starts from documents alone: a sample proposes the vocabulary, a person publishes it, and the same extraction runs. The chat uses a question from the Knowledge Store dashboard: where Professor Moriarty appears. The Final Problem stays, because that story says so. Where he was born, the sources do not say. The close says what is better with a graph and the vectors together. The last clip says how to try the public repository: clone it, and run it in your own AWS account.
 
 It does not show the product being operated.
 
@@ -29,4 +29,4 @@ python docs/explainer/narrate.py
 
 The first command rewrites the docs. The second redraws the clips, with a silent track. The third puts the saved narration back on.
 
-The Holmes examples are from the three collections fetched by `examples/sherlock-holmes/fetch.py`. Roylott’s death is in *The Adventure of the Speckled Band*. None of those stories names Sherlock Holmes’s mother. Helen Stoner’s mother is named, which is why a search by nearby words can attach the wrong person.
+The Holmes examples are from the three collections fetched by `examples/sherlock-holmes/fetch.py`. The question on screen is the first sample on the Knowledge Store dashboard: where Professor Moriarty appears. He appears in *The Final Problem*, and that story brings him to the Reichenbach Falls. The same story calls him “a man of good birth and excellent education” and does not name a birthplace, which is why a search by nearby words can attach the wrong fact.
