@@ -146,7 +146,8 @@ text { font-family: Inter, 'DejaVu Sans', sans-serif; }
 <text x="32" y="924" class="note">guardrail scores it grounded. One repair turn, then it is removed.</text>
 <text x="552" y="866" class="nh">Valves</text>
 <text x="552" y="888" class="note">Per question: 16 tool calls, 14 model calls, 4000 output tokens</text>
-<text x="552" y="906" class="note">per call, 1 repair turn. Optional monthly budget alert.</text>
+<text x="552" y="906" class="note">per call, 1 repair turn. A mapped-table question cites a cell or a figure.</text>
+<text x="552" y="924" class="note">Optional monthly budget alert.</text>
 <text x="1072" y="866" class="nh">Sign-in, networking and cost</text>
 <text x="1072" y="888" class="note">Cognito, or a host website that frames the pages (site_sign_in).</text>
 <text x="1072" y="906" class="note">No NAT gateway; Neptune and the graph tools reach S3 through a</text>

@@ -4,6 +4,10 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 ## [Unreleased]
 
+### Changed
+
+- The valves include the catalog questions a mapped table answers: Juno's sample cost, the Atlas V missions, that count, their total sample cost, and the name of `atlas-v-551`. When the collection's mapping has the attribute or the metric, those questions are added to the agent's prompt and to the portal's prompt. A claim from one of them is checked against the cell or the figure. The tool-budget message and the guardrail say the same.
+
 ### Removed
 
 - The Azure deployment (`deploy/azure/`) and its code: the Blob Storage lake, the `foundry` model provider, Entra ID sign-in for AGE, the Azure host, token verification (`authn.py`) and the MCP server it served (`tools/mcp.py`). The `azure` extra is gone.

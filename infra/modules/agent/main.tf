@@ -377,8 +377,8 @@ resource "aws_bedrockagentcore_gateway_target" "this" {
 resource "aws_bedrock_guardrail" "this" {
   count                     = var.guardrail.enabled ? 1 : 0
   name                      = "${var.name}-chat"
-  description               = "Screens questions, and checks each claim of an answer against the passages it cites"
-  blocked_input_messaging   = "That question can't be answered here. Ask about the documents in this collection."
+  description               = "Screens questions, and checks each claim of an answer against the passage, cell, or figure it cites"
+  blocked_input_messaging   = "That question can't be answered here. Ask about the documents or the mapped tables in this collection."
   blocked_outputs_messaging = "That answer could not be checked against the sources, so it is not shown."
   content_policy_config {
     filters_config {
@@ -441,7 +441,7 @@ resource "aws_iam_role_policy" "runtime" {
 resource "aws_bedrockagentcore_agent_runtime" "agent" {
   count              = local.runtime ? 1 : 0
   agent_runtime_name = "${local.ident}_chat"
-  description        = "Chat agent: questions answered from the knowledge graph, every statement grounded in a cited passage"
+  description        = "Chat agent: questions answered from the knowledge graph and mapped tables, every statement grounded in a cited passage, cell, or figure"
   role_arn           = aws_iam_role.runtime.arn
   agent_runtime_artifact {
     container_configuration { container_uri = var.agent_image_uri }

@@ -129,7 +129,7 @@ Copy this table, fill in the right-hand column, and keep it with the deployment'
 | `agent.runtime` | `false` | Create the agent's AgentCore Runtime. Set `true` on the second apply, once its image is built. |
 | `agent.prod_version` | empty | Pin a tested Runtime version as the `prod` endpoint the portal calls. |
 | `agent.model_id` | `us.anthropic.claude-sonnet-5` | The agent's model: a Bedrock inference profile id valid in your region. |
-| `guardrail.enabled` | `true` | A Bedrock Guardrail that screens questions and checks each claim against the passages it cites. |
+| `guardrail.enabled` | `true` | A Bedrock Guardrail that screens questions and checks each claim against the passage, cell, or figure it cites. |
 | `guardrail.grounding_threshold` | `0.75` | The grounding score a claim needs to be shown. |
 | `valves.max_tool_calls` | `16` | Tool calls per question. |
 | `valves.max_model_calls` | `14` | Model calls per question. |

@@ -97,13 +97,22 @@ says the sources cannot answer the question, and lists what was missing. The che
 |---|---|---|
 | Questions per person per day | 30 | `daily_questions` (the chat API, DynamoDB) |
 | Questions answered at once | 20 | `valves.chat_concurrency` (the chat API Lambda's reserved concurrency; 0 turns chat off) |
-| Tool calls per question | 16 | `valves.max_tool_calls`; past it, tools refuse and the agent answers from what it has read |
+| Tool calls per question | 16 | `valves.max_tool_calls`; past it, tools refuse and the agent answers from the passages, cells and figures it already has |
 | Model calls per question | 14 | `valves.max_model_calls` |
 | Output tokens per model call | 4000 | `valves.max_output_tokens` |
 | Repair turns | 1 | `valves.grounding_repairs` |
 | Question length, history | 2000 characters, 6 turns | the agent |
-| Guardrail | on | `guardrail`: prompt attacks and harmful content in questions, grounding of claims |
+| Guardrail | on | `guardrail`: prompt attacks and harmful content in questions; grounding of each claim against the passage, cell, or figure it cites |
+| Table queries | the catalog questions below | `valves.TABLE_QUERIES`; added to the prompt when the collection's mapping has the attribute or metric |
 | Monthly budget alert | off | `budget.monthly_usd` |
+
+A question answered from a mapped table uses these same limits. When the mapping can answer it, the question is named in the prompt and the claim is checked against the cell or the figure:
+
+- What sample cost does the catalog give Juno?
+- Which missions launched on an Atlas V?
+- How many catalogued missions launched on an Atlas V?
+- What total sample cost does the catalog give the Atlas V missions?
+- What name does the catalog give the launch vehicle atlas-v-551?
 
 ## Do we need a vector store?
 

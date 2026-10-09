@@ -6,7 +6,8 @@ answer is shown, code (not the model) checks every citation:
     the passage exists and the caller may read it     read back through read_passages, as the caller
     the quote is in the passage                       after normalising case, spacing, quotes and dashes
     the quote is long enough to say something         MIN_QUOTE_CHARS
-    the claim follows from its quotes (optional)      a Bedrock Guardrail contextual grounding check
+    the claim follows from its source (optional)      a Bedrock Guardrail contextual grounding check
+                                                       against the passage, the cell or the figure
 
 A citation that fails is removed; a claim left with no citation is removed. The answer shown is
 built from the claims that remain, so no sentence in it is unchecked text. When none remain, the
@@ -51,10 +52,10 @@ class Claim(BaseModel):
 
 
 class GroundedAnswer(BaseModel):
-    answerable: bool = Field(description="false when the passages you read do not answer the question")
+    answerable: bool = Field(description="false when the passages you read and the table cells and figures returned do not answer the question")
     claims: list[Claim] = Field(description="the answer, as statements in reading order; empty when not answerable")
     gaps: list[str] = Field(default_factory=list,
-                            description="what the sources could not say: a missing fact, type, relation or document")
+                            description="what the sources could not say: a missing fact, type, relation, table or document")
 
 
 _QUOTES = str.maketrans({"\u2018": "'", "\u2019": "'", "\u201a": "'", "\u201b": "'", "\u2032": "'",
