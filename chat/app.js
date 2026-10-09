@@ -283,7 +283,9 @@ function main() {
     const showProgress = () => {
       const last = turn.steps[turn.steps.length - 1];
       const took = Math.round((Date.now() - turn.started) / 1000);
-      progressText.textContent = `${last ? str(last.title) : (turn.mode === 'gaps' ? 'Exploring the graph' : 'Reading the documents')} (${took} s)`;
+      const waiting = last ? str(last.title) : (turn.mode === 'gaps' ? 'Exploring the graph' : 'Reading the documents');
+      const cold = !last && turn.mode !== 'gaps' ? '. The first question after a break can take a minute.' : '';
+      progressText.textContent = `${waiting} (${took} s)${cold}`;
       if (S.selected === turn) renderBench();
     };
     const tick = setInterval(showProgress, 1000);

@@ -192,7 +192,9 @@ def answer_job(job: dict) -> None:
         if agent_client.configured():
             token = job.pop("token", "") or agent_client.service_token(job["private"])
             out = agent_client.ask(token, {"question": job["question"], "collection": cid, "mode": mode,
-                                           "history": job.get("history"), "about": job.get("about")}, on_step=progress)
+                                           "history": job.get("history"), "about": job.get("about")},
+                                   session_id=agent_client.session_for(job["sub"], job["private"]),
+                                   on_step=progress)
             if out.get("error") and not (out.get("answer") or out.get("report")):
                 raise RuntimeError(out["error"])
             if mode == "gaps" and not out.get("report"):  # an agent built before the workbench answers instead

@@ -94,16 +94,19 @@ def portal(mixed, monkeypatch):
 def test_steps_show_while_running_and_usage_is_recorded(portal, monkeypatch):
     _, _, st = portal
     seen_running = []
+    seen_session = []
 
     def ask(token, payload, on_step=None, **kw):
         on_step({"n": 1, "kind": "tool", "title": "Read the ontology"})
         seen_running.append(st.chats[next(iter(st.chats))]["body"])
+        seen_session.append(kw.get("session_id"))
         return {"answer": "Agency Nova launched it. [1]", "sources": [{"n": 1}], "steps": [{"n": 1}],
                 "ontology_hits": {"classes": {"Mission": ["queried", "read"]}, "relations": {"launchedBy": ["cited"]}}}
 
     monkeypatch.setattr(agent_client, "ask", ask)
     r = handler.handler(event("POST", "/api/chat", body={"question": "Who launched Mission Alpha?"}), None)
     assert r["statusCode"] == 202
+    assert seen_session == [agent_client.session_for("u", False)]
     assert seen_running[0]["status"] == "running" and seen_running[0]["steps"][0]["title"] == "Read the ontology"
     usage = json.loads(handler.handler(event("GET", "/api/usage"), None)["body"])
     assert usage["questions"] == 1 and usage["classes"]["Mission"]["queried"] == 1
