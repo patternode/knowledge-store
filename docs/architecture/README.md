@@ -1,6 +1,6 @@
 # Architecture
 
-These notes describe how Knowledge Store is put together. How to install it on AWS is the [deployment guide](../deploy/aws/README.md). A short film of the same ideas is the [briefing](../explainer/README.md).
+These notes describe how Knowledge Store is put together. How to install it on AWS is the [deployment guide](../deploy/aws/README.md).
 
 ## AWS
 
