@@ -1,6 +1,6 @@
 """Architecture briefing for the Knowledge Store.
 
-Seven clips. The picture is a diagram of the flow, drawn in the Patternode brand
+Eight clips. The picture is a diagram of the flow, drawn in the Patternode brand
 (Midnight Terminal, IBM Plex, the mark). Two voice scripts are written from the
 same scenes: voice-pro.md for a professional narrator, voice-record.md to read
 yourself. Each script is continuous prose for the clip.
@@ -375,11 +375,11 @@ SECTIONS = [
         ],
         "pro": [
             "The examples that follow use one collection. A collection, sometimes called a corpus, is the set of documents an agent is allowed to answer from. Here that set is three Sherlock Holmes books: the Adventures, the Memoirs, and the Return.",
-            "It is a stand-in. The same pictures apply to a company's own files, a research library, or any other collection. Nothing in the method depends on these particular stories.",
+            "It is a stand-in for any documents. The usual way, then why a graph belongs with the vectors, then how a collection becomes that graph, then what to do next.",
         ],
         "record": [
             "These examples use one collection. A collection, sometimes called a corpus, is the set of documents an agent is allowed to answer from. Here, that set is three Sherlock Holmes books: the Adventures, the Memoirs, and the Return.",
-            "It is a stand-in. The same pictures apply to your own documents, a research library, or any other collection. Nothing in the method depends on these particular stories.",
+            "It is a stand-in for your own documents. The usual way, then why a graph belongs with the vectors, then how a collection becomes that graph, then what to do next.",
         ],
     },
     {
@@ -391,12 +391,12 @@ SECTIONS = [
             "The lit chunks are about Helen Stoner's mother. A sentence is written from them, and a citation is pinned on afterwards.",
         ],
         "pro": [
-            "An agent that answers from a company's own documents usually takes one path. The documents are cut into chunks and stored as vectors. A question retrieves the chunks nearest to it in meaning, and the agent writes a sentence from them.",
-            "Here the question is the name of Sherlock Holmes's mother. The stories never give it. The nearest chunks are about other mothers, including Helen Stoner's. The model can still write her mother's name, and attach a citation once the sentence exists. The words were in the collection. The relationship was not.",
+            "An agent that answers from a company's own documents usually takes one path. The documents are cut into chunks and stored as vectors. A question retrieves the nearest chunks, and the agent writes a sentence.",
+            "The question is the name of Sherlock Holmes's mother. The stories never give it. The nearest chunks are about other mothers, including Helen Stoner's mother, Mrs Stoner. The model can still write that name, and attach a citation afterwards. The words were there. The relationship was not.",
         ],
         "record": [
-            "An agent answering from your own documents usually works like this. The pages are cut into chunks and stored as vectors. A question pulls back the chunks nearest in meaning, and the agent writes a sentence.",
-            "Take a question the stories do not answer: the name of Sherlock Holmes's mother. Nothing in the collection says it. The nearest chunks are about other mothers, including Helen Stoner's. From those words the model can write a name, and a citation gets attached after the sentence exists. The words were there. They were about someone else.",
+            "An agent answering from your own documents usually works like this. The pages are cut into chunks and stored as vectors. A question pulls back the nearest chunks, and the agent writes a sentence.",
+            "The stories never name Sherlock Holmes's mother. The nearest chunks are about other mothers, including Helen Stoner's mother, Mrs Stoner. From those words the model can write that name, and a citation gets attached afterwards. The words were there. They were about someone else.",
         ],
     },
     {
@@ -409,11 +409,11 @@ SECTIONS = [
         ],
         "pro": [
             "An ontology is the picture of what a collection is allowed to say. It names the kinds of things, and the links between them. A person. A case. A cause. A person investigates a case. A person is killed by a cause.",
-            "A knowledge graph is that picture, filled in from the documents. Holmes investigates the Speckled Band. Dr Grimesby Roylott is killed by a swamp adder. Each fact points back to the passage that said it. The agent can ask what is connected to what, and of what kind.",
+            "A knowledge graph is that picture, filled in. Holmes investigates the Speckled Band. Dr Roylott is killed by a swamp adder. Each fact points at a passage.",
         ],
         "record": [
             "An ontology is a picture of what these documents are allowed to mean. The kinds of things, and the links you permit. A person. A case. A cause. A person investigates a case. A person is killed by a cause.",
-            "The knowledge graph is that picture filled in. Holmes investigates the Speckled Band. Dr Roylott is killed by a swamp adder. Every fact points back to the passage it came from. The agent can follow a connection, instead of hoping the right words sit next to each other.",
+            "The knowledge graph is that picture filled in. Holmes investigates the Speckled Band. Dr Roylott is killed by a swamp adder. Every fact points at a passage.",
         ],
     },
     {
@@ -425,12 +425,12 @@ SECTIONS = [
             "A question that only describes the death searches the vectors, lands on the same passage, and returns to the same fact.",
         ],
         "pro": [
-            "When a question names things, the graph is the path. What killed Dr Roylott walks from the person, along killed by, to the cause, and the passage comes with the fact.",
-            "When a question describes a situation, the words may not match. A doctor dies of a snake in his own room. Vector search finds the passage by meaning. The facts cite passages, so that hit leads back to the same fact. The graph holds the structure. The vectors hold the wording the question never used.",
+            "When a question names things, the graph is the path. What killed Dr Roylott walks from the person, along killed by, to the cause. The passage comes with the fact.",
+            "Instead, a doctor dies of a snake in his own room. The vectors find that passage by meaning and return to the same fact. The graph holds the connection. The vectors hold the wording the question never used.",
         ],
         "record": [
             "Ask what killed Dr Roylott, and the graph is enough. Person, killed by, cause, and the passage is already on the fact.",
-            "Ask it another way. A doctor dies of a snake in his own room, and the wording does not match the page. The vectors find that page by meaning. Because each fact cites a passage, the search leads back to the same fact. Structure in the graph. Wording in the vectors.",
+            "Instead, a doctor dies of a snake in his own room. The vectors find that passage by meaning and return to the same fact. The graph holds the connection. The vectors hold the wording the question never used.",
         ],
     },
     {
@@ -442,12 +442,12 @@ SECTIONS = [
             "A fact enters the graph only when the passage contains it. One vector is stored for each passage.",
         ],
         "pro": [
-            "If you already have the vocabulary, you bring the ontology with the documents. The documents are kept as they arrived, and divided into passages small enough to cite. Extraction reads each passage through the ontology you brought.",
-            "A fact is kept only when that passage contains it. Roylott, killed by, a swamp adder, stays, because The Speckled Band says so. From that record the lab builds the graph, and one vector for each passage.",
+            "If you already have the vocabulary, you bring the ontology with the documents. They are divided into passages. Extraction reads each passage through the ontology you brought.",
+            "A fact is kept only when the passage contains it. The swamp adder stays, because The Speckled Band says so. The lab builds the graph, and one vector for each passage.",
         ],
         "record": [
-            "This is the path when you bring the ontology. Documents come in and stay as they arrived. They are split into passages you can cite. The ontology you brought sits beside that flow, and extraction reads each passage in those types.",
-            "A fact is kept only when the passage contains it. The Speckled Band names the swamp adder, so that fact enters the graph. Beside the graph, one vector for each passage.",
+            "This is the path when you bring the ontology. Documents stay as they arrived and are split into passages to cite. Extraction reads each passage in the types you brought.",
+            "A fact is kept only when the passage contains it. The Speckled Band names the swamp adder, so that fact stays. One vector is stored for each passage.",
         ],
     },
     {
@@ -459,12 +459,12 @@ SECTIONS = [
             "The proposals become a draft, a person publishes it, and that ontology drops into the same extraction. The graph and the vectors are built the same way.",
         ],
         "pro": [
-            "If you do not bring an ontology, the documents arrive on their own. The lab reads a sample and proposes the kinds of things they keep mentioning, and the links that should be allowed. Those proposals become a draft. A person reviews it and publishes it.",
-            "Then the same extraction runs. Passages are read into the vocabulary that came from the documents, and the graph and the vectors are built in the same way. The ontology was derived. A fact still has to be in the passage.",
+            "If you do not bring an ontology, the documents arrive on their own. The lab reads a sample and proposes the kinds of things they mention, and the links that should be allowed. A person publishes that draft.",
+            "Then the same extraction runs. The graph and the vectors are built the same way. A fact still has to be in the passage.",
         ],
         "record": [
-            "This is the path when you do not bring an ontology. The same documents come in. A sample of them is read, and the lab proposes the kinds of things they talk about, and the links between those kinds. That becomes a draft. You look at it, and you publish it.",
-            "From there it is the same flow. Passages are read into the ontology that was derived from them. The graph and the vectors are built the same way, and a fact still has to be in the passage.",
+            "This is the path when you do not bring an ontology. The documents come in. A sample is read, and the lab proposes the kinds of things they talk about. You publish that draft.",
+            "Then the same extraction runs. The graph and the vectors are built the same way. A fact still has to be in the passage.",
         ],
     },
     {
@@ -477,14 +477,31 @@ SECTIONS = [
             "A second message, Holmes's mother's name, takes the same path. Nothing survives the check. The result in the chat is a decline.",
         ],
         "pro": [
-            "A person types a message in the chat. The agent is given the collection's ontology, and it plans in those types. A message that names something follows the graph. What killed Dr Roylott walks from the person to the cause, and the passage cited by that fact is read.",
-            "The agent proposes a statement, with a quote taken from the passage. The quote is checked. It is in The Speckled Band, so the statement stays. The result in the chat is the swamp adder, with that passage beside it.",
-            "A second message takes the same path. The name of Sherlock Holmes's mother meets other mothers in the stories, and nothing that names his. No statement survives the check. The result in the chat is a decline.",
+            "A person types a message in the chat. What killed Dr Roylott walks from the person to the cause, and the cited passage is read. It is in The Speckled Band, so the statement stays. The result is a swamp adder, with that passage beside it.",
+            "Holmes's mother's name takes the same path. It meets other mothers, and nothing that names his. The result is a decline. The sources do not say.",
         ],
         "record": [
-            "Someone types in the chat. The agent has the ontology, so it plans in those types. If the message names something, it follows the graph. What killed Dr Roylott goes from the person to the cause, and the passage on that fact is read.",
-            "The agent offers a statement and a quote from the passage. The quote is checked. The Speckled Band does say swamp adder, so that statement stays. What you see in the chat is the swamp adder, and the passage it came from.",
-            "Type the other question, and it is the same path. Holmes's mother's name meets other mothers, not his. Nothing survives the check. The chat declines.",
+            "Someone types in the chat. What killed Dr Roylott goes from the person to the cause, and the passage on that fact is read. The Speckled Band says swamp adder, so the statement stays. You see a swamp adder, with that passage beside it.",
+            "Ask for Holmes's mother's name. It meets other mothers, not his. The chat declines. The sources do not say.",
+        ],
+    },
+    {
+        "id": "close",
+        "file": "07-what-is-better.mp4",
+        "kicker": "What is better",
+        "picture": [
+            "Left, the kept result: a swamp adder, with a small Speckled Band passage, in cyan.",
+            "Beside it, the declined result: the sources do not say, in danger.",
+            "One line: the graph is for the connection, and the vectors are for the wording.",
+            "Then two steps: bring or publish an ontology, and ask, keeping only what a passage supports.",
+        ],
+        "pro": [
+            "A graph and the vectors do different work. The graph holds what is connected to what, and of what kind. The vectors hold wording the question never used. A result comes back only when a passage supports it. The swamp adder stays, because the Speckled Band says so. Holmes's mother's name does not, because the collection never gives it. A sentence no longer receives a citation after it has been written.",
+            "The next step is the same on any collection. Bring an ontology, or let the documents propose one and have a person publish it. Then ask. What the sources support is returned, with the passage beside it. What they do not say is left unsaid.",
+        ],
+        "record": [
+            "A graph and the vectors do different work. The graph holds what is connected to what, and of what kind. The vectors hold wording the question never used. A result comes back only when a passage supports it. The swamp adder stays, because the Speckled Band says so. Holmes's mother's name does not, because the collection never gives it. A sentence no longer gets a citation after it has been written.",
+            "The next step is the same for your own documents. Bring an ontology, or let the documents propose one and you publish it. Then ask. What the sources support comes back, with the passage beside it. What they do not say is left unsaid.",
         ],
     },
 ]
@@ -763,6 +780,52 @@ def draw_questions(d, t):
     chat_bubble(d, (1500, 720, 1856, 845), "RESULT", "The sources do not say.", CORAL, a_out2, size=22)
 
 
+def draw_close(d, t):
+    heading(d, "What is better", "A fact the documents support.")
+    a_keep = ease(t, 0.4, 2.6)
+    a_page = ease(t, 2.0, 4.6)
+    a_drop = ease(t, 3.8, 6.4)
+    a_line = ease(t, 7.6, 10.4)
+    a_bring = ease(t, 11.6, 14.4)
+    a_ask = ease(t, 13.8, 16.6)
+
+    if a_keep > 0.02:
+        d.rounded_rectangle((80, 220, 920, 530), radius=12, fill=col(INK, a_keep), outline=col(TEAL, a_keep), width=3)
+        d.text((112, 246), "RESULT", font=font(14, "mono"), fill=col(TEAL, a_keep))
+        d.text((112, 292), "A swamp adder.", font=font(42, "sem"), fill=col(IVORY, a_keep))
+    page(d, 112, 380, 250, 116, "Speckled Band", TEAL, a_page, bars=2, title_size=18)
+
+    if a_drop > 0.02:
+        d.rounded_rectangle((1000, 220, 1840, 530), radius=12, fill=col(INK, a_drop), outline=col(CORAL, a_drop), width=3)
+        d.text((1032, 246), "RESULT", font=font(14, "mono"), fill=col(CORAL, a_drop))
+        d.text((1032, 340), "The sources do not say.", font=font(36, "sem"), fill=col(IVORY, a_drop))
+
+    line = "Graph for the connection. Vectors for the wording."
+    fnt = font(26, "med")
+    d.text(((W - fnt.getlength(line)) / 2, 590), line, font=fnt, fill=col(IVORY, a_line))
+
+    left = "Bring or publish an ontology"
+    right = "Ask. Keep only what a passage supports."
+    pf = font(18, "sem")
+    gap = 100
+    lw, rw = pf.getlength(left) + 40, pf.getlength(right) + 40
+    group = lw + gap + rw
+    x0 = (W - group) / 2
+    c1 = x0 + lw / 2
+    c2 = x0 + lw + gap + rw / 2
+    y = 760
+    pill(d, c1, y, left, GOLD, a_bring)
+    pill(d, c2, y, right, TEAL, a_ask)
+    arrow(
+        d,
+        (c1 + lw / 2 + 10, y),
+        (c2 - rw / 2 - 10, y),
+        col(MUTED, min(a_bring, a_ask)),
+        width=3,
+        prog=min(a_bring, a_ask),
+    )
+
+
 DRAW = {
     "collection": draw_collection,
     "usual": draw_usual,
@@ -771,6 +834,7 @@ DRAW = {
     "bring": draw_bring,
     "derive": draw_derive,
     "questions": draw_questions,
+    "close": draw_close,
 }
 
 

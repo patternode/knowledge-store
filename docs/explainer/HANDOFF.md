@@ -4,7 +4,7 @@ This packet is enough for a new agent to finish the briefing without the convers
 
 ## What this briefing is for
 
-The briefing is a little over five minutes. It opens by naming the collection the examples use, and by saying that collection is a stand-in. It is for people, including executives, who only broadly understand AI agents. After it, it should be clear that the technique improves consistency and accuracy because a result has to be tied to a passage. It does not show the product being operated.
+The briefing is just under five minutes. It opens by naming the collection the examples use, and by saying that collection is a stand-in. It is for people, including executives, who only broadly understand AI agents. The shape is a setting, a problem, a turn, how this lab builds the graph, and a close. After it, it should be clear what is better when a graph and vectors work together, and what to do next on any collection. It does not show the product being operated.
 
 ## What is already finished
 
@@ -12,18 +12,19 @@ The picture is rendered in the Patternode brand (Midnight Terminal navy, IBM Ple
 
 Work lives on `cursor/knowledge-store-explainer-e63b` in the knowledge-store repository. The draft pull request is https://github.com/patternode/knowledge-store/pull/41. Its base branch is `main`. Do not open a second pull request, and do not create a new branch for this briefing.
 
-Seven clips, then the assembly (5:07, 307.4 seconds):
+Eight clips, then the assembly (4:57, 297.0 seconds):
 
 | Assembly in | Assembly out | File |
 |---|---|---|
 | 0:00 | 0:35 | `docs/explainer/media/00-the-collection.mp4` |
-| 0:35 | 1:20 | `docs/explainer/media/01-usual-path.mp4` |
-| 1:20 | 2:04 | `docs/explainer/media/02-ontology-and-graph.mp4` |
-| 2:04 | 2:46 | `docs/explainer/media/03-graph-and-vectors.mp4` |
-| 2:46 | 3:23 | `docs/explainer/media/04-bring-ontology.mp4` |
-| 3:23 | 4:07 | `docs/explainer/media/05-derive-ontology.mp4` |
-| 4:07 | 5:07 | `docs/explainer/media/06-when-someone-asks.mp4` |
-| 0:00 | 5:07 | `docs/explainer/media/assembly.mp4` |
+| 0:35 | 1:15 | `docs/explainer/media/01-usual-path.mp4` |
+| 1:15 | 1:50 | `docs/explainer/media/02-ontology-and-graph.mp4` |
+| 1:50 | 2:24 | `docs/explainer/media/03-graph-and-vectors.mp4` |
+| 2:24 | 2:54 | `docs/explainer/media/04-bring-ontology.mp4` |
+| 2:54 | 3:25 | `docs/explainer/media/05-derive-ontology.mp4` |
+| 3:25 | 4:01 | `docs/explainer/media/06-when-someone-asks.mp4` |
+| 4:01 | 4:57 | `docs/explainer/media/07-what-is-better.mp4` |
+| 0:00 | 4:57 | `docs/explainer/media/assembly.mp4` |
 
 Both voice scripts are written. `docs/explainer/script.md` is the timeline and the on-screen picture notes. `docs/explainer/voice-pro.md` is the professional narrator. `docs/explainer/voice-record.md` is the read-yourself twin. `docs/explainer/build.py` generates those three files from its `SECTIONS` list. `docs/explainer/README.md` is the short entry point.
 
@@ -47,57 +48,63 @@ Clip `00-the-collection.mp4`. Assembly 0:00 to 0:35.
 
 The examples that follow use one collection. A collection, sometimes called a corpus, is the set of documents an agent is allowed to answer from. Here that set is three Sherlock Holmes books: the Adventures, the Memoirs, and the Return.
 
-It is a stand-in. The same pictures apply to a company's own files, a research library, or any other collection. Nothing in the method depends on these particular stories.
+It is a stand-in for any documents. The usual way, then why a graph belongs with the vectors, then how a collection becomes that graph, then what to do next.
 
 #### 2. The usual path
 
-Clip `01-usual-path.mp4`. Assembly 0:35 to 1:20.
+Clip `01-usual-path.mp4`. Assembly 0:35 to 1:15.
 
-An agent that answers from a company's own documents usually takes one path. The documents are cut into chunks and stored as vectors. A question retrieves the chunks nearest to it in meaning, and the agent writes a sentence from them.
+An agent that answers from a company's own documents usually takes one path. The documents are cut into chunks and stored as vectors. A question retrieves the nearest chunks, and the agent writes a sentence.
 
-Here the question is the name of Sherlock Holmes's mother. The stories never give it. The nearest chunks are about other mothers, including Helen Stoner's. The model can still write her mother's name, and attach a citation once the sentence exists. The words were in the collection. The relationship was not.
+The question is the name of Sherlock Holmes's mother. The stories never give it. The nearest chunks are about other mothers, including Helen Stoner's mother, Mrs Stoner. The model can still write that name, and attach a citation afterwards. The words were there. The relationship was not.
 
 #### 3. Ontology and graph
 
-Clip `02-ontology-and-graph.mp4`. Assembly 1:20 to 2:04.
+Clip `02-ontology-and-graph.mp4`. Assembly 1:15 to 1:50.
 
 An ontology is the picture of what a collection is allowed to say. It names the kinds of things, and the links between them. A person. A case. A cause. A person investigates a case. A person is killed by a cause.
 
-A knowledge graph is that picture, filled in from the documents. Holmes investigates the Speckled Band. Dr Grimesby Roylott is killed by a swamp adder. Each fact points back to the passage that said it. The agent can ask what is connected to what, and of what kind.
+A knowledge graph is that picture, filled in. Holmes investigates the Speckled Band. Dr Roylott is killed by a swamp adder. Each fact points at a passage.
 
 #### 4. Graph and vectors
 
-Clip `03-graph-and-vectors.mp4`. Assembly 2:04 to 2:46.
+Clip `03-graph-and-vectors.mp4`. Assembly 1:50 to 2:24.
 
-When a question names things, the graph is the path. What killed Dr Roylott walks from the person, along killed by, to the cause, and the passage comes with the fact.
+When a question names things, the graph is the path. What killed Dr Roylott walks from the person, along killed by, to the cause. The passage comes with the fact.
 
-When a question describes a situation, the words may not match. A doctor dies of a snake in his own room. Vector search finds the passage by meaning. The facts cite passages, so that hit leads back to the same fact. The graph holds the structure. The vectors hold the wording the question never used.
+Instead, a doctor dies of a snake in his own room. The vectors find that passage by meaning and return to the same fact. The graph holds the connection. The vectors hold the wording the question never used.
 
 #### 5. Bring the ontology
 
-Clip `04-bring-ontology.mp4`. Assembly 2:46 to 3:23.
+Clip `04-bring-ontology.mp4`. Assembly 2:24 to 2:54.
 
-If you already have the vocabulary, you bring the ontology with the documents. The documents are kept as they arrived, and divided into passages small enough to cite. Extraction reads each passage through the ontology you brought.
+If you already have the vocabulary, you bring the ontology with the documents. They are divided into passages. Extraction reads each passage through the ontology you brought.
 
-A fact is kept only when that passage contains it. Roylott, killed by, a swamp adder, stays, because The Speckled Band says so. From that record the lab builds the graph, and one vector for each passage.
+A fact is kept only when the passage contains it. The swamp adder stays, because The Speckled Band says so. The lab builds the graph, and one vector for each passage.
 
 #### 6. Derive the ontology
 
-Clip `05-derive-ontology.mp4`. Assembly 3:23 to 4:07.
+Clip `05-derive-ontology.mp4`. Assembly 2:54 to 3:25.
 
-If you do not bring an ontology, the documents arrive on their own. The lab reads a sample and proposes the kinds of things they keep mentioning, and the links that should be allowed. Those proposals become a draft. A person reviews it and publishes it.
+If you do not bring an ontology, the documents arrive on their own. The lab reads a sample and proposes the kinds of things they mention, and the links that should be allowed. A person publishes that draft.
 
-Then the same extraction runs. Passages are read into the vocabulary that came from the documents, and the graph and the vectors are built in the same way. The ontology was derived. A fact still has to be in the passage.
+Then the same extraction runs. The graph and the vectors are built the same way. A fact still has to be in the passage.
 
 #### 7. The chat
 
-Clip `06-when-someone-asks.mp4`. Assembly 4:07 to 5:07.
+Clip `06-when-someone-asks.mp4`. Assembly 3:25 to 4:01.
 
-A person types a message in the chat. The agent is given the collection's ontology, and it plans in those types. A message that names something follows the graph. What killed Dr Roylott walks from the person to the cause, and the passage cited by that fact is read.
+A person types a message in the chat. What killed Dr Roylott walks from the person to the cause, and the cited passage is read. It is in The Speckled Band, so the statement stays. The result is a swamp adder, with that passage beside it.
 
-The agent proposes a statement, with a quote taken from the passage. The quote is checked. It is in The Speckled Band, so the statement stays. The result in the chat is the swamp adder, with that passage beside it.
+Holmes's mother's name takes the same path. It meets other mothers, and nothing that names his. The result is a decline. The sources do not say.
 
-A second message takes the same path. The name of Sherlock Holmes's mother meets other mothers in the stories, and nothing that names his. No statement survives the check. The result in the chat is a decline.
+#### 8. What is better
+
+Clip `07-what-is-better.mp4`. Assembly 4:01 to 4:57.
+
+A graph and the vectors do different work. The graph holds what is connected to what, and of what kind. The vectors hold wording the question never used. A result comes back only when a passage supports it. The swamp adder stays, because the Speckled Band says so. Holmes's mother's name does not, because the collection never gives it. A sentence no longer receives a citation after it has been written.
+
+The next step is the same on any collection. Bring an ontology, or let the documents propose one and have a person publish it. Then ask. What the sources support is returned, with the passage beside it. What they do not say is left unsaid.
 
 ### Record yourself
 
@@ -109,57 +116,63 @@ Clip `00-the-collection.mp4`. Assembly 0:00 to 0:35.
 
 These examples use one collection. A collection, sometimes called a corpus, is the set of documents an agent is allowed to answer from. Here, that set is three Sherlock Holmes books: the Adventures, the Memoirs, and the Return.
 
-It is a stand-in. The same pictures apply to your own documents, a research library, or any other collection. Nothing in the method depends on these particular stories.
+It is a stand-in for your own documents. The usual way, then why a graph belongs with the vectors, then how a collection becomes that graph, then what to do next.
 
 #### 2. The usual path
 
-Clip `01-usual-path.mp4`. Assembly 0:35 to 1:20.
+Clip `01-usual-path.mp4`. Assembly 0:35 to 1:15.
 
-An agent answering from your own documents usually works like this. The pages are cut into chunks and stored as vectors. A question pulls back the chunks nearest in meaning, and the agent writes a sentence.
+An agent answering from your own documents usually works like this. The pages are cut into chunks and stored as vectors. A question pulls back the nearest chunks, and the agent writes a sentence.
 
-Take a question the stories do not answer: the name of Sherlock Holmes's mother. Nothing in the collection says it. The nearest chunks are about other mothers, including Helen Stoner's. From those words the model can write a name, and a citation gets attached after the sentence exists. The words were there. They were about someone else.
+The stories never name Sherlock Holmes's mother. The nearest chunks are about other mothers, including Helen Stoner's mother, Mrs Stoner. From those words the model can write that name, and a citation gets attached afterwards. The words were there. They were about someone else.
 
 #### 3. Ontology and graph
 
-Clip `02-ontology-and-graph.mp4`. Assembly 1:20 to 2:04.
+Clip `02-ontology-and-graph.mp4`. Assembly 1:15 to 1:50.
 
 An ontology is a picture of what these documents are allowed to mean. The kinds of things, and the links you permit. A person. A case. A cause. A person investigates a case. A person is killed by a cause.
 
-The knowledge graph is that picture filled in. Holmes investigates the Speckled Band. Dr Roylott is killed by a swamp adder. Every fact points back to the passage it came from. The agent can follow a connection, instead of hoping the right words sit next to each other.
+The knowledge graph is that picture filled in. Holmes investigates the Speckled Band. Dr Roylott is killed by a swamp adder. Every fact points at a passage.
 
 #### 4. Graph and vectors
 
-Clip `03-graph-and-vectors.mp4`. Assembly 2:04 to 2:46.
+Clip `03-graph-and-vectors.mp4`. Assembly 1:50 to 2:24.
 
 Ask what killed Dr Roylott, and the graph is enough. Person, killed by, cause, and the passage is already on the fact.
 
-Ask it another way. A doctor dies of a snake in his own room, and the wording does not match the page. The vectors find that page by meaning. Because each fact cites a passage, the search leads back to the same fact. Structure in the graph. Wording in the vectors.
+Instead, a doctor dies of a snake in his own room. The vectors find that passage by meaning and return to the same fact. The graph holds the connection. The vectors hold the wording the question never used.
 
 #### 5. Bring the ontology
 
-Clip `04-bring-ontology.mp4`. Assembly 2:46 to 3:23.
+Clip `04-bring-ontology.mp4`. Assembly 2:24 to 2:54.
 
-This is the path when you bring the ontology. Documents come in and stay as they arrived. They are split into passages you can cite. The ontology you brought sits beside that flow, and extraction reads each passage in those types.
+This is the path when you bring the ontology. Documents stay as they arrived and are split into passages to cite. Extraction reads each passage in the types you brought.
 
-A fact is kept only when the passage contains it. The Speckled Band names the swamp adder, so that fact enters the graph. Beside the graph, one vector for each passage.
+A fact is kept only when the passage contains it. The Speckled Band names the swamp adder, so that fact stays. One vector is stored for each passage.
 
 #### 6. Derive the ontology
 
-Clip `05-derive-ontology.mp4`. Assembly 3:23 to 4:07.
+Clip `05-derive-ontology.mp4`. Assembly 2:54 to 3:25.
 
-This is the path when you do not bring an ontology. The same documents come in. A sample of them is read, and the lab proposes the kinds of things they talk about, and the links between those kinds. That becomes a draft. You look at it, and you publish it.
+This is the path when you do not bring an ontology. The documents come in. A sample is read, and the lab proposes the kinds of things they talk about. You publish that draft.
 
-From there it is the same flow. Passages are read into the ontology that was derived from them. The graph and the vectors are built the same way, and a fact still has to be in the passage.
+Then the same extraction runs. The graph and the vectors are built the same way. A fact still has to be in the passage.
 
 #### 7. The chat
 
-Clip `06-when-someone-asks.mp4`. Assembly 4:07 to 5:07.
+Clip `06-when-someone-asks.mp4`. Assembly 3:25 to 4:01.
 
-Someone types in the chat. The agent has the ontology, so it plans in those types. If the message names something, it follows the graph. What killed Dr Roylott goes from the person to the cause, and the passage on that fact is read.
+Someone types in the chat. What killed Dr Roylott goes from the person to the cause, and the passage on that fact is read. The Speckled Band says swamp adder, so the statement stays. You see a swamp adder, with that passage beside it.
 
-The agent offers a statement and a quote from the passage. The quote is checked. The Speckled Band does say swamp adder, so that statement stays. What you see in the chat is the swamp adder, and the passage it came from.
+Ask for Holmes's mother's name. It meets other mothers, not his. The chat declines. The sources do not say.
 
-Type the other question, and it is the same path. Holmes's mother's name meets other mothers, not his. Nothing survives the check. The chat declines.
+#### 8. What is better
+
+Clip `07-what-is-better.mp4`. Assembly 4:01 to 4:57.
+
+A graph and the vectors do different work. The graph holds what is connected to what, and of what kind. The vectors hold wording the question never used. A result comes back only when a passage supports it. The swamp adder stays, because the Speckled Band says so. Holmes's mother's name does not, because the collection never gives it. A sentence no longer gets a citation after it has been written.
+
+The next step is the same for your own documents. Bring an ontology, or let the documents propose one and you publish it. Then ask. What the sources support comes back, with the passage beside it. What they do not say is left unsaid.
 
 ## Facts that must stay accurate
 
@@ -221,7 +234,7 @@ The first command rewrites the three generated docs. The second also re-encodes 
 ## What is left
 
 - [ ] Dermot records `docs/explainer/voice-record.md`, or a narrator reads `docs/explainer/voice-pro.md`. The picture is silent. Mixing the voice onto `docs/explainer/media/assembly.mp4` is not done. Time the read to the assembly in and out points above.
-- [ ] Treat `docs/explainer/comfy-shots.md` as optional atmosphere. It may be stale relative to the seven-clip cut. Do not ask an image model to draw words. ComfyUI is not in this workspace.
+- [ ] Treat `docs/explainer/comfy-shots.md` as optional atmosphere. It may be stale relative to the eight-clip cut. Do not ask an image model to draw words. ComfyUI is not in this workspace.
 - [ ] Leave lab screen recordings out. Do not show the product being operated.
 - [ ] After any palette or layout change, check the late frames of each clip. Do not commit `docs/explainer/media/stills/` or any `__pycache__`.
 - [ ] If the assembly changes, replace `user-interfaces/site/public/media/knowledge-store-briefing.mp4` on patternode-platform branch `cursor/knowledge-store-briefing-link-e63b` and update https://github.com/patternode/patternode-platform/pull/421. On that repository: no em dashes inside a sentence, no bold mid-sentence, and never name Dermot's employer. Pull requests use the repository template, including Why and a release note with Visibility: internal. The base branch is `develop`.

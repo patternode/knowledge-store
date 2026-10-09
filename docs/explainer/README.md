@@ -2,7 +2,7 @@
 
 An architecture briefing for people who know what an AI agent is. The picture opens on the collection the examples use, three books of Sherlock Holmes stories, and treats that set as a stand-in for any documents. The picture shows the usual way an agent answers from documents, what an ontology and a knowledge graph add, why vector search stays beside the graph, and the two ways this lab builds that graph. It is drawn in the Patternode brand: Midnight Terminal on the navy ground, IBM Plex, and the mark.
 
-One path brings an ontology with the documents. Extraction reads the passages through it. The other path starts from documents alone: a sample proposes the vocabulary, a person publishes it, and the same extraction runs. The last clip is the chat: a message goes in, the agent follows the graph and the passages, and the result comes back only when a passage supports it.
+One path brings an ontology with the documents. Extraction reads the passages through it. The other path starts from documents alone: a sample proposes the vocabulary, a person publishes it, and the same extraction runs. The chat is the proof, a swamp adder with the Speckled Band passage, and a decline when the sources do not say. The last clip says what is better with a graph and the vectors together, and what to do next on any collection.
 
 It does not show the product being operated.
 

@@ -1,6 +1,6 @@
 # Knowledge Store briefing
 
-Seven clips. The picture is an architecture diagram of the flow.
+Eight clips. The picture is an architecture diagram of the flow.
 
 Two complete reads, one per clip, in prose:
 
@@ -14,14 +14,15 @@ The clips are timed to the longer of the two reads, at about 130 words a minute,
 | In | Out | Clip | Picture |
 |---|---|---|---|
 | 0:00 | 0:35 | `00-the-collection.mp4` | The collection |
-| 0:35 | 1:20 | `01-usual-path.mp4` | The usual path |
-| 1:20 | 2:04 | `02-ontology-and-graph.mp4` | Ontology and graph |
-| 2:04 | 2:46 | `03-graph-and-vectors.mp4` | Graph and vectors |
-| 2:46 | 3:23 | `04-bring-ontology.mp4` | Bring the ontology |
-| 3:23 | 4:07 | `05-derive-ontology.mp4` | Derive the ontology |
-| 4:07 | 5:07 | `06-when-someone-asks.mp4` | The chat |
+| 0:35 | 1:15 | `01-usual-path.mp4` | The usual path |
+| 1:15 | 1:50 | `02-ontology-and-graph.mp4` | Ontology and graph |
+| 1:50 | 2:24 | `03-graph-and-vectors.mp4` | Graph and vectors |
+| 2:24 | 2:54 | `04-bring-ontology.mp4` | Bring the ontology |
+| 2:54 | 3:25 | `05-derive-ontology.mp4` | Derive the ontology |
+| 3:25 | 4:01 | `06-when-someone-asks.mp4` | The chat |
+| 4:01 | 4:57 | `07-what-is-better.mp4` | What is better |
 
-Total picture: 5:07 (307.4 seconds).
+Total picture: 4:57 (297.0 seconds).
 
 ## 1. The collection
 
@@ -35,7 +36,7 @@ Picture:
 
 ## 2. The usual path
 
-`01-usual-path.mp4`, 0:35 to 1:20.
+`01-usual-path.mp4`, 0:35 to 1:15.
 
 Picture:
 
@@ -44,7 +45,7 @@ Picture:
 
 ## 3. Ontology and graph
 
-`02-ontology-and-graph.mp4`, 1:20 to 2:04.
+`02-ontology-and-graph.mp4`, 1:15 to 1:50.
 
 Picture:
 
@@ -53,7 +54,7 @@ Picture:
 
 ## 4. Graph and vectors
 
-`03-graph-and-vectors.mp4`, 2:04 to 2:46.
+`03-graph-and-vectors.mp4`, 1:50 to 2:24.
 
 Picture:
 
@@ -62,7 +63,7 @@ Picture:
 
 ## 5. Bring the ontology
 
-`04-bring-ontology.mp4`, 2:46 to 3:23.
+`04-bring-ontology.mp4`, 2:24 to 2:54.
 
 Picture:
 
@@ -71,7 +72,7 @@ Picture:
 
 ## 6. Derive the ontology
 
-`05-derive-ontology.mp4`, 3:23 to 4:07.
+`05-derive-ontology.mp4`, 2:54 to 3:25.
 
 Picture:
 
@@ -80,11 +81,22 @@ Picture:
 
 ## 7. The chat
 
-`06-when-someone-asks.mp4`, 4:07 to 5:07.
+`06-when-someone-asks.mp4`, 3:25 to 4:01.
 
 Picture:
 
 - A chat message, What killed Dr Roylott, enters an agent that holds the ontology. The agent walks the graph, reads the cited passage, and a check keeps the statement because the quote is in the passage.
 - The result returns in the chat: a swamp adder, with the Speckled Band passage.
 - A second message, Holmes's mother's name, takes the same path. Nothing survives the check. The result in the chat is a decline.
+
+## 8. What is better
+
+`07-what-is-better.mp4`, 4:01 to 4:57.
+
+Picture:
+
+- Left, the kept result: a swamp adder, with a small Speckled Band passage, in cyan.
+- Beside it, the declined result: the sources do not say, in danger.
+- One line: the graph is for the connection, and the vectors are for the wording.
+- Then two steps: bring or publish an ontology, and ask, keeping only what a passage supports.
 
