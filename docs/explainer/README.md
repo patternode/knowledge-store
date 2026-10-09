@@ -6,6 +6,8 @@ It opens with why the briefing is worth hearing, then names the collection. One 
 
 It does not show the product being operated.
 
+The still for the opening line, before the usual-way explanation, is [media/opening-hold.png](media/opening-hold.png).
+
 A new agent should start at [HANDOFF.md](HANDOFF.md). That file holds both voice scripts, the facts and brand the picture has to keep, and the checklist of what is still left.
 
 | File | What it is |
