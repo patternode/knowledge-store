@@ -644,45 +644,51 @@ def draw_questions(d, t):
     a_drop = ease(t, 24.8, 28.0)
     a_out2 = ease(t, 28.2, 32.0)
 
-    # The message.
-    chat_bubble(d, (64, 230, 390, 360), "MESSAGE", "What killed Dr Roylott?", IVORY, a_msg, size=24)
-    arrow(d, (400, 295), (500, 430), col(GOLD, a_agent), prog=a_agent, width=3)
+    # Both messages enter the left side of the agent, above its caption.
+    chat_bubble(d, (64, 240, 420, 360), "MESSAGE", "What killed Dr Roylott?", IVORY, a_msg, size=24)
+    arrow(d, (420, 300), (480, 300), col(GOLD, a_agent), prog=a_agent, width=3)
 
-    # Agent, shared by both messages.
-    d.rounded_rectangle((520, 400, 820, 620), radius=20, fill=col(INK, a_agent), outline=col(GOLD, a_agent), width=3)
+    d.rounded_rectangle((480, 220, 850, 450), radius=20, fill=col(INK, a_agent), outline=col(GOLD, a_agent), width=3)
     if a_agent > 0.1:
-        center_text(d, 670, 445, "Agent", font(26, "sem"), col(IVORY, a_agent))
-        for name, x in (("Person", 575), ("Case", 670), ("Cause", 765)):
-            pill(d, x, 530, name, GOLD, a_agent)
-        stage(d, 670, 640, "HOLDS THE ONTOLOGY", GOLD, a_agent)
+        center_text(d, 665, 278, "Agent", font(26, "sem"), col(IVORY, a_agent))
+        for name, x in (("Person", 559), ("Case", 668), ("Cause", 774)):
+            pill(d, x, 358, name, GOLD, a_agent)
+        stage(d, 665, 466, "HOLDS THE ONTOLOGY", GOLD, a_agent)
 
-    # Answered lookup: graph fact and its passage.
-    arrow(d, (820, 460), (960, 300), col(TEAL, a_find), prog=a_find, width=3)
-    node(d, 1080, 250, 150, 52, "Roylott", TEAL, a_find)
-    node(d, 1360, 250, 190, 52, "Swamp adder", TEAL, a_find)
-    arrow(d, (1160, 250), (1260, 250), col(TEAL, a_find), width=3, prog=a_find)
+    # Named lookup: the fact, the passage under it, then the check.
+    arrow(d, (850, 300), (940, 300), col(TEAL, a_find), prog=a_find, width=3)
+    node(d, 1020, 300, 160, 56, "Roylott", TEAL, a_find)
+    arrow(d, (1100, 300), (1180, 300), col(TEAL, a_find), width=3, prog=a_find)
     if a_find > 0.45:
-        center_text(d, 1210, 220, "killed by", font(14, "med"), col(TEAL, a_find))
-    passage_mark(d, 1280, 300, a_find, "Speckled Band")
-    stage(d, 1220, 410, "GRAPH AND PASSAGE", TEAL, a_find)
+        center_text(d, 1140, 248, "killed by", font(14, "med"), col(TEAL, a_find))
+    node(d, 1285, 300, 210, 56, "Swamp adder", TEAL, a_find)
+    passage_mark(d, 1210, 348, a_find, "Speckled Band")
+    stage(d, 1285, 456, "GRAPH AND PASSAGE", TEAL, a_find)
 
-    # The check, then the result in the chat.
-    arrow(d, (1460, 250), (1580, 230), col(TEAL, a_keep), prog=a_keep, width=3)
-    node(d, 1660, 230, 150, 56, "Kept", TEAL, a_keep)
-    arrow(d, (1660, 262), (1660, 470), col(TEAL, a_out), prog=a_out, width=3)
-    chat_bubble(d, (1480, 480, 1860, 680), "RESULT", "A swamp adder.", TEAL, a_out, size=28)
+    arrow(d, (1390, 300), (1470, 300), col(TEAL, a_keep), prog=a_keep, width=3)
+    node(d, 1540, 300, 140, 56, "Kept", TEAL, a_keep)
+    arrow(d, (1540, 328), (1540, 515), col(TEAL, a_out), prog=a_out, width=3)
+
+    # Result in the chat. The passage sits clear of the sentence.
+    chat_bubble(d, (1220, 515, 1856, 675), "RESULT", "A swamp adder.", TEAL, a_out, size=28)
     if a_out > 0.4:
-        passage_mark(d, 1688, 580, a_out, "Speckled Band")
+        passage_mark(d, 1682, 555, a_out, "Speckled Band")
 
-    # Second message, same agent, nothing kept.
-    chat_bubble(d, (64, 760, 420, 900), "MESSAGE", "Holmes's mother's name?", IVORY, a_msg2, size=22)
-    arrow(d, (420, 820), (560, 620), col(GOLD, a_find2), prog=a_find2, width=3)
-    arrow(d, (760, 620), (980, 760), col(CORAL, a_find2), prog=a_find2, width=3)
-    node(d, 1160, 800, 280, 64, "Other mothers", CORAL, a_find2, sub="not his")
-    arrow(d, (1310, 800), (1450, 800), col(CORAL, a_drop), prog=a_drop, width=3)
-    node(d, 1580, 800, 170, 60, "Removed", CORAL, a_drop)
-    arrow(d, (1670, 800), (1740, 860), col(CORAL, a_out2), prog=a_out2, width=3)
-    chat_bubble(d, (1480, 880, 1860, 990), "RESULT", "The sources do not say.", CORAL, a_out2, size=22)
+    # Second message. The path steps down beside the agent, not across its caption.
+    chat_bubble(d, (64, 720, 420, 845), "MESSAGE", "Holmes's mother's name?", IVORY, a_msg2, size=22)
+    arrow(d, (420, 782), (480, 400), col(GOLD, a_find2), prog=a_find2, width=3)
+    poly_arrow(
+        d,
+        [(850, 400), (930, 400), (930, 782), (990, 782)],
+        col(CORAL, a_find2),
+        width=3,
+        prog=a_find2,
+    )
+    node(d, 1095, 782, 210, 64, "Other mothers", CORAL, a_find2, sub="not his")
+    arrow(d, (1200, 782), (1270, 782), col(CORAL, a_drop), prog=a_drop, width=3)
+    node(d, 1350, 782, 160, 58, "Removed", CORAL, a_drop)
+    arrow(d, (1430, 782), (1500, 782), col(CORAL, a_out2), prog=a_out2, width=3)
+    chat_bubble(d, (1500, 720, 1856, 845), "RESULT", "The sources do not say.", CORAL, a_out2, size=22)
 
 
 DRAW = {
