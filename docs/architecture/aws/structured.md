@@ -39,7 +39,7 @@ happens to contain commas is undisturbed.
 Structured and unstructured are two readings of one landing tree. The space-missions sample is
 both: the prose and JSON documents already in that corpus, and two invented catalog CSVs beside
 them. A question cites a passage from a document and a cell from a CSV. See
-[examples/space-missions](../../examples/space-missions/README.md). The Sherlock Holmes folder
+[examples/space-missions](../../../examples/space-missions/README.md). The Sherlock Holmes folder
 stays a fetch of the stories only.
 
 | Mapping field | For a CSV in the lake | Later, for a live table |
@@ -72,7 +72,7 @@ tables:
 ```
 
 The worked files, including the launch-vehicle table the relation joins to, are
-[`examples/space-missions/ontology/mappings.yaml`](../../examples/space-missions/ontology/mappings.yaml).
+[`examples/space-missions/ontology/mappings.yaml`](../../../examples/space-missions/ontology/mappings.yaml).
 
 `knowledge-store ontology publish` checks the mapping the way review checks an edit. A class,
 attribute, relation, or datatype the ontology does not have is refused. A column datatype that
@@ -85,11 +85,11 @@ The release renders the mapping, as it renders every other consumer form
 | Rendition | For |
 |---|---|
 | `structured/mapping.json` | The sweep and the tools: class, key, columns, logical table |
-| `r2rml/mapping.ttl` | The same triples maps the accelerator writes for Ontop. Generated, never edited. The space-missions sample checks an illustrative copy in [`ontology/r2rml-mapping.ttl`](../../examples/space-missions/ontology/r2rml-mapping.ttl) |
+| `r2rml/mapping.ttl` | The same triples maps the accelerator writes for Ontop. Generated, never edited. The space-missions sample checks an illustrative copy in [`ontology/r2rml-mapping.ttl`](../../../examples/space-missions/ontology/r2rml-mapping.ttl) |
 
 Metrics are a second curated file, not a rendition. The space-missions sample uses the accelerator's
 OSI v1.0 import, with `vendor_name: COA` under `custom_extensions`
-([`metrics.osi.yaml`](../../examples/space-missions/ontology/metrics.osi.yaml)). The
+([`metrics.osi.yaml`](../../../examples/space-missions/ontology/metrics.osi.yaml)). The
 expression is a complete read-only `SELECT`. Publish checks that its `source_table` is a
 `logical_table` in the mapping and that each `ontology_concepts` entry is a class. The local
 checker recomputes the figure from the snapshot. The `SELECT` is what a later import runs.
@@ -290,7 +290,7 @@ The mapping rendition is R2RML, the file the accelerator's ontology engine write
 virtual knowledge graph reads. One triples map per table, the key as an IRI template
 (`rr:template`), each column a predicate (`rr:column`), a foreign key a join
 (`rr:joinCondition`). The space-missions file
-[`r2rml-mapping.ttl`](../../examples/space-missions/ontology/r2rml-mapping.ttl) is that shape.
+[`r2rml-mapping.ttl`](../../../examples/space-missions/ontology/r2rml-mapping.ttl) is that shape.
 Publish generates it from `mappings.yaml`. Ontop is the program that executes it against a live
 database, and this module does not run Ontop to answer from a CSV.
 
@@ -299,7 +299,7 @@ The metric file is OSI v1.0 with a `custom_extensions` block of `vendor_name: CO
 `source_table`, and `ontology_concepts` (the accelerator stores the last as
 `ov:governedMetricFor`). The expression is a complete read-only `SELECT`, which is what the
 accelerator's validator accepts. The space-missions file
-[`metrics.osi.yaml`](../../examples/space-missions/ontology/metrics.osi.yaml) is that shape.
+[`metrics.osi.yaml`](../../../examples/space-missions/ontology/metrics.osi.yaml) is that shape.
 The `aggregate` tool runs the metric by name and the checker recomputes the figure from the
 snapshot. An ad hoc aggregate stays inside the operators and the single group-by the tool
 schema lists.

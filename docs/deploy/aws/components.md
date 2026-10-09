@@ -6,7 +6,7 @@ Knowledge Store on AWS has two use cases:
 - **Chat:** a person asks a question, and an agent answers from the graph. Every statement in the
   answer links to the passage it comes from.
 
-![Knowledge Store on AWS](architecture.png)
+![Knowledge Store on AWS](../../architecture/aws/architecture.png)
 
 All of it is one Terraform module, [`infra/modules/knowledge-store`](../../../infra/modules/knowledge-store).
 It is made of submodules, one per component. A root calls the module with its own provider and
