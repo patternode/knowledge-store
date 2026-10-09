@@ -147,11 +147,28 @@ def published_versions(lake: Store) -> list[str]:
     return sorted(vs, key=lambda v: tuple(map(int, v.split("."))) if SEMVER.match(v) else (0, 0, 0))
 
 
+def _source_hashes(src_dir: str | Path) -> dict[str, str]:
+    src = Path(src_dir)
+    return {name: hashlib.sha256((src / name).read_bytes()).hexdigest()
+            for name in ("mappings.yaml", "metrics.osi.yaml") if (src / name).exists()}
+
+
+def _published_mapping(lake: Store, version: str):
+    """The mapping a published version rendered, or None when that version has no tables."""
+    from ..structured.mapping import Mapping
+    key = f"{layout.ontology_version_prefix(version)}/renditions/structured/mapping.json"
+    if not lake.exists(key):
+        return None
+    return Mapping.from_json(json.loads(lake.get(key)))
+
+
 def publish(lake: Store, src_dir: str | Path, *, by: str = "", note: str = "", activate: bool = False,
             force_full: bool = False) -> dict:
     """Publish the ontology in src_dir as the version its owl:versionInfo names."""
     from . import renditions
     spec, ttl, shapes = renditions.read_master(src_dir)
+    from ..structured.mapping import change_kind, load as load_mapping
+    mapping = load_mapping(src_dir, spec)
     version = spec.version
     if not SEMVER.match(version or ""):
         raise ValueError(f"owl:versionInfo must be a semver X.Y.Z, not {version!r}")
@@ -168,19 +185,33 @@ def publish(lake: Store, src_dir: str | Path, *, by: str = "", note: str = "", a
     if base:
         old, _ = load_version(lake, base)
         d = diff(old, spec)
-        if d.kind == "none":
+        old_mapping = _published_mapping(lake, base)
+        mk, notes = change_kind(old_mapping, mapping)
+        if d.kind == "none" and mk == "none":
             raise ValueError(f"{version} is identical to the active version {base}")
-        need, got = required_bump(d.kind), bump_of(base, version)
-        rank = {"patch": 0, "minor": 1, "major": 2}
+        onto_need, map_need = required_bump(d.kind), required_bump(mk)
+        rank = {"none": -1, "patch": 0, "minor": 1, "major": 2}
+        order = {"none": 0, "descriptive": 1, "additive": 2, "semantic": 3, "removal": 4}
+        need = onto_need if rank[onto_need] >= rank[map_need] else map_need
+        got = bump_of(base, version)
         if rank[got] < rank[need]:
-            raise ValueError(f"{version} is a {got} bump over {base}, but the change is {d.kind}, "
-                             f"which needs a {need} bump: {d.to_dict()}")
-        kind = "semantic" if force_full and d.kind in ("additive", "descriptive") else d.kind
+            why = d.to_dict() if d.kind != "none" else {"mapping": notes}
+            raise ValueError(f"{version} is a {got} bump over {base}, but the change needs a {need} bump: {why}")
+        kind = d.kind if order[d.kind] >= order[mk] else mk
+        if force_full and kind in ("additive", "descriptive"):
+            kind = "semantic"
         changes = d.to_dict()
+        if notes:
+            changes["mapping"] = notes
+        if d.kind == "none":
+            changes["kind"] = kind
     else:
         kind, changes = "initial", {"kind": "initial", "added": sorted({**spec.classes, **spec.relations,
                                                                         **spec.attributes})}
-    files = renditions.render_all(spec, ttl, shapes)
+        if mapping:
+            _, notes = change_kind(None, mapping)
+            changes["mapping"] = notes
+    files = renditions.render_all(spec, ttl, shapes, mapping)
     types = {".ttl": "text/turtle", ".json": "application/json", ".jsonld": "application/ld+json",
              ".md": "text/markdown", ".cypher": "text/plain"}
     for rel, body in files.items():
@@ -191,7 +222,8 @@ def publish(lake: Store, src_dir: str | Path, *, by: str = "", note: str = "", a
     m = {"version": version, "base": base if kind not in FULL_KINDS else None, "kind": kind,
          "changes": changes, "delta_terms": changes.get("added", []) if kind == "additive" else [],
          "sha256": {"ontology.ttl": hashlib.sha256(ttl).hexdigest(),
-                    **({"shapes.ttl": hashlib.sha256(shapes).hexdigest()} if shapes else {})},
+                    **({"shapes.ttl": hashlib.sha256(shapes).hexdigest()} if shapes else {}),
+                    **_source_hashes(src_dir)},
          "renditions": renditions.checksums(files),
          "published_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
          "published_by": by, "note": note,

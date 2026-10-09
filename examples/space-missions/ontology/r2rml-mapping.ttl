@@ -1,12 +1,4 @@
-# Illustrative rendition of mappings.yaml. Publish would write this; it is checked
-# in here so the space-missions sample shows the file a virtual knowledge graph reads.
-# Context Ontology Accelerator generates the same shape (rr:TriplesMap per table,
-# rr:template from the key, rr:column for each attribute, rr:joinCondition for a
-# foreign key) and Ontop executes it. This sample does not run Ontop.
-#
-# Table names are the logical_table values. A live source serves those names; the
-# IRI templates do not change.
-
+# Generated from mappings.yaml. Do not edit: publish writes this again.
 @prefix rr:  <http://www.w3.org/ns/r2rml#> .
 @prefix o:   <https://example.org/missions#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -14,7 +6,7 @@
 <#MissionMap>
     rr:logicalTable [ rr:tableName "missions" ] ;
     rr:subjectMap [
-        rr:template "https://example.org/missions/mission/{mission_id}" ;
+        rr:template "https://example.org/missions/Mission/{mission_id}" ;
         rr:class o:Mission
     ] ;
     rr:predicateObjectMap [
@@ -44,15 +36,15 @@
     rr:predicateObjectMap [
         rr:predicate o:launchedOn ;
         rr:objectMap [
-            rr:parentTriplesMap <#VehicleMap> ;
+            rr:parentTriplesMap <#LaunchVehicleMap> ;
             rr:joinCondition [ rr:child "vehicle_id" ; rr:parent "vehicle_id" ]
         ]
     ] .
 
-<#VehicleMap>
+<#LaunchVehicleMap>
     rr:logicalTable [ rr:tableName "launch_vehicles" ] ;
     rr:subjectMap [
-        rr:template "https://example.org/missions/vehicle/{vehicle_id}" ;
+        rr:template "https://example.org/missions/LaunchVehicle/{vehicle_id}" ;
         rr:class o:LaunchVehicle
     ] ;
     rr:predicateObjectMap [

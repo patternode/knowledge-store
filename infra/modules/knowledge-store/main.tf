@@ -54,7 +54,7 @@ locals {
 
   # Provided ontologies: "<collection>/<file>" => local path, for the lake's config/ontology/.
   ontology_files = merge([for id, c in var.collections : {
-    for f in ["ontology.ttl", "shapes.ttl"] : "${id}/${f}" => abspath("${c.ontology_dir}/${f}")
+    for f in ["ontology.ttl", "shapes.ttl", "mappings.yaml", "metrics.osi.yaml"] : "${id}/${f}" => abspath("${c.ontology_dir}/${f}")
     if fileexists("${c.ontology_dir}/${f}")
   } if c.ontology_dir != null]...)
 

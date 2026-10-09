@@ -158,7 +158,9 @@ def main(argv: list[str] | None = None) -> int:
         elif args.ocmd == "render":
             from .ontology import renditions
             spec, ttl, shapes = renditions.read_master(args.dir)
-            for path in renditions.write_local(renditions.render_all(spec, ttl, shapes), args.out):
+            from .structured.mapping import load as load_mapping
+            mapping = load_mapping(args.dir, spec)
+            for path in renditions.write_local(renditions.render_all(spec, ttl, shapes, mapping), args.out):
                 print(path)
         elif args.ocmd == "activate":
             versions.activate_version(lake, args.version)

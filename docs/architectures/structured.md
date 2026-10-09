@@ -12,9 +12,10 @@ characters copied from prose (`agent/grounding.py`), and the graph has no aggreg
 though evaluation questions already have kind `aggregate`. Entity identity is the root type plus
 a normalised name, so two rows for the same mission under two labels become two nodes.
 
-This note drafts the extension that looks structured data up in the ontology's own terms, and
-where [AWS Context Ontology Accelerator](https://github.com/aws/context-ontology-accelerator)
-fits. It is a design, not a change to the pipeline.
+This note is how the store looks structured data up in the ontology's own terms, and where
+[AWS Context Ontology Accelerator](https://github.com/aws/context-ontology-accelerator) fits.
+Mapped files are bound and queried by the pipeline. A live accelerator source is not: nothing
+here calls Ontop, turns a question into SQL, or evaluates a Cedar policy.
 
 ## What stays
 
@@ -183,8 +184,10 @@ the twelve-character quote rule, and a passage quote does not stand in for a cel
 contextual grounding check still sees the claim against the returned text, which for a cell is
 the column name and the value. One repair turn, as today. A claim with nothing left is dropped.
 
-The citation id in an answer is `c:<source>/<snapshot>/<key>/<column>` for a cell and
-`m:<metric>/<snapshot>` for a metric, next to `p:<passage id>`.
+The citation id in an answer is `c:<source>/<snapshot>/<logical_table>/<key>/<column>` for a
+cell and `m:<metric>/<snapshot>` for a metric, next to `p:<passage id>`. The logical table is
+the one the mapping names, so the space-missions catalog cites
+`c:missions-tables/<snapshot>/missions/juno/vehicle_id`.
 
 ## Versions
 
@@ -350,17 +353,18 @@ Context, and this module keeps its document record, its citation check, and its 
 
 ## Order of work
 
-1. Check `mappings.yaml` at publish and write the R2RML rendition. Accept `metrics.osi.yaml`
-   when its table and classes match the mapping. A collection with neither file publishes as it
-   does now.
-2. Bind every CSV the mapping names. Same landing adapter, no new source type. `ks:Cell` in
-   core 1.1.0, `describe_structured`, `lookup_rows`, `aggregate` over the snapshot, and cell
-   checks in `agent/grounding.py`. The space-missions catalog is the fixture. Document extraction is
-   untouched.
-3. Run a named metric by recomputing its `SELECT` against the snapshot, and show it as its own
-   step.
-4. A live table whose name is still `logical_table`. Point `location` at `coa:<dataSourceId>`,
-   import the OSI file, and accept accelerator results only when they carry cells.
+1. Done. Publish checks `mappings.yaml` and writes the R2RML rendition. It accepts
+   `metrics.osi.yaml` when its table and classes match the mapping. A collection with neither
+   file publishes as it does now.
+2. Done. Bind every CSV the mapping names. Same landing adapter, no new source type. `ks:Cell`
+   is in core 1.1.0. `describe_structured`, `lookup_rows` and `aggregate` read the snapshot, and
+   `agent/grounding.py` checks cells. The space-missions catalog is the fixture. Document
+   extraction is untouched.
+3. Done. A named metric is recomputed from its `SELECT` against the snapshot, and the workbench
+   shows that lookup as its own step.
+4. Not yet. A live table whose name is still `logical_table`. Point `location` at
+   `coa:<dataSourceId>`, import the OSI file, and accept accelerator results only when they
+   carry cells.
 
 Each step is separately shippable. None of them replaces the passage tools, the gold files
 extracted from documents, or the rule that a statement is shown only after code has checked its

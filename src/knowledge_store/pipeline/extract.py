@@ -128,10 +128,14 @@ def extract_all(lake: Store, client, model_id: str, profile: Profile, *, workers
     full = Extractor(client, model_id, spec, profile, shapes=shapes)
     delta = (Extractor(client, model_id, spec, profile, shapes=shapes, only=set(m["delta_terms"]))
              if m["kind"] == "additive" and m["delta_terms"] else None)
+    from ..structured.bind import mapped_doc_ids
+    mapped = mapped_doc_ids(lake)
 
     todo: list[tuple[str, dict | None, dict]] = []
     rows: list[dict] = []
     for doc_id in silver_doc_ids(lake):
+        if doc_id in mapped:
+            continue
         prior = _done(lake, version, doc_id)
         if prior and not (retry_rejected and prior["status"] == "rejected"):
             continue

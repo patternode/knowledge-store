@@ -7,12 +7,11 @@ demo, in a mix of Markdown, HTML, plain text, and JSON, and deliberately reuse e
 entity resolution, aliasing, and cross-document linking have something real to work with.
 
 Two invented CSV files sit beside those documents as the structured half of the same
-collection. They are the fixture for the structured-lookup draft
-([docs/architectures/structured.md](../../docs/architectures/structured.md)). The sweep today
-still parses a CSV as text, so upload the document folders only. Leave `tables/` out of
-landing until a mapping keeps those files out of refine. Uploading them now would put the
-invented costs into the passage index, and the evaluation question "How much did the Juno
-mission cost?" would stop being unanswerable.
+collection. They are the fixture for structured lookup
+([docs/architectures/structured.md](../../docs/architectures/structured.md)). The mapping names
+them, so refine and extract skip those files and they stay tables. Upload `tables/` with the
+documents. A CSV the mapping does not name is still read as prose. The invented costs never
+become passages. A question that asks the catalog cites the cell.
 
 ## Tables
 
@@ -39,7 +38,7 @@ Which rocket launched Juno, and what sample cost does the catalog give it?
 | The catalog's vehicle for `juno` is `atlas-v-551`, named Atlas V 551 | `c:missions-tables/<snapshot>/missions/juno/vehicle_id` and `c:missions-tables/<snapshot>/launch_vehicles/atlas-v-551/name` | The two CSVs |
 | The sample cost is 1100 | `c:missions-tables/<snapshot>/missions/juno/sample_cost_million_usd` | `missions.csv` only. The prose has no cost |
 
-The mapping, the ontology, the OSI metric file, and the illustrative R2RML rendition are in
+The mapping, the ontology, the OSI metric file, and the generated R2RML rendition are in
 [`ontology/`](ontology). `logical_table` stays `missions` if the catalog later moves to a live
 database: replace `location` with `coa:<dataSourceId>` and import
 [`ontology/metrics.osi.yaml`](ontology/metrics.osi.yaml) unchanged.
