@@ -466,7 +466,8 @@ To try the stack before your own content is ready, upload the sample in
 ## 12. Give each collection its ontology
 
 Extraction runs against an ontology, so a collection produces a knowledge graph only once it has
-one. Choose one way per collection:
+one. How that ontology is derived, from the documents or from a file you bring, is in
+[How an ontology is derived](../../../README.md#how-an-ontology-is-derived). Choose one way per collection:
 
 | Way | Set | What happens |
 |---|---|---|

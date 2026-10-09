@@ -50,7 +50,7 @@ That mode runs an analyst rather than the chat agent. It has the same tools, the
 | Missing from the graph | Facts a passage states that extraction did not capture, with the passage id |
 | Questions it can answer now | Close questions the graph answers today. Selecting one puts it in the question box. |
 
-The analyst changes nothing. A curator (a person with private access) can keep the report as an ontology request. It is stored in the collection's lake under `ontology/requests/`, which is the one place the portal writes to the lake. Requests show in the ontology page's Requests tab.
+The analyst changes nothing. A curator (a person with private access) can keep the report as an ontology request. It is stored in the collection's lake under `ontology/requests/`, which is the one place the portal writes to the lake. Requests show in the ontology page's Requests tab. How a kept request becomes part of a later ontology version, and how the ontology was derived in the first place, is in [How an ontology is derived](../README.md#how-an-ontology-is-derived).
 
 Requests join the ontology lifecycle through the candidate register. `knowledge-store candidates` lists each requested term with `asked` (how many requests asked for it) beside `docs` (how many documents extraction found it in). `knowledge-store candidates --propose` considers a requested term even when no document has used it yet, because a person asked for it, and the draft still waits for a curator to publish it. Questions are untrusted input just as document text is, so nothing reaches the ontology without a person publishing it.
 

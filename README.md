@@ -41,6 +41,28 @@ was extracted from.
 
 ## The ontology lifecycle
 
+### How an ontology is derived
+
+A collection's ontology says what its documents are about. The profile (its name, description and key terms) steers the prompts that discover and extract. The core vocabulary (`ks:`, [docs/core-vocabulary.md](docs/core-vocabulary.md)) is shared by every deployment and records where a fact came from. Domain facts are typed only by the collection ontology.
+
+It is derived in one of two ways.
+
+**You bring it.** Set `ontology_dir` to a directory holding `ontology.ttl` (and optionally `shapes.ttl`). That Turtle file is the master. The sweep publishes the version its `owl:versionInfo` names and extracts against it. Discovery does not run. To change it, edit the file, bump `owl:versionInfo`, and apply.
+
+**It is discovered from the documents**, when the collection has no ontology yet and at least `discovery.min_docs` documents (5 by default) have been refined. The method follows EDC (extract, define, canonicalise; Zhang and Soh, EMNLP 2024). Discovery reads a sample, so its cost is `discovery.sample` times `discovery.resamples`, whatever the size of the collection.
+
+1. **Sample.** Up to `discovery.sample` documents (20), spread across sources, drawn `discovery.resamples` times (2). Each document contributes at most eight passages.
+2. **Propose.** For each document the model names classes, relations and attributes, each with a definition and one to three examples copied from a passage. An example that does not appear in the passage it cites is dropped.
+3. **Aggregate.** Proposals that normalise to the same name become one term. The term keeps how many sampled documents proposed it, and its stability, the share of samples that proposed it. The draft report also gives the Jaccard overlap of the type names across samples, because this induction varies from run to run.
+4. **Consolidate.** One call turns that list into a small ontology: synonyms merged, a shallow hierarchy, a domain and range on every relation, a datatype on every attribute, and about `discovery.target_classes` classes (15). It records what it rejected and why.
+5. **Review.** On by default (`discovery.review`). A second call sees the draft with each term's document support and returns edits only: a parent, a merge, a drop, or a corrected domain, range or datatype, each with a reason. The edits are applied in code. An edit that would create a cycle, or that names a term or a datatype the draft does not have, is skipped. The draft report lists what was applied and what was skipped, so a curator can undo any of them.
+
+The draft is written to `ontology/drafts/<id>/` as `ontology.ttl`, `shapes.ttl` and `report.json`. With `ontology_mode = "curated"` a person edits it and publishes it. With `"auto"` the sweep publishes that draft as 0.1.0.
+
+**Later versions come from what the active ontology could not say.** Extraction records candidate terms it had no class, relation or attribute for, with the passage text that stated them. Those candidates stay out of the graph. A curator can also keep a workbench report ("What would it take?") as an ontology request. `knowledge-store candidates --propose` sends both through consolidation again, with the current ontology in front of the model and an instruction to leave existing terms unchanged. A term is included when at least two documents named it, or when a request asked for it, and it is not already covered by a synonym. The draft is a proposed minor version (additions). If the proposal changes an existing term anyway, the report says so: publishing that change needs a major version and a full re-extraction. A person publishes the draft. Document text and questions are untrusted input, so in curated mode a term reaches the ontology only when someone publishes a version that contains it. Auto mode publishes the first discovered draft without that step.
+
+Each published version renders the Turtle master into the forms the pipeline, the agent and the graph stores read. People edit the master. The renditions are produced from it.
+
 A collection starts with an ontology one of two ways:
 
 | | How | Then |
@@ -48,16 +70,7 @@ A collection starts with an ontology one of two ways:
 | Bring one | Set the collection's `ontology_dir` to a directory holding `ontology.ttl` (and optionally `shapes.ttl`); `terraform apply` uploads it | The sweep publishes and activates it and extracts against it. Discovery never runs. To change it, bump `owl:versionInfo` and apply |
 | Discover one | Leave `ontology_dir` unset and upload documents | Discovery, then review, as below. `ontology_mode = "curated"` (the default) stops at a draft for a person to change and publish; `"auto"` publishes the draft as 0.1.0 straight away |
 
-1. Discover. With no ontology, the first run samples the collection and proposes one:
-   open proposals per document, aggregation, then consolidation into a small ontology with
-   definitions, synonyms, a hierarchy, and domains and ranges. The method follows EDC
-   (extract, define, canonicalise). Discovery repeats on several samples and reports how
-   stable each type is, because LLM ontology induction varies from run to run and nothing
-   in the literature measures by how much. Then a review pass (`discovery.review`, on by
-   default) sees the draft with each term's document support and returns edits: parents
-   where one class is a kind of another, merges of near-duplicates, drops of noise, and
-   fixes to domains, ranges and datatypes. They are applied deterministically, each with its
-   reason in the draft's report, so a curator can see and undo every one.
+1. Discover. With no ontology, the first run writes a draft as described in [How an ontology is derived](#how-an-ontology-is-derived).
 2. Curate. The draft is Turtle (OWL plus generated SHACL) for a person to edit in git.
    `knowledge-store ontology pull <draft> ontology/` fetches it.
 3. Release. `knowledge-store ontology publish ontology/ --activate` publishes the master as the
@@ -67,9 +80,9 @@ A collection starts with an ontology one of two ways:
    with a tool call whose schema is generated from the ontology. Every fact is checked for
    grounding (names and values must appear in the cited passages) and against SHACL, then
    repaired or dropped item by item.
-5. Grow. Extraction also records candidates, the things the ontology has no term for, with
-   verbatim evidence. They never enter the graph. `knowledge-store candidates --propose`
-   aggregates them and drafts the next version for a person to curate.
+5. Grow. Extraction records candidates, and a curator can keep a workbench report as an ontology
+   request. `knowledge-store candidates --propose` drafts the next version from both, as described
+   in [How an ontology is derived](#how-an-ontology-is-derived). A person curates and publishes it.
 
 ### Versions are classified, and the class decides the cost
 
