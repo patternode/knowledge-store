@@ -89,6 +89,15 @@ def _keep(row: dict[str, dict], table: Table, filters: list[dict]) -> bool:
     return True
 
 
+def _cell_view(cell: dict, cells: list[dict]) -> dict:
+    """One cell, plus the other cells of its row, in file order. The row is what a citation shows."""
+    keys = ("cell", "table", "key", "column", "value", "datatype", "snapshot", "class", "attribute")
+    row = [{"column": s["column"], "value": s["value"], "cell": s["cell"]}
+           for s in cells
+           if s["table"] == cell["table"] and s["key"] == cell["key"] and s["snapshot"] == cell["snapshot"]]
+    return {**{k: cell[k] for k in keys}, "row": row}
+
+
 def _row(table: Table, key: str, cols: dict[str, dict]) -> dict:
     values = {}
     for col in table.columns:
@@ -127,8 +136,7 @@ def lookup_rows(lake: Store, type_name: str, filters: list[dict] | None = None, 
     if cell_ids:
         wanted = set(cell_ids)
         found = [c for c in cells if c["cell"] in wanted]
-        return {"cells": [{k: c[k] for k in ("cell", "table", "key", "column", "value", "datatype", "snapshot", "class", "attribute")}
-                          for c in found]}
+        return {"cells": [_cell_view(c, cells) for c in found]}
     table = mapping.by_class(type_name) or mapping.table(type_name)
     if table is None:
         return {"error": f"no mapped type {type_name!r}; call describe_structured"}

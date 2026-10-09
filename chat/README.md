@@ -20,14 +20,17 @@ ontology page's one library, D3, is served from this folder (`vendor/`).
   server text reaches `innerHTML`; the DOM is built from nodes and `textContent`. A `?ask=`
   parameter fills the question box without sending it. The page opens as the chat alone.
   Demonstrate, in the header, shows the sample questions and   the workbench; User view hides them
-  again. The workbench shows the selected question's steps as they happen, coloured by type, with
+  again. The workbench groups steps, cost, ontology terms and this session. Each starts collapsed.
+  It shows the selected question's steps as they happen, coloured by type, with
   each model call's thinking time and tokens. Under the list every type is counted, including
   zeros, and each tool is counted by how many times it was called. It also shows the ontology
   terms the answer used and this session's totals. A step's input says whether the call was a
   knowledge graph query, a vector query or a keyword passage search. The cost table names each model
   round for the tool that followed it, such as Thinking, then a word search, and the step badge
   stays Keyword search. A citation opens that source in the
-  panel beside the conversation; choosing it again hides the panel. Below 1100 pixels the sources
+  panel beside the conversation, with the quoted words highlighted in the passage. A citation of a
+  mapped table shows that row of the file, with the cited cell highlighted. Choosing the citation
+  again hides the panel. Below 1100 pixels the sources
   panel is a drawer. "What would it take?" asks the analyst
   and renders its report ([docs/workbench.md](../docs/workbench.md)). Below 1280 pixels the
   workbench is a drawer.
