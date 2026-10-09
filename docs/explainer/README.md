@@ -6,6 +6,8 @@ One path brings an ontology with the documents. Extraction reads the passages th
 
 It does not show the product being operated.
 
+A new agent should start at [HANDOFF.md](HANDOFF.md). That file holds both voice scripts, the facts and brand the picture has to keep, and the checklist of what is still left.
+
 | File | What it is |
 |---|---|
 | [script.md](script.md) | Timeline and what is on screen |
