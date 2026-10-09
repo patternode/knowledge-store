@@ -33,6 +33,7 @@ class Index:
         self.entities = {e["id"]: e for e in get("entities")}
         self.passages = get("passages")
         self.docs = get("docs")
+        self.lake = lake
         self.adjacency = traverse.MemoryAdjacency(self)
         self._df: Counter = Counter()
         self._ptoks: dict[str, Counter] = {}

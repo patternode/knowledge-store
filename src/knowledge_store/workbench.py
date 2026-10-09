@@ -40,10 +40,11 @@ KINDS = ("classes", "relations", "attributes")
 VERDICTS = ("answerable", "data_missing", "ontology_missing", "extraction_missed", "out_of_scope")
 
 GRAPH_TOOLS = {"search_entities", "list_entities", "get_entity", "neighbourhood", "find_paths"}
+STRUCTURED_TOOLS = {"describe_structured", "lookup_rows", "aggregate"}
 
 
 def query_source(name: str, out: dict) -> str | None:
-    """Where a tool call looked: the knowledge graph, the vector index, or keyword text.
+    """Where a tool call looked: the knowledge graph, a mapped table, the vector index, or keyword text.
 
     search_passages is a vector query only when the tool says so (method "vector", the
     Knowledge Base). The portal's own loop searches stored passage text and leaves method
@@ -51,6 +52,8 @@ def query_source(name: str, out: dict) -> str | None:
     """
     if name in GRAPH_TOOLS:
         return "graph"
+    if name in STRUCTURED_TOOLS:
+        return "structured"
     if name == "search_passages":
         return "vector" if (out or {}).get("method") == "vector" else "keyword"
     return None
@@ -153,7 +156,17 @@ class Recorder:
 
     def _touch(self, name: str, args: dict, out: dict) -> dict:
         touched: dict[str, set[str]] = {}
-        if name not in GRAPH_TOOLS or out.get("error"):
+        if name not in GRAPH_TOOLS and name not in STRUCTURED_TOOLS or out.get("error"):
+            return touched
+        if name in STRUCTURED_TOOLS:
+            self._add("classes", "queried", args.get("type"), touched)
+            self._add("attributes", "queried", args.get("attribute"), touched)
+            self._add("attributes", "queried", args.get("group_by"), touched)
+            for f in args.get("filters") or []:
+                if isinstance(f, dict):
+                    self._add("attributes", "queried", f.get("attribute"), touched)
+            for row in (out.get("rows") or []):
+                self._add("classes", "read", row.get("type") or args.get("type"), touched)
             return touched
         if name in ("search_entities", "list_entities") and args.get("type"):
             self._add("classes", "queried", args["type"], touched)
@@ -246,6 +259,14 @@ def describe(name: str, args: dict, out: dict) -> tuple[str, str | None, int | N
     if name == "read_passages":
         ps = out.get("passages") or []
         return f"Read {len(ps)} passage{'s' if len(ps) != 1 else ''}", None, len(ps)
+    if name == "describe_structured":
+        return f"Read the mapped tables: {len(out.get('types') or [])}", None, len(out.get("types") or [])
+    if name == "lookup_rows":
+        rows = out.get("rows") or out.get("cells") or []
+        return f"Looked up {out.get('type') or 'cells'}: {len(rows)}", None, len(rows)
+    if name == "aggregate":
+        label = out.get("metric") or out.get("op") or "aggregate"
+        return f"Structured lookup: {label} = {out.get('figure')}", None, None
     return f"Called {name}", None, None
 
 

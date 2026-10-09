@@ -16,7 +16,7 @@
  * works: each search, read and check, polled from GET /api/chat while it runs, then the ontology
  * terms the answer used, and what the question cost, split by token kind and by model call.
  * A step is coloured by what it was: model thinking, a knowledge graph query, a vector query,
- * a keyword search, a passage read, an ontology read, or a check. The list ends with a count of
+ * a keyword search, a structured lookup, a passage read, an ontology read, or a check. The list ends with a count of
  * every type, including the ones that did not happen, and of each tool that was called. A model
  * step shows how long it thought and the tokens that call reported. The cost table names each
  * model call for the tool that followed it ("Thinking, then a word search"). The step badge
@@ -38,10 +38,12 @@ function main() {
   const BENCH_KEY = 'ks.chat.bench';
   const DEMO_KEY = 'ks.chat.demo';
   const GRAPH_TOOLS = new Set(['search_entities', 'list_entities', 'get_entity', 'neighbourhood', 'find_paths']);
+  const STRUCTURED_TOOLS = new Set(['describe_structured', 'lookup_rows', 'aggregate']);
   const SOURCE_LABEL = {
     graph: 'Knowledge graph query',
     vector: 'Vector query',
     keyword: 'Keyword passage search',
+    structured: 'Structured lookup',
   };
   // Every type is counted, including the ones this question did not use.
   const STEP_TYPES = [
@@ -49,6 +51,7 @@ function main() {
     ['graph', 'Knowledge graph query'],
     ['vector', 'Vector query'],
     ['keyword', 'Keyword search'],
+    ['structured', 'Structured lookup'],
     ['read', 'Passage read'],
     ['ontology', 'Ontology read'],
     ['check', 'Check'],
@@ -398,7 +401,7 @@ function main() {
     $('#question').placeholder = gaps ? 'A question the graph cannot answer yet' : 'Ask a question about the documents';
     $('#hint').textContent = gaps
       ? 'The analyst explores the graph and reports what this question needs: ontology extensions, data to add, and facts extraction missed. It changes nothing.'
-      : 'Answers come only from the documents in this collection, and every statement links to its source.';
+      : 'Answers come only from this collection, and every statement links to its source.';
   }
   function newTurn(question, turnMode, about) {
     const key = ++S.seq;
@@ -499,10 +502,11 @@ function main() {
       h('span', { text: name }), h('span', { class: 'term-level', text: levels.map((l) => LEVEL_LABEL[l]).join(' · ') }));
   }
   function querySource(s) {
-    if (s.source === 'graph' || s.source === 'vector' || s.source === 'keyword') return s.source;
+    if (s.source === 'graph' || s.source === 'vector' || s.source === 'keyword' || s.source === 'structured') return s.source;
     const tool = str(s.tool);
     if (tool === 'search_passages') return 'keyword';
     if (GRAPH_TOOLS.has(tool)) return 'graph';
+    if (STRUCTURED_TOOLS.has(tool)) return 'structured';
     return '';
   }
   function stepType(s) {
@@ -552,6 +556,7 @@ function main() {
     ['graph', 'Thinking, then the knowledge graph'],
     ['vector', 'Thinking, then a vector search'],
     ['keyword', 'Thinking, then a word search'],
+    ['structured', 'Thinking, then a structured lookup'],
     ['read', 'Thinking, then a passage read'],
     ['ontology', 'Thinking, then the ontology'],
     ['other', 'Thinking, then another tool'],
@@ -800,9 +805,17 @@ function main() {
   ];
   function sampleItems(c) {
     const raw = Array.isArray(c.example_questions) ? c.example_questions : [];
-    const items = raw.map((x) => (typeof x === 'string' ? { text: x, level: 'medium' } : { text: str(x && x.text), level: str(x && x.level) || 'medium' }))
+    const items = raw.map((x) => (typeof x === 'string'
+      ? { text: x, level: 'medium' }
+      : { text: str(x && x.text), level: str(x && x.level) || 'medium',
+          link: str(x && x.link), link_label: str(x && x.link_label) }))
       .filter((x) => x.text);
     return items.length ? items : SAMPLE_FALLBACK;
+  }
+  function safeSampleLink(link) {
+    const s = str(link);
+    if (!/^https:\/\/[a-z0-9.-]+(?:\/[^\s]*)?$/i.test(s) || /[<>"']/.test(s)) return '';
+    return s;
   }
   function useSample(text) {
     setMode('ask');
@@ -827,7 +840,11 @@ function main() {
         qs.map((q) => {
           const b = h('button', { class: `sample ${lv.id}`, type: 'button' }, q.text);
           b.addEventListener('click', () => useSample(q.text));
-          return b;
+          const href = safeSampleLink(q.link);
+          const link = href
+            ? h('a', { class: 'sample-link', href, target: '_blank', rel: 'noopener noreferrer' }, q.link_label || 'Open')
+            : null;
+          return link ? h('div', null, b, link) : b;
         }));
     }));
   }

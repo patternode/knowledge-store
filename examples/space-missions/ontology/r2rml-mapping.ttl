@@ -1,0 +1,61 @@
+# Generated from mappings.yaml. Do not edit: publish writes this again.
+@prefix rr:  <http://www.w3.org/ns/r2rml#> .
+@prefix o:   <https://example.org/missions#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<#MissionMap>
+    rr:logicalTable [ rr:tableName "missions" ] ;
+    rr:subjectMap [
+        rr:template "https://example.org/missions/Mission/{mission_id}" ;
+        rr:class o:Mission
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:name ;
+        rr:objectMap [ rr:column "name" ]
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:agency ;
+        rr:objectMap [ rr:column "agency" ]
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:vehicleFamily ;
+        rr:objectMap [ rr:column "vehicle_family" ]
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:launchDate ;
+        rr:objectMap [ rr:column "launch_date" ; rr:datatype xsd:date ]
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:target ;
+        rr:objectMap [ rr:column "target" ]
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:sampleCostMillionUsd ;
+        rr:objectMap [ rr:column "sample_cost_million_usd" ; rr:datatype xsd:integer ]
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:launchedOn ;
+        rr:objectMap [
+            rr:parentTriplesMap <#LaunchVehicleMap> ;
+            rr:joinCondition [ rr:child "vehicle_id" ; rr:parent "vehicle_id" ]
+        ]
+    ] .
+
+<#LaunchVehicleMap>
+    rr:logicalTable [ rr:tableName "launch_vehicles" ] ;
+    rr:subjectMap [
+        rr:template "https://example.org/missions/LaunchVehicle/{vehicle_id}" ;
+        rr:class o:LaunchVehicle
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:vehicleId ;
+        rr:objectMap [ rr:column "vehicle_id" ]
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:name ;
+        rr:objectMap [ rr:column "name" ]
+    ] ;
+    rr:predicateObjectMap [
+        rr:predicate o:family ;
+        rr:objectMap [ rr:column "family" ]
+    ] .

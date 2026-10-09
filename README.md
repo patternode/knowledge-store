@@ -216,6 +216,13 @@ sharepoint = "my_package.sharepoint:SharePointAdapter"
 A source can be `scope = "private"`. Its facts are shown only to portal users who may read private
 content: the `private-readers` Cognito group, or the private roles of `site_sign_in`.
 
+A table is not this path yet. CSV and JSON in the lake are parsed as text and extracted like
+prose, so a filter or a total has no cell to cite. The draft for keeping a mapped CSV as a table
+beside the documents, and for how AWS Context Ontology Accelerator fits a later live source, is
+[docs/architectures/structured.md](docs/architectures/structured.md). The worked catalog is the
+invented tables in the space-missions corpus
+([examples/space-missions](examples/space-missions/README.md)).
+
 ## Evaluate
 
 Measure the agent against questions with known answers, including some the sources cannot

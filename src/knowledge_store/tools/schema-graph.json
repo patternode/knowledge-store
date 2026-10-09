@@ -171,5 +171,104 @@
         "to"
       ]
     }
+  },
+  {
+    "name": "describe_structured",
+    "description": "The mapped tables and named metrics of a collection: each type, its key, its columns, its source and the snapshot it is bound to. Read it before a filter or a total.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": [
+        "collection"
+      ]
+    }
+  },
+  {
+    "name": "lookup_rows",
+    "description": "Rows of one mapped type. A filter is an attribute, an operator (eq, neq, lt, lte, gt, gte, prefix) and a value. Each value comes back with its cell id. Pass cell_ids to re-read cells for a citation check.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "filters": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "cell_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": [
+        "collection"
+      ]
+    }
+  },
+  {
+    "name": "aggregate",
+    "description": "A figure from a mapped table: a metric name, or a type with op (count, sum, min, max, avg), an attribute, one optional group_by, and the same filters as lookup_rows. The figure is recomputed from the snapshot.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "metric": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "op": {
+          "type": "string"
+        },
+        "attribute": {
+          "type": "string"
+        },
+        "group_by": {
+          "type": "string"
+        },
+        "filters": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "snapshot": {
+          "type": "string"
+        },
+        "caller_private": {
+          "type": "boolean",
+          "description": "set by the gateway from the caller's token; any value you send is replaced"
+        }
+      },
+      "required": [
+        "collection"
+      ]
+    }
   }
 ]

@@ -1,0 +1,33 @@
+# Curated mapping for the space-missions sample. People edit this file. Publish checks
+# every class, attribute, relation and datatype against ontology.ttl, then renders
+# r2rml-mapping.ttl. A CSV named here is bound as a table. The prose files in this
+# corpus are not named here, so they stay documents.
+#
+# location is a path in this example. The same logical_table is what a later live
+# source keeps: replace location with coa:<dataSourceId> and leave logical_table,
+# the keys and the columns as they are. That string is rr:tableName and the metric
+# source_table.
+
+tables:
+  missions:
+    location: tables/missions.csv
+    logical_table: missions
+    class: Mission
+    key: [mission_id]
+    columns:
+      name: {attribute: name}
+      agency: {attribute: agency}
+      vehicle_family: {attribute: vehicleFamily}
+      launch_date: {attribute: launchDate, datatype: xsd:date}
+      target: {attribute: target}
+      sample_cost_million_usd: {attribute: sampleCostMillionUsd, datatype: xsd:integer}
+      vehicle_id: {relation: launchedOn, range: LaunchVehicle, match: vehicleId}
+  launch_vehicles:
+    location: tables/launch_vehicles.csv
+    logical_table: launch_vehicles
+    class: LaunchVehicle
+    key: [vehicle_id]
+    columns:
+      vehicle_id: {attribute: vehicleId}
+      name: {attribute: name}
+      family: {attribute: family}

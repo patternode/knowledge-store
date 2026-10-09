@@ -26,7 +26,8 @@ variable "collections" {
     hyphens). Per collection, all optional:
       profile  what the collection is about: {name, description, key_terms, example_questions,
                ontology_base}. It guides prompts and the portal; it is not the ontology.
-               A sample question may start with [low], [medium] or [high].
+               A sample question may start with [low], [medium] or [high], and may end with
+               a markdown link [label](https://...), shown under the question and not sent.
       sources  where content comes from. Default: [{name = "uploads", type = "s3_landing",
                options = {prefix = "landing/<id>/"}}]. An s3_landing source with
                options.bucket reads another bucket; the pipeline is granted read access to it.
@@ -35,6 +36,9 @@ variable "collections" {
                      to where you run Terraform, holding ontology.ttl (OWL, with owl:versionInfo
                      set to its version) and optionally shapes.ttl. The sweep publishes and
                      activates it; to change it, edit it, bump owl:versionInfo and apply.
+                     Structured lookup is on for that collection when the directory also holds
+                     mappings.yaml and, optionally, metrics.osi.yaml. A collection without those
+                     files is unchanged. Upload the mapped CSVs with the documents.
   EOT
   type = map(object({
     profile = optional(object({

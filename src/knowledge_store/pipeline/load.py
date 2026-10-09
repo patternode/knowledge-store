@@ -132,6 +132,16 @@ def _graphs(lake: Store, version: str, spec) -> dict[str, tuple[str, str]]:
             for ctx in ds.graphs():
                 if len(ctx):
                     out[str(ctx.identifier)] = (f"{v}:{etag}", ctx.serialize(format="nt"))
+    from ..structured.bind import binding as structured_binding
+    for entry in structured_binding(lake, version).values():
+        key = entry.get("graph")
+        if not key or not lake.exists(key):
+            continue
+        ds = Dataset()
+        ds.parse(data=lake.get(key).decode(), format="nquads")
+        for ctx in ds.graphs():
+            if len(ctx):
+                out[str(ctx.identifier)] = (f"{version}:{entry.get('snapshot')}", ctx.serialize(format="nt"))
     ttl = lake.get(f"{layout.ontology_version_prefix(version)}/ontology.ttl")
     t = Graph().parse(data=ttl.decode(), format="turtle")
     out[data_base(spec) + ONTOLOGY_GRAPH] = (f"{version}:{layout.sha256(ttl)}", t.serialize(format="nt"))

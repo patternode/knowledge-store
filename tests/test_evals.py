@@ -27,7 +27,7 @@ def q(**kw):
 def test_the_example_set_loads():
     ev = score.load(SET)
     assert ev.collection == "missions" and len(ev.questions) == 22
-    assert sum(not x.answerable for x in ev.questions) == 4
+    assert sum(not x.answerable for x in ev.questions) == 3
     assert {x.kind for x in ev.questions} == set(score.KINDS)
 
 
@@ -68,9 +68,10 @@ def test_a_bad_set_is_refused(tmp_path):
 
 def test_a_run_scores_reports_and_survives_a_failing_question(tmp_path):
     ev = score.load(SET)
-    ev.questions = ev.questions[:2] + [x for x in ev.questions if not x.answerable][:1]
+    unans = [x for x in ev.questions if not x.answerable][:1]
+    ev.questions = ev.questions[:2] + unans
     replies = {"q01": answer("Juno launched on an Atlas V 551. [1]", ["juno.json"]),
-               "u01": answer("I can't answer that from the sources in this collection.", abstained=True, proposed=0, shown=0)}
+               unans[0].id: answer("I can't answer that from the sources in this collection.", abstained=True, proposed=0, shown=0)}
 
     def ask(question):
         if question.id not in replies:
