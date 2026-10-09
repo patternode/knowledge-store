@@ -18,7 +18,9 @@
  * A step is coloured by what it was: model thinking, a knowledge graph query, a vector query,
  * a keyword search, a passage read, an ontology read, or a check. The list ends with a count of
  * every type, including the ones that did not happen, and of each tool that was called. A model
- * step shows how long it thought and the tokens that call reported.
+ * step shows how long it thought and the tokens that call reported. The cost table names each
+ * model call for the tool that followed it ("Thinking, then a word search"). The step badge
+ * keeps the tool's own name ("Keyword search"). The tool is not what the price pays for.
  *
  * Sources are not part of the conversation. They sit in a panel to the right of the questions
  * and answers, shown and hidden from a citation or from Sources. One source is open at a time.
@@ -544,14 +546,16 @@ function main() {
         terms.length ? h('p', { class: 'step-terms' }, terms) : null,
         input));
   }
+  // The price is the model call. The label names the tool that followed it, so a free word
+  // search is not mistaken for the thing that cost the money. The step list keeps the tool name.
   const COST_PATHS = [
-    ['graph', 'Knowledge graph'],
-    ['vector', 'Vector'],
-    ['keyword', 'Keyword search'],
-    ['read', 'Passage read'],
-    ['ontology', 'Ontology read'],
-    ['other', 'Other tool'],
-    ['answer', 'Answer'],
+    ['graph', 'Thinking, then the knowledge graph'],
+    ['vector', 'Thinking, then a vector search'],
+    ['keyword', 'Thinking, then a word search'],
+    ['read', 'Thinking, then a passage read'],
+    ['ontology', 'Thinking, then the ontology'],
+    ['other', 'Thinking, then another tool'],
+    ['answer', 'Thinking, then the answer'],
   ];
   const PATH_IDS = new Set(COST_PATHS.map(([id]) => id).filter((id) => id !== 'answer'));
   function costByPath(steps, done) {
@@ -640,11 +644,11 @@ function main() {
       h('p', { class: 'small', text: reported
         ? tokenLine(tokens)
         : 'No model call reported tokens.' }),
-      h('h4', { text: 'Cost by path' }),
-      h('p', { class: 'small muted', text: 'Each model call is charged to the paths of the tools that followed it, split evenly when there were several. A model call with no tool after it is the cost of the answer. Searches themselves are not charged.'
+      h('h4', { text: 'What the model rounds paid for' }),
+      h('p', { class: 'small muted', text: 'The price is the model call. The name is the tool that followed it. A call that used several tools is split evenly across them. The tools themselves are not charged.'
         + (done ? '' : ' The model call still in progress is not in this table yet.') }),
       h('table', { class: 'kv small' },
-        h('thead', null, h('tr', null, [h('th', { scope: 'col', text: 'Path' }), h('th', { scope: 'col', text: 'Price' })])),
+        h('thead', null, h('tr', null, [h('th', { scope: 'col', text: 'Model round' }), h('th', { scope: 'col', text: 'Price' })])),
         h('tbody', null, COST_PATHS.map(([id, label]) => h('tr', { class: `t-${id === 'answer' ? 'done' : id}` },
           h('th', { scope: 'row' }, h('span', { class: 'step-swatch', 'aria-hidden': 'true' }), h('span', { text: label })),
           h('td', { class: 'num-cell', text: priceCell(id) }))))),
