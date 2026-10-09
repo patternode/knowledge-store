@@ -1,6 +1,6 @@
 # The workbench
 
-The chat page has three parts. On the left are sample questions, grouped low, medium and high, from the collection's profile. In the middle is the chat: ask, get an answer built from checked claims, with every statement linked to its passage. On the right is a workbench for the people who look after the collection. There they can watch what the agent does, find out why a question went unanswered, see what the question cost, and see which parts of the ontology the questions actually use.
+The chat page opens as the chat alone, which is how someone asking a question sees it. Demonstrate, in the header, shows the other two parts, and User view hides them again. The choice is remembered in that browser. On the left are sample questions, grouped low, medium and high, from the collection's profile. In the middle is the chat: ask, get an answer built from checked claims, with every statement linked to its passage. On the right is a workbench for the people who look after the collection. There they can watch what the agent does, find out why a question went unanswered, see what the question cost, and see which parts of the ontology the questions actually use.
 
 Everything here is in this repository and needs no settings. A deployment gets it by moving its module pin to a release that has it.
 
@@ -10,7 +10,7 @@ Every question records its steps as they happen:
 
 | Step | What it says |
 |---|---|
-| tool | The tool call and its arguments, in words ("Searched entities for "Voyager" of type Mission: 3 found"), what came back, the ontology terms it touched and how long it took. Open the input to see the exact arguments. |
+| tool | The tool call and its arguments, in words ("Searched entities for "Voyager" of type Mission: 3 found"), what came back, the ontology terms it touched and how long it took. Open the input to see the exact arguments. That input is labeled Knowledge graph query for an entity, neighbourhood or path lookup, Vector query when a passage search used the knowledge base, and Keyword passage search when it searched the stored text. |
 | model | A model call: the agent deciding what to do next. |
 | check | The cited passages being read back and every quote checked against them. |
 | repair | Citations that failed, sent back to the agent once to fix. |
