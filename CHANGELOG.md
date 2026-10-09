@@ -4,6 +4,11 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 ## [Unreleased]
 
+### Fixed
+
+- A mapped CSV is found when it is uploaded into the collection's landing folder, not only when its key ends with the mapping's `tables/` path. The same bytes uploaded again under the mapped path stay visible. Two files of that name are reported rather than one being chosen. A `mappings.yaml` added beside an already published ontology version is reported instead of ignored, and the sweep publishes that ontology before it parses uploads.
+- The space-missions evaluation set asks the catalog as well as the documents: Juno's sample cost, the Atlas V missions, that count, their total sample cost, and the name of `atlas-v-551`. An offline smoke test answers those from the bound tables.
+
 ### Changed
 
 - The valves include the catalog questions a mapped table answers: Juno's sample cost, the Atlas V missions, that count, their total sample cost, and the name of `atlas-v-551`. When the collection's mapping has the attribute or the metric, those questions are added to the agent's prompt and to the portal's prompt. A claim from one of them is checked against the cell or the figure. The tool-budget message and the guardrail say the same.

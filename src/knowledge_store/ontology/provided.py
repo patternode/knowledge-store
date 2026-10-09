@@ -64,11 +64,12 @@ def apply(lake: Store) -> dict | None:
             raise ValueError(f"the provided ontology changed but its owl:versionInfo is still {version}, which is "
                              "published and immutable: bump the version")
         for name, key in _EXTRA:
-            if not lake.exists(key):
-                continue
-            digest = hashlib.sha256(lake.get(key)).hexdigest()
+            digest = hashlib.sha256(lake.get(key)).hexdigest() if lake.exists(key) else None
             recorded = (versions.manifest(lake, version).get("sha256") or {}).get(name)
-            if recorded and recorded != digest:
+            # A mapping added after the version was published used to be ignored, so the sweep
+            # reported the ontology current and bind never saw the CSVs. A published version is
+            # immutable either way: say so.
+            if digest != recorded:
                 raise ValueError(f"the provided {name} changed but owl:versionInfo is still {version}, which is "
                                  "published and immutable: bump the version")
         if active != version and (active is None or _semver(version) > _semver(active)):
