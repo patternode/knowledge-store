@@ -346,13 +346,13 @@ SECTIONS = [
         "lab": True,
         "shots": [
             "Window wider than 1,100 pixels, so the workbench sits beside the chat.",
-            "Ask a question the collection can answer. Do not read the answer out before it arrives.",
+            "Ask what killed Dr. Grimesby Roylott. Do not read the answer out before it arrives.",
             "Leave the workbench visible: a search, a read, then the citation check.",
-            "When the answer lands, open source 1. The highlight in the passage is the quote.",
+            "Open source 1. The highlight should include the words swamp adder.",
         ],
-        "suggestion": "If the space-missions collection is loaded, ask: “What launched Voyager 1, and when?” The source card should highlight words from that document. On another collection, pick a fact you can point at in one passage.",
+        "suggestion": "The Adventure of the Speckled Band, in The Adventures of Sherlock Holmes. The source card should highlight words from that story, including “It is a swamp adder” and “the deadliest snake in India.” Dr. Grimesby Roylott dies of the bite.",
         "narration": [
-            "On the lab, ask a question the collection can answer.",
+            "On the lab, ask what killed Dr. Grimesby Roylott.",
             "Leave the workbench open.",
             "The steps are the tool calls: a type searched, an entity read, then the citation check.",
             "The answer that lands is a set of statements.",
@@ -375,13 +375,13 @@ SECTIONS = [
         "steps": [],
         "lab": True,
         "shots": [
-            "Ask something the documents do not contain. Let the answer finish.",
+            "Ask for the name of Sherlock Holmes's mother. Let the answer finish.",
             "Show the decline, and the list under “What the sources don't cover”.",
-            "Do not rephrase until the model guesses. The decline is the result.",
+            "Do not accept another character's mother in place of his.",
         ],
-        "suggestion": "If the space-missions collection is loaded, ask: “Who is the current project manager for Voyager 1?” That is not in the documents. The line on screen should be: I can't answer that from the sources in this collection.",
+        "suggestion": "No story in the three collections names Sherlock Holmes's mother. Other mothers are named, including Helen Stoner's. The line on screen should be: I can't answer that from the sources in this collection. It should not offer one of those other mothers as his.",
         "narration": [
-            "Now ask something the sources do not contain.",
+            "Now ask for the name of Sherlock Holmes's mother.",
             "The result on screen is a decline.",
             "It names what is missing.",
             "There is no unchecked sentence beside it.",
@@ -954,10 +954,13 @@ def stills(bg, offsets):
 
 
 def concat(paths, dest: Path):
-    lst = dest.with_suffix(".txt")
+    lst = dest.with_suffix(".concat.txt")
     lst.write_text("".join(f"file '{p}'\n" for p in paths), encoding="utf-8")
-    cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(lst), "-c", "copy", str(dest)]
-    subprocess.check_call(cmd)
+    try:
+        cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(lst), "-c", "copy", str(dest)]
+        subprocess.check_call(cmd)
+    finally:
+        lst.unlink(missing_ok=True)
     print("wrote", dest)
 
 

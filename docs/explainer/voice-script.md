@@ -153,34 +153,34 @@ Record this picture on the lab, and record this voice with it. Replace 05-lab-an
 
 Director, not spoken:
 
-If the space-missions collection is loaded, ask: “What launched Voyager 1, and when?” The source card should highlight words from that document. On another collection, pick a fact you can point at in one passage.
+The Adventure of the Speckled Band, in The Adventures of Sherlock Holmes. The source card should highlight words from that story, including “It is a swamp adder” and “the deadliest snake in India.” Dr. Grimesby Roylott dies of the bite.
 
 Shots, while this voice plays:
 
 - Window wider than 1,100 pixels, so the workbench sits beside the chat.
-- Ask a question the collection can answer. Do not read the answer out before it arrives.
+- Ask what killed Dr. Grimesby Roylott. Do not read the answer out before it arrives.
 - Leave the workbench visible: a search, a read, then the citation check.
-- When the answer lands, open source 1. The highlight in the passage is the quote.
+- Open source 1. The highlight should include the words swamp adder.
 
 Read:
 
-`0:00.5` On the lab, ask a question the collection can answer.
+`0:00.5` On the lab, ask what killed Dr. Grimesby Roylott.
 
-`0:04.2` Leave the workbench open.
+`0:03.8` Leave the workbench open.
 
-`0:05.8` The steps are the tool calls: a type searched, an entity read, then the citation check.
+`0:05.4` The steps are the tool calls: a type searched, an entity read, then the citation check.
 
-`0:11.6` The answer that lands is a set of statements.
+`0:11.2` The answer that lands is a set of statements.
 
-`0:14.9` Each one carries a number.
+`0:14.5` Each one carries a number.
 
-`0:16.9` Open the number.
+`0:16.5` Open the number.
 
-`0:18.1` That is the passage, and the words highlighted in it are the quote taken from it.
+`0:17.8` That is the passage, and the words highlighted in it are the quote taken from it.
 
-`0:23.9` It is the same identifier that was written when the document was extracted.
+`0:23.6` It is the same identifier that was written when the document was extracted.
 
-`0:28.7` The source was required when the claim was made, and the page kept only the ones that matched.
+`0:28.3` The source was required when the claim was made, and the page kept only the ones that matched.
 
 ## 6. The decline
 
@@ -191,27 +191,27 @@ Record this picture on the lab, and record this voice with it. Replace 06-lab-de
 
 Director, not spoken:
 
-If the space-missions collection is loaded, ask: “Who is the current project manager for Voyager 1?” That is not in the documents. The line on screen should be: I can't answer that from the sources in this collection.
+No story in the three collections names Sherlock Holmes's mother. Other mothers are named, including Helen Stoner's. The line on screen should be: I can't answer that from the sources in this collection. It should not offer one of those other mothers as his.
 
 Shots, while this voice plays:
 
-- Ask something the documents do not contain. Let the answer finish.
+- Ask for the name of Sherlock Holmes's mother. Let the answer finish.
 - Show the decline, and the list under “What the sources don't cover”.
-- Do not rephrase until the model guesses. The decline is the result.
+- Do not accept another character's mother in place of his.
 
 Read:
 
-`0:00.5` Now ask something the sources do not contain.
+`0:00.5` Now ask for the name of Sherlock Holmes's mother.
 
-`0:03.5` The result on screen is a decline.
+`0:03.8` The result on screen is a decline.
 
-`0:06.1` It names what is missing.
+`0:06.5` It names what is missing.
 
-`0:08.0` There is no unchecked sentence beside it.
+`0:08.4` There is no unchecked sentence beside it.
 
-`0:10.7` The passages do not move, and the ontology is versioned, so the same question meets the same record.
+`0:11.1` The passages do not move, and the ontology is versioned, so the same question meets the same record.
 
-`0:17.2` What reaches a person has already been tied to a passage.
+`0:17.6` What reaches a person has already been tied to a passage.
 
-`0:21.2` A result that cannot be tied to one is not shown.
+`0:21.6` A result that cannot be tied to one is not shown.
 

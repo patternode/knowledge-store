@@ -150,23 +150,23 @@ Record this picture on the lab, and record this voice with it. Replace 05-lab-an
 ### Lab shots
 
 - Window wider than 1,100 pixels, so the workbench sits beside the chat.
-- Ask a question the collection can answer. Do not read the answer out before it arrives.
+- Ask what killed Dr. Grimesby Roylott. Do not read the answer out before it arrives.
 - Leave the workbench visible: a search, a read, then the citation check.
-- When the answer lands, open source 1. The highlight in the passage is the quote.
+- Open source 1. The highlight should include the words swamp adder.
 
-If the space-missions collection is loaded, ask: “What launched Voyager 1, and when?” The source card should highlight words from that document. On another collection, pick a fact you can point at in one passage.
+The Adventure of the Speckled Band, in The Adventures of Sherlock Holmes. The source card should highlight words from that story, including “It is a swamp adder” and “the deadliest snake in India.” Dr. Grimesby Roylott dies of the bite.
 
 ### Voice
 
-- `3:59.4` On the lab, ask a question the collection can answer.
-- `4:03.1` Leave the workbench open.
-- `4:04.7` The steps are the tool calls: a type searched, an entity read, then the citation check.
-- `4:10.5` The answer that lands is a set of statements.
-- `4:13.8` Each one carries a number.
-- `4:15.8` Open the number.
-- `4:17.0` That is the passage, and the words highlighted in it are the quote taken from it.
-- `4:22.8` It is the same identifier that was written when the document was extracted.
-- `4:27.6` The source was required when the claim was made, and the page kept only the ones that matched.
+- `3:59.4` On the lab, ask what killed Dr. Grimesby Roylott.
+- `4:02.7` Leave the workbench open.
+- `4:04.3` The steps are the tool calls: a type searched, an entity read, then the citation check.
+- `4:10.1` The answer that lands is a set of statements.
+- `4:13.5` Each one carries a number.
+- `4:15.4` Open the number.
+- `4:16.7` That is the passage, and the words highlighted in it are the quote taken from it.
+- `4:22.5` It is the same identifier that was written when the document was extracted.
+- `4:27.2` The source was required when the claim was made, and the page kept only the ones that matched.
 
 ## 6. The decline
 
@@ -181,17 +181,17 @@ Record this picture on the lab, and record this voice with it. Replace 06-lab-de
 
 ### Lab shots
 
-- Ask something the documents do not contain. Let the answer finish.
+- Ask for the name of Sherlock Holmes's mother. Let the answer finish.
 - Show the decline, and the list under “What the sources don't cover”.
-- Do not rephrase until the model guesses. The decline is the result.
+- Do not accept another character's mother in place of his.
 
-If the space-missions collection is loaded, ask: “Who is the current project manager for Voyager 1?” That is not in the documents. The line on screen should be: I can't answer that from the sources in this collection.
+No story in the three collections names Sherlock Holmes's mother. Other mothers are named, including Helen Stoner's. The line on screen should be: I can't answer that from the sources in this collection. It should not offer one of those other mothers as his.
 
 ### Voice
 
-- `4:34.9` Now ask something the sources do not contain.
+- `4:34.5` Now ask for the name of Sherlock Holmes's mother.
 - `4:37.9` The result on screen is a decline.
-- `4:40.6` It names what is missing.
+- `4:40.5` It names what is missing.
 - `4:42.5` There is no unchecked sentence beside it.
 - `4:45.1` The passages do not move, and the ontology is versioned, so the same question meets the same record.
 - `4:51.6` What reaches a person has already been tied to a passage.

@@ -34,7 +34,7 @@ Use [voice-script.md](voice-script.md). About 160 words a minute. Each line is o
 
 Say sha-256 as “sha two fifty-six”, SHACL as “shackle”, and RDF as the three letters. Bronze, silver, and gold are the layer names.
 
-Suggested lab questions, if the space-missions collection is loaded, are in the voice script. They are director notes, not lines to read. On another collection, use one fact you can point at in a passage, and one fact the documents do not contain.
+The lab questions are from the Sherlock Holmes collection (`examples/sherlock-holmes/fetch.py`: The Adventures, The Memoirs, and The Return). They are written into the voice. The director notes say which passage should light up, and which question the stories cannot answer.
 
 For the answer take, keep the window wider than 1,100 pixels so the workbench stays beside the chat.
 
