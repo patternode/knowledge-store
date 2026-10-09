@@ -27,7 +27,9 @@ ontology page's one library, D3, is served from this folder (`vendor/`).
   knowledge graph query, a vector query or a keyword passage search. The cost table names each model
   round for the tool that followed it, such as Thinking, then a word search, and the step badge
   stays Keyword search. A citation opens that source in the
-  panel beside the conversation; choosing it again hides the panel. Below 1100 pixels the sources
+  panel beside the conversation, with the quoted words highlighted in the passage. A citation of a
+  mapped table shows that row of the file, with the cited cell highlighted. Choosing the citation
+  again hides the panel. Below 1100 pixels the sources
   panel is a drawer. "What would it take?" asks the analyst
   and renders its report ([docs/workbench.md](../docs/workbench.md)). Below 1280 pixels the
   workbench is a drawer.

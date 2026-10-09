@@ -219,7 +219,7 @@ def render(claims: list[Claim], passages: dict[str, dict], gaps: list[str],
             c = cells[pid]
             sources.append({"n": n, "passage_id": pid, "kind": "cell", "title": f"{c.get('column')} = {c.get('value')}",
                             "text": f"{c.get('column')}: {c.get('value')}", "quotes": quotes[pid],
-                            "name": c.get("table")})
+                            "name": c.get("table"), "row": list(c.get("row") or [])})
         else:
             sources.append({"n": n, "passage_id": pid, "kind": "metric", "title": pid,
                             "text": quotes[pid][0] if quotes[pid] else "", "quotes": quotes[pid]})

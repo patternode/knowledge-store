@@ -284,6 +284,32 @@ def analyse(idx: Index, question: str, about: dict | None, *, private: bool, mod
 
 
 def cited(idx: Index, answer: str, private: bool) -> list[dict]:
+    """The sources an answer named. A passage is [p:<id>]. A cell is [c:<cell id>], and the cell
+    id already begins with c:, so the marker is [c:c:...]. A metric is [m:<metric id>] the same way."""
     import re
-    ids = list(dict.fromkeys(re.findall(r"\[p:([^\]\s]+)\]", answer)))
-    return [idx.passage_view(p) for p in ids if p in idx.passages and idx.visible(idx.passages[p], private)]
+    out = []
+    seen = set()
+    for kind, rest in re.findall(r"\[([pcm]):([^\]\s]+)\]", answer):
+        if kind == "p":
+            ident = rest
+        else:
+            ident = rest if rest.startswith(f"{kind}:") else f"{kind}:{rest}"
+        if ident in seen:
+            continue
+        seen.add(ident)
+        if kind == "p":
+            if ident in idx.passages and idx.visible(idx.passages[ident], private):
+                out.append(idx.passage_view(ident))
+        elif kind == "c":
+            from ..structured import query
+            found = query.lookup_rows(idx.lake, "", cell_ids=[ident], private=private).get("cells") or []
+            if not found:
+                continue
+            cell = found[0]
+            out.append({"id": ident, "kind": "cell", "name": cell.get("table"),
+                        "title": f"{cell.get('column')} = {cell.get('value')}",
+                        "text": f"{cell.get('column')}: {cell.get('value')}",
+                        "quotes": [str(cell.get("value"))], "row": cell.get("row") or []})
+        else:
+            out.append({"id": ident, "kind": "metric", "title": ident, "text": "", "quotes": []})
+    return out
