@@ -1,8 +1,10 @@
 # Briefing
 
-A conceptual cut for people who know what an AI agent is, and not much more than that. It starts with the usual way an agent answers from documents, explains why an ontology and a knowledge graph change the questions an agent can ask, why vector search still belongs beside the graph, and then what this lab does. On the way in. And when someone asks.
+An architecture briefing for people who know what an AI agent is. The picture shows the usual way an agent answers from documents, what an ontology and a knowledge graph add, why vector search stays beside the graph, and the two ways this lab builds that graph.
 
-It does not show the product being operated, and it does not walk the checks one by one.
+One path brings an ontology with the documents. Extraction reads the passages through it. The other path starts from documents alone: a sample proposes the vocabulary, a person publishes it, and the same extraction runs.
+
+It does not show the product being operated.
 
 | File | What it is |
 |---|---|
@@ -18,4 +20,4 @@ python docs/explainer/build.py --docs
 python docs/explainer/build.py
 ```
 
-The Holmes examples in the last clip are from the three collections fetched by `examples/sherlock-holmes/fetch.py`. Roylott’s death is in *The Adventure of the Speckled Band*. None of those stories names Sherlock Holmes’s mother.
+The Holmes examples are from the three collections fetched by `examples/sherlock-holmes/fetch.py`. Roylott’s death is in *The Adventure of the Speckled Band*. None of those stories names Sherlock Holmes’s mother. Helen Stoner’s mother is named, which is why a search by nearby words can attach the wrong person.

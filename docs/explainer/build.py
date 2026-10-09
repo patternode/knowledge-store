@@ -1,16 +1,18 @@
-"""Conceptual briefing pictures for the Knowledge Store.
+"""Architecture briefing for the Knowledge Store.
 
-Six clips, picture only. Two voice scripts are written from the same scenes:
-voice-pro.md for a professional narrator, voice-record.md to read yourself.
-Each script is continuous prose for the clip, not a line-by-line cue sheet.
+Six clips. The picture is a diagram of the flow. Two voice scripts are written
+from the same scenes: voice-pro.md for a professional narrator, voice-record.md
+to read yourself. Each script is continuous prose for the clip.
 
   python docs/explainer/build.py --docs
+  python docs/explainer/build.py --frames
   python docs/explainer/build.py
 """
 
 from __future__ import annotations
 
 import argparse
+import math
 import subprocess
 from pathlib import Path
 
@@ -22,22 +24,21 @@ OUT = ROOT / "media"
 
 W, H = 1920, 1080
 FPS = 12
-# Measured technical-video pace. Clip length follows the longer of the two reads.
-WPS = 2.45
+WPS = 2.2
 HEAD = 0.8
-TAIL = 1.1
+TAIL = 2.4
 
-BG = (12, 16, 28)
-IVORY = (243, 240, 232)
+BG = (10, 14, 24)
+IVORY = (244, 241, 234)
 MUTED = (186, 196, 208)
-DIM = (140, 152, 168)
+DIM = (132, 146, 164)
 GOLD = (224, 177, 90)
 TEAL = (78, 214, 162)
 CORAL = (232, 118, 104)
 BLUE = (148, 180, 255)
-CARD = (18, 26, 44)
-LINE = (62, 78, 108)
-SOFT = (28, 38, 60)
+CARD = (16, 24, 40)
+LINE = (58, 74, 104)
+INK = (22, 32, 52)
 
 FONTS = {
     "reg": "/usr/share/fonts/truetype/macos/Inter-Regular.ttf",
@@ -59,6 +60,30 @@ def col(rgb, a=1.0):
     return (*rgb, int(max(0.0, min(1.0, a)) * 255))
 
 
+def ease(t, a, b):
+    if b <= a:
+        return 1.0 if t >= a else 0.0
+    if t <= a:
+        return 0.0
+    if t >= b:
+        return 1.0
+    x = (t - a) / (b - a)
+    return x * x * (3 - 2 * x)
+
+
+def pulse(t, lo=0.55, hi=1.0, speed=0.45):
+    s = 0.5 + 0.5 * math.sin(t * speed * math.pi * 2)
+    return lo + (hi - lo) * s
+
+
+def lerp(a, b, p):
+    return a + (b - a) * p
+
+
+def mixpt(a, b, p):
+    return (lerp(a[0], b[0], p), lerp(a[1], b[1], p))
+
+
 def tracked_width(text, fnt, tracking):
     if not text:
         return 0
@@ -73,31 +98,11 @@ def draw_tracked(d, xy, text, fnt, fill, tracking=0):
     return x
 
 
-def wrap(text, fnt, width):
-    lines, cur = [], ""
-    for word in text.split():
-        trial = word if not cur else f"{cur} {word}"
-        if fnt.getlength(trial) <= width:
-            cur = trial
-        else:
-            if cur:
-                lines.append(cur)
-            cur = word
-    if cur:
-        lines.append(cur)
-    return lines or [""]
-
-
-def draw_wrapped(d, text, fnt, fill, x, y, width, gap=8):
-    lines = wrap(text, fnt, width)
-    step = fnt.size + gap
-    for i, line in enumerate(lines):
-        d.text((x, y + i * step), line, font=fnt, fill=fill)
-    return len(lines) * step
-
-
-def panel(d, box, fill=CARD, outline=LINE, radius=18, width=2):
-    d.rounded_rectangle(box, radius=radius, fill=fill, outline=outline, width=width)
+def center_text(d, cx, cy, text, fnt, fill):
+    box = fnt.getbbox(text)
+    tw = box[2] - box[0]
+    th = box[3] - box[1]
+    d.text((cx - tw / 2, cy - th / 2 - box[1]), text, font=fnt, fill=fill)
 
 
 def chrome(d, kicker):
@@ -121,35 +126,176 @@ def footer(d, index, n, global_t, local_t, duration):
         d.line((64, 1016, x1, 1016), fill=col(GOLD), width=3)
 
 
-def title(d, text, y=96):
-    d.text((64, y), text, font=font(42, "sem"), fill=col(IVORY))
+def heading(d, text, sub=None):
+    d.text((64, 92), text, font=font(40, "sem"), fill=col(IVORY))
+    if sub:
+        d.text((64, 148), sub, font=font(22), fill=col(MUTED))
 
 
-def row_boxes(n, y, h, gap=24, margin=64):
-    avail = W - 2 * margin
-    cw = (avail - gap * (n - 1)) / n
-    out = []
+def node(d, cx, cy, w, h, title, ring, a=1.0, sub=None, fill=INK):
+    if a <= 0.02:
+        return
+    box = (cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2)
+    d.rounded_rectangle(box, radius=18, fill=col(fill, a), outline=col(ring, a), width=3)
+    if sub:
+        center_text(d, cx, cy - 14, title, font(22, "sem"), col(IVORY, a))
+        center_text(d, cx, cy + 16, sub, font(16), col(MUTED, a))
+    else:
+        center_text(d, cx, cy, title, font(22, "sem"), col(IVORY, a))
+
+
+def pill(d, cx, cy, text, ring, a=1.0, fill=INK):
+    if a <= 0.02:
+        return
+    fnt = font(18, "sem")
+    tw = fnt.getlength(text)
+    w, h = tw + 40, 44
+    d.rounded_rectangle((cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2), radius=22, fill=col(fill, a), outline=col(ring, a), width=2)
+    center_text(d, cx, cy, text, fnt, col(IVORY, a))
+
+
+def page(d, x, y, w, h, title, accent, a=1.0, bars=4):
+    if a <= 0.02:
+        return
+    d.rounded_rectangle((x, y, x + w, y + h), radius=12, fill=col(INK, a), outline=col(accent, a), width=3)
+    fold = 22
+    d.polygon(
+        [(x + w - fold, y + 2), (x + w - 2, y + fold), (x + w - fold, y + fold)],
+        fill=col(accent, a * 0.45),
+    )
+    d.text((x + 16, y + 18), title, font=font(16, "sem"), fill=col(IVORY, a))
+    for i in range(bars):
+        yy = y + 58 + i * 18
+        span = w - 36 - (10 if i == bars - 1 else 0)
+        d.line((x + 16, yy, x + 16 + span * (0.72 if i == bars - 1 else 1), yy), fill=col(LINE, a), width=3)
+
+
+def stage(d, cx, y, text, accent, a=1.0):
+    if a <= 0.02:
+        return
+    fnt = font(14, "med")
+    tw = tracked_width(text, fnt, 1.5)
+    draw_tracked(d, (cx - tw / 2, y), text, fnt, col(accent, a), tracking=1.5)
+
+
+def arrow(d, start, end, fill, width=4, head=13, prog=1.0):
+    if prog <= 0.03:
+        return
+    tip = mixpt(start, end, min(1.0, prog))
+    d.line((*start, *tip), fill=fill, width=width)
+    if prog < 0.96:
+        return
+    ang = math.atan2(end[1] - start[1], end[0] - start[0])
+    p1 = (end[0] + head * math.cos(ang + 2.6), end[1] + head * math.sin(ang + 2.6))
+    p2 = (end[0] + head * math.cos(ang - 2.6), end[1] + head * math.sin(ang - 2.6))
+    d.polygon([end, p1, p2], fill=fill)
+
+
+def dashed(d, start, end, fill, width=3, dash=14, gap=10):
+    length = math.hypot(end[0] - start[0], end[1] - start[1])
+    if length < 1:
+        return
+    vx, vy = (end[0] - start[0]) / length, (end[1] - start[1]) / length
+    dist = 0.0
+    while dist < length:
+        a = dist
+        b = min(length, dist + dash)
+        d.line((start[0] + vx * a, start[1] + vy * a, start[0] + vx * b, start[1] + vy * b), fill=fill, width=width)
+        dist += dash + gap
+
+
+def poly_arrow(d, pts, fill, width=4, head=13, prog=1.0):
+    if prog <= 0.03 or len(pts) < 2:
+        return
+    segs = []
+    total = 0.0
+    for a, b in zip(pts, pts[1:]):
+        seg = math.hypot(b[0] - a[0], b[1] - a[1])
+        segs.append(seg)
+        total += seg
+    if total <= 0:
+        return
+    budget = total * min(1.0, prog)
+    walked = 0.0
+    for (a, b), seg in zip(zip(pts, pts[1:]), segs):
+        if seg <= 0:
+            continue
+        if walked + seg < budget - 0.5:
+            d.line((*a, *b), fill=fill, width=width)
+            walked += seg
+            continue
+        tip = mixpt(a, b, max(0.0, min(1.0, (budget - walked) / seg)))
+        d.line((*a, *tip), fill=fill, width=width)
+        return
+    end = pts[-1]
+    prev = pts[-2]
+    ang = math.atan2(end[1] - prev[1], end[0] - prev[0])
+    p1 = (end[0] + head * math.cos(ang + 2.6), end[1] + head * math.sin(ang + 2.6))
+    p2 = (end[0] + head * math.cos(ang - 2.6), end[1] + head * math.sin(ang - 2.6))
+    d.polygon([end, p1, p2], fill=fill)
+
+
+def bead(d, start, end, p, color, r=7):
+    x, y = mixpt(start, end, p % 1.0)
+    d.ellipse((x - r, y - r, x + r, y + r), fill=col(color))
+
+
+def dots(d, cx, cy, rx, ry, n, a, hot, ring=BLUE):
+    if a <= 0.02:
+        return
     for i in range(n):
-        x0 = margin + i * (cw + gap)
-        out.append((x0, y, x0 + cw, y + h))
-    return out
+        ang = i * 2.399963
+        rad = math.sqrt((i + 0.5) / n)
+        x = cx + math.cos(ang) * rx * rad
+        y = cy + math.sin(ang) * ry * rad
+        on = i in hot
+        r = 7 if on else 4
+        shade = GOLD if on else ring
+        d.ellipse((x - r, y - r, x + r, y + r), fill=col(shade, a if on else a * 0.8))
 
 
-def card(d, box, kicker, heading, body, accent):
-    panel(d, box, outline=accent, width=2)
-    x, y = box[0] + 28, box[1] + 24
-    d.text((x, y), kicker, font=font(15, "med"), fill=col(accent))
-    d.text((x, y + 36), heading, font=font(28, "sem"), fill=col(IVORY))
-    if body:
-        draw_wrapped(d, body, font(22), col(MUTED), x, y + 86, box[2] - x - 28, gap=6)
+def schema(d, origin, a=1.0, scale=1.0):
+    """Three-type ontology: Person, Case, Cause."""
+    if a <= 0.02:
+        return
+    ox, oy = origin
+    person = (ox, oy)
+    case = (ox - 170 * scale, oy + 168 * scale)
+    cause = (ox + 170 * scale, oy + 168 * scale)
+    nw, nh = 168 * scale, 64 * scale
+    arrow(d, (person[0] - 20, person[1] + nh / 2), (case[0] + 30, case[1] - nh / 2), col(GOLD, a), width=3, prog=a)
+    arrow(d, (person[0] + 20, person[1] + nh / 2), (cause[0] - 30, cause[1] - nh / 2), col(GOLD, a), width=3, prog=a)
+    node(d, *person, nw, nh, "Person", GOLD, a)
+    node(d, *case, nw, nh, "Case", GOLD, a)
+    node(d, *cause, nw, nh, "Cause", GOLD, a)
+    if a > 0.7:
+        center_text(d, (person[0] + case[0]) / 2 - 28, (person[1] + case[1]) / 2, "investigates", font(15, "med"), col(GOLD, a))
+        center_text(d, (person[0] + cause[0]) / 2 + 36, (person[1] + cause[1]) / 2, "killed by", font(15, "med"), col(GOLD, a))
 
 
-def band(d, y, h, num, heading, body, accent):
-    panel(d, (64, y, W - 64, y + h), outline=LINE, width=2)
-    d.rectangle((64, y, 72, y + h), fill=col(accent))
-    d.text((96, y + 22), num, font=font(18, "mono"), fill=col(accent))
-    d.text((168, y + 16), heading, font=font(26, "sem"), fill=col(IVORY))
-    draw_wrapped(d, body, font(20), col(MUTED), 168, y + 56, W - 64 - 196, gap=4)
+def instance_graph(d, origin, a=1.0):
+    if a <= 0.02:
+        return
+    ox, oy = origin
+    holmes = (ox - 150, oy)
+    band = (ox + 170, oy)
+    roylott = (ox - 150, oy + 150)
+    adder = (ox + 170, oy + 150)
+    arrow(d, (holmes[0] + 78, holmes[1]), (band[0] - 100, band[1]), col(TEAL, a), width=3, prog=min(1, a * 1.3))
+    arrow(d, (roylott[0] + 78, roylott[1]), (adder[0] - 110, adder[1]), col(TEAL, a), width=3, prog=min(1, a * 1.3))
+    node(d, *holmes, 150, 58, "Holmes", TEAL, a)
+    node(d, *band, 190, 58, "Speckled Band", TEAL, a)
+    node(d, *roylott, 150, 58, "Roylott", TEAL, a)
+    node(d, *adder, 200, 58, "Swamp adder", TEAL, a)
+    if a > 0.65:
+        center_text(d, (holmes[0] + band[0]) / 2, holmes[1] - 28, "investigates", font(15, "med"), col(TEAL, a))
+        center_text(d, (roylott[0] + adder[0]) / 2, roylott[1] - 28, "killed by", font(15, "med"), col(TEAL, a))
+
+
+def passage_mark(d, x, y, a, label="Speckled Band"):
+    if a <= 0.02:
+        return
+    page(d, x, y, 150, 92, label, BLUE, a, bars=2)
 
 
 def tc(seconds: float) -> str:
@@ -167,16 +313,16 @@ SECTIONS = [
         "file": "01-usual-path.mp4",
         "kicker": "The usual path",
         "picture": [
-            "A wide path: documents, chunks stored as vectors, the agent writes, a citation attached afterwards.",
-            "The lower line: enough when the words match; unreliable when the answer is a relationship, a type, or a fact in different words.",
+            "Three story collections become a field of vectors. The question is Holmes's mother's name.",
+            "The lit chunks are about Helen Stoner's mother. A sentence is written from them, and a citation is pinned on afterwards.",
         ],
         "pro": [
-            "An agent that answers from a company's own documents usually takes one path. The documents are cut into chunks and stored as vectors, so that a question can retrieve the pieces nearest to it in meaning. The agent reads what came back and writes the answer.",
-            "That is enough when the question and the source use the same words. It becomes unreliable when the answer depends on a relationship, on what kind of thing something is, or on a fact that was written in different words somewhere else. The model supplies what the chunks did not. The sentence sounds complete. A citation, when there is one, is attached after the sentence has already been written.",
+            "An agent that answers from a company's own documents usually takes one path. The documents are cut into chunks and stored as vectors. A question retrieves the chunks nearest to it in meaning, and the agent writes a sentence from them.",
+            "Here the question is the name of Sherlock Holmes's mother. The stories never give it. The nearest chunks are about other mothers, including Helen Stoner's. The model can still write her mother's name, and attach a citation once the sentence exists. The words were in the collection. The relationship was not.",
         ],
         "record": [
-            "An agent that answers from your own documents usually works like this. The documents are cut into chunks and stored as vectors, so a question can pull back the pieces nearest to it in meaning. The agent reads what came back and writes the answer.",
-            "That is enough when the question and the source use the same words. It gets unreliable when the answer depends on a relationship, on what kind of thing something is, or on a fact written in different words somewhere else. The model fills in what the chunks did not say. The sentence sounds finished. If there is a citation, it is attached after the sentence already exists.",
+            "An agent answering from your own documents usually works like this. The pages are cut into chunks and stored as vectors. A question pulls back the chunks nearest in meaning, and the agent writes a sentence.",
+            "Take a question the stories do not answer: the name of Sherlock Holmes's mother. Nothing in the collection says it. The nearest chunks are about other mothers, including Helen Stoner's. From those words the model can write a name, and a citation gets attached after the sentence exists. The words were there. They were about someone else.",
         ],
     },
     {
@@ -184,16 +330,16 @@ SECTIONS = [
         "file": "02-ontology-and-graph.mp4",
         "kicker": "Ontology and graph",
         "picture": [
-            "Left: an ontology as a shared vocabulary, with three ordinary examples.",
-            "Right: a knowledge graph of typed facts, each one able to point at the passage it came from.",
+            "Left, an ontology draws itself: Person, Case, Cause, and the two links that are allowed.",
+            "Right, the same picture filled in. Holmes investigates the Speckled Band. Roylott is killed by a swamp adder. A passage sits on the fact.",
         ],
         "pro": [
-            "An ontology is the shared vocabulary for a body of knowledge. It names the kinds of things that matter in that domain, and the relationships that are allowed between them. A contract has parties. A person reports to a role. A case has a client.",
-            "A knowledge graph is the facts, written in that vocabulary. Each fact is a small typed statement, and each one can point back to the passage of text it came from. An agent that can see the ontology no longer has to guess which words to search for. It can ask what is connected to what, and of what kind.",
+            "An ontology is the picture of what a collection is allowed to say. It names the kinds of things, and the links between them. A person. A case. A cause. A person investigates a case. A person is killed by a cause.",
+            "A knowledge graph is that picture, filled in from the documents. Holmes investigates the Speckled Band. Dr Grimesby Roylott is killed by a swamp adder. Each fact points back to the passage that said it. The agent can ask what is connected to what, and of what kind.",
         ],
         "record": [
-            "An ontology is a shared vocabulary for a body of knowledge. It names the kinds of things that matter, and the relationships that are allowed between them. A contract has parties. A person reports to a role. A case has a client.",
-            "A knowledge graph is those facts, written in that vocabulary. Each fact is a small typed statement, and each one can point back to the passage it came from. An agent that can see the ontology does not have to guess which words to search for. It can ask what is connected to what, and of what kind.",
+            "An ontology is a picture of what these documents are allowed to mean. The kinds of things, and the links you permit. A person. A case. A cause. A person investigates a case. A person is killed by a cause.",
+            "The knowledge graph is that picture filled in. Holmes investigates the Speckled Band. Dr Roylott is killed by a swamp adder. Every fact points back to the passage it came from. The agent can follow a connection, instead of hoping the right words sit next to each other.",
         ],
     },
     {
@@ -201,48 +347,50 @@ SECTIONS = [
         "file": "03-graph-and-vectors.mp4",
         "kicker": "Graph and vectors",
         "picture": [
-            "Two full columns. A question that names something follows the graph. A question that describes a situation is found by meaning.",
-            "Both end at a passage. The graph holds structure. The vectors hold wording the question never used.",
+            "A question that names Roylott walks the graph to the swamp adder and the passage.",
+            "A question that only describes the death searches the vectors, lands on the same passage, and returns to the same fact.",
         ],
         "pro": [
-            "The graph is the right instrument when a question names things. Many questions do not. They describe a situation, and they share no wording with the page that answers them. Vector search finds that page by meaning.",
-            "Used on its own, vector search hands the model a passage and leaves the model to write. Used with the graph, the two stay joined. A search by meaning returns a passage. The facts in the graph cite passages. A hit among the vectors is a way back to the structured facts, and a fact in the graph is a way back to the words. The graph holds the structure. The vectors hold the wording the question never used.",
+            "When a question names things, the graph is the path. What killed Dr Roylott walks from the person, along killed by, to the cause, and the passage comes with the fact.",
+            "When a question describes a situation, the words may not match. A doctor dies of a snake in his own room. Vector search finds the passage by meaning. The facts cite passages, so that hit leads back to the same fact. The graph holds the structure. The vectors hold the wording the question never used.",
         ],
         "record": [
-            "The graph is what you want when a question names things. Many questions do not. They describe a situation, and they share no words with the page that answers them. Vector search finds that page by meaning.",
-            "On its own, vector search hands the model a passage and leaves the model to write. With the graph, the two stay joined. A search by meaning returns a passage. The facts in the graph cite passages. So a hit in the vectors leads back to the structured facts, and a fact in the graph leads back to the words. The graph holds the structure. The vectors hold the wording the question never used.",
+            "Ask what killed Dr Roylott, and the graph is enough. Person, killed by, cause, and the passage is already on the fact.",
+            "Ask it another way. A doctor dies of a snake in his own room, and the wording does not match the page. The vectors find that page by meaning. Because each fact cites a passage, the search leads back to the same fact. Structure in the graph. Wording in the vectors.",
         ],
     },
     {
-        "id": "improves",
-        "file": "04-what-improves.mp4",
-        "kicker": "What improves",
+        "id": "bring",
+        "file": "04-bring-ontology.mp4",
+        "kicker": "Bring the ontology",
         "picture": [
-            "Three full-width bands: consistency from the shared vocabulary, accuracy from the tie to a passage, and a decline when nothing remains.",
+            "Normal ingestion. Documents are divided into passages. An ontology you bring drops into extraction.",
+            "A fact enters the graph only when the passage contains it. One vector is stored for each passage.",
         ],
         "pro": [
-            "Two things improve, and they improve for different reasons. Consistency comes from the ontology. The same types and the same relationships are used when facts are taken from the documents and when a question is asked, so two questions about the same thing follow the same paths.",
-            "Accuracy comes from the tie to a source. The model may propose a statement. A person sees that statement only when a passage actually contains it. A statement that cannot be tied to a source is removed. When nothing remains, the agent says that the sources do not answer. The citation is the condition for the sentence being shown.",
+            "If you already have the vocabulary, you bring the ontology with the documents. The documents are kept as they arrived, and divided into passages small enough to cite. Extraction reads each passage through the ontology you brought.",
+            "A fact is kept only when that passage contains it. Roylott, killed by, a swamp adder, stays, because The Speckled Band says so. From that record the lab builds the graph, and one vector for each passage.",
         ],
         "record": [
-            "Two things get better, and they get better for different reasons. Consistency comes from the ontology. The same types and the same relationships are used when facts are taken from the documents and when a question is asked, so two questions about the same thing follow the same paths.",
-            "Accuracy comes from the tie to a source. The model can propose a statement. You see that statement only when a passage actually contains it. A statement that cannot be tied to a source is removed. When nothing is left, the agent says the sources do not answer. The citation is the condition for showing the sentence.",
+            "This is the path when you bring the ontology. Documents come in and stay as they arrived. They are split into passages you can cite. The ontology you brought sits beside that flow, and extraction reads each passage in those types.",
+            "A fact is kept only when the passage contains it. The Speckled Band names the swamp adder, so that fact enters the graph. Beside the graph, one vector for each passage.",
         ],
     },
     {
-        "id": "ingestion",
-        "file": "05-on-the-way-in.mp4",
-        "kicker": "On the way in",
+        "id": "derive",
+        "file": "05-derive-ontology.mp4",
+        "kicker": "Derive the ontology",
         "picture": [
-            "The lab, conceptually, on the way in: documents kept as they arrived, passages a fact can cite, an ontology you bring or draft and publish, extraction that keeps a fact only when the passage contains it, then the graph and one vector per passage.",
+            "The other ingestion. Documents arrive with no ontology. A sample proposes Person, Case, and Cause.",
+            "The proposals become a draft, a person publishes it, and that ontology drops into the same extraction. The graph and the vectors are built the same way.",
         ],
         "pro": [
-            "The knowledge store is one implementation of that idea. On the way in, documents are kept as they arrived. They are divided into passages: stable pieces of text, small enough to cite, and stable enough that the same document produces the same passages again.",
-            "An ontology defines the types for that collection. You can bring the ontology with you, or the lab can draft one from the documents for a person to review and publish. Extraction reads each document into those types. A proposed fact has to be present in the passage it cites. Something the ontology has no place for stays out of the graph until a person publishes a version that includes it. From that record the lab builds the two stores the agent will use: the knowledge graph, and a vector index with one vector for each passage.",
+            "If you do not bring an ontology, the documents arrive on their own. The lab reads a sample and proposes the kinds of things they keep mentioning, and the links that should be allowed. Those proposals become a draft. A person reviews it and publishes it.",
+            "Then the same extraction runs. Passages are read into the vocabulary that came from the documents, and the graph and the vectors are built in the same way. The ontology was derived. A fact still has to be in the passage.",
         ],
         "record": [
-            "This lab is one way of doing that. On the way in, documents are kept as they arrived. They are divided into passages: pieces of text small enough to cite, and stable enough that the same document gives the same passages again.",
-            "An ontology defines the types for the collection. You can bring that ontology, or the lab can draft one from the documents and leave it for a person to review and publish. Extraction reads each document into those types. A proposed fact has to appear in the passage it cites. If the ontology has no place for a term, that term stays out of the graph until someone publishes a version that includes it. From that record the lab builds the two stores the agent uses: the knowledge graph, and a vector index with one vector for each passage.",
+            "This is the path when you do not bring an ontology. The same documents come in. A sample of them is read, and the lab proposes the kinds of things they talk about, and the links between those kinds. That becomes a draft. You look at it, and you publish it.",
+            "From there it is the same flow. Passages are read into the ontology that was derived from them. The graph and the vectors are built the same way, and a fact still has to be in the passage.",
         ],
     },
     {
@@ -250,16 +398,16 @@ SECTIONS = [
         "file": "06-when-someone-asks.mp4",
         "kicker": "When someone asks",
         "picture": [
-            "The same ontology plans the question. A named thing follows the graph. A described situation searches by meaning. Both return statements tied to passages.",
-            "Two Holmes examples, as concepts: Roylott is answered from the passage that names the swamp adder. Holmes's mother is a decline, because the stories do not say.",
+            "A question enters an agent that holds the ontology. One path walks the graph. The other searches by meaning and returns to the fact.",
+            "Roylott resolves to the swamp adder and the passage. Holmes's mother stays dark: the sources do not say.",
         ],
         "pro": [
-            "When a person asks a question, the agent is given that same ontology, and it plans in the collection's own types. A question that names something follows the graph. A question that describes a situation searches the passages by meaning, and returns to the facts that cite what it found. The agent answers in statements. Each statement is tied to a passage. The page is built only from the statements that hold.",
-            "In the Sherlock Holmes stories this lab can be loaded with, a question about what killed Dr Grimesby Roylott can be answered from the passage that names the swamp adder. A question about the name of Sherlock Holmes's mother cannot. The stories do not say, and the result is a decline. Ingestion and questions are the same rule, run in opposite directions. A fact enters only when a passage supports it. An answer leaves only when a passage supports it.",
+            "When someone asks, the agent is given that ontology and plans in its types. A question that names something follows the graph. A question that describes a situation searches by meaning, and comes back to the facts that cite the passage. The page is built only from statements a passage supports.",
+            "What killed Dr Grimesby Roylott is answered from the swamp adder. The name of Sherlock Holmes's mother is declined. The stories do not say, and a nearby mother is not used to fill the gap.",
         ],
         "record": [
-            "When someone asks a question, the agent is given that same ontology, and it plans in the collection's own types. If the question names something, it follows the graph. If the question describes a situation, it searches the passages by meaning, and comes back to the facts that cite what it found. It answers in statements, and each statement is tied to a passage. The page is built only from the statements that hold.",
-            "In the Sherlock Holmes stories loaded here, asking what killed Dr Grimesby Roylott can be answered from the passage that names the swamp adder. Asking for the name of Sherlock Holmes's mother cannot. The stories do not say, and the result is a decline. Putting documents in, and answering questions, are the same rule run in opposite directions. A fact goes in only when a passage supports it. An answer comes out only when a passage supports it.",
+            "Someone asks a question. The agent has the ontology, so it can plan in those types. Name a thing, and it walks the graph. Describe a situation, and it searches by meaning, then comes back to the facts on that passage. You only see a statement the passage supports.",
+            "Roylott is the swamp adder, from The Speckled Band. Holmes's mother is a decline. The stories do not say her name, and the answer does not borrow one.",
         ],
     },
 ]
@@ -269,158 +417,248 @@ def prepare(section):
     n = max(words(section["pro"]), words(section["record"]))
     section["words"] = n
     section["duration"] = HEAD + n / WPS + TAIL
-    section["spans"] = [(HEAD, section["duration"] - TAIL, section["record"][0])]
 
 
-def active_index(section, t):
-    return 0, 0.0
+# --- scenes -----------------------------------------------------------------
+
+def draw_usual(d, t):
+    heading(d, "The usual path", "Chunks nearest in meaning. A sentence written from them.")
+    a_docs = ease(t, 0.4, 2.2)
+    a_field = ease(t, 2.4, 5.5)
+    a_hit = ease(t, 6.0, 9.0)
+    a_answer = ease(t, 9.5, 13.0)
+    a_cite = ease(t, 14.0, 17.0)
+
+    titles = ["Adventures", "Memoirs", "Return"]
+    for i, name in enumerate(titles):
+        page(d, 90, 280 + i * 175, 210, 155, name, BLUE if i else GOLD, a_docs, bars=3)
+    stage(d, 195, 820, "DOCUMENTS", BLUE, a_docs)
+
+    arrow(d, (330, 520), (470, 520), col(BLUE, a_field), prog=a_field)
+    dots(d, 680, 520, 150, 120, 36, a_field, hot={2, 7, 11, 18} if a_hit > 0.2 else set())
+    if a_hit > 0.2:
+        pill(d, 680, 700, "her mother, Mrs Stoner", GOLD, a_hit)
+        stage(d, 680, 820, "VECTORS", BLUE, a_field)
+
+    arrow(d, (860, 520), (1040, 470), col(CORAL, a_answer), prog=a_answer)
+    if a_answer > 0.05:
+        d.rounded_rectangle((1060, 300, 1820, 760), radius=24, fill=col(INK, a_answer), outline=col(CORAL, a_answer), width=3)
+        d.text((1100, 340), "QUESTION", font=font(14, "med"), fill=col(DIM, a_answer))
+        d.text((1100, 372), "Holmes's mother's name?", font=font(28, "sem"), fill=col(IVORY, a_answer))
+        d.text((1100, 460), "WRITTEN ANSWER", font=font(14, "med"), fill=col(CORAL, a_answer))
+        d.text((1100, 500), "Mrs Stoner", font=font(52, "sem"), fill=col(IVORY, a_answer))
+        if a_cite > 0.05:
+            pill(d, 1360, 660, "Citation attached afterwards", CORAL, a_cite, fill=(48, 24, 28))
+            dashed(d, (820, 700), (1060, 620), col(CORAL, a_cite), width=3)
 
 
-# --- frames -----------------------------------------------------------------
+def draw_graph(d, t):
+    heading(d, "A vocabulary, then the facts", "What the collection is allowed to say, and what it actually says.")
+    a_left = ease(t, 0.5, 4.5)
+    a_right = ease(t, 6.0, 11.0)
+    a_page = ease(t, 12.0, 15.0)
+    d.line((960, 230, 960, 900), fill=col(LINE, max(a_left, a_right)), width=2)
+    stage(d, 480, 230, "ONTOLOGY", GOLD, a_left)
+    schema(d, (480, 420), a_left, scale=1.15)
+    stage(d, 1440, 230, "KNOWLEDGE GRAPH", TEAL, a_right)
+    instance_graph(d, (1400, 430), a_right)
+    if a_page > 0.05:
+        passage_mark(d, 1580, 760, a_page)
+        arrow(d, (1570, 640), (1640, 760), col(BLUE, a_page), width=3, prog=a_page)
+        stage(d, 1655, 870, "PASSAGE", BLUE, a_page)
 
-def base_frame(bg):
-    overlay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    return overlay, ImageDraw.Draw(overlay)
 
+def draw_together(d, t):
+    heading(d, "Why the vectors stay", "A named thing walks the graph. A situation is found by meaning.")
+    a_top = ease(t, 0.4, 3.0)
+    a_walk = ease(t, 3.2, 8.5)
+    a_page = ease(t, 8.5, 11.0)
+    a_bot = ease(t, 11.5, 14.5)
+    a_back = ease(t, 15.5, 19.5)
 
-def finish(bg, overlay):
-    return Image.alpha_composite(bg.convert("RGBA"), overlay).convert("RGB")
+    pill(d, 230, 340, "What killed Roylott?", TEAL, a_top)
+    stage(d, 230, 392, "NAMES SOMETHING", TEAL, a_top)
+    arrow(d, (400, 340), (500, 340), col(TEAL, a_walk), prog=a_walk)
+    node(d, 600, 340, 160, 64, "Roylott", TEAL, a_walk)
+    arrow(d, (690, 340), (820, 340), col(TEAL, a_walk), prog=max(0.0, (a_walk - 0.25) / 0.75))
+    center_text(d, 755, 308, "killed by", font(15, "med"), col(TEAL, max(0.0, a_walk - 0.3)))
+    node(d, 960, 340, 210, 64, "Swamp adder", TEAL, max(0.0, (a_walk - 0.4) / 0.6))
+    arrow(d, (1075, 340), (1280, 360), col(BLUE, a_page), prog=a_page)
+    passage_mark(d, 1290, 300, a_page, "Speckled Band")
+    stage(d, 1365, 268, "SAME PASSAGE", BLUE, a_page)
 
+    d.line((80, 520, 1840, 520), fill=col(LINE, 0.9), width=1)
 
-def draw_usual(d, section, t, sent_i):
-    title(d, "The usual path")
-    steps = [
-        ("01", "Documents", "Kept as files and pages.", BLUE),
-        ("02", "Chunks", "Stored as vectors, nearest in meaning.", GOLD),
-        ("03", "The agent writes", "A finished sentence, from what came back.", IVORY),
-        ("04", "Citation, after", "Attached once the sentence exists.", CORAL),
-    ]
-    boxes = row_boxes(4, 250, 280, gap=22, margin=64)
-    for box, (num, heading, body, accent) in zip(boxes, steps):
-        card(d, box, num, heading, body, accent)
-    panel(d, (64, 600, W - 64, 860), outline=GOLD, width=2)
-    d.text((96, 640), "Enough when the words match.", font=font(32, "sem"), fill=col(IVORY))
-    draw_wrapped(
+    pill(d, 340, 700, "A doctor dies of a snake in his own room", BLUE, a_bot)
+    stage(d, 340, 752, "DESCRIBES A SITUATION", BLUE, a_bot)
+    arrow(d, (640, 700), (760, 730), col(BLUE, a_bot), prog=a_bot)
+    dots(d, 980, 760, 150, 80, 28, a_bot, hot={4, 9, 15, 21})
+    poly_arrow(
         d,
-        "Unreliable when the answer is a relationship, a type of thing, or a fact written in different words. The model supplies what the chunks did not.",
-        font(26), col(MUTED), 96, 710, W - 220, gap=8,
+        [(1140, 760), (1540, 760), (1540, 430), (1440, 400)],
+        col(BLUE, a_back),
+        width=3,
+        prog=a_back,
     )
 
 
-def draw_graph(d, section, t, sent_i):
-    title(d, "A vocabulary, then the facts")
-    left, right = row_boxes(2, 220, 640, gap=28, margin=64)
-    card(
-        d, left, "ONTOLOGY", "The shared vocabulary",
-        "The kinds of things that matter, and the relationships allowed between them.\n\n"
-        "A contract has parties.\nA person reports to a role.\nA case has a client.",
-        GOLD,
-    )
-    # card() doesn't honour newlines well if wrap splits poorly. Draw the examples ourselves.
-    panel(d, right, outline=TEAL, width=2)
-    x, y = right[0] + 28, right[1] + 24
-    d.text((x, y), "KNOWLEDGE GRAPH", font=font(15, "med"), fill=col(TEAL))
-    d.text((x, y + 36), "The facts, in that vocabulary", font=font(28, "sem"), fill=col(IVORY))
-    facts = [
-        ("Contract", "has party", "Northwind"),
-        ("Person", "reports to", "Role"),
-        ("Case", "has client", "Hart"),
-    ]
-    yy = y + 120
-    for a, rel, b in facts:
-        d.text((x, yy), a, font=font(22, "sem"), fill=col(IVORY))
-        d.text((x + 220, yy), rel, font=font(20), fill=col(GOLD))
-        d.text((x + 460, yy), b, font=font(22, "sem"), fill=col(IVORY))
-        yy += 64
-    d.text((x, yy + 24), "Each fact can point back to the passage it came from.", font=font(22), fill=col(MUTED))
-    # overwrite left body more cleanly
-    panel(d, left, outline=GOLD, width=2)
-    x, y = left[0] + 28, left[1] + 24
-    d.text((x, y), "ONTOLOGY", font=font(15, "med"), fill=col(GOLD))
-    d.text((x, y + 36), "The shared vocabulary", font=font(28, "sem"), fill=col(IVORY))
-    draw_wrapped(d, "The kinds of things that matter, and the relationships allowed between them.", font(22), col(MUTED), x, y + 100, left[2] - x - 36, gap=6)
-    for i, line in enumerate(["A contract has parties.", "A person reports to a role.", "A case has a client."]):
-        d.text((x, y + 230 + i * 52), line, font=font(26, "sem"), fill=col(IVORY))
+def draw_bring(d, t):
+    heading(d, "Bring the ontology", "Documents in. The vocabulary comes with you. A graph comes out.")
+    a_docs = ease(t, 0.3, 2.2)
+    a_pass = ease(t, 2.6, 5.0)
+    a_ont = ease(t, 5.2, 8.5)
+    a_ext = ease(t, 8.0, 10.5)
+    a_out = ease(t, 11.0, 15.0)
+    live = t > 15
+
+    page(d, 80, 430, 170, 200, "Stories", BLUE, a_docs, bars=4)
+    page(d, 110, 460, 170, 200, "Stories", BLUE, a_docs * 0.95, bars=4)
+    stage(d, 195, 700, "DOCUMENTS", BLUE, a_docs)
+
+    arrow(d, (300, 540), (400, 540), col(BLUE, a_pass), prog=a_pass)
+    for i in range(4):
+        yy = 470 + i * 36
+        d.rounded_rectangle((420, yy, 620, yy + 26), radius=8, fill=col(INK, a_pass), outline=col(BLUE, a_pass), width=2)
+    stage(d, 520, 700, "PASSAGES", BLUE, a_pass)
+
+    # Ontology brought in from above.
+    for name, x in (("Person", 700), ("Case", 860), ("Cause", 1020)):
+        pill(d, x, 214, name, GOLD, a_ont)
+    node(d, 860, 330, 250, 84, "Ontology", GOLD, a_ont, sub="you bring this")
+    arrow(d, (860, 378), (860, 475), col(GOLD, a_ont), prog=a_ont)
+
+    arrow(d, (640, 540), (740, 520), col(BLUE, a_ext), prog=a_ext)
+    node(d, 860, 530, 200, 100, "Extract", TEAL, a_ext, sub="fact in the passage")
+
+    arrow(d, (970, 500), (1240, 300), col(TEAL, a_out), prog=a_out)
+    arrow(d, (970, 580), (1380, 770), col(BLUE, a_out), prog=a_out)
+
+    node(d, 1360, 280, 170, 56, "Roylott", TEAL, a_out)
+    node(d, 1700, 280, 210, 56, "Swamp adder", TEAL, a_out)
+    arrow(d, (1455, 280), (1585, 280), col(TEAL, a_out), prog=a_out, width=3)
+    if a_out > 0.4:
+        center_text(d, 1520, 248, "killed by", font(14, "med"), col(TEAL, a_out))
+    stage(d, 1530, 348, "KNOWLEDGE GRAPH", TEAL, a_out)
+    arrow(d, (1700, 314), (1700, 418), col(BLUE, a_out), width=3, prog=a_out)
+    passage_mark(d, 1610, 418, a_out, "Speckled Band")
+
+    dots(d, 1500, 780, 170, 72, 26, a_out, hot={3, 8, 14})
+    stage(d, 1500, 880, "ONE VECTOR PER PASSAGE", BLUE, a_out)
+
+    if live:
+        bead(d, (300, 540), (740, 520), (t - 15) / 3.5, GOLD)
+        bead(d, (860, 378), (860, 475), (t - 15) / 3.5, GOLD)
 
 
-def draw_together(d, section, t, sent_i):
-    title(d, "Why the vectors stay")
-    left, right = row_boxes(2, 210, 460, gap=28, margin=64)
-    card(d, left, "THE QUESTION NAMES SOMETHING", "Follow the graph",
-         "Types and relationships. Each fact carries the passage it came from.", TEAL)
-    card(d, right, "THE QUESTION DESCRIBES A SITUATION", "Search by meaning",
-         "The wording may not match. One vector is one passage. The hit leads back to the facts that cite it.", BLUE)
-    panel(d, (64, 720, W - 64, 960), outline=GOLD, width=2)
-    d.text((96, 760), "Both end at a passage.", font=font(32, "sem"), fill=col(IVORY))
-    d.text((96, 830), "The graph holds the structure. The vectors hold the wording the question never used.", font=font(24), fill=col(MUTED))
+def draw_derive(d, t):
+    heading(d, "Derive the ontology", "Documents in. A vocabulary is proposed and published. Extraction is the same step.")
+    a_docs = ease(t, 0.4, 2.2)
+    a_sample = ease(t, 2.4, 5.0)
+    a_terms = ease(t, 5.2, 8.8)
+    a_draft = ease(t, 9.0, 12.0)
+    a_pub = ease(t, 12.2, 15.0)
+    a_join = ease(t, 15.2, 18.2)
+    a_out = ease(t, 18.4, 22.0)
+
+    page(d, 70, 470, 160, 180, "Stories", BLUE, a_docs, bars=4)
+    stage(d, 150, 670, "DOCUMENTS", BLUE, a_docs)
+
+    arrow(d, (150, 470), (150, 338), col(GOLD, a_sample), prog=a_sample, width=3)
+    page(d, 80, 200, 140, 130, "Sample", GOLD, a_sample, bars=2)
+    stage(d, 300, 230, "SAMPLE", GOLD, a_sample)
+
+    arrow(d, (230, 265), (330, 265), col(GOLD, a_terms), prog=a_terms)
+    for name, x in (("Person", 430), ("Case", 600), ("Cause", 770)):
+        pill(d, lerp(300, x, a_terms), 265, name, GOLD, a_terms)
+
+    arrow(d, (860, 265), (960, 265), col(GOLD, a_draft), prog=a_draft)
+    node(d, 1120, 265, 260, 84, "Draft ontology", GOLD, a_draft, sub="a person reviews")
+    arrow(d, (1260, 265), (1380, 265), col(TEAL, a_pub), prog=a_pub)
+    node(d, 1520, 265, 210, 84, "Published", TEAL, a_pub)
+
+    arrow(d, (1520, 312), (1520, 520), col(GOLD, a_join), prog=a_join)
+    node(d, 1520, 575, 220, 100, "Extract", TEAL, a_join, sub="same step")
+
+    arrow(d, (240, 560), (350, 560), col(BLUE, a_join), prog=a_join)
+    arrow(d, (600, 572), (1400, 575), col(BLUE, a_join), prog=a_join)
+    for i in range(3):
+        d.rounded_rectangle((370, 520 + i * 38, 590, 548 + i * 38), radius=8, fill=col(INK, a_join), outline=col(BLUE, a_join), width=2)
+    stage(d, 480, 660, "PASSAGES", BLUE, a_join)
+
+    arrow(d, (1440, 630), (730, 820), col(TEAL, a_out), prog=a_out)
+    arrow(d, (1600, 630), (1660, 800), col(BLUE, a_out), prog=a_out)
+    node(d, 820, 820, 160, 56, "Roylott", TEAL, a_out)
+    node(d, 1160, 820, 210, 56, "Swamp adder", TEAL, a_out)
+    arrow(d, (910, 820), (1045, 820), col(TEAL, a_out), prog=a_out, width=3)
+    if a_out > 0.35:
+        center_text(d, 975, 788, "killed by", font(14, "med"), col(TEAL, a_out))
+    stage(d, 990, 888, "KNOWLEDGE GRAPH", TEAL, a_out)
+    dots(d, 1680, 840, 120, 52, 18, a_out, hot={2, 6, 11})
+    stage(d, 1680, 920, "VECTORS", BLUE, a_out)
 
 
-def draw_improves(d, section, t, sent_i):
-    title(d, "What gets better")
-    rows = [
-        ("01", "Consistency", "The same types, when facts are taken from documents and when a question is asked.", GOLD),
-        ("02", "Accuracy", "A statement is shown only when a passage actually contains it.", TEAL),
-        ("03", "A decline", "When nothing remains, the agent says the sources do not answer.", CORAL),
-    ]
-    y = 220
-    for num, heading, body, accent in rows:
-        band(d, y, 150, num, heading, body, accent)
-        y += 174
-    d.text((64, y + 8), "The citation is the condition for showing the sentence.", font=font(26, "sem"), fill=col(IVORY))
+def draw_questions(d, t):
+    heading(d, "When someone asks", "The same ontology plans the question. A statement needs a passage.")
+    a_q = ease(t, 0.4, 2.2)
+    a_agent = ease(t, 2.4, 5.0)
+    a_fork = ease(t, 5.2, 9.0)
+    a_yes = ease(t, 9.5, 13.0)
+    a_no = ease(t, 13.5, 17.0)
 
+    pill(d, 180, 390, "A question", IVORY, a_q)
+    arrow(d, (280, 390), (430, 390), col(GOLD, a_agent), prog=a_agent)
+    d.rounded_rectangle((450, 300, 900, 500), radius=22, fill=col(INK, a_agent), outline=col(GOLD, a_agent), width=3)
+    if a_agent > 0.15:
+        center_text(d, 675, 345, "Agent", font(24, "sem"), col(IVORY, a_agent))
+        for name, x in (("Person", 540), ("Case", 675), ("Cause", 810)):
+            pill(d, x, 430, name, GOLD, a_agent)
+    stage(d, 675, 270, "HOLDS THE ONTOLOGY", GOLD, a_agent)
 
-def draw_ingestion(d, section, t, sent_i):
-    title(d, "What the lab does on the way in")
-    rows = [
-        ("01", "Documents", "Kept as they arrived.", BLUE),
-        ("02", "Passages", "The pieces a fact can cite. The same document keeps the same passages.", SILVER := (214, 220, 228)),
-        ("03", "Ontology", "Bring it, or draft one from the documents for a person to review and publish.", GOLD),
-        ("04", "Extraction", "A fact has to be in the passage it cites. A term with no place stays out of the graph.", TEAL),
-        ("05", "Two stores", "The knowledge graph, and one vector for each passage.", GOLD),
-    ]
-    y = 190
-    for num, heading, body, accent in rows:
-        band(d, y, 118, num, heading, body, accent)
-        y += 132
+    arrow(d, (910, 360), (1120, 280), col(TEAL, a_fork), prog=a_fork)
+    arrow(d, (910, 450), (1100, 560), col(BLUE, a_fork), prog=a_fork)
+    node(d, 1320, 270, 260, 64, "Walk the graph", TEAL, a_fork)
+    node(d, 1340, 560, 300, 64, "Search by meaning", BLUE, a_fork)
 
+    # Answered outcome
+    d.rounded_rectangle((80, 680, 920, 960), radius=22, fill=col(INK, a_yes), outline=col(TEAL, a_yes), width=3)
+    if a_yes > 0.2:
+        d.text((110, 705), "ANSWERED", font=font(14, "med"), fill=col(TEAL, a_yes))
+        node(d, 280, 820, 160, 56, "Roylott", TEAL, a_yes)
+        node(d, 620, 820, 200, 56, "Swamp adder", TEAL, a_yes)
+        arrow(d, (370, 820), (510, 820), col(TEAL, a_yes), prog=a_yes, width=3)
+        center_text(d, 440, 784, "killed by", font(14, "med"), col(TEAL, a_yes))
+        passage_mark(d, 730, 760, a_yes, "passage")
 
-def draw_questions(d, section, t, sent_i):
-    title(d, "What the lab does when someone asks")
-    left, right = row_boxes(2, 190, 200, gap=22, margin=64)
-    card(d, left, "NAMES SOMETHING", "Follow the graph", "", TEAL)
-    card(d, right, "DESCRIBES A SITUATION", "Search passages by meaning", "", BLUE)
-    # outcome cards
-    a, b = row_boxes(2, 430, 340, gap=22, margin=64)
-    card(
-        d, a, "ANSWERED", "What killed Dr Grimesby Roylott?",
-        "From the passage in The Speckled Band that names the swamp adder.",
-        TEAL,
-    )
-    card(
-        d, b, "DECLINED", "Holmes's mother's name?",
-        "The stories do not say. The result is a decline, not a name borrowed from another mother in the text.",
-        CORAL,
-    )
-    d.text((64, 800), "A fact enters only when a passage supports it.", font=font(26, "sem"), fill=col(IVORY))
-    d.text((64, 848), "An answer leaves only when a passage supports it.", font=font(26, "sem"), fill=col(IVORY))
+    # Declined outcome
+    d.rounded_rectangle((1000, 680, 1840, 960), radius=22, fill=col(INK, a_no), outline=col(CORAL, a_no), width=3)
+    if a_no > 0.2:
+        d.text((1030, 705), "DECLINED", font=font(14, "med"), fill=col(CORAL, a_no))
+        node(d, 1280, 830, 220, 64, "Holmes", CORAL, a_no * 0.85)
+        node(d, 1620, 830, 200, 64, "mother", DIM, a_no * 0.45)
+        # a broken link
+        d.line((1400, 830, 1510, 830), fill=col(CORAL, a_no), width=3)
+        cx, cy = 1455, 830
+        d.line((cx - 10, cy - 10, cx + 10, cy + 10), fill=col(CORAL, a_no), width=3)
+        d.line((cx - 10, cy + 10, cx + 10, cy - 10), fill=col(CORAL, a_no), width=3)
 
 
 DRAW = {
     "usual": draw_usual,
     "graph": draw_graph,
     "together": draw_together,
-    "improves": draw_improves,
-    "ingestion": draw_ingestion,
+    "bring": draw_bring,
+    "derive": draw_derive,
     "questions": draw_questions,
 }
 
 
 def render_frame(bg, section, t, index, n, offset):
-    overlay, d = base_frame(bg)
+    overlay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(overlay)
     chrome(d, section["kicker"])
-    DRAW[section["id"]](d, section, t, 0)
+    DRAW[section["id"]](d, t)
     footer(d, index, n, offset + t, t, section["duration"])
-    return finish(bg, overlay)
+    return Image.alpha_composite(bg.convert("RGBA"), overlay).convert("RGB")
 
 
 def encode(path: Path, section, bg, index, n, offset):
@@ -431,24 +669,18 @@ def encode(path: Path, section, bg, index, n, offset):
         "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
         "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo",
         "-shortest",
-        "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", "-preset", "medium",
+        "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", "-preset", "veryfast",
         "-c:a", "aac", "-b:a", "32k",
         "-movflags", "+faststart",
         str(path),
     ]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     assert proc.stdin is not None
-    last_key = None
-    last_bytes = b""
     try:
         for i in range(nframes):
             t = i / FPS
-            key = int(offset + t)
-            if key != last_key:
-                last_bytes = render_frame(bg, section, t, index, n, offset).tobytes()
-                last_key = key
-            proc.stdin.write(last_bytes)
-            if i % (FPS * 8) == 0:
+            proc.stdin.write(render_frame(bg, section, t, index, n, offset).tobytes())
+            if i % (FPS * 10) == 0:
                 print(f"  {section['id']} {t:6.1f}s / {section['duration']:.1f}s", flush=True)
     finally:
         proc.stdin.close()
@@ -461,11 +693,11 @@ def encode(path: Path, section, bg, index, n, offset):
 def load_bg():
     im = Image.open(BG_PATH).convert("RGB").resize((W, H), Image.Resampling.LANCZOS)
     veil = Image.new("RGB", (W, H), BG)
-    return Image.blend(veil, im, 0.42)
+    return Image.blend(veil, im, 0.20)
 
 
-def _voice_file(path: Path, heading: str, intro: str, key: str):
-    lines = [f"# {heading}", "", intro, ""]
+def _voice_file(path: Path, heading_text: str, intro: str, key: str):
+    lines = [f"# {heading_text}", "", intro, ""]
     cursor = 0.0
     for i, section in enumerate(SECTIONS, start=1):
         start = cursor
@@ -475,9 +707,9 @@ def _voice_file(path: Path, heading: str, intro: str, key: str):
             "",
             f"Clip `{section['file']}`. Assembly {tc(start)} to {tc(end)}.",
             "",
+            "\n\n".join(section[key]),
+            "",
         ]
-        lines.append("\n\n".join(section[key]))
-        lines.append("")
         cursor = end
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("wrote", path)
@@ -487,14 +719,14 @@ def write_docs():
     script = [
         "# Knowledge Store briefing",
         "",
-        "Six clips. The picture explains the idea. It does not show the product being used.",
+        "Six clips. The picture is an architecture diagram of the flow.",
         "",
         "Two complete reads, one per clip, in prose:",
         "",
         "- [voice-pro.md](voice-pro.md) for a professional technical narrator.",
         "- [voice-record.md](voice-record.md) to record yourself. Read the paragraphs for that clip straight through.",
         "",
-        "The clips are timed to the longer of the two reads, at a measured pace of about 145 words a minute, with a short breath at each end of the clip.",
+        "The clips are timed to the longer of the two reads, at about 130 words a minute, with a short breath at each end.",
         "",
         "## Timeline",
         "",
@@ -509,7 +741,14 @@ def write_docs():
     script += ["", f"Total picture: {tc(cursor)} ({cursor:.1f} seconds).", ""]
     cursor = 0.0
     for i, section in enumerate(SECTIONS, start=1):
-        script += [f"## {i}. {section['kicker']}", "", f"`{section['file']}`, {tc(cursor)} to {tc(cursor + section['duration'])}.", "", "Picture:", ""]
+        script += [
+            f"## {i}. {section['kicker']}",
+            "",
+            f"`{section['file']}`, {tc(cursor)} to {tc(cursor + section['duration'])}.",
+            "",
+            "Picture:",
+            "",
+        ]
         for line in section["picture"]:
             script.append(f"- {line}")
         script.append("")
@@ -518,16 +757,22 @@ def write_docs():
     _voice_file(
         ROOT / "voice-pro.md",
         "Professional voice",
-        "For a narrator in the style of a serious technical film: unhurried, precise, no sales language. Read each clip as continuous prose. Pause between the paragraphs. Do not break it into the sentences on screen.",
+        "For a narrator in the style of a serious technical film: unhurried, precise, no sales language. Read each clip as continuous prose. Pause between the paragraphs.",
         "pro",
     )
     _voice_file(
         ROOT / "voice-record.md",
         "Record yourself",
-        "Read each clip straight through, as if explaining it to a room. The paragraphs are the whole read for that picture. Pause between paragraphs. The clip is long enough for this read at a measured pace.",
+        "Read each clip straight through, as if explaining the diagram to a room. Pause between the paragraphs. The clip is long enough for this read at a measured pace.",
         "record",
     )
     print(f"total {cursor:.1f}s")
+
+
+def load_ready_bg():
+    for section in SECTIONS:
+        prepare(section)
+    return load_bg()
 
 
 def stills(bg):
@@ -536,10 +781,26 @@ def stills(bg):
     cursor = 0.0
     n = len(SECTIONS)
     for i, section in enumerate(SECTIONS, start=1):
-        frame = render_frame(bg, section, 1.0, i, n, cursor)
+        # Late in the clip, once the diagram has assembled.
+        frame = render_frame(bg, section, max(1.0, section["duration"] - 2.5), i, n, cursor)
         name = dest / f"{section['id']}.png"
         frame.save(name)
         print("still", name)
+        cursor += section["duration"]
+
+
+def frames(bg):
+    dest = Path("/tmp/ks-qa")
+    dest.mkdir(parents=True, exist_ok=True)
+    cursor = 0.0
+    n = len(SECTIONS)
+    for i, section in enumerate(SECTIONS, start=1):
+        for frac in (0.25, 0.55, 0.92):
+            t = section["duration"] * frac
+            frame = render_frame(bg, section, t, i, n, cursor)
+            name = dest / f"{section['id']}-{int(frac * 100)}.png"
+            frame.save(name)
+            print("frame", name)
         cursor += section["duration"]
 
 
@@ -547,8 +808,7 @@ def concat(paths, dest: Path):
     lst = dest.with_suffix(".concat.txt")
     lst.write_text("".join(f"file '{p}'\n" for p in paths), encoding="utf-8")
     try:
-        cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(lst), "-c", "copy", str(dest)]
-        subprocess.check_call(cmd)
+        subprocess.check_call(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(lst), "-c", "copy", str(dest)])
     finally:
         lst.unlink(missing_ok=True)
     print("wrote", dest)
@@ -558,14 +818,20 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--docs", action="store_true")
     parser.add_argument("--stills", action="store_true")
+    parser.add_argument("--frames", action="store_true")
     parser.add_argument("--no-video", action="store_true")
     args = parser.parse_args()
     for section in SECTIONS:
         prepare(section)
     write_docs()
-    if (args.docs and not args.stills) or args.no_video:
+    if args.docs and not args.stills and not args.frames:
+        return
+    if args.no_video and not args.stills and not args.frames:
         return
     bg = load_bg()
+    if args.frames:
+        frames(bg)
+        return
     if args.stills:
         stills(bg)
         return

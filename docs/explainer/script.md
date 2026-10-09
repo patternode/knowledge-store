@@ -1,76 +1,78 @@
 # Knowledge Store briefing
 
-Six clips. The picture explains the idea. It does not show the product being used.
+Six clips. The picture is an architecture diagram of the flow.
 
 Two complete reads, one per clip, in prose:
 
 - [voice-pro.md](voice-pro.md) for a professional technical narrator.
 - [voice-record.md](voice-record.md) to record yourself. Read the paragraphs for that clip straight through.
 
-The clips are timed to the longer of the two reads, at a measured pace of about 145 words a minute, with a short breath at each end of the clip.
+The clips are timed to the longer of the two reads, at about 130 words a minute, with a short breath at each end.
 
 ## Timeline
 
 | In | Out | Clip | Picture |
 |---|---|---|---|
-| 0:00 | 0:49 | `01-usual-path.mp4` | The usual path |
-| 0:49 | 1:34 | `02-ontology-and-graph.mp4` | Ontology and graph |
-| 1:34 | 2:23 | `03-graph-and-vectors.mp4` | Graph and vectors |
-| 2:23 | 3:08 | `04-what-improves.mp4` | What improves |
-| 3:08 | 4:07 | `05-on-the-way-in.mp4` | On the way in |
-| 4:07 | 5:11 | `06-when-someone-asks.mp4` | When someone asks |
+| 0:00 | 0:45 | `01-usual-path.mp4` | The usual path |
+| 0:45 | 1:30 | `02-ontology-and-graph.mp4` | Ontology and graph |
+| 1:30 | 2:12 | `03-graph-and-vectors.mp4` | Graph and vectors |
+| 2:12 | 2:49 | `04-bring-ontology.mp4` | Bring the ontology |
+| 2:49 | 3:32 | `05-derive-ontology.mp4` | Derive the ontology |
+| 3:32 | 4:15 | `06-when-someone-asks.mp4` | When someone asks |
 
-Total picture: 5:11 (311.4 seconds).
+Total picture: 4:15 (254.7 seconds).
 
 ## 1. The usual path
 
-`01-usual-path.mp4`, 0:00 to 0:49.
+`01-usual-path.mp4`, 0:00 to 0:45.
 
 Picture:
 
-- A wide path: documents, chunks stored as vectors, the agent writes, a citation attached afterwards.
-- The lower line: enough when the words match; unreliable when the answer is a relationship, a type, or a fact in different words.
+- Three story collections become a field of vectors. The question is Holmes's mother's name.
+- The lit chunks are about Helen Stoner's mother. A sentence is written from them, and a citation is pinned on afterwards.
 
 ## 2. Ontology and graph
 
-`02-ontology-and-graph.mp4`, 0:49 to 1:34.
+`02-ontology-and-graph.mp4`, 0:45 to 1:30.
 
 Picture:
 
-- Left: an ontology as a shared vocabulary, with three ordinary examples.
-- Right: a knowledge graph of typed facts, each one able to point at the passage it came from.
+- Left, an ontology draws itself: Person, Case, Cause, and the two links that are allowed.
+- Right, the same picture filled in. Holmes investigates the Speckled Band. Roylott is killed by a swamp adder. A passage sits on the fact.
 
 ## 3. Graph and vectors
 
-`03-graph-and-vectors.mp4`, 1:34 to 2:23.
+`03-graph-and-vectors.mp4`, 1:30 to 2:12.
 
 Picture:
 
-- Two full columns. A question that names something follows the graph. A question that describes a situation is found by meaning.
-- Both end at a passage. The graph holds structure. The vectors hold wording the question never used.
+- A question that names Roylott walks the graph to the swamp adder and the passage.
+- A question that only describes the death searches the vectors, lands on the same passage, and returns to the same fact.
 
-## 4. What improves
+## 4. Bring the ontology
 
-`04-what-improves.mp4`, 2:23 to 3:08.
-
-Picture:
-
-- Three full-width bands: consistency from the shared vocabulary, accuracy from the tie to a passage, and a decline when nothing remains.
-
-## 5. On the way in
-
-`05-on-the-way-in.mp4`, 3:08 to 4:07.
+`04-bring-ontology.mp4`, 2:12 to 2:49.
 
 Picture:
 
-- The lab, conceptually, on the way in: documents kept as they arrived, passages a fact can cite, an ontology you bring or draft and publish, extraction that keeps a fact only when the passage contains it, then the graph and one vector per passage.
+- Normal ingestion. Documents are divided into passages. An ontology you bring drops into extraction.
+- A fact enters the graph only when the passage contains it. One vector is stored for each passage.
+
+## 5. Derive the ontology
+
+`05-derive-ontology.mp4`, 2:49 to 3:32.
+
+Picture:
+
+- The other ingestion. Documents arrive with no ontology. A sample proposes Person, Case, and Cause.
+- The proposals become a draft, a person publishes it, and that ontology drops into the same extraction. The graph and the vectors are built the same way.
 
 ## 6. When someone asks
 
-`06-when-someone-asks.mp4`, 4:07 to 5:11.
+`06-when-someone-asks.mp4`, 3:32 to 4:15.
 
 Picture:
 
-- The same ontology plans the question. A named thing follows the graph. A described situation searches by meaning. Both return statements tied to passages.
-- Two Holmes examples, as concepts: Roylott is answered from the passage that names the swamp adder. Holmes's mother is a decline, because the stories do not say.
+- A question enters an agent that holds the ontology. One path walks the graph. The other searches by meaning and returns to the fact.
+- Roylott resolves to the swamp adder and the passage. Holmes's mother stays dark: the sources do not say.
 
