@@ -115,19 +115,23 @@ class Recorder:
         return self.step("model", "Thinking" if self.model_calls == 1 else f"Thinking (model call {self.model_calls})")
 
     def price_model(self, usage: dict | None, model_id: str | None, provider: str = "bedrock") -> None:
-        """Attach one model call's tokens and list price to the latest model step that has none.
-        An empty usage is left off: the call did not report tokens, which is not the same as zero."""
+        """Attach one model call's thinking time, and its tokens and list price when it reported them.
+
+        The time is from the Thinking step to this call, which returns after the model. An empty
+        usage is left off: the call did not report tokens, which is not the same as zero."""
+        now = round(1000 * (time.monotonic() - self.started))
+        target = next((s for s in reversed(self.steps) if s.get("kind") == "model" and "took_ms" not in s), None)
+        if target is None:
+            return
+        target["took_ms"] = max(0, now - int(target.get("ms") or 0))
         if not isinstance(usage, dict) or not usage:
             return
         from . import ledger
         kept = {k: int(usage.get(k) or 0) for k in USAGE_KEYS}
         priced = ledger.cost_parts(model_id or "", kept, provider=provider) if model_id else None
-        for s in reversed(self.steps):
-            if s.get("kind") == "model" and "usage" not in s:
-                s["usage"] = kept
-                if priced:
-                    s["usd"] = priced["usd"]
-                return
+        target["usage"] = kept
+        if priced:
+            target["usd"] = priced["usd"]
 
     def tool(self, name: str, args: dict | None, out, ms: int | None = None) -> dict:
         name, args, out = bare(name), dict(args or {}), _parse(out)
