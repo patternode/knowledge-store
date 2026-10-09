@@ -19,10 +19,12 @@ ontology page's one library, D3, is served from this folder (`vendor/`).
 - `app.js`: the collection picker, asking and polling, and rendering answers and sources. No
   server text reaches `innerHTML`; the DOM is built from nodes and `textContent`. A `?ask=`
   parameter fills the question box without sending it. The page opens as the chat alone.
-  Demonstrate, in the header, shows the sample questions and the workbench; User view hides them
-  again. The workbench shows the selected question's steps as they happen, the ontology terms its
-  answer used and this session's totals; a step's input says whether the call was a knowledge
-  graph query, a vector query or a keyword passage search. A citation opens that source in the
+  Demonstrate, in the header, shows the sample questions and   the workbench; User view hides them
+  again. The workbench shows the selected question's steps as they happen, coloured by type, with
+  each model call's thinking time and tokens. Under the list every type is counted, including
+  zeros, and each tool is counted by how many times it was called. It also shows the ontology
+  terms the answer used and this session's totals. A step's input says whether the call was a
+  knowledge graph query, a vector query or a keyword passage search. A citation opens that source in the
   panel beside the conversation; choosing it again hides the panel. Below 1100 pixels the sources
   panel is a drawer. "What would it take?" asks the analyst
   and renders its report ([docs/workbench.md](../docs/workbench.md)). Below 1280 pixels the

@@ -38,6 +38,18 @@ def test_steps_and_terms_from_real_tool_results(mixed):
     assert rec.hits()["relations"][rel["p"]] == ["read", "cited"]
 
 
+def test_a_model_step_records_how_long_it_thought_and_its_tokens():
+    rec = workbench.Recorder()
+    rec.model_call()
+    rec.price_model({"inputTokens": 10, "outputTokens": 2, "cacheReadInputTokens": 0, "cacheWriteInputTokens": 0},
+                    "us.anthropic.claude-sonnet-4-5-20250929-v1:0", "bedrock")
+    rec.model_call()
+    rec.price_model({}, "us.anthropic.claude-sonnet-4-5-20250929-v1:0", "bedrock")
+    thought, silent = rec.steps
+    assert thought["took_ms"] >= 0 and thought["usage"]["inputTokens"] == 10 and thought["usd"] > 0
+    assert silent["took_ms"] >= 0 and "usage" not in silent and "usd" not in silent
+
+
 def test_a_step_says_whether_the_query_was_the_graph_or_the_vectors():
     rec = workbench.Recorder()
     graph = rec.tool("search_entities", {"query": "Alpha", "type": "Mission"}, {"items": [], "total": 0})

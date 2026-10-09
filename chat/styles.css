@@ -21,6 +21,12 @@
   --danger: #a3000d;
   --danger-bg: #fdeeee;
   --flash: #ffe28a;
+  --q-graph: #3f37c9;
+  --q-vector: #0e7c72;
+  --q-keyword: #007fa0;
+  --q-read: #b86a00;
+  --q-ontology: #6d4ad4;
+  --q-other: #8a5a2b;
   --radius: 10px;
   --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color-scheme: light;
@@ -48,6 +54,12 @@
     --danger: #ff9a92;
     --danger-bg: #3a1a1c;
     --flash: #6b5a12;
+    --q-graph: #8fa0ff;
+    --q-vector: #5dcec2;
+    --q-keyword: #4fc8ea;
+    --q-read: #f0a35e;
+    --q-ontology: #c4b0ff;
+    --q-other: #e0b089;
     color-scheme: dark;
   }
 }
@@ -263,17 +275,37 @@ mark { background: var(--mark); color: var(--mark-text); border-radius: 2px; pad
 .steps { list-style: none; margin: 10px 0 0; padding: 0; position: relative; }
 .steps::before { content: ""; position: absolute; left: 6px; top: 6px; bottom: 6px; width: 2px; background: var(--surface-2); }
 .step { display: flex; gap: 10px; padding: 4px 0 8px; position: relative; }
-.step-dot { flex: none; width: 14px; height: 14px; margin-top: 4px; border-radius: 50%; background: var(--surface); border: 2px solid var(--border); z-index: 0; }
-.step.tool .step-dot { border-color: var(--action); }
-.step.model .step-dot { border-color: var(--muted); border-style: dashed; }
-.step.check .step-dot, .step.repair .step-dot, .step.guardrail .step-dot { border-color: var(--calm-border); }
-.step.done .step-dot { background: #2fa59a; border-color: #2fa59a; }
+.t-model { --step: var(--muted); }
+.t-graph { --step: var(--q-graph); }
+.t-vector { --step: var(--q-vector); }
+.t-keyword { --step: var(--q-keyword); }
+.t-read { --step: var(--q-read); }
+.t-ontology { --step: var(--q-ontology); }
+.t-check, .t-repair { --step: var(--calm-border); }
+.t-guardrail { --step: var(--refuse-border); }
+.t-other { --step: var(--q-other); }
+.t-done { --step: var(--q-vector); }
+.t-error { --step: var(--danger); }
+.step-dot { flex: none; width: 14px; height: 14px; margin-top: 4px; border-radius: 50%; background: var(--surface); border: 2px solid var(--step, var(--border)); z-index: 0; }
+.step.model .step-dot { border-style: dashed; }
+.step.done .step-dot { background: var(--step); }
 .step.error .step-dot { background: var(--danger); border-color: var(--danger); }
-.step.model .step-title { color: var(--muted); }
 .step-body { min-width: 0; flex: 1; }
 .step-body p { margin: 0; }
 .step-title { display: flex; justify-content: space-between; gap: 10px; }
+.step-name { min-width: 0; }
+.step-kind {
+  display: inline-block; margin: 0 6px 0 0; padding: 0 7px; border: 1px solid var(--step, var(--border));
+  border-radius: 999px; color: var(--step, var(--muted)); font-size: 0.68rem; font-weight: 650;
+  letter-spacing: 0.03em; text-transform: uppercase; vertical-align: 1px;
+}
+.step-usage { margin-top: 2px !important; color: var(--step, var(--muted)); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
 .step-time { flex: none; color: var(--muted); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+.step-summary { margin-top: 14px; padding-top: 8px; border-top: 1px solid var(--border); }
+.step-summary th { font-weight: 550; text-align: left; }
+.step-summary tr.t-graph th, .step-summary tr.t-vector th, .step-summary tr.t-keyword th,
+.step-summary tr.t-read th, .step-summary tr.t-ontology th, .step-summary tr.t-other th { color: var(--step); }
+.step-swatch { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--step, var(--border)); vertical-align: 1px; }
 .step-detail { color: var(--muted); font-size: 0.84rem; }
 .step-detail.error { color: var(--danger); }
 .step-terms { margin-top: 3px !important; display: flex; flex-wrap: wrap; gap: 4px; }
