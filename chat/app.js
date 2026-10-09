@@ -15,6 +15,7 @@
  * The workbench (the panel beside the chat) shows the selected question's steps while the agent
  * works: each search, read and check, polled from GET /api/chat while it runs, then the ontology
  * terms the answer used, and what the question cost, split by token kind and by model call.
+ * Steps, cost, ontology terms and this session are sections. They start collapsed.
  * A step is coloured by what it was: model thinking, a knowledge graph query, a vector query,
  * a keyword search, a structured lookup, a passage read, an ontology read, or a check. The list ends with a count of
  * every type, including the ones that did not happen, and of each tool that was called. A model
@@ -723,17 +724,30 @@ function main() {
     if (x === 0) return '$0.00';
     return '$' + (Math.abs(x) < 0.01 ? x.toFixed(4) : x.toFixed(2));
   }
+  // Sections start collapsed. A section the person opens stays open while the steps update.
+  const BENCH_OPEN = new Set();
+  function fold(titleId, title, ...body) {
+    const attrs = { class: 'bench-fold' };
+    if (BENCH_OPEN.has(titleId)) attrs.open = true;
+    const details = h('details', attrs,
+      h('summary', null, h('h3', { id: titleId, text: title })),
+      h('div', { class: 'bench-fold-body' }, body));
+    details.addEventListener('toggle', () => {
+      if (details.open) BENCH_OPEN.add(titleId);
+      else BENCH_OPEN.delete(titleId);
+    });
+    return details;
+  }
   function renderCost(t) {
     const box = $('#bench-cost');
     const running = t && (t.status === 'pending' || t.status === 'running');
     const cost = t && t.result && t.result.cost;
-    if (!t) { box.hidden = true; return; }
     box.hidden = false;
     if (!cost) {
-      clear(box, h('h3', { id: 'bench-cost-title', text: 'Cost' }),
-        h('p', { class: 'small muted', text: running
+      clear(box, fold('bench-cost-title', 'Cost',
+        h('p', { class: 'small muted', text: !t || running
           ? 'The price appears when the question finishes.'
-          : 'This answer did not report token use, so it has no price.' }));
+          : 'This answer did not report token use, so it has no price.' })));
       return;
     }
     const rows = cost.parts || [];
@@ -741,8 +755,7 @@ function main() {
     const total = cost.priced && cost.usd != null
       ? h('p', { class: 'cost-total' }, 'This question ', h('b', { text: usdText(cost.usd) }))
       : h('p', { class: 'cost-total', text: 'This model has no list price here.' });
-    clear(box,
-      h('h3', { id: 'bench-cost-title', text: 'Cost' }),
+    clear(box, fold('bench-cost-title', 'Cost',
       total,
       cost.note ? h('p', { class: 'small muted', text: str(cost.note) }) : null,
       cost.omitted ? h('p', { class: 'small muted', text: str(cost.omitted) }) : null,
@@ -754,15 +767,17 @@ function main() {
           h('td', { class: 'num-cell', text: p.usd == null ? 'not priced' : usdText(p.usd) }))))) : null,
       calls.length ? [h('h4', { text: 'By model call' }),
         h('ul', { class: 'cost-calls' }, calls.map((c) => h('li', null,
-          h('span', { text: str(c.title) }), h('span', { class: 'num-cell', text: usdText(c.usd) }))))] : null);
+          h('span', { text: str(c.title) }), h('span', { class: 'num-cell', text: usdText(c.usd) }))))] : null));
   }
   function renderBench() {
     const t = S.selected;
     const stepsBox = $('#bench-steps'), termsBox = $('#bench-terms');
     if (!t) {
-      clear(stepsBox, h('h3', { id: 'bench-steps-title', text: 'Steps' }),
-        h('p', { class: 'small muted', text: 'Ask a question to see what the agent does: each search, each read and each check, as it happens.' }));
-      termsBox.hidden = true;
+      clear(stepsBox, fold('bench-steps-title', 'Steps',
+        h('p', { class: 'small muted', text: 'Ask a question to see what the agent does: each search, each read and each check, as it happens.' })));
+      termsBox.hidden = false;
+      clear(termsBox, fold('bench-terms-title', 'Ontology used',
+        h('p', { class: 'small muted', text: 'The terms a question uses appear here.' })));
       renderCost(null);
       return renderSession();
     }
@@ -773,39 +788,42 @@ function main() {
       ? h('p', { class: 'bench-status' }, h('span', { class: 'spinner', 'aria-hidden': 'true' }), ` Working for ${took} s: ${plural(tools, 'tool call')} so far`)
       : h('p', { class: 'bench-status' }, t.status === 'failed' ? 'Stopped' : 'Done',
         `: ${plural(tools, 'tool call')}, ${plural(models, 'model call')}${t.result && t.result.ms ? `, ${secs(t.result.ms)}` : ''}`);
-    clear(stepsBox,
-      h('h3', { id: 'bench-steps-title', text: t.mode === 'gaps' ? 'Steps: what would it take' : 'Steps' }),
+    clear(stepsBox, fold('bench-steps-title', t.mode === 'gaps' ? 'Steps: what would it take' : 'Steps',
       h('p', { class: 'bench-q', text: t.question }),
       statusLine,
       t.steps.length ? h('ol', { class: 'steps' }, t.steps.map(stepItem))
         : h('p', { class: 'small muted', text: running ? 'Waiting for the first step.' : 'This answer reported no steps.' }),
-      t.steps.length ? stepSummary(t) : null);
+      t.steps.length ? stepSummary(t) : null));
     renderCost(t);
     const hits = t.hits || {};
     const groups = Object.keys(KIND_LABEL).filter((k) => Object.keys(hits[k] || {}).length);
-    termsBox.hidden = !groups.length;
-    if (groups.length) {
-      clear(termsBox, h('h3', { id: 'bench-terms-title', text: t.mode === 'gaps' ? 'Ontology the analyst looked at' : 'Ontology used' }),
-        h('p', { class: 'small muted', text: 'Asked for: the agent searched by it. Read: it came back in what the agent read. Cited: a fact of it is in a passage the answer cites. Select one to see it in the ontology.' }),
-        groups.map((k) => [h('h4', { text: KIND_LABEL[k] }),
-          h('p', { class: 'terms' }, Object.entries(hits[k]).map(([name, levels]) => termChip(k, name, levels)))]));
-    }
+    termsBox.hidden = false;
+    clear(termsBox, fold('bench-terms-title', t.mode === 'gaps' ? 'Ontology the analyst looked at' : 'Ontology used',
+      groups.length
+        ? [h('p', { class: 'small muted', text: 'Asked for: the agent searched by it. Read: it came back in what the agent read. Cited: a fact of it is in a passage the answer cites. Select one to see it in the ontology.' }),
+          groups.map((k) => [h('h4', { text: KIND_LABEL[k] }),
+            h('p', { class: 'terms' }, Object.entries(hits[k]).map(([name, levels]) => termChip(k, name, levels)))])]
+        : h('p', { class: 'small muted', text: 'The terms a question uses appear here.' })));
     renderSession();
   }
   function renderSession() {
     const u = window.KS.sessionUsage(S.id), box = $('#bench-session');
-    box.hidden = !u.questions;
-    if (!u.questions) return;
+    box.hidden = false;
+    if (!u.questions) {
+      clear(box, fold('bench-session-title', 'This session',
+        h('p', { class: 'small muted', text: 'No questions in this session yet.' })));
+      return;
+    }
     const rows = Object.keys(KIND_LABEL).flatMap((k) => Object.entries(u[k] || {}).map(([name, c]) => ({ k, name, c, n: Math.max(c.queried, c.read, c.cited) })))
       .sort((a, b) => b.c.cited - a.c.cited || b.n - a.n || a.name.localeCompare(b.name)).slice(0, 10);
     const q = new URLSearchParams({ overlay: 'session' });
     if (S.collections.length > 1) q.set('c', S.id);
-    clear(box, h('h3', { id: 'bench-session-title', text: 'This session' }),
+    clear(box, fold('bench-session-title', 'This session',
       h('p', { class: 'small muted', text: `${plural(u.questions, 'question')} answered. The terms they used most:` }),
       h('table', { class: 'kv small' }, h('thead', null, h('tr', null, ['Term', 'Read', 'Cited'].map((x) => h('th', { scope: 'col', text: x })))),
         h('tbody', null, rows.map((r) => h('tr', null, h('td', null, h('a', { href: ontologyLink(r.k, r.name), text: r.name })),
           h('td', { class: 'num-cell', text: String(r.c.read) }), h('td', { class: 'num-cell', text: String(r.c.cited) }))))),
-      h('p', null, h('a', { href: `ontology.html?${q}` }, 'Show this session on the ontology')));
+      h('p', null, h('a', { href: `ontology.html?${q}` }, 'Show this session on the ontology'))));
   }
   function selectTurn(turn) {
     for (const t of S.turns) t.el.classList.toggle('selected', t === turn);

@@ -270,8 +270,21 @@ mark { background: var(--mark); color: var(--mark-text); border-radius: 2px; pad
   background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 18px;
 }
 .bench-head h2 { margin: 0; font-size: 1rem; font-weight: 600; }
-.bench-body { padding: 4px 18px 24px; }
+.bench-body { padding: 0 18px 24px; }
+.bench-fold { border-bottom: 1px solid var(--border); }
+.bench-fold > summary {
+  display: flex; align-items: center; gap: 8px; cursor: pointer; list-style: none; padding: 12px 0;
+}
+.bench-fold > summary::-webkit-details-marker { display: none; }
+.bench-fold > summary::marker { content: ""; }
+.bench-fold > summary::before {
+  content: ""; flex: none; width: 0.4em; height: 0.4em; margin-top: -0.15em;
+  border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(-45deg);
+}
+.bench-fold[open] > summary::before { transform: rotate(45deg); margin-top: 0.1em; }
+.bench-fold-body { padding: 0 0 12px 1.15em; }
 .bench h3 { margin: 18px 0 6px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.bench-fold > summary h3 { margin: 0; }
 .bench h4 { margin: 12px 0 4px; font-size: 0.85rem; font-weight: 600; }
 .bench p { margin: 6px 0; }
 .bench-q { font-weight: 600; }
