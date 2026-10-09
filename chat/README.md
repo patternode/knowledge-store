@@ -1,7 +1,8 @@
 # Chat page
 
 A minimal page for asking questions of a collection. Every answer is built from the documents
-in that collection, and every statement links to the passage it came from. A second page,
+in that collection, and every statement links to the passage it came from. The passages open in a
+panel to the right of the conversation, one at a time, and that panel can be hidden. A second page,
 `ontology.html`, shows the collection's active ontology as a graph, with its statistics.
 
 Plain HTML, CSS and JavaScript: no framework, no build step, no external scripts or fonts. The
@@ -17,10 +18,15 @@ ontology page's one library, D3, is served from this folder (`vendor/`).
   and goes back there.
 - `app.js`: the collection picker, asking and polling, and rendering answers and sources. No
   server text reaches `innerHTML`; the DOM is built from nodes and `textContent`. A `?ask=`
-  parameter fills the question box without sending it. The workbench beside the chat shows the
-  selected question's steps as they happen, the ontology terms its answer used and this session's
-  totals; "What would it take?" asks the analyst and renders its report
-  ([docs/workbench.md](../docs/workbench.md)). Below 1100 pixels the workbench is a drawer.
+  parameter fills the question box without sending it. The page opens as the chat alone.
+  Demonstrate, in the header, shows the sample questions and the workbench; User view hides them
+  again. The workbench shows the selected question's steps as they happen, the ontology terms its
+  answer used and this session's totals; a step's input says whether the call was a knowledge
+  graph query, a vector query or a keyword passage search. A citation opens that source in the
+  panel beside the conversation; choosing it again hides the panel. Below 1100 pixels the sources
+  panel is a drawer. "What would it take?" asks the analyst
+  and renders its report ([docs/workbench.md](../docs/workbench.md)). Below 1280 pixels the
+  workbench is a drawer.
 - `ontology.html`, `ontology.js`, `ontology.css`: the ontology page. Classes are spheres
   coloured by their root class, with a pill counting their entities and an arc showing how
   populated each is against the largest; subclass links,
@@ -76,7 +82,7 @@ For local development, add a `config.local.json` such as
 All routes are on the same origin under `/api`, and every route but `/collections` takes
 `?c=<collection id>`.
 
-- `GET /api/collections`: the collections to pick from, whether the person has private access, and each collection's `example_questions` (`{text, level}`, level `low`, `medium` or `high`). The chat shows them to the left of the conversation. Choosing one fills the question box and does not send it. A question in the profile may start with `[low]`, `[medium]` or `[high]`. Without any, the page shows three general questions.
+- `GET /api/collections`: the collections to pick from, whether the person has private access, and each collection's `example_questions` (`{text, level}`, level `low`, `medium` or `high`). Demonstrate shows them to the left of the conversation. Choosing one fills the question box and does not send it. A question in the profile may start with `[low]`, `[medium]` or `[high]`. Without any, the page shows three general questions.
 - `POST /api/chat?c=<id>` with `{"question", "history", "mode", "about"}`: starts an answer and
   returns its `id`. `history` holds the last 6 completed turns as `{"q", "a"}`. `mode` is `ask` or
   `gaps` (what would it take). 429 when the daily quota is spent.

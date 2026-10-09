@@ -38,6 +38,19 @@ def test_steps_and_terms_from_real_tool_results(mixed):
     assert rec.hits()["relations"][rel["p"]] == ["read", "cited"]
 
 
+def test_a_step_says_whether_the_query_was_the_graph_or_the_vectors():
+    rec = workbench.Recorder()
+    graph = rec.tool("search_entities", {"query": "Alpha", "type": "Mission"}, {"items": [], "total": 0})
+    vector = rec.tool("search_passages", {"query": "gravity assist"},
+                      {"passages": [{"title": "Voyager"}], "method": "vector"})
+    keyword = rec.tool("search_passages", {"query": "gravity assist"}, {"passages": []})
+    read = rec.tool("read_passages", {"ids": ["p1"]}, {"passages": [{"id": "p1"}]})
+    assert graph["source"] == "graph" and "source" not in graph["input"]
+    assert vector["source"] == "vector" and vector["title"].startswith("Vector search of passages")
+    assert keyword["source"] == "keyword" and keyword["title"].startswith("Keyword search of passages")
+    assert "source" not in read
+
+
 def test_a_failing_tool_is_a_step_and_touches_nothing():
     rec = workbench.Recorder()
     s = rec.tool("get_entity", {"id": "nope"}, {"error": "no entity 'nope'"})

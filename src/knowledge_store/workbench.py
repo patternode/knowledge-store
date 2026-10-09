@@ -42,6 +42,20 @@ VERDICTS = ("answerable", "data_missing", "ontology_missing", "extraction_missed
 GRAPH_TOOLS = {"search_entities", "list_entities", "get_entity", "neighbourhood", "find_paths"}
 
 
+def query_source(name: str, out: dict) -> str | None:
+    """Where a tool call looked: the knowledge graph, the vector index, or keyword text.
+
+    search_passages is a vector query only when the tool says so (method "vector", the
+    Knowledge Base). The portal's own loop searches stored passage text and leaves method
+    unset, which is a keyword search, not a vector one.
+    """
+    if name in GRAPH_TOOLS:
+        return "graph"
+    if name == "search_passages":
+        return "vector" if (out or {}).get("method") == "vector" else "keyword"
+    return None
+
+
 def bare(name: str) -> str:
     """A Gateway tool name (<target>___<tool>) without its target."""
     return str(name or "").split("___", 1)[-1]
@@ -122,6 +136,7 @@ class Recorder:
         touched = self._touch(name, args, out)
         title, detail, count = describe(name, args, out)
         return self.step("tool", title, detail, tool=name, input={k: v for k, v in args.items() if k != "collection"},
+                         source=query_source(name, out),
                          count=count, error=_short(out.get("error"), 200) if out.get("error") else None,
                          terms={k: sorted(v) for k, v in touched.items() if v}, took_ms=ms)
 
@@ -222,7 +237,8 @@ def describe(name: str, args: dict, out: dict) -> tuple[str, str | None, int | N
     if name == "search_passages":
         ps = out.get("passages") or []
         titles = ", ".join(dict.fromkeys(_short(p.get("title") or p.get("doc"), 40) for p in ps[:6]))
-        return f"Searched passages for “{_short(args.get('query'), 60)}”: {len(ps)} found", titles or None, len(ps)
+        kind = "Vector search" if out.get("method") == "vector" else "Keyword search"
+        return f"{kind} of passages for “{_short(args.get('query'), 60)}”: {len(ps)} found", titles or None, len(ps)
     if name == "read_passages":
         ps = out.get("passages") or []
         return f"Read {len(ps)} passage{'s' if len(ps) != 1 else ''}", None, len(ps)
