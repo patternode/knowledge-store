@@ -96,9 +96,24 @@ class Recorder:
                 pass
         return s
 
-    def model_call(self) -> None:
+    def model_call(self) -> dict:
         self.model_calls += 1
-        self.step("model", "Thinking" if self.model_calls == 1 else f"Thinking (model call {self.model_calls})")
+        return self.step("model", "Thinking" if self.model_calls == 1 else f"Thinking (model call {self.model_calls})")
+
+    def price_model(self, usage: dict | None, model_id: str | None, provider: str = "bedrock") -> None:
+        """Attach one model call's tokens and list price to the latest model step that has none.
+        An empty usage is left off: the call did not report tokens, which is not the same as zero."""
+        if not isinstance(usage, dict) or not usage:
+            return
+        from . import ledger
+        kept = {k: int(usage.get(k) or 0) for k in USAGE_KEYS}
+        priced = ledger.cost_parts(model_id or "", kept, provider=provider) if model_id else None
+        for s in reversed(self.steps):
+            if s.get("kind") == "model" and "usage" not in s:
+                s["usage"] = kept
+                if priced:
+                    s["usd"] = priced["usd"]
+                return
 
     def tool(self, name: str, args: dict | None, out, ms: int | None = None) -> dict:
         name, args, out = bare(name), dict(args or {}), _parse(out)
@@ -212,6 +227,63 @@ def describe(name: str, args: dict, out: dict) -> tuple[str, str | None, int | N
         ps = out.get("passages") or []
         return f"Read {len(ps)} passage{'s' if len(ps) != 1 else ''}", None, len(ps)
     return f"Called {name}", None, None
+
+
+# --- what a question cost ----------------------------------------------------------------------
+
+USAGE_KEYS = ("inputTokens", "outputTokens", "cacheWriteInputTokens", "cacheReadInputTokens")
+
+
+def _sum_usage(rows: list[dict]) -> dict:
+    total = dict.fromkeys(USAGE_KEYS, 0)
+    for row in rows:
+        for k in USAGE_KEYS:
+            total[k] += int(row.get(k) or 0)
+    return total
+
+
+def query_cost(steps, *, model_id: str | None, usage: dict | None = None, provider: str = "bedrock") -> dict | None:
+    """The list price of one question, split by token kind and by model call.
+
+    Per-call usage on the model steps wins. Otherwise `usage` is the question's total (the agent's
+    accumulated usage, when the hooks did not see each call). None when nothing reported tokens.
+    Tool lookups are not in the price. A guardrail check is named when one ran, because it is not
+    priced here either.
+    """
+    from . import ledger
+    calls = []
+    reported = []
+    for s in steps or []:
+        if s.get("kind") != "model":
+            continue
+        u = s.get("usage") if isinstance(s.get("usage"), dict) else None
+        if u:
+            reported.append(u)
+        calls.append({"n": s.get("n"), "title": s.get("title"),
+                      "usd": s.get("usd"), "tokens": sum(int(u.get(k) or 0) for k in USAGE_KEYS) if u else None})
+    if reported:
+        total = _sum_usage(reported)
+    elif isinstance(usage, dict) and usage:
+        total = _sum_usage([usage])
+    else:
+        return None
+    priced = ledger.cost_parts(model_id or "", total, provider=provider) if model_id else None
+    if priced:
+        parts = priced["parts"]
+        usd = priced["usd"]
+    else:
+        parts = [{"key": key, "label": label, "tokens": total[field], "usd": None}
+                 for key, label, field, _ in ledger._PARTS]
+        usd = None
+    note = ("List price for the tokens in this question's model calls. "
+            "Searches and passage reads are not charged. Credits, discounts and tax are not included.")
+    if priced and priced.get("regional"):
+        note += " Bedrock regional inference adds 10%."
+    out = {"model_id": model_id or None, "priced": priced is not None, "usd": usd, "parts": parts,
+           "calls": calls, "note": note}
+    if any(s.get("kind") == "guardrail" for s in steps or []):
+        out["omitted"] = "The guardrail check is not in this price."
+    return out
 
 
 # --- usage totals ------------------------------------------------------------------------------

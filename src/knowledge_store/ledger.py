@@ -86,20 +86,45 @@ def price_key(model_id: str) -> str:
     return _DATE.sub("", model_name(model_id or ""))
 
 
-def cost_usd(model_id: str, usage: dict, *, tier: str = "standard", provider: str = "anthropic") -> float | None:
-    """List-price cost of one call's usage (Converse field names), or None for a model
-    with no price here."""
+# (key, label, Converse usage field, index into a PRICES row)
+_PARTS = (
+    ("input", "Input tokens", "inputTokens", 0),
+    ("output", "Output tokens", "outputTokens", 1),
+    ("cache_write", "Cache write", "cacheWriteInputTokens", 2),
+    ("cache_read", "Cache read", "cacheReadInputTokens", 3),
+)
+
+
+def _scale(model_id: str, tier: str, provider: str) -> float:
+    scale = 0.5 if tier == "batch" else 1.0
+    if provider == "bedrock" and _REGIONAL.match(model_id or ""):
+        scale *= 1.1
+    return scale
+
+
+def cost_parts(model_id: str, usage: dict, *, tier: str = "standard", provider: str = "anthropic") -> dict | None:
+    """List-price cost of one call, split by where the tokens were spent, or None for a model
+    with no price here. usage uses Converse field names. The total is the list price: credits,
+    discounts and tax are not included. A Bedrock regional inference profile adds 10%."""
     p = PRICES.get(price_key(model_id))
     if not p:
         return None
-    inp, out, cw, cr = p
-    usd = (usage.get("inputTokens", 0) * inp + usage.get("outputTokens", 0) * out
-           + usage.get("cacheWriteInputTokens", 0) * cw + usage.get("cacheReadInputTokens", 0) * cr) / 1e6
-    if tier == "batch":
-        usd *= 0.5
-    if provider == "bedrock" and _REGIONAL.match(model_id or ""):
-        usd *= 1.1
-    return round(usd, 6)
+    scale = _scale(model_id, tier, provider)
+    parts, total = [], 0.0
+    for key, label, field, i in _PARTS:
+        tokens = int((usage or {}).get(field) or 0)
+        usd = tokens * p[i] * scale / 1e6
+        total += usd
+        parts.append({"key": key, "label": label, "tokens": tokens, "usd": round(usd, 6)})
+    return {"usd": round(total, 6), "parts": parts, "model_id": model_id, "provider": provider,
+            "regional": bool(provider == "bedrock" and _REGIONAL.match(model_id or ""))}
+
+
+def cost_usd(model_id: str, usage: dict, *, tier: str = "standard", provider: str = "anthropic") -> float | None:
+    """List-price cost of one call's usage (Converse field names), or None for a model
+    with no price here."""
+    parts = cost_parts(model_id, usage, tier=tier, provider=provider)
+    return None if parts is None else parts["usd"]
 
 
 class _Buffer:

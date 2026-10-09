@@ -6,9 +6,13 @@
  *
  * Sign-in, the API client and the helpers are in common.js, which the ontology page shares.
  *
+ * Sample questions sit to the left of the chat, grouped low, medium and high, from the collection's
+ * profile (or three general ones when it has none). Choosing one fills the box and does not send it.
+ *
  * The workbench (the panel beside the chat) shows the selected question's steps while the agent
  * works: each search, read and check, polled from GET /api/chat while it runs, then the ontology
- * terms the answer used. A question has a mode: "ask" answers it; "gaps" asks the analyst what it
+ * terms the answer used, and what the question cost, split by token kind and by model call.
+ * A question has a mode: "ask" answers it; "gaps" asks the analyst what it
  * would take to answer it (ontology extensions, data, missed extraction), which a curator can keep
  * as an ontology request.
  */
@@ -89,11 +93,74 @@ function main() {
         onclick: (e) => { e.preventDefault(); flashCard(turn, n); } }, `[${n}]`)
       : h('span', { class: 'cite dead', title: 'This source is not listed' }, `[${n}]`)));
   }
-  function answerBody(turn, r) {
-    const sources = Array.isArray(r.sources) ? r.sources : [];
+  // The agent returns numbered sources. The portal tool loop returns citations and writes
+  // [p:<id>] in the answer. Both are shown the same way: the answer, then a card per source.
+  function groundedSources(r) {
+    const listed = (Array.isArray(r.sources) ? r.sources : []).slice().sort((a, b) => (a.n || 0) - (b.n || 0));
+    if (listed.length) return listed;
+    const cites = (Array.isArray(r.citations) ? r.citations : []).filter((c) => c && typeof c === 'object');
+    if (!cites.length) return [];
+    const byId = new Map(cites.map((c) => [c.id || c.passage_id, c]));
+    const order = [], seen = new Set();
+    const re = /\[p:([^\]\s]+)\]/g;
+    let m;
+    while ((m = re.exec(str(r.answer)))) if (!seen.has(m[1])) { seen.add(m[1]); order.push(m[1]); }
+    for (const id of byId.keys()) if (id && !seen.has(id)) { seen.add(id); order.push(id); }
+    return order.map((id, i) => {
+      const c = byId.get(id) || {};
+      return { n: i + 1, passage_id: id, doc: c.doc, title: c.title, name: c.name,
+        text: c.text || '', quotes: Array.isArray(c.quotes) ? c.quotes : [] };
+    });
+  }
+  function inlineParts(text, cite) {
+    const out = [], re = /\[p:([^\]\s]+)\]|\*\*([^*]+)\*\*|`([^`]+)`/g;
+    let last = 0, m;
+    while ((m = re.exec(text))) {
+      if (m.index > last) out.push(text.slice(last, m.index));
+      if (m[1]) out.push(cite(m[1]));
+      else if (m[2]) out.push(h('strong', { text: m[2] }));
+      else out.push(h('code', { text: m[3] }));
+      last = re.lastIndex;
+    }
+    if (last < text.length) out.push(text.slice(last));
+    return out;
+  }
+  function proseAnswer(turn, text, sources) {
+    const known = new Set(sources.map((s) => s.n));
+    const nOf = new Map(sources.filter((s) => s.passage_id).map((s) => [s.passage_id, s.n]));
+    const cite = (pid) => {
+      const n = nOf.get(pid);
+      return n != null ? citeLinks(turn, [n], known) : h('span', { class: 'cite dead', title: 'This source is not listed' }, `[${pid}]`);
+    };
+    const md = h('div', { class: 'answer-text md' });
+    const bullet = /^\s*(?:[-*•]|\d+[.)])\s+/;
+    let para = null, list = null;
+    for (const raw of String(text || '').split('\n')) {
+      const line = raw.trimEnd();
+      if (!line.trim()) { para = list = null; continue; }
+      if (/^\s*(?:[-*_]\s*){3,}$/.test(line)) { para = list = null; md.append(h('hr')); continue; }
+      if (/^#{1,6}\s/.test(line)) {
+        para = list = null;
+        md.append(h('h4', null, inlineParts(line.replace(/^#+\s*/, ''), cite)));
+        continue;
+      }
+      if (bullet.test(line)) {
+        const tag = /^\s*\d/.test(line) ? 'ol' : 'ul';
+        if (!list || list.tagName !== tag.toUpperCase()) { para = null; list = h(tag); md.append(list); }
+        list.append(h('li', null, inlineParts(line.replace(bullet, ''), cite)));
+        continue;
+      }
+      list = null;
+      if (!para) { para = h('p'); md.append(para); } else para.append(h('br'));
+      para.append(...inlineParts(line, cite).flat());
+    }
+    if (!md.childNodes.length) md.append(h('p', { text: str(text) }));
+    return md;
+  }
+  function answerBody(turn, r, sources) {
     const known = new Set(sources.map((s) => s.n));
     const claims = Array.isArray(r.claims) ? r.claims.filter((c) => c && str(c.text).trim()) : [];
-    if (!claims.length) return h('p', { class: 'answer-text', text: str(r.answer) });
+    if (!claims.length) return proseAnswer(turn, str(r.answer), sources);
     return h('p', { class: 'answer-text' }, claims.map((c, i) => [i ? ' ' : null,
       h('span', { class: 'claim' }, str(c.text).trim(), citeLinks(turn, (c.sources || []).filter((x) => x != null), known))]));
   }
@@ -128,16 +195,16 @@ function main() {
   }
   function renderDone(turn, r) {
     const claims = Array.isArray(r.claims) ? r.claims : [];
-    const sources = (Array.isArray(r.sources) ? r.sources : []).slice().sort((a, b) => a.n - b.n);
+    const sources = groundedSources(r);
     const out = [];
     if (r.blocked) {
       out.push(h('div', { class: 'refusal' }, h('p', { class: 'label', text: 'This question cannot be answered here' }), h('p', { text: str(r.answer) })));
     } else if (r.abstained) {
       const gaps = (r.gaps || []).map(str).filter((g) => g.trim());
-      out.push(h('div', { class: 'abstain' }, answerBody(turn, r),
+      out.push(h('div', { class: 'abstain' }, answerBody(turn, r, sources),
         gaps.length ? [h('p', { class: 'label', text: 'What the sources don\'t cover' }), h('ul', null, gaps.map((g) => h('li', { text: g })))] : null));
     } else {
-      out.push(answerBody(turn, r));
+      out.push(answerBody(turn, r, sources));
     }
     if (sources.length) {
       out.push(h('h3', { class: 'sources-title', text: sources.length === 1 ? 'Source' : 'Sources' }),
@@ -347,14 +414,56 @@ function main() {
     const terms = Object.entries(s.terms || {}).flatMap(([k, names]) => (names || []).map((n) => h('span', { class: 'term-mini', title: KIND_LABEL[k] || k, text: n })));
     const input = s.input && Object.keys(s.input).length
       ? h('details', { class: 'step-input' }, h('summary', { text: 'Input' }), h('pre', { text: JSON.stringify(s.input, null, 1) })) : null;
+    const spend = s.kind === 'model' && s.usd != null ? `${usdText(s.usd)} · ` : '';
     return h('li', { class: `step ${str(s.kind)}${s.error ? ' error' : ''}` },
       h('span', { class: 'step-dot', 'aria-hidden': 'true' }),
       h('div', { class: 'step-body' },
-        h('p', { class: 'step-title' }, h('span', { text: str(s.title) }), h('span', { class: 'step-time', text: secs(s.ms) })),
+        h('p', { class: 'step-title' }, h('span', { text: str(s.title) }),
+          h('span', { class: 'step-time', title: s.usd != null ? 'List price of this model call' : '', text: spend + secs(s.ms) })),
         s.detail ? h('p', { class: 'step-detail', text: str(s.detail) }) : null,
         s.error ? h('p', { class: 'step-detail error', text: str(s.error) }) : null,
         terms.length ? h('p', { class: 'step-terms' }, terms) : null,
         input));
+  }
+  // List price. Under a cent, four places, so a split of small calls does not all read as the same amount.
+  function usdText(n) {
+    const x = Number(n);
+    if (!Number.isFinite(x)) return '';
+    if (x === 0) return '$0.00';
+    return '$' + (Math.abs(x) < 0.01 ? x.toFixed(4) : x.toFixed(2));
+  }
+  function renderCost(t) {
+    const box = $('#bench-cost');
+    const running = t && (t.status === 'pending' || t.status === 'running');
+    const cost = t && t.result && t.result.cost;
+    if (!t) { box.hidden = true; return; }
+    box.hidden = false;
+    if (!cost) {
+      clear(box, h('h3', { id: 'bench-cost-title', text: 'Cost' }),
+        h('p', { class: 'small muted', text: running
+          ? 'The price appears when the question finishes.'
+          : 'This answer did not report token use, so it has no price.' }));
+      return;
+    }
+    const rows = cost.parts || [];
+    const calls = (cost.calls || []).filter((c) => c && c.usd != null);
+    const total = cost.priced && cost.usd != null
+      ? h('p', { class: 'cost-total' }, 'This question ', h('b', { text: usdText(cost.usd) }))
+      : h('p', { class: 'cost-total', text: 'This model has no list price here.' });
+    clear(box,
+      h('h3', { id: 'bench-cost-title', text: 'Cost' }),
+      total,
+      cost.note ? h('p', { class: 'small muted', text: str(cost.note) }) : null,
+      cost.omitted ? h('p', { class: 'small muted', text: str(cost.omitted) }) : null,
+      rows.length ? h('table', { class: 'kv small' },
+        h('thead', null, h('tr', null, ['Where', 'Tokens', 'Price'].map((x) => h('th', { scope: 'col', text: x })))),
+        h('tbody', null, rows.map((p) => h('tr', null,
+          h('td', { text: str(p.label) }),
+          h('td', { class: 'num-cell', text: Number(p.tokens || 0).toLocaleString() }),
+          h('td', { class: 'num-cell', text: p.usd == null ? 'not priced' : usdText(p.usd) }))))) : null,
+      calls.length ? [h('h4', { text: 'By model call' }),
+        h('ul', { class: 'cost-calls' }, calls.map((c) => h('li', null,
+          h('span', { text: str(c.title) }), h('span', { class: 'num-cell', text: usdText(c.usd) }))))] : null);
   }
   function renderBench() {
     const t = S.selected;
@@ -363,6 +472,7 @@ function main() {
       clear(stepsBox, h('h3', { id: 'bench-steps-title', text: 'Steps' }),
         h('p', { class: 'small muted', text: 'Ask a question to see what the agent does: each search, each read and each check, as it happens.' }));
       termsBox.hidden = true;
+      renderCost(null);
       return renderSession();
     }
     const running = t.status === 'pending' || t.status === 'running';
@@ -378,6 +488,7 @@ function main() {
       statusLine,
       t.steps.length ? h('ol', { class: 'steps' }, t.steps.map(stepItem))
         : h('p', { class: 'small muted', text: running ? 'Waiting for the first step.' : 'This answer reported no steps.' }));
+    renderCost(t);
     const hits = t.hits || {};
     const groups = Object.keys(KIND_LABEL).filter((k) => Object.keys(hits[k] || {}).length);
     termsBox.hidden = !groups.length;
@@ -409,7 +520,7 @@ function main() {
     S.selected = turn;
     renderBench();
   }
-  const wide = () => matchMedia('(min-width: 1100px)').matches;
+  const wide = () => matchMedia('(min-width: 1280px)').matches;
   function setBench(open, remember) {
     $('#bench').hidden = !open;
     $('#workspace').classList.toggle('bench-off', !open);
@@ -430,6 +541,52 @@ function main() {
     intro.textContent = c.description ? str(c.description) : 'Ask a question about the documents in this collection.';
     intro.hidden = S.turns.length > 0;
     document.title = `${str(c.name || c.id)} · ${window.KS.brandName()}`;
+    renderSamples();
+  }
+  // Same idea as the earnings lab's suggested questions: a click fills the box and does not spend
+  // a question. Levels come from the collection profile. Without any, three general questions stand in.
+  const SAMPLE_LEVELS = [
+    { id: 'low', label: 'Low', hint: 'One lookup' },
+    { id: 'medium', label: 'Medium', hint: 'A few facts, connected' },
+    { id: 'high', label: 'High', hint: 'A comparison, or a why' },
+  ];
+  const SAMPLE_FALLBACK = [
+    { level: 'low', text: 'What are the main subjects in this collection?' },
+    { level: 'medium', text: 'Which subjects appear in more than one document, and what connects them?' },
+    { level: 'high', text: 'Compare the two subjects the documents connect most closely, and say how the passages support that.' },
+  ];
+  function sampleItems(c) {
+    const raw = Array.isArray(c.example_questions) ? c.example_questions : [];
+    const items = raw.map((x) => (typeof x === 'string' ? { text: x, level: 'medium' } : { text: str(x && x.text), level: str(x && x.level) || 'medium' }))
+      .filter((x) => x.text);
+    return items.length ? items : SAMPLE_FALLBACK;
+  }
+  function useSample(text) {
+    setMode('ask');
+    const ta = $('#question');
+    ta.value = text.slice(0, 2000);
+    ta.focus();
+  }
+  function renderSamples() {
+    const c = current();
+    const fromProfile = Array.isArray(c.example_questions) && c.example_questions.length > 0;
+    const items = sampleItems(c);
+    $('#samples').hidden = false;
+    $('#samples-note').textContent = fromProfile
+      ? 'From this collection. Choosing one fills the question box. It is not sent until you press Send.'
+      : 'Examples for any collection. Choosing one fills the question box. It is not sent until you press Send.';
+    clear($('#samples-list'), SAMPLE_LEVELS.map((lv) => {
+      const qs = items.filter((x) => x.level === lv.id);
+      if (!qs.length) return null;
+      return h('section', { class: 'sample-group' },
+        h('h3', { text: lv.label }),
+        h('p', { class: 'sample-hint', text: lv.hint }),
+        qs.map((q) => {
+          const b = h('button', { class: `sample ${lv.id}`, type: 'button' }, q.text);
+          b.addEventListener('click', () => useSample(q.text));
+          return b;
+        }));
+    }));
   }
   function switchCollection(id) {
     if (S.busy || id === S.id) return;

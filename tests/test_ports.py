@@ -98,6 +98,10 @@ def test_providers_share_the_messages_path(monkeypatch):
 def test_dated_model_ids():
     assert llm.rejects_sampling("claude-sonnet-5@20260101")
     assert ledger.price_key("claude-sonnet-4-5@20250929") == "claude-sonnet-4-5"
+    u = {"inputTokens": 1_000_000, "outputTokens": 0, "cacheWriteInputTokens": 0, "cacheReadInputTokens": 0}
+    assert ledger.cost_usd("us.anthropic.claude-sonnet-4-5-20250929-v1:0", u, provider="bedrock") == pytest.approx(3.3)
+    parts = ledger.cost_parts("claude-sonnet-5", {"inputTokens": 0, "outputTokens": 1_000_000}, provider="anthropic")
+    assert parts["usd"] == 10 and parts["parts"][1]["label"] == "Output tokens"
     assert llm.model_name("us.anthropic.claude-sonnet-5") == "claude-sonnet-5"
 
 

@@ -1,6 +1,6 @@
 """The portal API Lambda.
 
-    GET  /api/collections            the collections, with name, description and pipeline stage
+    GET  /api/collections            the collections, with name, description, stage and sample questions
     GET  /api/status                 pipeline stage and counts (works before any ontology exists)
     GET  /api/summary                profile, versions, counts, top candidates
     GET  /api/ontology               the active ontology's terms, with counts
@@ -257,7 +257,7 @@ def handler(event, context):
                 p = load_profile(s)
                 st = _json(s, layout.STATUS, {"stage": "never_run"})
                 out.append({"id": c, "name": p.name, "description": p.description, "stage": st.get("stage"),
-                            "active_version": st.get("active_version")})
+                            "active_version": st.get("active_version"), "example_questions": p.sample_questions()})
             return reply(200, {"collections": out, "private": private})
         cid = qs.get("c") or cids[0]
         if cid not in cids:

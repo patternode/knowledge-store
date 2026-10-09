@@ -1,6 +1,6 @@
 # The workbench
 
-The chat page is two things. On the left it is a chat: ask, get an answer built from checked claims, with every statement linked to its passage. On the right it is a workbench for the people who look after the collection. There they can watch what the agent does, find out why a question went unanswered, and see which parts of the ontology the questions actually use.
+The chat page has three parts. On the left are sample questions, grouped low, medium and high, from the collection's profile. In the middle is the chat: ask, get an answer built from checked claims, with every statement linked to its passage. On the right is a workbench for the people who look after the collection. There they can watch what the agent does, find out why a question went unanswered, see what the question cost, and see which parts of the ontology the questions actually use.
 
 Everything here is in this repository and needs no settings. A deployment gets it by moving its module pin to a release that has it.
 
@@ -26,6 +26,15 @@ How the steps reach the page:
 
 The steps answer the question a long wait raises: is it stuck, searching for the wrong type, reading the wrong documents, or failing its citations? The step budget (`valves`) is visible too: a question that hits `max_tool_calls` shows it.
 
+## What the question cost
+
+A finished question shows its list price in the workbench, split two ways:
+
+- By token kind: input, output, cache write and cache read, with the token count beside the price.
+- By model call: each Thinking step carries that call's own price, and the cost section lists them again.
+
+The price is the list price in `ledger.py` (Bedrock regional inference includes the 10% premium). Searches and passage reads are not charged. A guardrail check is named when one ran, and is not in the price. Credits, discounts and tax are not included. A question that reported no token use says so, rather than showing zero.
+
 ## What would it take?
 
 A finished answer offers "What would it take to answer this?". It is the main offer when the agent could not answer, or answered with nothing checked. The same mode is in the question box ("What would it take?") for a question you expect to fail.
@@ -41,7 +50,7 @@ That mode runs an analyst rather than the chat agent. It has the same tools, the
 | Missing from the graph | Facts a passage states that extraction did not capture, with the passage id |
 | Questions it can answer now | Close questions the graph answers today. Selecting one puts it in the question box. |
 
-The analyst changes nothing. A curator (a person with private access) can keep the report as an ontology request. It is stored in the collection's lake under `ontology/requests/`, which is the one place the portal writes to the lake. Requests show in the ontology page's Requests tab.
+The analyst changes nothing. A curator (a person with private access) can keep the report as an ontology request. It is stored in the collection's lake under `ontology/requests/`, which is the one place the portal writes to the lake. Requests show in the ontology page's Requests tab. How a kept request becomes part of a later ontology version, and how the ontology was derived in the first place, is in [How an ontology is derived](../README.md#how-an-ontology-is-derived).
 
 Requests join the ontology lifecycle through the candidate register. `knowledge-store candidates` lists each requested term with `asked` (how many requests asked for it) beside `docs` (how many documents extraction found it in). `knowledge-store candidates --propose` considers a requested term even when no document has used it yet, because a person asked for it, and the draft still waits for a curator to publish it. Questions are untrusted input just as document text is, so nothing reaches the ontology without a person publishing it.
 
