@@ -109,7 +109,7 @@ def limit_hooks() -> tuple[dict, object, object]:
 
 def add_limits(agent, recorder: "workbench.Recorder | None" = None) -> dict:
     """The limits, and with a recorder, the hooks that report each model and tool call as a step."""
-    from strands.hooks import AfterToolCallEvent, BeforeModelCallEvent, BeforeToolCallEvent
+    from strands.hooks import AfterModelCallEvent, AfterToolCallEvent, BeforeModelCallEvent, BeforeToolCallEvent
     counts, before_tool, before_model = limit_hooks()
     agent.add_hook(before_tool, BeforeToolCallEvent)
     agent.add_hook(before_model, BeforeModelCallEvent)
@@ -117,15 +117,33 @@ def add_limits(agent, recorder: "workbench.Recorder | None" = None) -> dict:
         def model_step(event) -> None:
             recorder.model_call()
 
+        def model_priced(event) -> None:
+            msg = getattr(getattr(event, "stop_response", None), "message", None)
+            usage = (msg.get("metadata") or {}).get("usage") if isinstance(msg, dict) else None
+            recorder.price_model(usage if isinstance(usage, dict) else None, os.environ.get("AGENT_MODEL_ID"), "bedrock")
+
         def tool_step(event) -> None:
             tu = event.tool_use or {}
             took = round(1000 * event.duration) if getattr(event, "duration", None) else None
             recorder.tool(tu.get("name", ""), tu.get("input"), event.result, took)
 
         agent.add_hook(model_step, BeforeModelCallEvent)
+        agent.add_hook(model_priced, AfterModelCallEvent)
         agent.add_hook(tool_step, AfterToolCallEvent)
         recorder.live = True
     return counts
+
+
+def _accumulated(agent) -> dict | None:
+    metrics = getattr(getattr(agent, "event_loop_metrics", None), "accumulated_usage", None)
+    return dict(metrics) if metrics else None
+
+
+def _cost(rec: "workbench.Recorder", usage) -> dict | None:
+    """List price of the question. Per-call usage on the steps wins; accumulated usage covers a
+    run whose hooks did not see each call."""
+    return workbench.query_cost(rec.steps, model_id=os.environ.get("AGENT_MODEL_ID") or None,
+                                usage=usage if isinstance(usage, dict) else None, provider="bedrock")
 
 
 def bedrock_model(model_id: str | None = None):
@@ -155,7 +173,8 @@ def answer(question: str, collection: str, history: list[dict] | None, tools, *,
         blocked = guardrail.question(question)
         if blocked:
             rec.step("guardrail", "The guardrail declined the question")
-            return {**grounding.render([], {}, []), "answer": blocked, "blocked": True, "steps": rec.steps}
+            return {**grounding.render([], {}, []), "answer": blocked, "blocked": True, "steps": rec.steps,
+                    "cost": _cost(rec, None)}
     onto = tools.call("describe_ontology", {"collection": collection})
     rec.tool("describe_ontology", {"collection": collection}, onto)
     if "error" in onto:
@@ -197,9 +216,10 @@ def answer(question: str, collection: str, history: list[dict] | None, tools, *,
         rec.backfill(getattr(agent, "messages", []) or [])
         rec.step("error", "The agent stopped before answering", f"{type(e).__name__}: {str(e)[:200]}")
         out = grounding.render([], {}, [])
+        spent = _accumulated(agent)
         return {**out, "error": f"{type(e).__name__}: {str(e)[:300]}", "grounding": report,
-                "limits": counts, "ms": round(1000 * (time.monotonic() - started)),
-                "steps": rec.steps, "ontology_hits": rec.hits()}
+                "limits": counts, "usage": spent, "ms": round(1000 * (time.monotonic() - started)),
+                "steps": rec.steps, "ontology_hits": rec.hits(), "cost": _cost(rec, spent)}
     if not result.answerable:
         kept = []
     if guardrail and kept:
@@ -222,10 +242,11 @@ def answer(question: str, collection: str, history: list[dict] | None, tools, *,
     msgs = getattr(agent, "messages", []) or []
     trace = [{"tool": b["toolUse"]["name"], "input": b["toolUse"]["input"]}
              for m in msgs for b in m.get("content", []) if isinstance(b, dict) and "toolUse" in b]
-    metrics = getattr(getattr(agent, "event_loop_metrics", None), "accumulated_usage", None)
+    spent = _accumulated(agent)
     return {**out, "grounding": report, "ontology_version": onto["version"], "collection": collection,
-            "tool_calls": trace, "limits": counts, "usage": dict(metrics) if metrics else None,
-            "ms": round(1000 * (time.monotonic() - started)), "steps": rec.steps, "ontology_hits": rec.hits()}
+            "tool_calls": trace, "limits": counts, "usage": spent,
+            "ms": round(1000 * (time.monotonic() - started)), "steps": rec.steps, "ontology_hits": rec.hits(),
+            "cost": _cost(rec, spent)}
 
 
 def analyse(question: str, collection: str, tools, *, about: dict | None = None, model=None,
@@ -257,14 +278,17 @@ def analyse(question: str, collection: str, tools, *, about: dict | None = None,
         log.exception("analyst failed")
         rec.backfill(getattr(agent, "messages", []) or [])
         rec.step("error", "The analyst stopped before reporting", f"{type(e).__name__}: {str(e)[:200]}")
-        return {"error": f"{type(e).__name__}: {str(e)[:300]}", "steps": rec.steps, "limits": counts}
+        spent = _accumulated(agent)
+        return {"error": f"{type(e).__name__}: {str(e)[:300]}", "steps": rec.steps, "limits": counts,
+                "usage": spent, "cost": _cost(rec, spent)}
     report = workbench.clean_report(result.model_dump() if hasattr(result, "model_dump") else dict(result))
     o = report["ontology"]
     rec.step("done", f"Reported: {report['verdict'].replace('_', ' ')}",
              f"{len(o['classes'])} classes, {len(o['relations'])} relations, {len(o['attributes'])} attributes proposed")
+    spent = _accumulated(agent)
     return {"mode": "gaps", "report": report, "ontology_version": onto["version"], "collection": collection,
-            "limits": counts, "ms": round(1000 * (time.monotonic() - started)), "steps": rec.steps,
-            "ontology_hits": rec.hits()}
+            "limits": counts, "usage": spent, "ms": round(1000 * (time.monotonic() - started)), "steps": rec.steps,
+            "ontology_hits": rec.hits(), "cost": _cost(rec, spent)}
 
 
 def run(payload: dict, tools, *, guardrail=None, on_step=None) -> dict:

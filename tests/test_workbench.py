@@ -7,7 +7,7 @@ import json
 
 import pytest
 
-from knowledge_store import workbench
+from knowledge_store import layout, workbench
 from knowledge_store.ontology import candidates, versions
 from knowledge_store.portal_api import agent_client, chat, handler, index
 from knowledge_store.portal_api.state import MemoryState
@@ -165,6 +165,65 @@ class Scripted:
 
 def tool_use(name, args, i="t1"):
     return [{"toolUse": {"toolUseId": i, "name": name, "input": args}}]
+
+
+def test_sample_questions_keep_a_named_level_and_otherwise_spread():
+    from knowledge_store.config import profile_from_dict
+    named = profile_from_dict({"example_questions": [
+        "[low] Where does Moriarty appear?",
+        {"text": "Who did he let go, and why?", "level": "high"},
+        "Which clients came in disguise?",
+    ]})
+    assert named.example_questions[0] == "Where does Moriarty appear?"
+    assert [q["level"] for q in named.sample_questions()] == ["low", "high", "medium"]
+    assert "example_questions" in named.to_dict() and "question_levels" not in named.to_dict()
+    plain = profile_from_dict({"example_questions": ["one lookup", "a connection", "a comparison", "another connection"]})
+    assert [q["level"] for q in plain.sample_questions()] == ["low", "medium", "medium", "high"]
+
+
+def test_a_question_is_priced_by_token_kind_and_by_model_call(mixed):
+    _, lake = mixed
+    idx = index.load(lake, "m-cost")
+    usage = [
+        {"inputTokens": 1000, "outputTokens": 50, "cacheWriteInputTokens": 0, "cacheReadInputTokens": 0},
+        {"inputTokens": 200, "outputTokens": 40, "cacheWriteInputTokens": 0, "cacheReadInputTokens": 800},
+    ]
+
+    class Priced:
+        def __init__(self):
+            self.n = 0
+
+        def converse(self, **kw):
+            n, self.n = self.n, self.n + 1
+            content = tool_use("search_entities", {"query": "Alpha"}) if n == 0 else [{"text": "Nothing there."}]
+            return {"output": {"message": {"role": "assistant", "content": content}}, "usage": usage[n]}
+
+    out = chat.ask(idx, "Who launched Mission Alpha?", None, private=False, brt=Priced(),
+                   model_id="us.anthropic.claude-sonnet-4-5-20250929-v1:0")
+    calls = [s for s in out["steps"] if s["kind"] == "model"]
+    assert len(calls) == 2 and calls[0]["usd"] > 0 and calls[1]["usage"]["cacheReadInputTokens"] == 800
+    cost = out["cost"]
+    assert cost["priced"] and "10%" in cost["note"]
+    parts = {p["key"]: p for p in cost["parts"]}
+    assert parts["input"]["tokens"] == 1200 and parts["output"]["tokens"] == 90 and parts["cache_read"]["tokens"] == 800
+    assert parts["cache_write"]["usd"] == 0
+    assert sum(p["usd"] for p in cost["parts"]) == pytest.approx(cost["usd"], abs=1e-4)
+    assert sum(c["usd"] for c in cost["calls"]) == pytest.approx(cost["usd"], abs=1e-4)
+    # 1,200 input at $3, 90 output at $15, 800 cache read at $0.30, per million, then Bedrock's 10%.
+    assert cost["usd"] == pytest.approx((1200 * 3 + 90 * 15 + 800 * 0.30) / 1e6 * 1.1, abs=1e-6)
+
+
+def test_collections_include_the_sample_questions(portal):
+    root, lake, _ = portal
+    from knowledge_store.store import put_json
+    put_json(lake, layout.CONFIG_PROFILE, {"name": "Missions", "example_questions": [
+        "[low] Which missions returned samples?", "[high] Which also flew a gravity assist, and why?"]})
+    body = json.loads(handler.handler(event("GET", "/api/collections"), None)["body"])
+    samples = body["collections"][0]["example_questions"]
+    assert samples == [
+        {"text": "Which missions returned samples?", "level": "low"},
+        {"text": "Which also flew a gravity assist, and why?", "level": "high"},
+    ]
 
 
 def test_the_portal_loop_reports_steps_and_terms(mixed):

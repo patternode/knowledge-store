@@ -106,7 +106,7 @@ Copy this table, fill in the right-hand column, and keep it with the deployment'
 | Parameter | Default | Description |
 |---|---|---|
 | `collections` | `{ default = {} }` | The corpora, keyed by id (1 to 40 lower case letters, digits and hyphens). Each has its own ontology, and its uploads go to `landing/<id>/`. |
-| `collections.<id>.profile` | named after the id | `name`, `description`, `key_terms`, `example_questions`, `ontology_base`. It guides prompts and the portal; it is not the ontology. Set `ontology_base` to a namespace you control (the default is under `https://example.org/`). |
+| `collections.<id>.profile` | named after the id | `name`, `description`, `key_terms`, `example_questions`, `ontology_base`. It guides prompts and the portal; it is not the ontology. Set `ontology_base` to a namespace you control (the default is under `https://example.org/`). A sample question may start with `[low]`, `[medium]` or `[high]`, which the chat uses to group them and which is not part of the question. |
 | `collections.<id>.sources` | an `s3_landing` source on `landing/<id>/` | Where content comes from. Built-in types: `s3_landing` (with `options.bucket` to read another bucket, which the pipeline is then granted read access to), `local_dir` and `http_urls`. Each source has a `scope`: `public` or `private`. |
 | `collections.<id>.ontology_mode` | `curated` | `curated`: a person publishes each version. `auto`: the first discovered draft is published unreviewed. |
 | `collections.<id>.ontology_dir` | none | Bring your own ontology: a directory, relative to `infra/stack`, holding `ontology.ttl` (with `owl:versionInfo` set) and optionally `shapes.ttl`. Discovery never runs. |

@@ -13,10 +13,14 @@ separately and versioned (ontology/).
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 
 from . import layout
 from .store import Store
+
+LEVELS = ("low", "medium", "high")
+_MARK = re.compile(r"^\[(low|medium|high)\]\s*", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -34,6 +38,9 @@ class Profile:
     description: str = "A collection of documents, organised by an ontology discovered from them."
     key_terms: tuple[str, ...] = ()
     example_questions: tuple[str, ...] = ()
+    # Parallel to example_questions. "" means the profile did not name a level; sample_questions()
+    # then spreads the list across low, medium and high.
+    question_levels: tuple[str, ...] = ()
     ontology_base: str = "https://example.org/ontology/lab#"
     language: str = "en"
 
@@ -49,16 +56,78 @@ class Profile:
                 "example_questions": list(self.example_questions), "ontology_base": self.ontology_base,
                 "language": self.language}
 
+    def sample_questions(self) -> list[dict]:
+        """[{text, level}] for the chat's sample rail. A level the profile names is kept. When none
+        are named, the list is spread across low, medium and high in the order given."""
+        levels = self.question_levels + ("",) * len(self.example_questions)
+        return assign_levels(list(zip(self.example_questions, levels)))
+
 
 DEFAULT_SOURCES = (SourceConfig(name="uploads", type="s3_landing", options={"prefix": layout.LANDING + "/"}),)
 
 
+def parse_example_questions(raw) -> tuple[tuple[str, str], ...]:
+    """(text, level) from a profile list. A string may start with [low], [medium] or [high], which
+    sets the level and is not part of the question, so a deployer can label questions without
+    changing the Terraform type (a list of strings). An object is {"text", "level"}."""
+    out = []
+    for item in raw or []:
+        if isinstance(item, str):
+            text = item.strip()
+            mark = _MARK.match(text)
+            level = mark.group(1).lower() if mark else ""
+            if mark:
+                text = text[mark.end():].strip()
+        elif isinstance(item, dict):
+            text = str(item.get("text") or item.get("question") or "").strip()
+            level = str(item.get("level") or "").strip().lower()
+            level = level if level in LEVELS else ""
+        else:
+            continue
+        if text:
+            out.append((text, level))
+    return tuple(out)
+
+
+def assign_levels(pairs) -> list[dict]:
+    """[{text, level}]. Named levels stay. When none are named, the first third is low, the last
+    third is high and the middle is medium, with at least one of each once there are three."""
+    rows = [{"text": text, "level": level if level in LEVELS else ""} for text, level in pairs if text]
+    if not rows or any(r["level"] for r in rows):
+        for r in rows:
+            if not r["level"]:
+                r["level"] = "medium"
+        return rows
+    n = len(rows)
+    if n == 1:
+        rows[0]["level"] = "low"
+        return rows
+    if n == 2:
+        rows[0]["level"] = "low"
+        rows[1]["level"] = "high"
+        return rows
+    low_n = max(1, n // 3)
+    high_n = max(1, n // 3)
+    if low_n + high_n >= n:
+        low_n, high_n = 1, 1
+    for i, r in enumerate(rows):
+        if i < low_n:
+            r["level"] = "low"
+        elif i >= n - high_n:
+            r["level"] = "high"
+        else:
+            r["level"] = "medium"
+    return rows
+
+
 def profile_from_dict(d: dict) -> Profile:
+    questions = parse_example_questions(d.get("example_questions"))
     return Profile(
         name=d.get("name") or Profile.name,
         description=d.get("description") or Profile.description,
         key_terms=tuple(d.get("key_terms") or ()),
-        example_questions=tuple(d.get("example_questions") or ()),
+        example_questions=tuple(text for text, _ in questions),
+        question_levels=tuple(level for _, level in questions),
         ontology_base=d.get("ontology_base") or Profile.ontology_base,
         language=d.get("language") or "en",
     )

@@ -137,6 +137,27 @@ def client():
     return boto3.client("bedrock-runtime", config=Config(read_timeout=120, retries={"max_attempts": 3}))
 
 
+def spend_provider() -> str:
+    """Who to price the call as. Bedrock unless LLM_PROVIDER says anthropic. Unset stays Bedrock,
+    which is how the portal is deployed, and does not raise the way llm.provider() does."""
+    return "anthropic" if os.environ.get("LLM_PROVIDER", "").strip().lower() == "anthropic" else "bedrock"
+
+
+def _blank_usage() -> dict:
+    return dict.fromkeys(workbench.USAGE_KEYS, 0)
+
+
+def _add_usage(total: dict, usage: dict | None) -> None:
+    for k in total:
+        total[k] += int((usage or {}).get(k) or 0)
+
+
+def _priced(rec: workbench.Recorder, model_id: str, usage: dict, reported: bool) -> dict | None:
+    """The question's price. `reported` is whether any model call sent a usage object. A call that
+    omits usage is not priced as zero."""
+    return workbench.query_cost(rec.steps, model_id=model_id, usage=usage if reported else None, provider=spend_provider())
+
+
 def ask(idx: Index, question: str, history: list[dict] | None, *, private: bool, model_id: str | None = None,
         brt=None, on_step=None) -> dict:
     brt = brt or client()
@@ -150,14 +171,16 @@ def ask(idx: Index, question: str, history: list[dict] | None, *, private: bool,
             messages += [{"role": "user", "content": [{"text": turn["q"]}]},
                          {"role": "assistant", "content": [{"text": turn["a"]}]}]
     messages.append({"role": "user", "content": [{"text": question}]})
-    trace, usage = [], {"inputTokens": 0, "outputTokens": 0}
+    trace, usage, provider, reported = [], _blank_usage(), spend_provider(), False
     rec.step("tool", f"Read the ontology (version {idx.version})")
     for _ in range(MAX_STEPS):
         rec.model_call()
         resp = brt.converse(modelId=model_id, system=system, messages=messages, toolConfig=tool_config(),
                             inferenceConfig={"maxTokens": MAX_TOKENS})
-        for k in usage:
-            usage[k] += resp.get("usage", {}).get(k, 0)
+        call_usage = resp.get("usage") or {}
+        reported = reported or bool(call_usage)
+        _add_usage(usage, call_usage)
+        rec.price_model(call_usage, model_id, provider)
         msg = resp["output"]["message"]
         messages.append(msg)
         uses = [b["toolUse"] for b in msg["content"] if "toolUse" in b]
@@ -167,7 +190,7 @@ def ask(idx: Index, question: str, history: list[dict] | None, *, private: bool,
             rec.cite([c["id"] for c in cites])
             rec.step("done", f"Answered, citing {len(cites)} passage{'s' if len(cites) != 1 else ''}")
             return {"answer": answer, "citations": cites, "trace": trace, "usage": usage, "ontology_version": idx.version,
-                    "steps": rec.steps, "ontology_hits": rec.hits()}
+                    "steps": rec.steps, "ontology_hits": rec.hits(), "cost": _priced(rec, model_id, usage, reported)}
         results = []
         for tu in uses:
             out = run_tool(idx, tu["name"], tu.get("input") or {}, private)
@@ -178,7 +201,8 @@ def ask(idx: Index, question: str, history: list[dict] | None, *, private: bool,
         messages.append({"role": "user", "content": results})
     rec.step("error", "Ran out of steps before finding an answer")
     return {"answer": "I ran out of steps before finding an answer. Try a narrower question.",
-            "citations": [], "trace": trace, "usage": usage, "steps": rec.steps, "ontology_hits": rec.hits()}
+            "citations": [], "trace": trace, "usage": usage, "steps": rec.steps, "ontology_hits": rec.hits(),
+            "cost": _priced(rec, model_id, usage, reported)}
 
 
 REPORT_TOOL = {"toolSpec": {"name": "submit_report", "description": "Submit the report. Call it once, when you are done exploring.",
@@ -197,12 +221,17 @@ def analyse(idx: Index, question: str, about: dict | None, *, private: bool, mod
     messages = [{"role": "user", "content": [{"text": workbench.analyst_prompt(question, about)}]}]
     config = tool_config()
     config["tools"].append(REPORT_TOOL)
+    usage, provider, reported = _blank_usage(), spend_provider(), False
     rec.step("tool", f"Read the ontology (version {idx.version})")
     # No forced tool choice: the newest models refuse it. Near the step limit the analyst is told to report.
     for i in range(MAX_STEPS + 2):
         rec.model_call()
         resp = brt.converse(modelId=model_id, system=system, messages=messages, inferenceConfig={"maxTokens": 4000},
                             toolConfig=config)
+        call_usage = resp.get("usage") or {}
+        reported = reported or bool(call_usage)
+        _add_usage(usage, call_usage)
+        rec.price_model(call_usage, model_id, provider)
         msg = resp["output"]["message"]
         messages.append(msg)
         uses = [b["toolUse"] for b in msg["content"] if "toolUse" in b]
@@ -213,7 +242,7 @@ def analyse(idx: Index, question: str, about: dict | None, *, private: bool, mod
             rec.step("done", f"Reported: {report['verdict'].replace('_', ' ')}",
                      f"{len(o['classes'])} classes, {len(o['relations'])} relations, {len(o['attributes'])} attributes proposed")
             return {"mode": "gaps", "report": report, "ontology_version": idx.version, "steps": rec.steps,
-                    "ontology_hits": rec.hits()}
+                    "ontology_hits": rec.hits(), "usage": usage, "cost": _priced(rec, model_id, usage, reported)}
         if not uses:
             messages.append({"role": "user", "content": [{"text": "Submit the report with submit_report."}]})
             continue
@@ -227,7 +256,8 @@ def analyse(idx: Index, question: str, about: dict | None, *, private: bool, mod
             results.append({"text": "Stop exploring now and submit the report with submit_report."})
         messages.append({"role": "user", "content": results})
     rec.step("error", "The analyst did not submit a report")
-    return {"error": "The analyst did not submit a report. Try again, or ask a narrower question.", "steps": rec.steps}
+    return {"error": "The analyst did not submit a report. Try again, or ask a narrower question.", "steps": rec.steps,
+            "usage": usage, "cost": _priced(rec, model_id, usage, reported)}
 
 
 def cited(idx: Index, answer: str, private: bool) -> list[dict]:

@@ -1,6 +1,6 @@
 # The workbench
 
-The chat page is two things. On the left it is a chat: ask, get an answer built from checked claims, with every statement linked to its passage. On the right it is a workbench for the people who look after the collection. There they can watch what the agent does, find out why a question went unanswered, and see which parts of the ontology the questions actually use.
+The chat page has three parts. On the left are sample questions, grouped low, medium and high, from the collection's profile. In the middle is the chat: ask, get an answer built from checked claims, with every statement linked to its passage. On the right is a workbench for the people who look after the collection. There they can watch what the agent does, find out why a question went unanswered, see what the question cost, and see which parts of the ontology the questions actually use.
 
 Everything here is in this repository and needs no settings. A deployment gets it by moving its module pin to a release that has it.
 
@@ -25,6 +25,15 @@ How the steps reach the page:
 4. The workbench shows the selected question's steps live. Inline, the pending answer shows the latest step and the time so far.
 
 The steps answer the question a long wait raises: is it stuck, searching for the wrong type, reading the wrong documents, or failing its citations? The step budget (`valves`) is visible too: a question that hits `max_tool_calls` shows it.
+
+## What the question cost
+
+A finished question shows its list price in the workbench, split two ways:
+
+- By token kind: input, output, cache write and cache read, with the token count beside the price.
+- By model call: each Thinking step carries that call's own price, and the cost section lists them again.
+
+The price is the list price in `ledger.py` (Bedrock regional inference includes the 10% premium). Searches and passage reads are not charged. A guardrail check is named when one ran, and is not in the price. Credits, discounts and tax are not included. A question that reported no token use says so, rather than showing zero.
 
 ## What would it take?
 
