@@ -68,6 +68,8 @@ relations and attributes answer the question, then find them.
 Method:
 1. If the question is a filter or a total over a mapped table, call describe_structured, then lookup_rows or
    aggregate. Cite each cell as its cell id and value, and each figure as its metric id and figure.
+   For an ad hoc figure also give the type, attribute and filters you passed to aggregate; for one
+   group of a grouped figure, the group_by and the group, copied from the result.
 2. Otherwise find the entities the question is about with search_entities (give the type when you know it) or
    list_entities. Read them with get_entity; follow relations with neighbourhood or find_paths.
 3. Every fact in the graph lists the passages it was extracted from. Read those passages with read_passages
@@ -179,24 +181,49 @@ def _cells(tools, collection: str, ids: list[str]) -> dict[str, dict]:
 
 
 _AGG = {"count", "sum", "min", "max", "avg"}
+MAX_CHECKED_FIGURES = 20  # recomputations per answer; a figure past this is not checked, so not shown
 
 
-def _metrics(tools, collection: str, answer: grounding.GroundedAnswer) -> dict[str, dict]:
-    """Recompute every cited figure from the snapshot. The model's number is not the source."""
-    out = {}
+def _metrics(tools, collection: str, answer: grounding.GroundedAnswer, seen: dict | None = None) -> dict[str, dict]:
+    """Recompute every cited figure from the snapshot, each from what its own citation says: the
+    model's number is not the source. The result is kept under the citation's key (its id and,
+    for a grouped figure, the group). An ad hoc figure's id names what it was computed over, so a
+    citation whose type, attribute, filters or group_by differ from the id it cites is refused."""
+    out: dict[str, dict] = {}
+    seen = {} if seen is None else seen   # one recomputation per distinct request
     for cl in answer.claims:
         for c in cl.citations:
             if not c.metric_id.startswith("m:") or "/" not in c.metric_id:
                 continue
             name, snap = c.metric_id[2:].rsplit("/", 1)
-            if name in _AGG:
-                res = tools.call("aggregate", {"collection": collection, "op": name, "type": c.mapped_type,
-                                               "attribute": c.attribute, "snapshot": snap,
-                                               "filters": [f.model_dump() for f in c.filters]})
+            op = name.split(":", 1)[0]
+            adhoc = op in _AGG and ":" in name
+            if adhoc:
+                req = {"collection": collection, "op": op, "type": c.mapped_type, "attribute": c.attribute,
+                       "snapshot": snap, "group_by": c.group_by, "filters": [f.model_dump() for f in c.filters]}
+            elif op in _AGG:
+                out[grounding.metric_key(c)] = {"error": "an ad hoc figure's id must be the one the tool returned"}
+                continue
             else:
-                res = tools.call("aggregate", {"collection": collection, "metric": name, "snapshot": snap})
-            if res.get("id"):
-                out[res["id"]] = res
+                req = {"collection": collection, "metric": name, "snapshot": snap}
+            sig = json.dumps(req, sort_keys=True)
+            if sig not in seen:
+                if len(seen) >= MAX_CHECKED_FIGURES:
+                    out[grounding.metric_key(c)] = {"error": "too many figures to check in one answer"}
+                    continue
+                seen[sig] = tools.call("aggregate", req)
+            res = seen[sig]
+            if res.get("error"):
+                out[grounding.metric_key(c)] = {"error": str(res["error"])[:200]}
+            elif res.get("id") != c.metric_id:
+                out[grounding.metric_key(c)] = {"error": "the figure's type, attribute, filters or group_by "
+                                                         "do not match the id it cites"}
+            elif c.group_by or c.group:
+                hit = next((g for g in res.get("groups") or [] if str(g.get("group")) == c.group), None)
+                out[grounding.metric_key(c)] = ({**res, "figure": hit["figure"]} if hit else
+                                                {"error": f"no group {c.group!r} in that figure"})
+            else:
+                out[grounding.metric_key(c)] = res
     return out
 
 
@@ -238,7 +265,8 @@ def answer(question: str, collection: str, history: list[dict] | None, tools, *,
         rec.backfill(getattr(agent, "messages", []) or [])
         cited = grounding.cited_ids(result)
         cells = _cells(tools, collection, grounding.cited_cells(result))
-        metrics = _metrics(tools, collection, result)
+        checked: dict = {}
+        metrics = _metrics(tools, collection, result, checked)
         n = len(cited) + len(cells) + len(metrics)
         rec.step("check", f"Checking {n} citation{'s' if n != 1 else ''} against the claims",
                  f"{len(result.claims)} claim{'s' if len(result.claims) != 1 else ''} proposed")
@@ -252,7 +280,7 @@ def answer(question: str, collection: str, history: list[dict] | None, tools, *,
             again = agent(grounding.repair_prompt(failures)).structured_output
             passages.update(_read(tools, collection, [i for i in grounding.cited_ids(again) if i not in passages]))
             cells.update(_cells(tools, collection, [i for i in grounding.cited_cells(again) if i not in cells]))
-            metrics.update(_metrics(tools, collection, again))
+            metrics.update(_metrics(tools, collection, again, checked))
             kept2, failures2 = grounding.check(again, passages, cells, metrics)
             if len(kept2) >= len(kept):
                 result, kept, failures = again, kept2, failures2
@@ -273,21 +301,13 @@ def answer(question: str, collection: str, history: list[dict] | None, tools, *,
     if guardrail and kept:
         survivors = []
         for c in kept:
-            texts = []
-            for x in c.citations:
-                if x.passage_id and x.passage_id in passages:
-                    texts.append(passages[x.passage_id].get("text", ""))
-                elif x.cell_id and x.cell_id in cells:
-                    cell = cells[x.cell_id]
-                    texts.append(f"{cell.get('column')}: {cell.get('value')}")
-                elif x.metric_id and x.metric_id in metrics:
-                    texts.append(str(metrics[x.metric_id].get("figure")))
+            texts = [s for x in c.citations if (s := grounding.guardrail_source(x, passages, cells, metrics))]
             ok, score = guardrail.grounded(question, c.text, texts)
             (survivors if ok else report["guardrail_dropped"]).append(c if ok else {"text": c.text, "score": score})
         if len(survivors) < len(kept):
             rec.step("guardrail", f"The grounding guardrail removed {len(kept) - len(survivors)} claim(s)")
         kept = survivors
-    out = grounding.render(kept, passages, list(result.gaps), cells)
+    out = grounding.render(kept, passages, list(result.gaps), cells, metrics)
     rec.cite([x.passage_id for c in kept for x in c.citations])
     report.update(claims_proposed=len(result.claims), claims_shown=len(kept))
     if kept:

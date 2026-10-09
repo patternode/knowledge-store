@@ -21,7 +21,7 @@ from __future__ import annotations
 import re
 import unicodedata
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 MIN_QUOTE_CHARS = 12
 ABSTAIN = "I can't answer that from the sources in this collection."
@@ -31,6 +31,11 @@ class FilterRef(BaseModel):
     attribute: str = ""
     op: str = "eq"
     value: str = ""
+
+    @field_validator("value", mode="before")
+    @classmethod
+    def _text(cls, v):  # a model may send 500 rather than "500"
+        return "" if v is None else str(v)
 
 
 class Citation(BaseModel):
@@ -44,6 +49,18 @@ class Citation(BaseModel):
     mapped_type: str = Field(default="", description="the mapped type, when the figure is an ad hoc aggregate rather than a named metric")
     attribute: str = Field(default="", description="the attribute an ad hoc sum, min, max or avg was taken over")
     filters: list[FilterRef] = Field(default_factory=list, description="the filters the figure was computed with, when it is not a named metric")
+    group_by: str = Field(default="", description="the group_by the figure was computed with, when it is one group's figure")
+    group: str = Field(default="", description="which group's figure it is, copied from the tool result's groups")
+
+    @field_validator("value", "figure", mode="before")
+    @classmethod
+    def _text(cls, v):  # a model may send 1100 rather than "1100"
+        return "" if v is None else str(v)
+
+
+def metric_key(cit: "Citation") -> str:
+    """Where a citation's recomputed figure is kept: its id, and the group for a grouped figure."""
+    return f"{cit.metric_id}#{cit.group}" if cit.group else cit.metric_id
 
 
 class Claim(BaseModel):
@@ -94,6 +111,9 @@ def _cell_ok(cit: Citation, cells: dict[str, dict], i: int, failures: list[dict]
     if cell is None:
         failures.append({"claim": i, "cell_id": cit.cell_id, "reason": "no such cell, or not readable"})
         return False
+    if cell.get("invalid"):
+        failures.append({"claim": i, "cell_id": cit.cell_id, "reason": "the cell does not hold a valid value of its type"})
+        return False
     if not values_equal(cit.value, str(cell.get("value", "")), cell.get("datatype") or "string"):
         failures.append({"claim": i, "cell_id": cit.cell_id, "value": cit.value[:200],
                          "reason": "value does not equal the cell"})
@@ -102,25 +122,37 @@ def _cell_ok(cit: Citation, cells: dict[str, dict], i: int, failures: list[dict]
 
 
 def _metric_ok(cit: Citation, metrics: dict[str, dict], i: int, failures: list[dict]) -> bool:
-    from ..structured.query import values_equal
-    metric = metrics.get(cit.metric_id)
-    if metric is None:
-        failures.append({"claim": i, "metric_id": cit.metric_id, "reason": "no such metric, or not readable"})
+    """The cited figure against the figure recomputed for this very citation: its own id, filters
+    and group. A figure recomputed for another citation never stands in for it."""
+    metric = metrics.get(metric_key(cit))
+    if metric is None or metric.get("error"):
+        failures.append({"claim": i, "metric_id": cit.metric_id,
+                         "reason": (metric or {}).get("error") or "no such metric, or not readable"})
         return False
-    if not values_equal(cit.figure, str(metric.get("figure", "")), "decimal" if _numeric(cit.figure) else "string"):
+    if not figure_matches(cit.figure, metric.get("figure"), metric.get("op") or ""):
         failures.append({"claim": i, "metric_id": cit.metric_id, "figure": str(cit.figure)[:80],
                          "reason": "figure does not match the snapshot"})
         return False
     return True
 
 
-def _numeric(text: str) -> bool:
-    try:
-        from decimal import Decimal
-        Decimal(str(text).strip())
-        return True
-    except Exception:
+def figure_matches(stated, figure, op: str = "") -> bool:
+    """A stated figure against the recomputed one. Numbers compare as numbers ("7,800" is 7800).
+    An average may be stated rounded: to the places the statement gives, half up."""
+    from decimal import ROUND_HALF_UP, Decimal
+
+    from ..values import number
+    if figure is None:
         return False
+    a, b = number(stated, "decimal"), number(figure, "decimal")
+    if a is None or b is None:
+        return str(stated).strip() == str(figure).strip()
+    if a == b:
+        return True
+    if op == "avg":
+        places = Decimal(1).scaleb(a.as_tuple().exponent) if a.as_tuple().exponent < 0 else Decimal(1)
+        return b.quantize(places, rounding=ROUND_HALF_UP) == a
+    return False
 
 
 def check(answer: GroundedAnswer, passages: dict[str, dict], cells: dict[str, dict] | None = None,
@@ -172,12 +204,12 @@ def repair_prompt(failures: list[dict]) -> str:
 
 
 def render(claims: list[Claim], passages: dict[str, dict], gaps: list[str],
-           cells: dict[str, dict] | None = None) -> dict:
+           cells: dict[str, dict] | None = None, metrics: dict[str, dict] | None = None) -> dict:
     """The answer shown to the person: the claims in order, each with numbered links to its
     sources, and the sources with the quotes that support the answer."""
     if not claims:
         return {"answer": ABSTAIN, "abstained": True, "claims": [], "sources": [], "gaps": gaps}
-    cells = cells or {}
+    cells, metrics = cells or {}, metrics or {}
     order: dict[str, int] = {}
     quotes: dict[str, list[str]] = {}
     out_claims, parts = [], []
@@ -199,15 +231,17 @@ def render(claims: list[Claim], passages: dict[str, dict], gaps: list[str],
                 if cit.value not in qs:
                     qs.append(cit.value)
             if cit.metric_id:
-                n = order.setdefault(cit.metric_id, len(order) + 1)
+                key = metric_key(cit)
+                n = order.setdefault(key, len(order) + 1)
                 if n not in ns:
                     ns.append(n)
-                qs = quotes.setdefault(cit.metric_id, [])
+                qs = quotes.setdefault(key, [])
                 if cit.figure not in qs:
                     qs.append(cit.figure)
         cited = [{"passage_id": x.passage_id, "quote": x.quote} for x in c.citations if x.passage_id]
         cited += [{"cell_id": x.cell_id, "value": x.value} for x in c.citations if x.cell_id]
-        cited += [{"metric_id": x.metric_id, "figure": x.figure} for x in c.citations if x.metric_id]
+        cited += [{"metric_id": x.metric_id, "figure": x.figure, **({"group": x.group} if x.group else {})}
+                  for x in c.citations if x.metric_id]
         out_claims.append({"text": c.text, "sources": ns, "citations": cited})
         parts.append(c.text.rstrip() + " " + "".join(f"[{n}]" for n in ns))
     sources = []
@@ -222,8 +256,14 @@ def render(claims: list[Claim], passages: dict[str, dict], gaps: list[str],
                             "text": f"{c.get('column')}: {c.get('value')}", "quotes": quotes[pid],
                             "name": c.get("table"), "row": list(c.get("row") or [])})
         else:
-            sources.append({"n": n, "passage_id": pid, "kind": "metric", "title": pid,
-                            "text": quotes[pid][0] if quotes[pid] else "", "quotes": quotes[pid]})
+            from ..structured.query import describe_figure
+            m = metrics.get(pid) or {}
+            what = describe_figure(m) if m else pid.split("#", 1)[0]
+            group = pid.split("#", 1)[1] if "#" in pid else ""
+            title = f"{what}, {m.get('group_by') or 'group'} {group}" if group else what
+            sources.append({"n": n, "passage_id": pid.split("#", 1)[0], "kind": "metric", "title": title,
+                            "text": f"{title}: {m.get('figure', quotes[pid][0] if quotes[pid] else '')}",
+                            "quotes": quotes[pid]})
     return {"answer": " ".join(parts), "abstained": False, "claims": out_claims, "sources": sources, "gaps": gaps}
 
 
@@ -233,6 +273,25 @@ def cited_ids(answer: GroundedAnswer) -> list[str]:
 
 def cited_cells(answer: GroundedAnswer) -> list[str]:
     return list(dict.fromkeys(c.cell_id for cl in answer.claims for c in cl.citations if c.cell_id))
+
+
+def guardrail_source(cit: Citation, passages: dict, cells: dict, metrics: dict) -> str | None:
+    """What the grounding guardrail checks a claim against, for one citation: the passage; a cell
+    with its table and its whole row, so the entity the value belongs to is in the source; or a
+    figure with what it was computed over."""
+    from ..structured.query import describe_figure
+    if cit.passage_id and cit.passage_id in passages:
+        return passages[cit.passage_id].get("text", "")
+    if cit.cell_id and cit.cell_id in cells:
+        c = cells[cit.cell_id]
+        row = "; ".join(f"{r.get('column')}: {r.get('value')}" for r in c.get("row") or []) or \
+            f"{c.get('column')}: {c.get('value')}"
+        return f"Table {c.get('table')}, row {c.get('key')} ({c.get('class') or 'row'}): {row}."
+    m = metrics.get(metric_key(cit)) if cit.metric_id else None
+    if m and not m.get("error"):
+        group = f" for {m.get('group_by')} {cit.group}" if cit.group else ""
+        return f"The {describe_figure(m)}{group} is {m.get('figure')}."
+    return None
 
 
 def cited_metrics(answer: GroundedAnswer) -> list[tuple[str, str]]:

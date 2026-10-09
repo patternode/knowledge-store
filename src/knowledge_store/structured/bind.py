@@ -7,19 +7,29 @@ they never become passages. A row's IRI is the class plus the key, which is why 
 A relation column matches the object by `match` inside this same bind. A miss is recorded
 in the report and the triple is not invented. The previous snapshot stays where it was:
 a citation names the snapshot it was checked against.
+
+A table is rebound when its file, its mapping (the hash of the table's mapping JSON) or its
+scope changes; only when all three are the same is the held snapshot kept. A number or a date
+is stored in its canonical form (values.canonical: 1100, 2023-07-14) with the text the file held
+as `raw`, so filters, totals and citation checks read one form. Every key column gets a cell
+too, so a filter can name the key and a count sees every row.
 """
 
 from __future__ import annotations
 
 import csv
 import datetime as dt
+import hashlib
 import io
 import json
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 
 from .. import layout
 from ..store import Store, put_json
 from .mapping import Mapping, Table, subject_template
+
+MAX_TABLE_BYTES = 50 * 1024 * 1024   # a mapped file larger than this is not bound
+MAX_TABLE_ROWS = 200_000
 
 # The same full kinds as ontology.versions.FULL_KINDS. Repeated here so a tool Lambda can walk
 # the chain from manifest JSON without importing the ontology parser.
@@ -133,24 +143,62 @@ def mapped_doc_ids(lake: Store) -> set[str]:
 
 
 def _read_rows(data: bytes, location: str) -> list[dict]:
-    text = data.decode("utf-8-sig")
+    """The rows of a mapped file, or a ValueError saying why it cannot be bound."""
+    if len(data) > MAX_TABLE_BYTES:
+        raise ValueError(f"{location} is larger than {MAX_TABLE_BYTES // (1024 * 1024)} MB")
+    try:
+        text = data.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        raise ValueError(f"{location} is not UTF-8 text") from None
     if location.endswith(".json"):
-        raw = json.loads(text)
+        try:
+            raw = json.loads(text)
+        except ValueError:
+            raise ValueError(f"{location} is not valid JSON") from None
         if not isinstance(raw, list) or any(not isinstance(r, dict) for r in raw):
             raise ValueError(f"{location} is not a JSON array of objects")
-        return [{str(k): "" if v is None else str(v) for k, v in row.items()} for row in raw]
-    dialect = csv.excel_tab if location.endswith(".tsv") else csv.excel
-    return [{k: (v or "").strip() for k, v in row.items() if k} for row in csv.DictReader(io.StringIO(text), dialect=dialect)]
+        rows = [{str(k).strip(): "" if v is None else str(v).strip() for k, v in row.items()} for row in raw]
+    else:
+        reader = csv.reader(io.StringIO(text), dialect=csv.excel_tab if location.endswith(".tsv") else csv.excel)
+        header = [h.strip() for h in next(reader, [])]
+        dupes = sorted({h for h in header if h and header.count(h) > 1})
+        if dupes:
+            raise ValueError(f"{location} has more than one column named {', '.join(dupes)}")
+        rows = [{h: (v or "").strip() for h, v in zip(header, rec) if h} for rec in reader if any(x.strip() for x in rec)]
+    if len(rows) > MAX_TABLE_ROWS:
+        raise ValueError(f"{location} has more than {MAX_TABLE_ROWS} rows")
+    return rows
 
 
-def _iri(spec, table: Table, key: str) -> str:
-    template = subject_template(spec, table)
+def key_text(parts) -> str:
+    """A row's key as text: the value itself for one key column; for several, each part with its
+    commas and percent signs escaped, joined by commas, so no two rows share a key."""
+    parts = [str(p) for p in parts]
+    if len(parts) == 1:
+        return parts[0]
+    return ",".join(p.replace("%", "%25").replace(",", "%2C") for p in parts)
+
+
+def key_parts(table: Table, text: str) -> list[str]:
+    return [text] if len(table.key) == 1 else [unquote(p) for p in text.split(",")]
+
+
+def _row_key(table: Table, row: dict) -> tuple[str, ...] | None:
+    parts = tuple((row.get(k) or "").strip() for k in table.key)
+    return parts if parts and all(parts) else None
+
+
+def _iri(spec, table: Table, parts) -> str:
+    out = subject_template(spec, table)
     # One key column is the common case. Several keys fill the template left to right.
-    parts = key.split(",")
-    out = template
     for col, part in zip(table.key, parts):
         out = out.replace("{" + col + "}", quote(part, safe="-_."))
     return out
+
+
+def mapping_hash(table: Table) -> str:
+    """What the binding remembers of the table's mapping: a change rebinds the table."""
+    return hashlib.sha256(json.dumps(table.to_json(), sort_keys=True).encode()).hexdigest()[:16]
 
 
 def _scope(table: Table, meta: dict) -> str:
@@ -177,7 +225,7 @@ def bind(lake: Store, version: str | None = None) -> dict:
     from rdflib import RDF, RDFS, Graph, Literal, URIRef
 
     from ..extract.rdf import Iris
-    from ..extract.validate import parse_value
+    from ..values import canonical, parse_value
     from ..ontology import versions
     from ..ontology.model import DATATYPES, KL
     version = version or active(lake)
@@ -205,15 +253,15 @@ def bind(lake: Store, version: str | None = None) -> dict:
             continue
         doc_id, meta = found
         source = meta.get("source") or "uploads"
-        held = prior.get(table.logical_table) or {}
-        if held.get("snapshot") == doc_id and lake.exists(held.get("cells", "")):
-            out_binding[table.logical_table] = held
-            unchanged += 1
-            data = lake.get(meta["content_key"])
-            parsed[table.logical_table] = (table, meta, doc_id, _read_rows(data, table.location), source)
+        try:
+            rows = _read_rows(lake.get(meta["content_key"]), table.location)
+        except ValueError as e:
+            missing.append({"table": table.logical_table, "location": table.location, "reason": str(e)})
             continue
-        data = lake.get(meta["content_key"])
-        parsed[table.logical_table] = (table, meta, doc_id, _read_rows(data, table.location), source)
+        if _unchanged(lake, prior.get(table.logical_table) or {}, table, meta, doc_id):
+            out_binding[table.logical_table] = prior[table.logical_table]
+            unchanged += 1
+        parsed[table.logical_table] = (table, meta, doc_id, rows, source)
 
     # Index every row of this bind by the values a relation may match, including rows whose
     # snapshot did not change: a new table can join to an old one.
@@ -221,11 +269,11 @@ def bind(lake: Store, version: str | None = None) -> dict:
     for logical, (table, meta, doc_id, rows, source) in parsed.items():
         idx: dict[str, dict[str, str]] = {}
         for row in rows:
-            key = ",".join((row.get(k) or "").strip() for k in table.key)
-            if not key or any(not (row.get(k) or "").strip() for k in table.key):
+            parts = _row_key(table, row)
+            if parts is None:
                 misses.append({"table": logical, "reason": "row has no key"})
                 continue
-            iri = _iri(spec, table, key)
+            iri = _iri(spec, table, parts)
             fields = [(name, (row.get(name) or "").strip()) for name in table.key]
             fields += [(col.attribute or col.name, (row.get(col.name) or "").strip()) for col in table.columns]
             for field, value in fields:
@@ -241,8 +289,7 @@ def bind(lake: Store, version: str | None = None) -> dict:
     run_id = "bind-" + dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%S")
     ids = Iris(spec)
     for logical, (table, meta, doc_id, rows, source) in parsed.items():
-        held = prior.get(logical) or {}
-        if held.get("snapshot") == doc_id and lake.exists(held.get("cells", "")):
+        if _unchanged(lake, prior.get(logical) or {}, table, meta, doc_id):
             continue
         scope = _scope(table, meta)
         g = Graph()
@@ -255,42 +302,63 @@ def bind(lake: Store, version: str | None = None) -> dict:
         g.add((run, KL.ontologyVersion, Literal(version)))
         seen_keys = set()
         for row in rows:
-            key = ",".join((row.get(k) or "").strip() for k in table.key)
-            if not key or key in seen_keys or any(not (row.get(k) or "").strip() for k in table.key):
+            parts = _row_key(table, row)
+            key = key_text(parts) if parts else ""
+            if not key or key in seen_keys:
                 continue
             seen_keys.add(key)
-            node = URIRef(_iri(spec, table, key))
+            node = URIRef(_iri(spec, table, parts))
             g.add((node, RDF.type, spec.iri_of(table.class_name)))
             g.add((node, KL.scope, Literal(scope)))
             label = next(((row.get(c.name) or "").strip() for c in table.columns if c.attribute == "name"), "") or key
             g.add((node, RDFS.label, Literal(label)))
-            for col in table.columns:
-                value = (row.get(col.name) or "").strip()
-                if not value:
-                    continue
-                cell_id = f"c:{source}/{doc_id}/{logical}/{quote(key, safe='-_.,')}/{col.name}"
+            mapped = {c.name for c in table.columns}
+
+            def add_cell(name: str, value: str, raw: str, datatype: str, attribute: str = "", relation: str = "",
+                         invalid: bool = False):
+                cell_id = f"c:{source}/{doc_id}/{logical}/{quote(key, safe='-_.,')}/{name}"
                 cell = ids._iri("cell", cell_id)
                 g.add((cell, RDF.type, KL.Cell))
-                g.add((cell, KL.column, Literal(col.name)))
+                g.add((cell, KL.column, Literal(name)))
                 g.add((cell, KL.cellValue, Literal(value)))
                 g.add((cell, KL.snapshot, Literal(doc_id)))
                 g.add((cell, KL.rowKey, Literal(key)))
                 g.add((cell, KL.source, Literal(source)))
                 g.add((cell, KL.scope, Literal(scope)))
-                cells.append({"cell": cell_id, "source": source, "snapshot": doc_id, "table": logical,
-                              "key": key, "column": col.name, "value": value, "datatype": col.datatype or "string",
-                              "scope": scope, "class": table.class_name,
-                              "attribute": col.attribute, "relation": col.relation})
+                rec = {"cell": cell_id, "source": source, "snapshot": doc_id, "table": logical, "key": key,
+                       "column": name, "value": value, "datatype": datatype, "scope": scope,
+                       "class": table.class_name, "attribute": attribute, "relation": relation}
+                if raw != value:
+                    rec["raw"] = raw
+                if invalid:
+                    rec["invalid"] = True
+                cells.append(rec)
+                return cell
+
+            # Key columns that are not mapped columns still get a cell: a filter may name the key,
+            # and a count must see a row whose other columns are all empty.
+            for k, part in zip(table.key, parts):
+                if k not in mapped:
+                    add_cell(k, part, part, "string")
+            for col in table.columns:
+                raw = (row.get(col.name) or "").strip()
+                if not raw:
+                    continue
+                datatype = col.datatype or "string"
                 if col.attribute:
                     try:
-                        py = parse_value(value, col.datatype or "string")
+                        py = parse_value(raw, datatype)
                     except ValueError as e:
+                        add_cell(col.name, raw, raw, datatype, col.attribute, col.relation, invalid=True)
                         misses.append({"table": logical, "key": key, "column": col.name, "reason": str(e)})
                         continue
+                    cell = add_cell(col.name, canonical(raw, datatype), raw, datatype, col.attribute, col.relation)
                     lit = Literal(py, datatype=DATATYPES[col.datatype]) if col.datatype and col.datatype != "string" else Literal(str(py))
                     pred = URIRef(spec.attributes[col.attribute].iri)
                     _assert(g, ids, node, pred, lit, run, cell)
                 else:
+                    value = raw
+                    cell = add_cell(col.name, raw, raw, datatype, col.attribute, col.relation)
                     parent = indexes.get(next((t.logical_table for t in mapping.tables if t.class_name == col.range), ""), {})
                     target = (parent.get(col.match) or parent.get(col.name) or {}).get(value, "")
                     if not target:
@@ -319,7 +387,8 @@ def bind(lake: Store, version: str | None = None) -> dict:
         lake.put(cells_key, ("\n".join(json.dumps(c) for c in cells) + ("\n" if cells else "")).encode(),
                  "application/x-ndjson")
         out_binding[logical] = {"source": source, "snapshot": doc_id, "location": table.location, "scope": scope,
-                                "rows": len(seen_keys), "class": table.class_name, "graph": graph_key, "cells": cells_key}
+                                "rows": len(seen_keys), "class": table.class_name, "graph": graph_key, "cells": cells_key,
+                                "mapping": mapping_hash(table)}
         written += 1
     # Drop tables the mapping no longer names, without deleting the old snapshot files: a citation
     # of an earlier snapshot still resolves.
@@ -329,6 +398,12 @@ def bind(lake: Store, version: str | None = None) -> dict:
     put_json(lake, layout.structured_binding_key(version), out_binding)
     return {"written": written, "unchanged": unchanged, "missing": missing, "misses": misses,
             "tables": sorted(out_binding)}
+
+
+def _unchanged(lake: Store, held: dict, table: Table, meta: dict, doc_id: str) -> bool:
+    """Whether the held snapshot still stands: the same file, the same mapping and the same scope."""
+    return (held.get("snapshot") == doc_id and held.get("mapping") == mapping_hash(table)
+            and held.get("scope") == _scope(table, meta) and lake.exists(held.get("cells", "")))
 
 
 def _assert(g, ids, s, p, o, run, cell) -> None:
