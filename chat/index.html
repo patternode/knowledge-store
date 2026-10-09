@@ -34,6 +34,11 @@
 </header>
 
 <div class="workspace" id="workspace">
+  <aside class="samples" id="samples" aria-labelledby="samples-title" hidden>
+    <h2 id="samples-title">Sample questions</h2>
+    <p class="small muted" id="samples-note">Choosing one fills the question box. It is not sent until you press Send.</p>
+    <div id="samples-list"></div>
+  </aside>
   <div class="chat-col">
     <main id="main">
       <div id="notice" class="notice" hidden></div>
@@ -67,6 +72,9 @@
       <section id="bench-steps" aria-labelledby="bench-steps-title" aria-live="polite">
         <h3 id="bench-steps-title">Steps</h3>
         <p class="small muted">Ask a question to see what the agent does: each search, each read and each check, as it happens.</p>
+      </section>
+      <section id="bench-cost" aria-labelledby="bench-cost-title" hidden>
+        <h3 id="bench-cost-title">Cost</h3>
       </section>
       <section id="bench-terms" aria-labelledby="bench-terms-title" hidden>
         <h3 id="bench-terms-title">Ontology used</h3>

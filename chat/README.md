@@ -76,14 +76,14 @@ For local development, add a `config.local.json` such as
 All routes are on the same origin under `/api`, and every route but `/collections` takes
 `?c=<collection id>`.
 
-- `GET /api/collections`: the collections to pick from, and whether the person has private access.
+- `GET /api/collections`: the collections to pick from, whether the person has private access, and each collection's `example_questions` (`{text, level}`, level `low`, `medium` or `high`). The chat shows them to the left of the conversation. Choosing one fills the question box and does not send it. A question in the profile may start with `[low]`, `[medium]` or `[high]`. Without any, the page shows three general questions.
 - `POST /api/chat?c=<id>` with `{"question", "history", "mode", "about"}`: starts an answer and
   returns its `id`. `history` holds the last 6 completed turns as `{"q", "a"}`. `mode` is `ask` or
   `gaps` (what would it take). 429 when the daily quota is spent.
 - `GET /api/chat?c=<id>&id=<id>`: the answer's status (`pending`, `running` with the `steps` so
   far, `done` or `failed`), polled every 1.5 seconds for up to 10 minutes. A finished answer
-  carries `claims`, `sources`, `abstained`, `blocked`, `gaps`, `steps` and `ontology_hits`; a
-  `gaps` run carries `report`.
+  carries `claims`, `sources`, `abstained`, `blocked`, `gaps`, `steps`, `ontology_hits` and `cost`
+  (list price, split by token kind and by model call); a `gaps` run carries `report` and the same `cost`.
 - `GET /api/usage?c=<id>&window=all|month`: how many questions used each class and property.
 - `GET`, `POST /api/requests?c=<id>`: ontology requests kept from gap reports (curators only).
 - `GET /api/document?c=<id>&doc=<doc id>`: a link to open the source document in a new tab.
