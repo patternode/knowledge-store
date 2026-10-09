@@ -1,6 +1,6 @@
 # Briefing
 
-An architecture briefing for people who know what an AI agent is. The picture shows the usual way an agent answers from documents, what an ontology and a knowledge graph add, why vector search stays beside the graph, and the two ways this lab builds that graph.
+An architecture briefing for people who know what an AI agent is. The picture shows the usual way an agent answers from documents, what an ontology and a knowledge graph add, why vector search stays beside the graph, and the two ways this lab builds that graph. It is drawn in the Patternode brand: Midnight Terminal on the navy ground, IBM Plex, and the mark.
 
 One path brings an ontology with the documents. Extraction reads the passages through it. The other path starts from documents alone: a sample proposes the vocabulary, a person publishes it, and the same extraction runs. The last clip is the chat: a message goes in, the agent follows the graph and the passages, and the result comes back only when a passage supports it.
 

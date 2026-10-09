@@ -1,8 +1,9 @@
 """Architecture briefing for the Knowledge Store.
 
-Six clips. The picture is a diagram of the flow. Two voice scripts are written
-from the same scenes: voice-pro.md for a professional narrator, voice-record.md
-to read yourself. Each script is continuous prose for the clip.
+Six clips. The picture is a diagram of the flow, drawn in the Patternode brand
+(Midnight Terminal, IBM Plex, the mark). Two voice scripts are written from the
+same scenes: voice-pro.md for a professional narrator, voice-record.md to read
+yourself. Each script is continuous prose for the clip.
 
   python docs/explainer/build.py --docs
   python docs/explainer/build.py --frames
@@ -13,14 +14,15 @@ from __future__ import annotations
 
 import argparse
 import math
+import random
 import subprocess
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent
-BG_PATH = ROOT / "assets" / "bg-network.jpg"
 OUT = ROOT / "media"
+FONT_DIR = ROOT / "assets" / "fonts"
 
 W, H = 1920, 1080
 FPS = 12
@@ -28,31 +30,43 @@ WPS = 2.2
 HEAD = 0.8
 TAIL = 2.4
 
-BG = (10, 14, 24)
-IVORY = (244, 241, 234)
-MUTED = (186, 196, 208)
-DIM = (132, 146, 164)
-GOLD = (224, 177, 90)
-TEAL = (78, 214, 162)
-CORAL = (232, 118, 104)
-BLUE = (148, 180, 255)
-CARD = (16, 24, 40)
-LINE = (58, 74, 104)
-INK = (22, 32, 52)
+# Midnight Terminal, dark. DEC-001 option B, from patternode-business
+# marketing/brand/tokens.css (the copy the site ships). DEC-003 type is IBM Plex.
+BG = (0x1B, 0x20, 0x2C)       # --pn-neutral-950, the brand ground
+IVORY = (0xF5, 0xF7, 0xFB)    # --pn-neutral-50
+MUTED = (0xB9, 0xC2, 0xD8)    # --pn-neutral-300
+DIM = (0x9B, 0xA6, 0xC0)      # --pn-neutral-400
+CYAN = (0x00, 0xB8, 0xE6)     # --pn-brand-cyan, the live line
+AMBER = (0xE6, 0x9F, 0x00)    # --pn-cat-3
+INDIGO = (0x90, 0x9C, 0xFF)   # --pn-secondary-400
+ROSE = (0xFF, 0x6D, 0x98)     # --pn-tertiary-400, search hits
+DANGER = (0xFF, 0x75, 0x69)   # --pn-danger-400
+SURFACE = (0x2C, 0x33, 0x42)  # --pn-neutral-900
+RAISED = (0x3E, 0x46, 0x5A)   # --pn-neutral-800
+LINE = (0x52, 0x5C, 0x74)     # --pn-neutral-700
+TILE = (0x0B, 0x14, 0x37)     # logo tile on the navy ground
+INK = SURFACE
+CARD = SURFACE
 
-FONTS = {
-    "reg": "/usr/share/fonts/truetype/macos/Inter-Regular.ttf",
-    "med": "/usr/share/fonts/truetype/macos/Inter-Medium.ttf",
-    "sem": "/usr/share/fonts/truetype/macos/Inter-SemiBold.ttf",
-    "mono": "/usr/share/fonts/truetype/jetbrains-mono/JetBrainsMono-Regular.ttf",
-}
+# Diagram roles, named for the scenes.
+GOLD = AMBER    # ontology
+TEAL = CYAN     # the graph, and a result a passage supports
+BLUE = INDIGO   # documents, passages, vectors
+CORAL = DANGER  # a result the sources do not support
+
+SANS_WEIGHT = {"reg": b"Regular", "med": b"Medium", "sem": b"SemiBold"}
 _fonts: dict = {}
 
 
 def font(size: int, kind: str = "reg"):
     key = (kind, size)
     if key not in _fonts:
-        _fonts[key] = ImageFont.truetype(FONTS[kind], size)
+        if kind == "mono":
+            face = ImageFont.truetype(FONT_DIR / "IBMPlexMono-Regular.ttf", size)
+        else:
+            face = ImageFont.truetype(FONT_DIR / "IBMPlexSans[wdth,wght].ttf", size)
+            face.set_variation_by_name(SANS_WEIGHT[kind])
+        _fonts[key] = face
     return _fonts[key]
 
 
@@ -128,29 +142,47 @@ def center_text(d, cx, cy, text, fnt, fill):
     d.text((cx - tw / 2, cy - th / 2 - box[1]), text, font=fnt, fill=fill)
 
 
+def logo_mark(d, x, y, size=36):
+    """The mark from logo-lockup.svg: tile, cyan signal, two white nodes."""
+    s = size / 64.0
+    d.rounded_rectangle((x, y, x + size, y + size), radius=max(2, round(12 * s)), fill=TILE)
+    raw = [(8, 44), (20, 30), (30, 38), (44, 16), (56, 24)]
+    pts = [(x + px * s, y + py * s) for px, py in raw]
+    width = max(2, round(4 * s))
+    d.line(pts, fill=CYAN, width=width)
+    cap = width / 2
+    for px, py in pts:
+        d.ellipse((px - cap, py - cap, px + cap, py + cap), fill=CYAN)
+    for cx, cy, r in ((20, 30, 3.5), (44, 16, 3.5)):
+        rr = r * s
+        d.ellipse((x + cx * s - rr, y + cy * s - rr, x + cx * s + rr, y + cy * s + rr), fill=(255, 255, 255, 255))
+
+
 def chrome(d, kicker):
-    f = font(15, "med")
-    draw_tracked(d, (64, 36), "KNOWLEDGE STORE", f, col(GOLD), tracking=2.2)
+    logo_mark(d, 64, 26, 36)
+    d.text((112, 32), "patternode", font=font(22, "sem"), fill=col(IVORY))
+    d.text((244, 36), "Knowledge Store", font=font(16, "med"), fill=col(DIM))
     label = kicker.upper()
-    tw = tracked_width(label, f, 1.6)
-    draw_tracked(d, (W - 64 - tw, 36), label, f, col(DIM), tracking=1.6)
-    d.line((64, 72, W - 64, 72), fill=col(LINE), width=1)
+    f = font(14, "mono")
+    tw = tracked_width(label, f, 1.2)
+    draw_tracked(d, (W - 64 - tw, 36), label, f, col(CYAN), tracking=1.2)
+    d.line((64, 74, W - 64, 74), fill=col(LINE), width=1)
 
 
 def footer(d, index, n, global_t, local_t, duration):
     d.line((64, 1020, W - 64, 1020), fill=col(LINE), width=1)
-    f = font(15, "med")
-    draw_tracked(d, (64, 1036), f"{index:02d}   /   {n:02d}", f, col(DIM), tracking=1.2)
+    f = font(14, "mono")
+    draw_tracked(d, (64, 1034), f"{index:02d}   /   {n:02d}", f, col(DIM), tracking=1.2)
     stamp = f"{int(global_t) // 60}:{int(global_t) % 60:02d}"
-    sf = font(16, "mono")
+    sf = font(15, "mono")
     d.text((W - 64 - sf.getlength(stamp), 1032), stamp, font=sf, fill=col(DIM))
     if duration > 0:
         x1 = 64 + (W - 128) * max(0.0, min(1.0, local_t / duration))
-        d.line((64, 1016, x1, 1016), fill=col(GOLD), width=3)
+        d.line((64, 1016, x1, 1016), fill=col(CYAN), width=3)
 
 
 def heading(d, text, sub=None):
-    d.text((64, 92), text, font=font(40, "sem"), fill=col(IVORY))
+    draw_tracked(d, (64, 92), text, font(40, "sem"), col(IVORY), tracking=-0.8)
     if sub:
         d.text((64, 148), sub, font=font(22), fill=col(MUTED))
 
@@ -159,7 +191,7 @@ def node(d, cx, cy, w, h, title, ring, a=1.0, sub=None, fill=INK):
     if a <= 0.02:
         return
     box = (cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2)
-    d.rounded_rectangle(box, radius=18, fill=col(fill, a), outline=col(ring, a), width=3)
+    d.rounded_rectangle(box, radius=12, fill=col(fill, a), outline=col(ring, a), width=3)
     if sub:
         center_text(d, cx, cy - 14, title, font(22, "sem"), col(IVORY, a))
         center_text(d, cx, cy + 16, sub, font(16), col(MUTED, a))
@@ -196,9 +228,9 @@ def page(d, x, y, w, h, title, accent, a=1.0, bars=4):
 def stage(d, cx, y, text, accent, a=1.0):
     if a <= 0.02:
         return
-    fnt = font(14, "med")
-    tw = tracked_width(text, fnt, 1.5)
-    draw_tracked(d, (cx - tw / 2, y), text, fnt, col(accent, a), tracking=1.5)
+    fnt = font(14, "mono")
+    tw = tracked_width(text, fnt, 1.2)
+    draw_tracked(d, (cx - tw / 2, y), text, fnt, col(accent, a), tracking=1.2)
 
 
 def arrow(d, start, end, fill, width=4, head=13, prog=1.0):
@@ -263,7 +295,7 @@ def bead(d, start, end, p, color, r=7):
     d.ellipse((x - r, y - r, x + r, y + r), fill=col(color))
 
 
-def dots(d, cx, cy, rx, ry, n, a, hot, ring=BLUE):
+def dots(d, cx, cy, rx, ry, n, a, hot, ring=BLUE, hot_color=CYAN):
     if a <= 0.02:
         return
     for i in range(n):
@@ -273,7 +305,7 @@ def dots(d, cx, cy, rx, ry, n, a, hot, ring=BLUE):
         y = cy + math.sin(ang) * ry * rad
         on = i in hot
         r = 7 if on else 4
-        shade = GOLD if on else ring
+        shade = hot_color if on else ring
         d.ellipse((x - r, y - r, x + r, y + r), fill=col(shade, a if on else a * 0.8))
 
 
@@ -457,24 +489,24 @@ def draw_usual(d, t):
 
     titles = ["Adventures", "Memoirs", "Return"]
     for i, name in enumerate(titles):
-        page(d, 90, 280 + i * 175, 210, 155, name, BLUE if i else GOLD, a_docs, bars=3)
+        page(d, 90, 280 + i * 175, 210, 155, name, BLUE, a_docs, bars=3)
     stage(d, 195, 820, "DOCUMENTS", BLUE, a_docs)
 
     arrow(d, (330, 520), (470, 520), col(BLUE, a_field), prog=a_field)
-    dots(d, 680, 520, 150, 120, 36, a_field, hot={2, 7, 11, 18} if a_hit > 0.2 else set())
+    dots(d, 680, 520, 150, 120, 36, a_field, hot={2, 7, 11, 18} if a_hit > 0.2 else set(), hot_color=ROSE)
     if a_hit > 0.2:
-        pill(d, 680, 700, "her mother, Mrs Stoner", GOLD, a_hit)
+        pill(d, 680, 700, "her mother, Mrs Stoner", ROSE, a_hit)
         stage(d, 680, 820, "VECTORS", BLUE, a_field)
 
     arrow(d, (860, 520), (1040, 470), col(CORAL, a_answer), prog=a_answer)
     if a_answer > 0.05:
-        d.rounded_rectangle((1060, 300, 1820, 760), radius=24, fill=col(INK, a_answer), outline=col(CORAL, a_answer), width=3)
-        d.text((1100, 340), "QUESTION", font=font(14, "med"), fill=col(DIM, a_answer))
+        d.rounded_rectangle((1060, 300, 1820, 760), radius=12, fill=col(INK, a_answer), outline=col(CORAL, a_answer), width=3)
+        d.text((1100, 340), "QUESTION", font=font(14, "mono"), fill=col(DIM, a_answer))
         d.text((1100, 372), "Holmes's mother's name?", font=font(28, "sem"), fill=col(IVORY, a_answer))
-        d.text((1100, 460), "WRITTEN ANSWER", font=font(14, "med"), fill=col(CORAL, a_answer))
+        d.text((1100, 460), "WRITTEN ANSWER", font=font(14, "mono"), fill=col(CORAL, a_answer))
         d.text((1100, 500), "Mrs Stoner", font=font(52, "sem"), fill=col(IVORY, a_answer))
         if a_cite > 0.05:
-            pill(d, 1360, 660, "Citation attached afterwards", CORAL, a_cite, fill=(48, 24, 28))
+            pill(d, 1360, 660, "Citation attached afterwards", CORAL, a_cite, fill=RAISED)
             dashed(d, (820, 700), (1060, 620), col(CORAL, a_cite), width=3)
 
 
@@ -627,8 +659,8 @@ def chat_bubble(d, box, who, text, accent, a, size=26):
     if a <= 0.02:
         return
     x0, y0, x1, y1 = box
-    d.rounded_rectangle(box, radius=18, fill=col(INK, a), outline=col(accent, a), width=3)
-    d.text((x0 + 18, y0 + 14), who, font=font(13, "med"), fill=col(accent, a))
+    d.rounded_rectangle(box, radius=12, fill=col(INK, a), outline=col(accent, a), width=3)
+    d.text((x0 + 18, y0 + 14), who, font=font(13, "mono"), fill=col(accent, a))
     draw_wrapped(d, text, font(size, "sem"), col(IVORY, a), x0 + 18, y0 + 42, x1 - x0 - 36, gap=4)
 
 
@@ -648,7 +680,7 @@ def draw_questions(d, t):
     chat_bubble(d, (64, 240, 420, 360), "MESSAGE", "What killed Dr Roylott?", IVORY, a_msg, size=24)
     arrow(d, (420, 300), (480, 300), col(GOLD, a_agent), prog=a_agent, width=3)
 
-    d.rounded_rectangle((480, 220, 850, 450), radius=20, fill=col(INK, a_agent), outline=col(GOLD, a_agent), width=3)
+    d.rounded_rectangle((480, 220, 850, 450), radius=12, fill=col(INK, a_agent), outline=col(GOLD, a_agent), width=3)
     if a_agent > 0.1:
         center_text(d, 665, 278, "Agent", font(26, "sem"), col(IVORY, a_agent))
         for name, x in (("Person", 559), ("Case", 668), ("Cause", 774)):
@@ -740,9 +772,28 @@ def encode(path: Path, section, bg, index, n, offset):
 
 
 def load_bg():
-    im = Image.open(BG_PATH).convert("RGB").resize((W, H), Image.Resampling.LANCZOS)
-    veil = Image.new("RGB", (W, H), BG)
-    return Image.blend(veil, im, 0.20)
+    """Brand ground, with a quiet signal field kept to the sides."""
+    base = Image.new("RGBA", (W, H), (*BG, 255))
+    overlay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(overlay)
+    rng = random.Random(7)
+    for _ in range(12):
+        if rng.random() < 0.5:
+            lo, hi = 20, 300
+        else:
+            lo, hi = W - 300, W - 20
+        x, y = rng.randint(lo, hi), rng.randint(150, 960)
+        pts = [(x, y)]
+        for _step in range(rng.randint(2, 3)):
+            x = max(lo, min(hi, x + rng.randint(-110, 110)))
+            y = max(130, min(990, y + rng.randint(-55, 55)))
+            pts.append((x, y))
+        shade = CYAN if rng.random() < 0.62 else INDIGO
+        d.line(pts, fill=(*shade, 32), width=2)
+        for px, py in pts:
+            r = 3 if rng.random() < 0.28 else 2
+            d.ellipse((px - r, py - r, px + r, py + r), fill=(*shade, 64))
+    return Image.alpha_composite(base, overlay).convert("RGB")
 
 
 def _voice_file(path: Path, heading_text: str, intro: str, key: str):
