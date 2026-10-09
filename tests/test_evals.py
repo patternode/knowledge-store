@@ -26,9 +26,12 @@ def q(**kw):
 
 def test_the_example_set_loads():
     ev = score.load(SET)
-    assert ev.collection == "missions" and len(ev.questions) == 22
+    assert ev.collection == "missions" and len(ev.questions) == 26
     assert sum(not x.answerable for x in ev.questions) == 3
     assert {x.kind for x in ev.questions} == set(score.KINDS)
+    catalog = [q for q in ev.questions if q.structured]
+    assert {q.id for q in catalog} == {"u01", "s02", "s03", "s04", "s05"}
+    assert {q.structured["tool"] for q in catalog} == {"lookup_rows", "aggregate"}
 
 
 def test_facts_spellings_and_word_boundaries():
