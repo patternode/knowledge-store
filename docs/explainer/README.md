@@ -13,15 +13,20 @@ A new agent should start at [HANDOFF.md](HANDOFF.md). That file holds both voice
 | [script.md](script.md) | Timeline and what is on screen |
 | [voice-pro.md](voice-pro.md) | The read for a professional technical narrator. Continuous prose, one block per clip |
 | [voice-record.md](voice-record.md) | The same clips, written to record yourself |
-| [media/assembly.mp4](media/assembly.mp4) | The picture, in order |
+| [media/assembly.mp4](media/assembly.mp4) | The picture, in order, with the professional narration mixed on |
 
 Read a clip straight through. Pause between its paragraphs. The picture is timed to the longer of the two reads.
+
+The voice on the assembly is the professional read of [voice-pro.md](voice-pro.md), spoken with the Microsoft Edge neural voice en-US-ChristopherNeural through edge-tts, a little slower than that voice's default. [voice-record.md](voice-record.md) is still there if Dermot wants to replace that mix with his own recording.
 
 The site serves `media/assembly.mp4` as `/media/knowledge-store-briefing.mp4`, linked from the Knowledge Store lab page. After a re-render, copy the assembly there.
 
 ```bash
 python docs/explainer/build.py --docs
 python docs/explainer/build.py
+python docs/explainer/narrate.py
 ```
+
+The first command rewrites the docs. The second redraws the clips, with a silent track. The third puts the saved narration back on.
 
 The Holmes examples are from the three collections fetched by `examples/sherlock-holmes/fetch.py`. Roylott’s death is in *The Adventure of the Speckled Band*. None of those stories names Sherlock Holmes’s mother. Helen Stoner’s mother is named, which is why a search by nearby words can attach the wrong person.

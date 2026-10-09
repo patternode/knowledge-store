@@ -28,9 +28,11 @@ Eight clips, then the assembly (4:57, 297.0 seconds):
 
 Both voice scripts are written. `docs/explainer/script.md` is the timeline and the on-screen picture notes. `docs/explainer/voice-pro.md` is the professional narrator. `docs/explainer/voice-record.md` is the read-yourself twin. `docs/explainer/build.py` generates those three files from its `SECTIONS` list. `docs/explainer/README.md` is the short entry point.
 
-The picture is silent. The assembly file carries a silent audio track so a later mix can replace that silence. Mixing a voice onto the assembly is not done.
+The mixed voice on the assembly is the professional read of `voice-pro.md`. It was spoken with the Microsoft Edge neural voice en-US-ChristopherNeural through edge-tts, at rate -10%. Speech starts 0.8 seconds into each clip. The ontology clip is sped by about five percent so that take finishes inside the picture. The other clips are left at the spoken pace, and the time after the last word stays silent. The picture length is unchanged. `voice-record.md` is still there if Dermot wants to replace this mix with his own recording.
 
-The website copy is a separate repository. patternode-platform branch `cursor/knowledge-store-briefing-link-e63b` serves the file as `/media/knowledge-store-briefing.mp4`, linked from the Knowledge Store lab page. The file in that repository is `user-interfaces/site/public/media/knowledge-store-briefing.mp4`. The draft pull request is https://github.com/patternode/patternode-platform/pull/421. Its base branch is `develop`. Do not edit patternode-platform unless the assembly is re-rendered.
+Paragraph takes, one wav per paragraph, are in `docs/explainer/assets/narration/`. `python3 docs/explainer/narrate.py` joins them with a short pause, fits each take to its clip, and remuxes the existing picture without redrawing a frame. `python3 docs/explainer/narrate.py --synthesize` calls edge-tts again and replaces those wavs. There was no recording by Dermot on disk, so the mix uses the synthesized professional read.
+
+The website copy is a separate repository. patternode-platform branch `cursor/knowledge-store-briefing-link-e63b` serves the file as `/media/knowledge-store-briefing.mp4`, linked from the Knowledge Store lab page. The file in that repository is `user-interfaces/site/public/media/knowledge-store-briefing.mp4`. The draft pull request is https://github.com/patternode/patternode-platform/pull/421. Its base branch is `develop`. Replace that file when the assembly changes.
 
 ## Voice scripts
 
@@ -229,11 +231,11 @@ python3 docs/explainer/build.py --docs
 python3 docs/explainer/build.py
 ```
 
-The first command rewrites the three generated docs. The second also re-encodes the clips and `docs/explainer/media/assembly.mp4`. After a re-render, copy that assembly to `user-interfaces/site/public/media/knowledge-store-briefing.mp4` on the platform branch named above, and update pull request 421.
+The first command rewrites the three generated docs. The second also re-encodes the clips and `docs/explainer/media/assembly.mp4`, and that encode writes a silent track. Run `python3 docs/explainer/narrate.py` afterwards to put the professional read back on. After a re-render, copy that assembly to `user-interfaces/site/public/media/knowledge-store-briefing.mp4` on the platform branch named above, and update pull request 421.
 
 ## What is left
 
-- [ ] Dermot records `docs/explainer/voice-record.md`, or a narrator reads `docs/explainer/voice-pro.md`. The picture is silent. Mixing the voice onto `docs/explainer/media/assembly.mp4` is not done. Time the read to the assembly in and out points above.
+- [x] The mixed voice is the professional read of `docs/explainer/voice-pro.md` (edge-tts, en-US-ChristopherNeural, rate -10%). The picture length is unchanged. `docs/explainer/voice-record.md` is still there if Dermot wants to replace that mix with his own recording. Paragraph wavs are in `docs/explainer/assets/narration/`, and `python3 docs/explainer/narrate.py` rebuilds the mix from them.
 - [ ] Treat `docs/explainer/comfy-shots.md` as optional atmosphere. It may be stale relative to the eight-clip cut. Do not ask an image model to draw words. ComfyUI is not in this workspace.
 - [ ] Leave lab screen recordings out. Do not show the product being operated.
 - [ ] After any palette or layout change, check the late frames of each clip. Do not commit `docs/explainer/media/stills/` or any `__pycache__`.
