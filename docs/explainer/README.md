@@ -1,52 +1,21 @@
-# Five-minute briefing
+# Briefing
 
-A picture-and-voice cut that explains how Knowledge Store keeps a query result tied to a source. After it, a viewer who already knows retrieval and language models should be able to say why a statement reaches the page, and why a statement that cannot be tied to a passage does not.
+A conceptual cut for people who know what an AI agent is, and not much more than that. It starts with the usual way an agent answers from documents, explains why an ontology and a knowledge graph change the questions an agent can ask, why vector search still belongs beside the graph, and then what this lab does. On the way in. And when someone asks.
 
-The picture is generated. The voice is not. Two slots are left open for a recording of the portal on the lab.
+It does not show the product being operated, and it does not walk the checks one by one.
 
 | File | What it is |
 |---|---|
-| [script.md](script.md) | The whole cut: timeline, picture, and voice, with assembly timecodes |
-| [voice-script.md](voice-script.md) | The same voice, one section per take, for recording |
-| [comfy-shots.md](comfy-shots.md) | Optional atmospheric shots for the ComfyUI pipeline |
-| [build.py](build.py) | Renders the picture from the same cues as the script |
-| [media/](media/) | The rendered sections and `assembly.mp4` |
+| [script.md](script.md) | Timeline and what is on screen |
+| [voice-pro.md](voice-pro.md) | The read for a professional technical narrator. Continuous prose, one block per clip |
+| [voice-record.md](voice-record.md) | The same clips, written to record yourself |
+| [media/assembly.mp4](media/assembly.mp4) | The picture, in order |
 
-## What is generated, and what you record
-
-Generated, voice recorded against the picture:
-
-1. The failure. A retrieval system writes the answer, then attaches a source.
-2. The rule. Something is shown only when a passage contains it.
-3. Ingestion. Landing, bronze, silver passages, the ontology, extraction, the RDF record.
-4. Chat. Ontology in the prompt, fixed tools, the two routes in, claims, and the check that drops anything the passage does not support.
-
-Record on the lab, picture and voice:
-
-5. Ask a question the collection can answer. Workbench open. Open source 1 and show the highlighted quote.
-6. Ask something the documents do not contain. Show the decline.
-
-Replace `05-lab-answer.mp4` and `06-lab-decline.mp4` in the cut. Those files are caption guides so the assembly can be watched before the lab picture exists. The badge on them says so.
-
-## Recording the voice
-
-Use [voice-script.md](voice-script.md). About 160 words a minute. Each line is one sentence; start it at the cue. Assembly timecode is in the bottom right of every frame, and a gold hairline shows progress through the section.
-
-Say sha-256 as “sha two fifty-six”, SHACL as “shackle”, and RDF as the three letters. Bronze, silver, and gold are the layer names.
-
-The lab questions are from the Sherlock Holmes collection (`examples/sherlock-holmes/fetch.py`: The Adventures, The Memoirs, and The Return). They are written into the voice. The director notes say which passage should light up, and which question the stories cannot answer.
-
-For the answer take, keep the window wider than 1,100 pixels so the workbench stays beside the chat.
-
-## Render again
+Read a clip straight through. Pause between its paragraphs. The picture is timed to the longer of the two reads.
 
 ```bash
-python docs/explainer/build.py --docs          # script and voice only
-python docs/explainer/build.py --stills        # one frame per stage, for a look
-python docs/explainer/build.py                 # the section files and assembly.mp4
-python docs/explainer/build.py --section chat  # one section
+python docs/explainer/build.py --docs
+python docs/explainer/build.py
 ```
 
-The cues live in `build.py`. The script and the voice script are written from those cues, so the timecodes match the picture.
-
-The background plate is `assets/bg-network.jpg`. Labels are drawn in code, so terms such as SHACL, the passage identifier, and the decline sentence stay exact.
+The Holmes examples in the last clip are from the three collections fetched by `examples/sherlock-holmes/fetch.py`. Roylott’s death is in *The Adventure of the Speckled Band*. None of those stories names Sherlock Holmes’s mother.
