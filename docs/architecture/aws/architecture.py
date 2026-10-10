@@ -93,7 +93,7 @@ arrow([(1084, 768), (952, 768)], "Retrieve", 1018, 760)
 # Footer notes
 notes = [
  ("Grounding", ["No statement without a source: a claim survives only if its quote is", "in a passage the caller may read, is ≥ 12 characters, and the", "guardrail scores it grounded. One repair turn, then it is removed."]),
- ("Valves", ["Per question: 16 tool calls, 14 model calls, 4000 output tokens", "per call, 1 repair turn. Optional monthly budget alert."]),
+ ("Valves", ["Per question: 16 tool calls, 14 model calls, 4000 output tokens", "per call, 1 repair turn. A mapped-table question cites a cell or a figure.", "Optional monthly budget alert."]),
  ("Sign-in, networking and cost", ["Cognito, or a host website that frames the pages (site_sign_in).", "No NAT gateway; Neptune and the graph tools reach S3 through a", "gateway endpoint. Neptune is the main fixed cost (can be off)."]),
 ]
 for i, (h, ls) in enumerate(notes):
@@ -101,7 +101,7 @@ for i, (h, ls) in enumerate(notes):
     out.append(f'<text x="{x+4}" y="866" class="nh">{h}</text>')
     for j, l in enumerate(ls):
         out.append(f'<text x="{x+4}" y="{888+j*18}" class="note">{l}</text>')
-out.append('<text x="28" y="990" class="foot">Design: docs/architectures/aws.md · Terraform: infra/modules/knowledge-store · Deployment guide: docs/deploy/aws</text>')
+out.append('<text x="28" y="990" class="foot">Design: docs/architecture/aws/aws.md · Terraform: infra/modules/knowledge-store · Deployment guide: docs/deploy/aws</text>')
 
 svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">
 <defs>

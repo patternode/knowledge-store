@@ -100,6 +100,9 @@ All routes are on the same origin under `/api`, and every route but `/collection
 - `GET /api/usage?c=<id>&window=all|month`: how many questions used each class and property.
 - `GET`, `POST /api/requests?c=<id>`: ontology requests kept from gap reports (curators only).
 - `GET /api/document?c=<id>&doc=<doc id>`: a link to open the source document in a new tab.
+- `GET /api/table?c=<id>&location=tables/<name>.csv`: a short-lived link to the bound snapshot of a
+  mapped table, for a sample question's table link. 404 when no table has that location or the
+  person may not read it.
 - `GET /api/ontology?c=<id>`: the active ontology's classes, relations and attributes with their
   counts, and `observed`: how often each relation links one class to another in the data.
 - `GET /api/summary?c=<id>`: the collection's counts of documents, entities and facts.

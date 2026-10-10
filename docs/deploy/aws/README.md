@@ -6,19 +6,20 @@ knowledge graph comes out, and people ask questions in a chat page that answers 
 every statement linked to the passage it comes from.
 
 You deploy it with the Terraform in this repository and your own parameters. Nothing is built on
-your machine: container images are built by CodeBuild inside your account.
+your machine: container images are built by CodeBuild inside your account. How the system is put
+together, including the diagram, is in [Architecture](../../architecture/README.md).
 
 | In this pack | What it is |
 |---|---|
 | [README.md](README.md) (this file) | Step-by-step configuration and installation, then operation and removal |
 | [parameters.md](parameters.md) | Every parameter: what you must bring, what you may decide, the defaults |
 | [components.md](components.md) | The components, and how each one is expressed in the Terraform |
-| [architecture.png](architecture.png) / [architecture.svg](architecture.svg) | The reference architecture diagram |
-| [architecture.drawio](architecture.drawio) | The same diagram as an editable draw.io file: open it in [diagrams.net](https://app.diagrams.net), the draw.io desktop app or its VS Code extension. `architecture.py` and `architecture_drawio.py` generate the SVG and the draw.io file |
+| [architecture.png](../../architecture/aws/architecture.png) / [architecture.svg](../../architecture/aws/architecture.svg) | The reference architecture diagram, with the notes in [docs/architecture](../../architecture/README.md) |
+| [architecture.drawio](../../architecture/aws/architecture.drawio) | The same diagram as an editable draw.io file: open it in [diagrams.net](https://app.diagrams.net), the draw.io desktop app or its VS Code extension. [architecture.py](../../architecture/aws/architecture.py) generates the SVG |
 | [`infra/stack`](../../../infra/stack) | The Terraform root you apply, with [`terraform.tfvars.example`](../../../infra/stack/terraform.tfvars.example) |
 | [`infra/modules/knowledge-store`](../../../infra/modules/knowledge-store) | The module it calls, which holds everything |
 
-![Knowledge Store on AWS](architecture.png)
+![Knowledge Store on AWS](../../architecture/aws/architecture.png)
 
 Allow about an hour for a first installation, most of it waiting: Neptune and CloudFront take a
 while to create, and the image builds take a few minutes each.
@@ -510,7 +511,7 @@ master of the collection's ontology.
       take to answer this?" returns a report ([docs/workbench.md](../../workbench.md)).
 
 To measure answer quality, write an evaluation set (format in
-[docs/architectures/aws.md](../../architectures/aws.md#evaluation)) and run the `evaluate` output's
+[docs/architecture/aws/aws.md](../../architecture/aws/aws.md#evaluation)) and run the `evaluate` output's
 command as a signed-in user. Every question is a model run and costs money; without `--yes` the
 command prints its estimate and stops.
 

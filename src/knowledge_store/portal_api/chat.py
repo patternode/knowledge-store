@@ -56,19 +56,26 @@ TOOLS = [
     {"name": "describe_structured", "description": "The mapped tables and named metrics, with the snapshot each is bound to.",
      "input": {}, "required": []},
     {"name": "lookup_rows", "description": "Rows of one mapped type. filters are {attribute, op, value}; op is eq, neq, lt, lte, gt, gte or prefix. Each value has its cell id.",
-     "input": {"type": {"type": "string"}, "filters": {"type": "array"}, "limit": {"type": "integer"}},
+     "input": {"type": {"type": "string"}, "filters": {"type": "array", "items": {"$ref": "#/$defs/filter"}},
+               "limit": {"type": "integer"}},
      "required": ["type"]},
     {"name": "aggregate", "description": "A figure: a metric name, or type plus op (count, sum, min, max, avg), an attribute, an optional group_by and filters.",
      "input": {"metric": {"type": "string"}, "type": {"type": "string"}, "op": {"type": "string"},
-               "attribute": {"type": "string"}, "group_by": {"type": "string"}, "filters": {"type": "array"}},
+               "attribute": {"type": "string"}, "group_by": {"type": "string"},
+               "filters": {"type": "array", "items": {"$ref": "#/$defs/filter"}}},
      "required": []},
 ]
 
+FILTER = {"type": "object", "properties": {"attribute": {"type": "string"}, "op": {"type": "string"},
+                                           "value": {"type": "string"}}, "required": ["attribute", "value"]}
+
 
 def tool_config() -> dict:
+    def schema(t):
+        props = json.loads(json.dumps(t["input"]).replace('{"$ref": "#/$defs/filter"}', json.dumps(FILTER)))
+        return {"type": "object", "properties": props, "required": t["required"]}
     return {"tools": [{"toolSpec": {"name": t["name"], "description": t["description"],
-                                    "inputSchema": {"json": {"type": "object", "properties": t["input"],
-                                                             "required": t["required"]}}}} for t in TOOLS]}
+                                    "inputSchema": {"json": schema(t)}}} for t in TOOLS]}
 
 
 def vocabulary(idx: Index) -> str:
@@ -93,11 +100,27 @@ def profile_text(idx: Index) -> str:
 
 
 def run_tool(idx: Index, name: str, args: dict, private: bool) -> dict:
+    """One tool call. A failure goes back to the model as data, as the Gateway's tools do, so one
+    malformed argument costs a tool call rather than the whole answer."""
+    try:
+        return _run_tool(idx, name, args if isinstance(args, dict) else {}, private)
+    except Exception as e:  # noqa: BLE001
+        return {"error": f"{name} failed: {type(e).__name__}: {str(e)[:200]}"}
+
+
+def _limit(value, default: int, top: int) -> int:
+    try:
+        return max(1, min(int(value or default), top))
+    except (TypeError, ValueError):
+        return default
+
+
+def _run_tool(idx: Index, name: str, args: dict, private: bool) -> dict:
     if name == "search_entities":
         return idx.search_entities(args.get("query", ""), args.get("type"), private=private,
-                                   limit=min(int(args.get("limit") or 15), 40))
+                                   limit=_limit(args.get("limit"), 15, 40))
     if name == "list_entities":
-        return idx.search_entities("", args.get("type"), private=private, limit=min(int(args.get("limit") or 20), 50))
+        return idx.search_entities("", args.get("type"), private=private, limit=_limit(args.get("limit"), 20, 50))
     if name == "get_entity":
         e = idx.entities.get(args.get("id", ""))
         if not e or not idx.visible(e, private):
@@ -108,7 +131,7 @@ def run_tool(idx: Index, name: str, args: dict, private: bool) -> dict:
                 "in": [{**r, "s_label": label.get(r["s"])} for r in v["in"][:60]], "passages": v["passages"][:30]}
     if name == "search_passages":
         return {"passages": idx.search_passages(args.get("query", ""), private=private,
-                                                limit=min(int(args.get("limit") or 6), 12))}
+                                                limit=_limit(args.get("limit"), 6, 12))}
     if name == "read_passages":
         out = [idx.passage_view(p) for p in (args.get("ids") or [])[:10]
                if p in idx.passages and idx.visible(idx.passages[p], private)]
@@ -116,10 +139,10 @@ def run_tool(idx: Index, name: str, args: dict, private: bool) -> dict:
     if name in ("describe_structured", "lookup_rows", "aggregate"):
         from ..structured import query
         if name == "describe_structured":
-            return query.describe(idx.lake)
+            return query.describe(idx.lake, private=private)
         if name == "lookup_rows":
             return query.lookup_rows(idx.lake, args.get("type") or "", args.get("filters") or [],
-                                     limit=min(int(args.get("limit") or query.ROW_CAP), 100), private=private,
+                                     limit=args.get("limit") or query.ROW_CAP, private=private,
                                      cell_ids=args.get("cell_ids") or None)
         return query.aggregate(idx.lake, metric=args.get("metric") or "", type_name=args.get("type") or "",
                                op=args.get("op") or "", attribute=args.get("attribute") or "",
@@ -203,6 +226,7 @@ def ask(idx: Index, question: str, history: list[dict] | None, *, private: bool,
                          {"role": "assistant", "content": [{"text": turn["a"]}]}]
     messages.append({"role": "user", "content": [{"text": question}]})
     trace, usage, provider, reported = [], _blank_usage(), spend_provider(), False
+    figures: dict[str, dict] = {}  # every figure a tool returned in this question, by id
     rec.step("tool", f"Read the ontology (version {idx.version})")
     for _ in range(MAX_STEPS):
         rec.model_call()
@@ -217,7 +241,7 @@ def ask(idx: Index, question: str, history: list[dict] | None, *, private: bool,
         uses = [b["toolUse"] for b in msg["content"] if "toolUse" in b]
         if not uses:
             answer = "".join(b.get("text", "") for b in msg["content"]).strip()
-            cites = cited(idx, answer, private)
+            cites = cited(idx, answer, private, figures)
             rec.cite([c["id"] for c in cites])
             rec.step("done", f"Answered, citing {len(cites)} passage{'s' if len(cites) != 1 else ''}")
             return {"answer": answer, "citations": cites, "trace": trace, "usage": usage, "ontology_version": idx.version,
@@ -225,6 +249,8 @@ def ask(idx: Index, question: str, history: list[dict] | None, *, private: bool,
         results = []
         for tu in uses:
             out = run_tool(idx, tu["name"], tu.get("input") or {}, private)
+            if tu["name"] == "aggregate" and isinstance(out, dict) and out.get("id"):
+                figures[out["id"]] = out
             trace.append({"tool": tu["name"], "input": tu.get("input")})
             rec.tool(tu["name"], tu.get("input"), out)
             results.append({"toolResult": {"toolUseId": tu["toolUseId"],
@@ -291,9 +317,13 @@ def analyse(idx: Index, question: str, about: dict | None, *, private: bool, mod
             "usage": usage, "cost": _priced(rec, model_id, usage, reported)}
 
 
-def cited(idx: Index, answer: str, private: bool) -> list[dict]:
+def cited(idx: Index, answer: str, private: bool, figures: dict[str, dict] | None = None) -> list[dict]:
     """The sources an answer named. A passage is [p:<id>]. A cell is [c:<cell id>], and the cell
-    id already begins with c:, so the marker is [c:c:...]. A metric is [m:<metric id>] the same way."""
+    id already begins with c:, so the marker is [c:c:...]. A metric is [m:<metric id>] the same way.
+
+    A metric marker is shown only when a tool returned that figure in this question (figures),
+    with the figure and what it was computed over; a marker the model made up is dropped."""
+    figures = figures or {}
     import re
     out = []
     seen = set()
@@ -319,5 +349,10 @@ def cited(idx: Index, answer: str, private: bool) -> list[dict]:
                         "text": f"{cell.get('column')}: {cell.get('value')}",
                         "quotes": [str(cell.get("value"))], "row": cell.get("row") or []})
         else:
-            out.append({"id": ident, "kind": "metric", "title": ident, "text": "", "quotes": []})
+            fig = figures.get(ident)
+            if not fig or fig.get("figure") is None:
+                continue
+            from ..structured.query import describe_figure
+            out.append({"id": ident, "kind": "metric", "title": describe_figure(fig),
+                        "text": f"{describe_figure(fig)}: {fig.get('figure')}", "quotes": [str(fig.get("figure"))]})
     return out

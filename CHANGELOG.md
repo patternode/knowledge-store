@@ -6,6 +6,19 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 ### Fixed
 
+- A cited total is checked against its own computation. An ad hoc figure's id names its type, attribute, filters and group-by (`m:<op>:<digest>/<snapshot>`), so two totals over one snapshot no longer share an id, a wrong total can no longer pass on another citation's figure, and a true one is no longer dropped for sharing an id.
+- One group of a grouped figure can be cited (`group_by`, `group`); before, every grouped answer was dropped.
+- Table values written as `1,100`, `$1,200` or `14 July 2023` are stored and compared in one canonical form, so totals, filters, date ranges and citations read them; a value that is not its type is skipped and counted, never summed.
+- A column mapped in a later version, or a table whose scope changes, is bound again instead of being kept unchanged with no cells.
+- `describe_structured` no longer shows a private table, or a metric over one, to a public caller.
+- Keys containing commas stay distinct rows; key columns can be filtered; a row with only its key is counted; a file that names a column twice, is not UTF-8 or is too large is reported instead of bound wrongly.
+- The portal's own tool loop returns a failed tool call to the model instead of failing the answer, and shows a cited figure only when a tool returned it.
+- The grounding guardrail sees a cited cell's whole row and a figure's computation, not just `column: value`.
+- The question cost keeps model calls the hooks did not report.
+- The chat page: switching collection closes the old collection's sources; a focused workbench section keeps focus while a question runs; citation links' expanded state stays in step with the source panel; highlights stay aligned after characters such as `İ`; a closed workbench stays closed; a sample link to a mapped table (`tables/<name>.csv`) opens its bound snapshot (`GET /api/table`).
+
+### Fixed
+
 - A mapped CSV is found when it is uploaded into the collection's landing folder, not only when its key ends with the mapping's `tables/` path. The same bytes uploaded again under the mapped path stay visible. Two files of that name are reported rather than one being chosen. A `mappings.yaml` added beside an already published ontology version is reported instead of ignored, and the sweep publishes that ontology before it parses uploads.
 - The space-missions evaluation set asks the catalog as well as the documents: Juno's sample cost, the Atlas V missions, that count, their total sample cost, and the name of `atlas-v-551`. An offline smoke test answers those from the bound tables.
 

@@ -8,7 +8,7 @@ entity resolution, aliasing, and cross-document linking have something real to w
 
 Two invented CSV files sit beside those documents as the structured half of the same
 collection. They are the fixture for structured lookup
-([docs/architectures/structured.md](../../docs/architectures/structured.md)). The mapping names
+([docs/architecture/aws/structured.md](../../docs/architecture/aws/structured.md)). The mapping names
 them, so refine and extract skip those files and they stay tables. Upload `tables/` with the
 documents. A CSV the mapping does not name is still read as prose. The invented costs never
 become passages. A question that asks the catalog cites the cell.

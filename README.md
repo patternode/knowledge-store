@@ -124,7 +124,7 @@ On AWS it is a minimal GraphRAG reference architecture you deploy from Terraform
 that applies the ontology and loads a knowledge graph into Amazon Neptune, a Bedrock Knowledge
 Base over the passages, and a chat agent on AgentCore that queries the graph in the ontology's
 terms and shows only answers it can ground in cited passages. See
-[docs/architectures/aws.md](docs/architectures/aws.md).
+[docs/architecture](docs/architecture/README.md).
 
 ## Deploy
 
@@ -219,7 +219,7 @@ content: the `private-readers` Cognito group, or the private roles of `site_sign
 A table is not this path yet. CSV and JSON in the lake are parsed as text and extracted like
 prose, so a filter or a total has no cell to cite. The draft for keeping a mapped CSV as a table
 beside the documents, and for how AWS Context Ontology Accelerator fits a later live source, is
-[docs/architectures/structured.md](docs/architectures/structured.md). The worked catalog is the
+[docs/architecture/aws/structured.md](docs/architecture/aws/structured.md). The worked catalog is the
 invented tables in the space-missions corpus
 ([examples/space-missions](examples/space-missions/README.md)).
 
@@ -234,7 +234,7 @@ python -m knowledge_store.evals examples/evals/space-missions.yaml --lake <lake>
 
 The scoring needs no model as judge: facts stated, near misses avoided, the share of claims that
 passed the citation checks, expected sources cited, and declines. See
-[docs/architectures/aws.md](docs/architectures/aws.md#evaluation).
+[docs/architecture/aws/aws.md](docs/architecture/aws/aws.md#evaluation).
 
 ## Run it locally
 
@@ -265,7 +265,7 @@ version. Chat is limited by `daily_questions` per user.
 - The portal's projection is held in memory by one function by default. That is right for tens of
   thousands of entities and wrong beyond it. For more, the pipeline can load the same projection
   into a document store and a graph database (`PROJECTION_STORE`, `GRAPH_BACKEND`; see
-  [docs/architectures/backends.md](docs/architectures/backends.md)), behind
+  [docs/architecture/aws/backends.md](docs/architecture/aws/backends.md)), behind
   the same API. On AWS the agent's graph tools query Neptune; the portal API's own routes still read memory.
 - Delta selection is a heuristic (see above).
 - Scanned PDFs need OCR, which is not built in.

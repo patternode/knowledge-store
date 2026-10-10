@@ -14,15 +14,14 @@ is not in its passage is dropped, because a repair turn costs more than the cand
 
 from __future__ import annotations
 
-import datetime as dt
 import re
-from decimal import Decimal, InvalidOperation
 
 from rdflib import Graph
 
 from ..ontology.model import OntologySpec
 from ..refine.chunk import Passage
 from ..sparql_lock import PARSE_LOCK
+from ..values import parse_value  # noqa: F401  (re-exported: extraction and bind share one reading of a value)
 
 SECTIONS = ("entities", "attributes", "relations")
 
@@ -46,35 +45,6 @@ def _value_stated(value: str, kind: str, texts: list[str]) -> bool:
         nums = set().union(*(_numbers(t) for t in texts))
         return digits in nums or digits.rstrip("0").rstrip(".") in {n.rstrip("0").rstrip(".") for n in nums if "." in n}
     return False
-
-
-def parse_value(value: str, kind: str):
-    """The literal's Python value, or a ValueError naming what is wrong."""
-    v = value.strip()
-    if kind == "decimal":
-        try:
-            return Decimal(v.replace(",", "").lstrip("$€£").rstrip("%").strip())
-        except InvalidOperation:
-            raise ValueError(f"{value!r} is not a number") from None
-    if kind == "integer":
-        try:
-            return int(v.replace(",", ""))
-        except ValueError:
-            raise ValueError(f"{value!r} is not a whole number") from None
-    if kind == "date":
-        for fmt in ("%Y-%m-%d", "%d %B %Y", "%B %d, %Y", "%d %b %Y", "%b %d, %Y", "%Y"):
-            try:
-                return dt.datetime.strptime(v, fmt).date()
-            except ValueError:
-                continue
-        raise ValueError(f"{value!r} is not a date (write it as YYYY-MM-DD or as the passage has it)")
-    if kind == "boolean":
-        if v.lower() in ("true", "yes"):
-            return True
-        if v.lower() in ("false", "no"):
-            return False
-        raise ValueError(f"{value!r} is not true or false")
-    return v
 
 
 def shape_errors(result, spec: OntologySpec, known: dict[str, str] | None = None) -> list[str]:

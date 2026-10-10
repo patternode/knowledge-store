@@ -1,8 +1,8 @@
 # Knowledge Store on AWS
 
 The reference implementation: a minimal GraphRAG system that anyone can deploy from Terraform
-([`infra/modules/knowledge-store`](../../infra/modules/knowledge-store)). To install it, follow
-the [AWS installation guide](../deploy/aws/README.md). It has two use cases.
+([`infra/modules/knowledge-store`](../../../infra/modules/knowledge-store)). To install it, follow
+the [AWS installation guide](../../deploy/aws/README.md). It has two use cases.
 
 1. **Ingestion.** A corpus goes in. An ontology is applied to it: one you bring, or one discovered
    from the documents and reviewed. Extraction against the ontology fills a knowledge graph.
@@ -51,7 +51,7 @@ the [AWS installation guide](../deploy/aws/README.md). It has two use cases.
 By default there is no NAT gateway. The pipeline's tasks run in public subnets to reach Bedrock. Neptune
 and the graph tools' Lambda sit in private subnets with no route out, and reach S3 through a
 gateway endpoint. A NAT gateway (`network.enable_nat`), the VPC's range and zones, or a VPC of your own
-(`network.existing`) are inputs; see the [installation guide](../deploy/aws/parameters.md#network).
+(`network.existing`) are inputs; see the [installation guide](../../deploy/aws/parameters.md#network).
 
 ## How a question is answered
 
@@ -72,7 +72,7 @@ gateway endpoint. A NAT gateway (`network.enable_nat`), the VPC's range and zone
    pass, with numbered links to their passages and documents.
 
 The agent streams each of these steps to the portal as it happens, and the chat page's workbench
-shows them while the person waits ([docs/workbench.md](../workbench.md)).
+shows them while the person waits ([docs/workbench.md](../../workbench.md)).
 
 ## Grounding: no statement without a source
 
@@ -89,7 +89,7 @@ The model's answer is never shown as written. It is a list of claims, each with 
 A failed citation goes back to the agent once (`grounding_repairs`), with the reason. What still
 fails is removed. A claim left without a citation is removed. When no claim is left, the answer
 says the sources cannot answer the question, and lists what was missing. The checks are in
-[`agent/grounding.py`](../../src/knowledge_store/agent/grounding.py) and are tested without a model.
+[`agent/grounding.py`](../../../src/knowledge_store/agent/grounding.py) and are tested without a model.
 
 ## Valves
 
@@ -97,13 +97,22 @@ says the sources cannot answer the question, and lists what was missing. The che
 |---|---|---|
 | Questions per person per day | 30 | `daily_questions` (the chat API, DynamoDB) |
 | Questions answered at once | 20 | `valves.chat_concurrency` (the chat API Lambda's reserved concurrency; 0 turns chat off) |
-| Tool calls per question | 16 | `valves.max_tool_calls`; past it, tools refuse and the agent answers from what it has read |
+| Tool calls per question | 16 | `valves.max_tool_calls`; past it, tools refuse and the agent answers from the passages, cells and figures it already has |
 | Model calls per question | 14 | `valves.max_model_calls` |
 | Output tokens per model call | 4000 | `valves.max_output_tokens` |
 | Repair turns | 1 | `valves.grounding_repairs` |
 | Question length, history | 2000 characters, 6 turns | the agent |
-| Guardrail | on | `guardrail`: prompt attacks and harmful content in questions, grounding of claims |
+| Guardrail | on | `guardrail`: prompt attacks and harmful content in questions; grounding of each claim against the passage, cell, or figure it cites |
+| Table queries | the catalog questions below | `valves.TABLE_QUERIES`; added to the prompt when the collection's mapping has the attribute or metric |
 | Monthly budget alert | off | `budget.monthly_usd` |
+
+A question answered from a mapped table uses these same limits. When the mapping can answer it, the question is named in the prompt and the claim is checked against the cell or the figure:
+
+- What sample cost does the catalog give Juno?
+- Which missions launched on an Atlas V?
+- How many catalogued missions launched on an Atlas V?
+- What total sample cost does the catalog give the Atlas V missions?
+- What name does the catalog give the launch vehicle atlas-v-551?
 
 ## Do we need a vector store?
 
@@ -130,8 +139,8 @@ AWS Context Ontology Accelerator fits a later live source, is
 
 An evaluation set is a YAML file of questions, each with the facts a right answer states, a
 near miss it must not state, the documents it should cite, and whether the sources can answer it
-at all ([format](../../src/knowledge_store/evals/score.py); an example for the space-missions
-corpus is in [`examples/evals`](../../examples/evals/space-missions.yaml)). Scoring is
+at all ([format](../../../src/knowledge_store/evals/score.py); an example for the space-missions
+corpus is in [`examples/evals`](../../../examples/evals/space-missions.yaml)). Scoring is
 deterministic, with no model as judge:
 
 | Measure | Meaning |

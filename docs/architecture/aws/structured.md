@@ -39,7 +39,7 @@ happens to contain commas is undisturbed.
 Structured and unstructured are two readings of one landing tree. The space-missions sample is
 both: the prose and JSON documents already in that corpus, and two invented catalog CSVs beside
 them. A question cites a passage from a document and a cell from a CSV. See
-[examples/space-missions](../../examples/space-missions/README.md). The Sherlock Holmes folder
+[examples/space-missions](../../../examples/space-missions/README.md). The Sherlock Holmes folder
 stays a fetch of the stories only.
 
 | Mapping field | For a CSV in the lake | Later, for a live table |
@@ -72,7 +72,7 @@ tables:
 ```
 
 The worked files, including the launch-vehicle table the relation joins to, are
-[`examples/space-missions/ontology/mappings.yaml`](../../examples/space-missions/ontology/mappings.yaml).
+[`examples/space-missions/ontology/mappings.yaml`](../../../examples/space-missions/ontology/mappings.yaml).
 
 `knowledge-store ontology publish` checks the mapping the way review checks an edit. A class,
 attribute, relation, or datatype the ontology does not have is refused. A column datatype that
@@ -85,11 +85,11 @@ The release renders the mapping, as it renders every other consumer form
 | Rendition | For |
 |---|---|
 | `structured/mapping.json` | The sweep and the tools: class, key, columns, logical table |
-| `r2rml/mapping.ttl` | The same triples maps the accelerator writes for Ontop. Generated, never edited. The space-missions sample checks an illustrative copy in [`ontology/r2rml-mapping.ttl`](../../examples/space-missions/ontology/r2rml-mapping.ttl) |
+| `r2rml/mapping.ttl` | The same triples maps the accelerator writes for Ontop. Generated, never edited. The space-missions sample checks an illustrative copy in [`ontology/r2rml-mapping.ttl`](../../../examples/space-missions/ontology/r2rml-mapping.ttl) |
 
 Metrics are a second curated file, not a rendition. The space-missions sample uses the accelerator's
 OSI v1.0 import, with `vendor_name: COA` under `custom_extensions`
-([`metrics.osi.yaml`](../../examples/space-missions/ontology/metrics.osi.yaml)). The
+([`metrics.osi.yaml`](../../../examples/space-missions/ontology/metrics.osi.yaml)). The
 expression is a complete read-only `SELECT`. Publish checks that its `source_table` is a
 `logical_table` in the mapping and that each `ontology_concepts` entry is a class. The local
 checker recomputes the figure from the snapshot. The `SELECT` is what a later import runs.
@@ -123,8 +123,21 @@ the bind report rather than invented.
 SHACL runs on the snapshot graph with the ontology shapes plus the cell shape below. A snapshot
 that fails is not activated. The previous snapshot stays readable: a citation names the snapshot
 it was checked against, the way a passage citation names a document id. New answers use the
-snapshot `ontology/active` binding points at. Bind is skipped when the snapshot hash is
-unchanged.
+snapshot `ontology/active` binding points at. Bind keeps the held snapshot only when three
+things are unchanged: the file's hash, the table's mapping (the binding stores a hash of it) and
+the table's scope. A column mapped in a later version, or a table made private, is bound again.
+
+Values are stored in one canonical form: `1,100` and `$1,100` are `1100`, `14 July 2023` is
+`2023-07-14`. The cell keeps the file's text as `raw`. Filters, totals and the citation check
+all read the canonical value. A value that is not its column's type is a miss in the bind
+report; its cell is kept but marked invalid, a total leaves it out and says how many it
+skipped, and a claim cannot cite it.
+
+Every key column gets a cell, so a filter can name the key and a count sees every row, even a
+row whose other columns are empty. A key of several columns joins its parts with commas, each
+part's own commas escaped, so `x,1` and `x,2` stay two rows. A file is refused, and reported
+as missing, when it names a column twice, when it is not UTF-8, or when it passes 50 MB or
+200,000 rows. Headers are matched with their surrounding spaces trimmed.
 
 Copied rows join the graph the tools already query, so `neighbourhood` and `find_paths` cross a
 document fact and a table fact. The projection indexes them with the document entities. A table
@@ -176,16 +189,22 @@ A claim may cite either kind:
 | Citation | Checked by |
 |---|---|
 | Passage id and a quote | The passage exists, the caller may read it, the quote occurs in it, the quote is long enough |
-| Cell id and a value | The cell exists in that snapshot, the caller may read the source, the value equals the cell. Numbers compare as decimals. Dates compare as dates |
-| Metric or aggregate, with its filters | The checker recomputes the figure over that snapshot and those filters, and the stated figure matches |
+| Cell id and a value | The cell exists in that snapshot, the caller may read the source, the cell holds a valid value, and the value equals it. Numbers compare as numbers (`1,100` is 1100). Dates compare as dates |
+| Metric or aggregate, with its filters | The checker recomputes the figure from what this citation says (its metric, or its type, attribute, filters and group-by) over that snapshot, and the stated figure matches. The recomputed id must be the id the citation names. An average may be stated rounded to the places it gives |
 
 A claim that mixes a passage and a cell must pass both checks. A cell citation does not pass
 the twelve-character quote rule, and a passage quote does not stand in for a cell. The guardrail's
-contextual grounding check still sees the claim against the returned text, which for a cell is
-the column name and the value. One repair turn, as today. A claim with nothing left is dropped.
+contextual grounding check sees the claim against what it cites: for a cell, the table, the row
+key and the whole row, so the entity the value belongs to is in the source; for a figure, what
+it was computed over and the figure. One repair turn, as today. A claim with nothing left is
+dropped.
 
 The citation id in an answer is `c:<source>/<snapshot>/<logical_table>/<key>/<column>` for a
-cell and `m:<metric>/<snapshot>` for a metric, next to `p:<passage id>`. The logical table is
+cell, `m:<metric>/<snapshot>` for a named metric and `m:<op>:<digest>/<snapshot>` for an ad hoc
+aggregate, next to `p:<passage id>`. The digest covers the type, the attribute, the filters and
+the group-by, so two different totals over one snapshot never share an id. One group of a grouped
+figure is cited by the figure's id with `group_by` and `group`. A public caller is not told a
+private table exists: `describe_structured` leaves it, and every metric over it, out. The logical table is
 the one the mapping names, so the space-missions catalog cites
 `c:missions-tables/<snapshot>/missions/juno/vehicle_id`.
 
@@ -290,7 +309,7 @@ The mapping rendition is R2RML, the file the accelerator's ontology engine write
 virtual knowledge graph reads. One triples map per table, the key as an IRI template
 (`rr:template`), each column a predicate (`rr:column`), a foreign key a join
 (`rr:joinCondition`). The space-missions file
-[`r2rml-mapping.ttl`](../../examples/space-missions/ontology/r2rml-mapping.ttl) is that shape.
+[`r2rml-mapping.ttl`](../../../examples/space-missions/ontology/r2rml-mapping.ttl) is that shape.
 Publish generates it from `mappings.yaml`. Ontop is the program that executes it against a live
 database, and this module does not run Ontop to answer from a CSV.
 
@@ -299,7 +318,7 @@ The metric file is OSI v1.0 with a `custom_extensions` block of `vendor_name: CO
 `source_table`, and `ontology_concepts` (the accelerator stores the last as
 `ov:governedMetricFor`). The expression is a complete read-only `SELECT`, which is what the
 accelerator's validator accepts. The space-missions file
-[`metrics.osi.yaml`](../../examples/space-missions/ontology/metrics.osi.yaml) is that shape.
+[`metrics.osi.yaml`](../../../examples/space-missions/ontology/metrics.osi.yaml) is that shape.
 The `aggregate` tool runs the metric by name and the checker recomputes the figure from the
 snapshot. An ad hoc aggregate stays inside the operators and the single group-by the tool
 schema lists.

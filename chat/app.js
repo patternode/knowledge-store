@@ -101,10 +101,12 @@ function main() {
       else if (/[*_`#>|]/.test(ch)) ch = ' ';
       else {
         const n = ch.normalize('NFKC');
-        if (n !== ch) { for (const c of n) { out += c.toLowerCase(); map.push(i); } continue; }
+        if (n !== ch) ch = n;
       }
-      out += ch.toLowerCase();
-      map.push(i);
+      // One map entry per code unit added: lower-casing can lengthen a character ('İ' becomes two).
+      const low = ch.toLowerCase();
+      out += low;
+      for (let k = 0; k < low.length; k++) map.push(i);
     }
     return { text: out, map };
   }
@@ -296,6 +298,7 @@ function main() {
       row.addEventListener('click', () => {
         S.sourceN = expanded ? null : s.n;
         S.lastCite = null;
+        for (const a of document.querySelectorAll('a.cite')) a.setAttribute('aria-expanded', 'false');
         renderSources();
       });
       return h('div', { class: 'source-item', id: cardId(turn, s.n) }, row, expanded ? sourceBody(turn, s, claims) : null);
@@ -584,12 +587,16 @@ function main() {
     const price = s.usd != null ? usdText(s.usd) : '';
     return [think, tokens, price].filter(Boolean).join(' · ');
   }
-  function stepItem(s) {
+  // Which steps' inputs the person opened, so an update while the question runs does not close them.
+  const INPUT_OPEN = new Set();
+  function stepItem(s, turn) {
     const terms = Object.entries(s.terms || {}).flatMap(([k, names]) => (names || []).map((n) => h('span', { class: 'term-mini', title: KIND_LABEL[k] || k, text: n })));
     const type = stepType(s);
     const source = querySource(s);
+    const inputKey = `${turn ? turn.key : 0}:${s.n}`;
     const input = s.input && Object.keys(s.input).length
-      ? h('details', { class: `step-input${source ? ' ' + source : ''}` },
+      ? h('details', { class: `step-input${source ? ' ' + source : ''}`, open: INPUT_OPEN.has(inputKey),
+        ontoggle: (e) => { if (e.target.open) INPUT_OPEN.add(inputKey); else INPUT_OPEN.delete(inputKey); } },
         h('summary', { text: SOURCE_LABEL[source] || 'Input' }),
         h('pre', { text: JSON.stringify(s.input, null, 1) })) : null;
     const when = s.kind === 'tool' && s.took_ms != null ? `${secs(s.took_ms)} in the tool · ` : '';
@@ -724,18 +731,20 @@ function main() {
     if (x === 0) return '$0.00';
     return '$' + (Math.abs(x) < 0.01 ? x.toFixed(4) : x.toFixed(2));
   }
-  // Sections start collapsed. A section the person opens stays open while the steps update.
-  const BENCH_OPEN = new Set();
-  function fold(titleId, title, ...body) {
-    const attrs = { class: 'bench-fold' };
-    if (BENCH_OPEN.has(titleId)) attrs.open = true;
-    const details = h('details', attrs,
-      h('summary', null, h('h3', { id: titleId, text: title })),
-      h('div', { class: 'bench-fold-body' }, body));
-    details.addEventListener('toggle', () => {
-      if (details.open) BENCH_OPEN.add(titleId);
-      else BENCH_OPEN.delete(titleId);
-    });
+  // Sections start collapsed. A section the person opens stays open while the steps update, and
+  // a section is built once: an update replaces its body only, so a focused summary keeps focus
+  // while a question runs. The summary itself is the section's label (a heading inside a summary
+  // loses its role in some screen readers).
+  function fold(box, titleId, title, ...body) {
+    let details = box.querySelector(':scope > details.bench-fold');
+    let summary = details && details.querySelector(':scope > summary');
+    if (!details || !summary || summary.id !== titleId) {
+      summary = h('summary', { id: titleId, class: 'fold-title' });
+      details = h('details', { class: 'bench-fold' }, summary, h('div', { class: 'bench-fold-body' }));
+      clear(box, details);
+    }
+    if (summary.textContent !== title) summary.textContent = title;
+    clear(details.querySelector(':scope > .bench-fold-body'), body);
     return details;
   }
   function renderCost(t) {
@@ -744,10 +753,10 @@ function main() {
     const cost = t && t.result && t.result.cost;
     box.hidden = false;
     if (!cost) {
-      clear(box, fold('bench-cost-title', 'Cost',
+      fold(box, 'bench-cost-title', 'Cost',
         h('p', { class: 'small muted', text: !t || running
           ? 'The price appears when the question finishes.'
-          : 'This answer did not report token use, so it has no price.' })));
+          : 'This answer did not report token use, so it has no price.' }));
       return;
     }
     const rows = cost.parts || [];
@@ -755,7 +764,7 @@ function main() {
     const total = cost.priced && cost.usd != null
       ? h('p', { class: 'cost-total' }, 'This question ', h('b', { text: usdText(cost.usd) }))
       : h('p', { class: 'cost-total', text: 'This model has no list price here.' });
-    clear(box, fold('bench-cost-title', 'Cost',
+    fold(box, 'bench-cost-title', 'Cost',
       total,
       cost.note ? h('p', { class: 'small muted', text: str(cost.note) }) : null,
       cost.omitted ? h('p', { class: 'small muted', text: str(cost.omitted) }) : null,
@@ -767,17 +776,17 @@ function main() {
           h('td', { class: 'num-cell', text: p.usd == null ? 'not priced' : usdText(p.usd) }))))) : null,
       calls.length ? [h('h4', { text: 'By model call' }),
         h('ul', { class: 'cost-calls' }, calls.map((c) => h('li', null,
-          h('span', { text: str(c.title) }), h('span', { class: 'num-cell', text: usdText(c.usd) }))))] : null));
+          h('span', { text: str(c.title) }), h('span', { class: 'num-cell', text: usdText(c.usd) }))))] : null);
   }
   function renderBench() {
     const t = S.selected;
     const stepsBox = $('#bench-steps'), termsBox = $('#bench-terms');
     if (!t) {
-      clear(stepsBox, fold('bench-steps-title', 'Steps',
-        h('p', { class: 'small muted', text: 'Ask a question to see what the agent does: each search, each read and each check, as it happens.' })));
+      fold(stepsBox, 'bench-steps-title', 'Steps',
+        h('p', { class: 'small muted', text: 'Ask a question to see what the agent does: each search, each read and each check, as it happens.' }));
       termsBox.hidden = false;
-      clear(termsBox, fold('bench-terms-title', 'Ontology used',
-        h('p', { class: 'small muted', text: 'The terms a question uses appear here.' })));
+      fold(termsBox, 'bench-terms-title', 'Ontology used',
+        h('p', { class: 'small muted', text: 'The terms a question uses appear here.' }));
       renderCost(null);
       return renderSession();
     }
@@ -788,42 +797,42 @@ function main() {
       ? h('p', { class: 'bench-status' }, h('span', { class: 'spinner', 'aria-hidden': 'true' }), ` Working for ${took} s: ${plural(tools, 'tool call')} so far`)
       : h('p', { class: 'bench-status' }, t.status === 'failed' ? 'Stopped' : 'Done',
         `: ${plural(tools, 'tool call')}, ${plural(models, 'model call')}${t.result && t.result.ms ? `, ${secs(t.result.ms)}` : ''}`);
-    clear(stepsBox, fold('bench-steps-title', t.mode === 'gaps' ? 'Steps: what would it take' : 'Steps',
+    fold(stepsBox, 'bench-steps-title', t.mode === 'gaps' ? 'Steps: what would it take' : 'Steps',
       h('p', { class: 'bench-q', text: t.question }),
       statusLine,
-      t.steps.length ? h('ol', { class: 'steps' }, t.steps.map(stepItem))
+      t.steps.length ? h('ol', { class: 'steps' }, t.steps.map((s) => stepItem(s, t)))
         : h('p', { class: 'small muted', text: running ? 'Waiting for the first step.' : 'This answer reported no steps.' }),
-      t.steps.length ? stepSummary(t) : null));
+      t.steps.length ? stepSummary(t) : null);
     renderCost(t);
     const hits = t.hits || {};
     const groups = Object.keys(KIND_LABEL).filter((k) => Object.keys(hits[k] || {}).length);
     termsBox.hidden = false;
-    clear(termsBox, fold('bench-terms-title', t.mode === 'gaps' ? 'Ontology the analyst looked at' : 'Ontology used',
+    fold(termsBox, 'bench-terms-title', t.mode === 'gaps' ? 'Ontology the analyst looked at' : 'Ontology used',
       groups.length
         ? [h('p', { class: 'small muted', text: 'Asked for: the agent searched by it. Read: it came back in what the agent read. Cited: a fact of it is in a passage the answer cites. Select one to see it in the ontology.' }),
           groups.map((k) => [h('h4', { text: KIND_LABEL[k] }),
             h('p', { class: 'terms' }, Object.entries(hits[k]).map(([name, levels]) => termChip(k, name, levels)))])]
-        : h('p', { class: 'small muted', text: 'The terms a question uses appear here.' })));
+        : h('p', { class: 'small muted', text: 'The terms a question uses appear here.' }));
     renderSession();
   }
   function renderSession() {
     const u = window.KS.sessionUsage(S.id), box = $('#bench-session');
     box.hidden = false;
     if (!u.questions) {
-      clear(box, fold('bench-session-title', 'This session',
-        h('p', { class: 'small muted', text: 'No questions in this session yet.' })));
+      fold(box, 'bench-session-title', 'This session',
+        h('p', { class: 'small muted', text: 'No questions in this session yet.' }));
       return;
     }
     const rows = Object.keys(KIND_LABEL).flatMap((k) => Object.entries(u[k] || {}).map(([name, c]) => ({ k, name, c, n: Math.max(c.queried, c.read, c.cited) })))
       .sort((a, b) => b.c.cited - a.c.cited || b.n - a.n || a.name.localeCompare(b.name)).slice(0, 10);
     const q = new URLSearchParams({ overlay: 'session' });
     if (S.collections.length > 1) q.set('c', S.id);
-    clear(box, fold('bench-session-title', 'This session',
+    fold(box, 'bench-session-title', 'This session',
       h('p', { class: 'small muted', text: `${plural(u.questions, 'question')} answered. The terms they used most:` }),
       h('table', { class: 'kv small' }, h('thead', null, h('tr', null, ['Term', 'Read', 'Cited'].map((x) => h('th', { scope: 'col', text: x })))),
         h('tbody', null, rows.map((r) => h('tr', null, h('td', null, h('a', { href: ontologyLink(r.k, r.name), text: r.name })),
           h('td', { class: 'num-cell', text: String(r.c.read) }), h('td', { class: 'num-cell', text: String(r.c.cited) }))))),
-      h('p', null, h('a', { href: `ontology.html?${q}` }, 'Show this session on the ontology'))));
+      h('p', null, h('a', { href: `ontology.html?${q}` }, 'Show this session on the ontology')));
   }
   function selectTurn(turn) {
     for (const t of S.turns) t.el.classList.toggle('selected', t === turn);
@@ -839,7 +848,7 @@ function main() {
     btn.textContent = on ? 'User view' : 'Demonstrate';
     btn.title = on ? 'Hide the sample questions and the workbench' : 'Show the sample questions and the workbench';
     $('#bench-open').hidden = !on;
-    if (on) setBench(wide(), false);
+    if (on) setBench(wide() && lstore.get(BENCH_KEY) !== 'closed', false);
     else setBench(false, false);
     if (remember) lstore.set(DEMO_KEY, on ? 'on' : 'off');
   }
@@ -891,6 +900,19 @@ function main() {
     if (!/^https:\/\/[a-z0-9.-]+(?:\/[^\s]*)?$/i.test(s) || /[<>"']/.test(s)) return '';
     return s;
   }
+  // A mapped table's own file, named as its mapping names it (the server allows the same form).
+  const tableLink = (link) => (/^tables\/[A-Za-z0-9][A-Za-z0-9._-]*\.csv$/.test(str(link)) ? str(link) : '');
+  async function openTable(location, btn) {
+    btn.disabled = true;
+    try {
+      const d = await api('/table', { c: S.id, location });
+      const url = safeUrl(d && d.url);
+      if (url) window.open(url, '_blank', 'noopener,noreferrer');
+      else btn.title = 'This table has no file to open here.';
+    } catch (e) {
+      btn.title = e.status === 404 ? 'This table is not bound, or you do not have access to it.' : e.message;
+    } finally { btn.disabled = false; }
+  }
   function useSample(text) {
     setMode('ask');
     const ta = $('#question');
@@ -914,10 +936,13 @@ function main() {
         qs.map((q) => {
           const b = h('button', { class: `sample ${lv.id}`, type: 'button' }, q.text);
           b.addEventListener('click', () => useSample(q.text));
-          const href = safeSampleLink(q.link);
-          const link = href
-            ? h('a', { class: 'sample-link', href, target: '_blank', rel: 'noopener noreferrer' }, q.link_label || 'Open')
-            : null;
+          const href = safeSampleLink(q.link), table = tableLink(q.link);
+          let link = null;
+          if (href) link = h('a', { class: 'sample-link', href, target: '_blank', rel: 'noopener noreferrer' }, q.link_label || 'Open');
+          else if (table) {
+            link = h('button', { class: 'sample-link linkish', type: 'button' }, q.link_label || table.split('/').pop());
+            link.addEventListener('click', () => openTable(table, link));
+          }
           return link ? h('div', null, b, link) : b;
         }));
     }));
@@ -925,6 +950,12 @@ function main() {
   function switchCollection(id) {
     if (S.busy || id === S.id) return;
     S.id = id; S.gen++; S.turns = []; S.selected = null;
+    // the source panel belongs to the old collection's answers: close it and forget them
+    S.sourceTurn = null; S.sourceN = null; S.lastCite = null;
+    $('#sources').hidden = true;
+    $('#sources-open').hidden = true;
+    $('#sources-open').setAttribute('aria-expanded', 'false');
+    clear($('#sources-body')); $('#sources-q').textContent = '';
     lstore.set(COLL_KEY, id);
     clear($('#log'));
     showCollection();
