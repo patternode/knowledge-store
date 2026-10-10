@@ -151,6 +151,19 @@ variable "daily_questions" {
   type    = number
   default = 30
 }
+variable "api_throttle" {
+  description = "the portal API's throttling, for the whole API: steady requests per second and burst"
+  type = object({
+    rate_limit  = optional(number, 20)
+    burst_limit = optional(number, 50)
+  })
+  default = {}
+}
+variable "portal_web_acl_arn" {
+  type        = string
+  default     = ""
+  description = "a CLOUDFRONT-scope web ACL (us-east-1) to attach to the portal's distribution, for example the one a CloudFront flat-rate plan creates; empty attaches none"
+}
 variable "force_destroy_lake" {
   type    = bool
   default = false

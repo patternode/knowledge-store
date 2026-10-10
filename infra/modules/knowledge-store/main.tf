@@ -199,6 +199,8 @@ module "portal" {
   domain_name                  = var.portal_domain.name
   certificate_arn              = var.portal_domain.certificate_arn
   site_sign_in                 = var.site_sign_in
+  api_throttle                 = var.api_throttle
+  web_acl_arn                  = var.portal_web_acl_arn
   service_clients = local.site ? {
     token_endpoint = module.identity.token_endpoint
     public         = { id = module.identity.machine_client_ids["site-public"], secret = module.identity.machine_client_secrets["site-public"] }

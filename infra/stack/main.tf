@@ -32,6 +32,8 @@ module "knowledge_store" {
   network                      = var.network
   portal_domain                = var.portal_domain
   site_sign_in                 = var.site_sign_in
+  api_throttle                 = var.api_throttle
+  portal_web_acl_arn           = var.portal_web_acl_arn
   permissions_boundary         = var.permissions_boundary
   log_retention_days           = var.log_retention_days
 }

@@ -4,6 +4,10 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 ## [Unreleased]
 
+### Added
+
+- `portal_web_acl_arn` attaches an existing web ACL, such as a CloudFront flat-rate plan's, to the portal's distribution, and `api_throttle` sets the portal API's throttle (default 20 a second, burst 50, as before). Both are off or unchanged by default.
+
 ### Fixed
 
 - A cited total is checked against its own computation. An ad hoc figure's id names its type, attribute, filters and group-by (`m:<op>:<digest>/<snapshot>`), so two totals over one snapshot no longer share an id, a wrong total can no longer pass on another citation's figure, and a true one is no longer dropped for sharing an id.
