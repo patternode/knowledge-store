@@ -4,6 +4,10 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 ## [Unreleased]
 
+### Documentation
+
+- `docs/architecture/aws/structured.md` explains how to add tables to a collection whose ontology came from discovery (the attributes to add, a mapping in that ontology's terms, `ontology_dir` and the CSV upload) and the symptom when the mapping is missing.
+
 ### Added
 
 - `portal_web_acl_arn` attaches an existing web ACL, such as a CloudFront flat-rate plan's, to the portal's distribution, and `api_throttle` sets the portal API's throttle (default 20 a second, burst 50, as before). Both are off or unchanged by default.
