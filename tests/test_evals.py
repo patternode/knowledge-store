@@ -34,6 +34,17 @@ def test_the_example_set_loads():
     assert {q.structured["tool"] for q in catalog} == {"lookup_rows", "aggregate"}
 
 
+def test_the_holmes_set_loads_and_scores_the_moriarty_questions():
+    ev = score.load(ROOT / "examples/evals/sherlock-holmes.yaml")
+    assert ev.collection == "holmes" and len(ev.questions) == 10
+    by_id = {x.id: x for x in ev.questions}
+    final_problem = ["12-the-final-problem.txt"]
+    assert score.score(by_id["h01"], answer("In The Final Problem, at the Reichenbach Falls. [1]", final_problem))["correct"]
+    assert not score.score(by_id["h01"], answer("In The Final Problem, at the Reich falls. [1]", final_problem))["correct"]
+    assert score.score(by_id["h02"], answer("The sources do not say.", abstained=True))["correct"]
+    assert not score.score(by_id["h02"], answer("He was born in London."))["correct"]
+
+
 def test_facts_spellings_and_word_boundaries():
     assert score.score(q(), answer("Juno launched on an Atlas V rocket. [1]"))["correct"]
     assert not score.score(q(), answer("an Atlas Vx"))["correct"]

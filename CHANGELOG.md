@@ -7,6 +7,7 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 ### Added
 
 - `portal_web_acl_arn` attaches an existing web ACL, such as a CloudFront flat-rate plan's, to the portal's distribution, and `api_throttle` sets the portal API's throttle (default 20 a second, burst 50, as before). Both are off or unchanged by default.
+- An evaluation set for the Sherlock Holmes stories (`examples/evals/sherlock-holmes.yaml`, collection `holmes`): ten questions across lookup, list, multi-hop, comparison and unanswerable, including where Moriarty appears (The Final Problem, Reichenbach as a whole word) and where he was born, which the stories never say. Each answer was checked against the fetched text.
 
 ### Fixed
 

@@ -232,6 +232,9 @@ answer, which it must decline:
 python -m knowledge_store.evals examples/evals/space-missions.yaml --lake <lake> --model <model id> --yes
 ```
 
+The Sherlock Holmes stories have a set too, `examples/evals/sherlock-holmes.yaml`, for the `holmes`
+collection that [examples/sherlock-holmes/fetch.py](examples/sherlock-holmes/fetch.py) fills.
+
 The scoring needs no model as judge: facts stated, near misses avoided, the share of claims that
 passed the citation checks, expected sources cited, and declines. See
 [docs/architecture/aws/aws.md](docs/architecture/aws/aws.md#evaluation).
