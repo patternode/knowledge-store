@@ -4,6 +4,10 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 ## [Unreleased]
 
+### Added
+
+- [Scalability](docs/architecture/aws/scalability.md): what limits each part of the stack as a collection grows, what an organisation's curated data needs, and Neptune compared with Neo4j as the graph, with the managed services' limits and sources.
+
 ### Fixed
 
 - A cited total is checked against its own computation. An ad hoc figure's id names its type, attribute, filters and group-by (`m:<op>:<digest>/<snapshot>`), so two totals over one snapshot no longer share an id, a wrong total can no longer pass on another citation's figure, and a true one is no longer dropped for sharing an id.
