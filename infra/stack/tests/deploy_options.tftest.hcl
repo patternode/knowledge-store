@@ -153,3 +153,16 @@ run "the_website_keys_are_a_jwks" {
   }
   expect_failures = [var.site_sign_in]
 }
+
+run "edge_inputs_plan" {
+  # A web ACL from a CloudFront flat-rate plan, and a tighter API throttle, plan without error.
+  command = plan
+  variables {
+    portal_web_acl_arn = "arn:aws:wafv2:us-east-1:123456789012:global/webacl/plan/abc"
+    api_throttle       = { rate_limit = 10, burst_limit = 20 }
+  }
+  assert {
+    condition     = var.api_throttle.rate_limit == 10 && var.api_throttle.burst_limit == 20
+    error_message = "the API throttle reaches the stack as given"
+  }
+}
