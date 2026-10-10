@@ -29,6 +29,7 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 ### Changed
 
+- The evaluation report names its two mistake counts: "False negatives: abstained on an answerable question" and "False positives: answered an unanswerable question". The `score.py` docstring and the evaluation section of the AWS architecture define true and false positives and negatives. The keys in `results.json` (`false_abstentions`, `missed_abstentions`) are unchanged.
 - The valves include the catalog questions a mapped table answers: Juno's sample cost, the Atlas V missions, that count, their total sample cost, and the name of `atlas-v-551`. When the collection's mapping has the attribute or the metric, those questions are added to the agent's prompt and to the portal's prompt. A claim from one of them is checked against the cell or the figure. The tool-budget message and the guardrail say the same.
 
 ### Removed
