@@ -96,6 +96,8 @@ def test_a_run_scores_reports_and_survives_a_failing_question(tmp_path):
     assert s["questions"] == 3 and s["correct"] == 2 and s["errors"] == 1
     text = run.report(out)
     assert "| Correct | 2 of 3" in text and "| q02 | lookup | no |" in text and "error: RuntimeError" in text
+    assert "| False negatives: abstained on an answerable question | 1 |" in text
+    assert "| False positives: answered an unanswerable question | 0 |" in text
 
 
 def test_nothing_runs_without_yes(capsys):

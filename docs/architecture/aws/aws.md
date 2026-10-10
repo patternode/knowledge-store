@@ -139,8 +139,8 @@ AWS Context Ontology Accelerator fits a later live source, is
 
 An evaluation set is a YAML file of questions, each with the facts a right answer states, a
 near miss it must not state, the documents it should cite, and whether the sources can answer it
-at all ([format](../../../src/knowledge_store/evals/score.py); an example for the space-missions
-corpus is in [`examples/evals`](../../../examples/evals/space-missions.yaml)). Scoring is
+at all ([format](../../../src/knowledge_store/evals/score.py); examples for the space-missions
+corpus and the Sherlock Holmes stories are in [`examples/evals`](../../../examples/evals/)). Scoring is
 deterministic, with no model as judge:
 
 | Measure | Meaning |
@@ -148,7 +148,12 @@ deterministic, with no model as judge:
 | Correct | Every fact stated, no near miss, comparisons in the right order; for an unanswerable question, the agent declined |
 | Grounded | The share of the agent's proposed claims that passed the citation checks |
 | Cited an expected source | An expected document is among the sources shown |
-| False abstentions, missed abstentions | Declined an answerable question; answered an unanswerable one |
+| False negatives | Declined a question the sources answer. Often the ontology or the knowledge base does not support it yet |
+| False positives | Answered a question the sources do not answer. The citation checks stop most unsupported statements before they are shown; these got through |
+
+The four outcomes are a true positive (the sources answer it and the agent does), a true negative
+(they do not, and the agent declines), a false positive (a statement whose meaning is in no
+passage it rests on) and a false negative (the sources answer it and the agent declines).
 
 ```bash
 # the agent in-process against a lake (your AWS credentials call Bedrock)
