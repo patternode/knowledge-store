@@ -98,6 +98,19 @@ variable "log_retention_days" {
   type    = number
   default = 30
 }
+variable "api_throttle" {
+  description = "the HTTP API stage's default route throttling, for the whole API: steady requests per second and burst"
+  type = object({
+    rate_limit  = optional(number, 20)
+    burst_limit = optional(number, 50)
+  })
+  default = {}
+}
+variable "web_acl_arn" {
+  type        = string
+  default     = ""
+  description = "a CLOUDFRONT-scope web ACL to attach to the distribution, for example the one a CloudFront flat-rate plan creates; empty attaches none"
+}
 variable "site_sign_in" {
   type = object({
     issuer        = string
@@ -307,7 +320,8 @@ resource "aws_cloudfront_distribution" "this" {
     ssl_support_method             = local.custom ? "sni-only" : null
     minimum_protocol_version       = local.custom ? "TLSv1.2_2021" : null
   }
-  tags = var.tags
+  web_acl_id = var.web_acl_arn == "" ? null : var.web_acl_arn
+  tags       = var.tags
 }
 
 resource "aws_s3_bucket_policy" "site" {
@@ -480,8 +494,8 @@ resource "aws_apigatewayv2_stage" "default" {
   name        = "$default"
   auto_deploy = true
   default_route_settings {
-    throttling_burst_limit = 50
-    throttling_rate_limit  = 20
+    throttling_burst_limit = var.api_throttle.burst_limit
+    throttling_rate_limit  = var.api_throttle.rate_limit
   }
   tags = var.tags
 }

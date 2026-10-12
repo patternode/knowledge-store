@@ -10,6 +10,19 @@ It runs on AWS, in one account from one Terraform stack, or on your own machine 
 folder. Model calls go to Claude through Amazon Bedrock, so no data leaves your account, or to
 the Anthropic API.
 
+## Briefings
+
+Short films on [patternode.com/briefings](https://patternode.com/briefings/) explain Knowledge
+Store before you install it:
+
+- [The Knowledge Store series](https://patternode.com/briefings/knowledge-store/): what it is and
+  why an agent needs a graph beside its vectors, how a document becomes facts in the graph,
+  bringing or deriving the ontology, the check every claim passes before it is shown, tables
+  beside the text, the reference architecture on AWS, how answers are evaluated, and how agents
+  use it.
+- [The earnings lab](https://patternode.com/briefings/earnings-lab/): the same ideas at work on
+  company earnings, with figures checked against what was filed.
+
 ## What it does
 
 ```
@@ -231,6 +244,9 @@ answer, which it must decline:
 ```bash
 python -m knowledge_store.evals examples/evals/space-missions.yaml --lake <lake> --model <model id> --yes
 ```
+
+The Sherlock Holmes stories have a set too, `examples/evals/sherlock-holmes.yaml`, for the `holmes`
+collection that [examples/sherlock-holmes/fetch.py](examples/sherlock-holmes/fetch.py) fills.
 
 The scoring needs no model as judge: facts stated, near misses avoided, the share of claims that
 passed the citation checks, expected sources cited, and declines. See

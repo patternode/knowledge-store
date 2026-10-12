@@ -24,6 +24,17 @@ Measures, per question:
     grounded     the share of the agent's proposed claims that survived the citation checks; what
                  did not survive was an unsupported statement that the checks stopped
     source_hit   an expected document is among the cited sources
+
+Every reply is one of four outcomes, by whether the sources answer the question and whether the
+agent answered it:
+
+    true positive    answerable, and the agent gave the answer
+    true negative    unanswerable, and the agent declined
+    false positive   a statement whose meaning is not in the passage it rests on. The citation
+                     checks stop most of them before they are shown (grounded); the report counts
+                     the ones that got through as unanswerable questions the agent answered
+    false negative   answerable, and the agent declined. Often the ontology or the knowledge base
+                     does not support the question yet
 """
 
 from __future__ import annotations

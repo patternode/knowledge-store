@@ -34,6 +34,17 @@ def test_the_example_set_loads():
     assert {q.structured["tool"] for q in catalog} == {"lookup_rows", "aggregate"}
 
 
+def test_the_holmes_set_loads_and_scores_the_moriarty_questions():
+    ev = score.load(ROOT / "examples/evals/sherlock-holmes.yaml")
+    assert ev.collection == "holmes" and len(ev.questions) == 10
+    by_id = {x.id: x for x in ev.questions}
+    final_problem = ["12-the-final-problem.txt"]
+    assert score.score(by_id["h01"], answer("In The Final Problem, at the Reichenbach Falls. [1]", final_problem))["correct"]
+    assert not score.score(by_id["h01"], answer("In The Final Problem, at the Reich falls. [1]", final_problem))["correct"]
+    assert score.score(by_id["h02"], answer("The sources do not say.", abstained=True))["correct"]
+    assert not score.score(by_id["h02"], answer("He was born in London."))["correct"]
+
+
 def test_facts_spellings_and_word_boundaries():
     assert score.score(q(), answer("Juno launched on an Atlas V rocket. [1]"))["correct"]
     assert not score.score(q(), answer("an Atlas Vx"))["correct"]
@@ -85,6 +96,8 @@ def test_a_run_scores_reports_and_survives_a_failing_question(tmp_path):
     assert s["questions"] == 3 and s["correct"] == 2 and s["errors"] == 1
     text = run.report(out)
     assert "| Correct | 2 of 3" in text and "| q02 | lookup | no |" in text and "error: RuntimeError" in text
+    assert "| False negatives: abstained on an answerable question | 1 |" in text
+    assert "| False positives: answered an unanswerable question | 0 |" in text
 
 
 def test_nothing_runs_without_yes(capsys):

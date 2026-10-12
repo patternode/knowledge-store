@@ -4,8 +4,14 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 ## [Unreleased]
 
+### Documentation
+
+- `docs/architecture/aws/structured.md` explains how to add tables to a collection whose ontology came from discovery (the attributes to add, a mapping in that ontology's terms, `ontology_dir` and the CSV upload) and the symptom when the mapping is missing.
+
 ### Added
 
+- `portal_web_acl_arn` attaches an existing web ACL, such as a CloudFront flat-rate plan's, to the portal's distribution, and `api_throttle` sets the portal API's throttle (default 20 a second, burst 50, as before). Both are off or unchanged by default.
+- An evaluation set for the Sherlock Holmes stories (`examples/evals/sherlock-holmes.yaml`, collection `holmes`): ten questions across lookup, list, multi-hop, comparison and unanswerable, including where Moriarty appears (The Final Problem, Reichenbach as a whole word) and where he was born, which the stories never say. Each answer was checked against the fetched text.
 - [Scalability](docs/architecture/aws/scalability.md): what limits each part of the stack as a collection grows, what an organisation's curated data needs, and Neptune compared with Neo4j as the graph, with the managed services' limits and sources.
 
 ### Fixed
@@ -28,6 +34,7 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 ### Changed
 
+- The evaluation report names its two mistake counts: "False negatives: abstained on an answerable question" and "False positives: answered an unanswerable question". The `score.py` docstring and the evaluation section of the AWS architecture define true and false positives and negatives. The keys in `results.json` (`false_abstentions`, `missed_abstentions`) are unchanged.
 - The valves include the catalog questions a mapped table answers: Juno's sample cost, the Atlas V missions, that count, their total sample cost, and the name of `atlas-v-551`. When the collection's mapping has the attribute or the metric, those questions are added to the agent's prompt and to the portal's prompt. A claim from one of them is checked against the cell or the figure. The tool-budget message and the guardrail say the same.
 
 ### Removed

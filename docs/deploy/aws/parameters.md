@@ -33,6 +33,8 @@ Copy this table, fill in the right-hand column, and keep it with the deployment'
 | NAT gateway allowed? | `network.enable_nat` | |
 | Portal domain and its us-east-1 certificate | `portal_domain` | |
 | Sign-in: the stack's Cognito pool, or a host website's grant (its origin, keys, lab name, roles) | `site_sign_in` | |
+| A web ACL on the portal, such as a CloudFront flat-rate plan's | `portal_web_acl_arn` | |
+| The portal API's throttle | `api_throttle` | |
 | IAM permissions boundary | `permissions_boundary` | |
 | Required tags | `extra_tags` | |
 | Log retention, in days | `log_retention_days` | |
@@ -80,6 +82,8 @@ Copy this table, fill in the right-hand column, and keep it with the deployment'
 | `site_sign_in.jwks` | | The website's public grant keys, a JWKS document (for example the website's `/api/jwks.json`). P-256 keys only. To rotate, add the new key here before the website signs with it. |
 | `site_sign_in.lab` | `knowledge` | The name a grant's audience must carry (`lab:<lab>`), so a grant for another lab is refused. |
 | `site_sign_in.roles` | `["owner", "team", "preview"]` | Roles that may read public sources. A person with none of these roles, nor a private one, is refused. |
+| `portal_web_acl_arn` | empty | A `CLOUDFRONT`-scope web ACL (it lives in `us-east-1`) to attach to the portal's distribution, for example the one created when you subscribe the distribution to a CloudFront flat-rate plan. Empty attaches none. The API's own `execute-api` address is not behind it; sign-in and `api_throttle` bound that. |
+| `api_throttle` | `{ rate_limit = 20, burst_limit = 50 }` | The portal API's throttle for the whole API: steady requests a second, and the burst. |
 | `site_sign_in.private_roles` | `["owner"]` | Roles that may also read private sources. |
 | `daily_questions` | `30` | Questions each person may ask per day. |
 
