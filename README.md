@@ -267,6 +267,9 @@ version. Chat is limited by `daily_questions` per user.
   into a document store and a graph database (`PROJECTION_STORE`, `GRAPH_BACKEND`; see
   [docs/architecture/aws/backends.md](docs/architecture/aws/backends.md)), behind
   the same API. On AWS the agent's graph tools query Neptune; the portal API's own routes still read memory.
+- The pipeline is one task under one lock on the whole lake, and rebuilds the projection in memory.
+  What limits each part at an organisation's scale, and Neptune against Neo4j, is
+  [docs/architecture/aws/scalability.md](docs/architecture/aws/scalability.md).
 - Delta selection is a heuristic (see above).
 - Scanned PDFs need OCR, which is not built in.
 - Extraction is synchronous (one model call per document). Batch inference (50% cheaper, for
