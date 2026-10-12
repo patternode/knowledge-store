@@ -1,0 +1,112 @@
+# The evaluation set for the Sherlock Holmes stories: questions with what a right answer states.
+# Load the corpus first (examples/sherlock-holmes/fetch.py writes one file per story, upload it to the
+# holmes collection), then run: python -m knowledge_store.evals examples/evals/sherlock-holmes.yaml --lake <lake> --yes
+# The format is in src/knowledge_store/evals/score.py. The corpus is three collections only: The Adventures, The
+# Memoirs and The Return. Facts from the novels or the later collections are not in it, and a question that needs
+# them is unanswerable here. Every answer below was checked against the fetched text; the note says where.
+#
+# Kept outside examples/sherlock-holmes so that loading the corpus does not ingest it.
+name: sherlock-holmes
+collection: holmes
+questions:
+- id: h01
+  kind: lookup
+  question: Where does Professor Moriarty appear?
+  expected: In The Final Problem, where he meets Holmes at the Reichenbach Falls.
+  must:
+  - - The Final Problem
+    - Final Problem
+  - - Reichenbach
+  sources:
+  - the-memoirs-of-sherlock-holmes/12-the-final-problem.txt
+  note: He appears in person only in The Final Problem. The Empty House, The Norwood Builder and The Missing
+    Three-Quarter mention him, so naming them as well is not wrong. 'Reich' alone is not the fall's name and fails
+    the whole-word match.
+- id: h02
+  kind: unanswerable
+  question: Where was Professor Moriarty born?
+  answerable: false
+  note: 'The Final Problem says only that he is "a man of good birth and excellent education". No place is named in
+    the three collections; a guessed town is wrong.'
+- id: h03
+  kind: lookup
+  question: At what age did Moriarty write his treatise on the Binomial Theorem?
+  expected: Twenty-one
+  must:
+  - - twenty-one
+    - '21'
+  sources:
+  - the-memoirs-of-sherlock-holmes/12-the-final-problem.txt
+  note: '"At the age of twenty-one he wrote a treatise upon the Binomial Theorem."'
+- id: h04
+  kind: multi-hop
+  question: Who shot Ronald Adair, and what had he been to Professor Moriarty?
+  expected: Colonel Sebastian Moran, who had been Moriarty's chief of staff.
+  must:
+  - - Sebastian Moran
+    - Colonel Moran
+    - Moran
+  - - chief of the staff
+    - chief of staff
+  sources:
+  - the-return-of-sherlock-holmes/01-the-adventure-of-the-empty-house.txt
+  note: Two facts in two passages of The Empty House. The shooting is stated near the arrest, the link to Moriarty
+    in Holmes's index entry for Moran.
+- id: h05
+  kind: lookup
+  question: Under what name did Holmes say he travelled in Tibet?
+  expected: Sigerson, a Norwegian
+  must:
+  - - Sigerson
+  sources:
+  - the-return-of-sherlock-holmes/01-the-adventure-of-the-empty-house.txt
+- id: h06
+  kind: multi-hop
+  question: Who was Jabez Wilson's assistant, Vincent Spaulding, really?
+  expected: John Clay
+  must:
+  - - John Clay
+  must_not:
+  - Duncan Ross
+  sources:
+  - the-adventures-of-sherlock-holmes/02-the-red-headed-league.txt
+  note: The story never says "Spaulding is John Clay" in one sentence. Holmes's account of the assistant and the
+    arrest in the cellar join them. Duncan Ross is the other rogue (Archie), so naming him as the assistant is the
+    near miss.
+- id: h07
+  kind: lookup
+  question: Who owned the racehorse Silver Blaze?
+  expected: Colonel Ross
+  must:
+  - - Colonel Ross
+    - Ross
+  sources:
+  - the-memoirs-of-sherlock-holmes/01-silver-blaze.txt
+  note: John Straker was the trainer, not the owner.
+- id: h08
+  kind: list
+  question: Who are the three students in The Adventure of the Three Students?
+  expected: Gilchrist, Daulat Ras and Miles McLaren
+  must:
+  - - Gilchrist
+  - - Daulat Ras
+  - - McLaren
+  sources:
+  - the-return-of-sherlock-holmes/09-the-adventure-of-the-three-students.txt
+- id: h09
+  kind: comparison
+  question: Which brother is older, Sherlock Holmes or Mycroft Holmes?
+  expected: Mycroft, by seven years
+  must:
+  - - Mycroft
+  first:
+  - Mycroft
+  - Sherlock
+  sources:
+  - the-memoirs-of-sherlock-holmes/10-the-greek-interpreter.txt
+  note: '"Seven years my senior." An answer that names Sherlock before Mycroft fails the order check.'
+- id: h10
+  kind: unanswerable
+  question: What is Mrs. Hudson's first name?
+  answerable: false
+  note: She is named only as Mrs. Hudson in the three collections.

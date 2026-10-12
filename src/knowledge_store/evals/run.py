@@ -104,8 +104,8 @@ def report(out: dict) -> str:
              f"| Mean score | {s['mean_score']} |",
              f"| Grounded (claims that passed the citation checks) | {s['grounded']} |",
              f"| Cited an expected source | {s['source_hit_rate']} |",
-             f"| Abstained on an answerable question | {s['false_abstentions']} |",
-             f"| Answered an unanswerable question | {s['missed_abstentions']} |",
+             f"| False negatives: abstained on an answerable question | {s['false_abstentions']} |",
+             f"| False positives: answered an unanswerable question | {s['missed_abstentions']} |",
              f"| Errors | {s['errors']} |",
              f"| Tokens (input, output) | {out['tokens']['inputTokens']}, {out['tokens']['outputTokens']} |",
              "", "## By kind", "", "| Kind | Questions | Correct | Mean score | Grounded |", "|---|---|---|---|---|"]

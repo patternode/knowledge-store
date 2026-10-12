@@ -103,6 +103,26 @@ publishes a version whose mapping names it. The sweep can list unmapped columns 
 candidate register (name, datatype, how many distinct values) so `candidates --propose` sees
 them. Discovery itself keeps sampling passages. A table's schema is not a document sample.
 
+## Adding tables to a collection that already has an ontology
+
+The space-missions example ships an ontology written with its tables in mind. A deployment whose collection got its ontology from discovery, then curated it, does not have the catalog's attributes, and the example's `mappings.yaml` will not publish against it. Its symptom is quiet: the collection has no mapping, so the agent never gets `describe_structured`, `lookup_rows` or `aggregate`. A question whose answer is only in a CSV, such as "What sample cost does the catalog give Juno?", searches the passages for a figure they never state and stops at `max_tool_calls`. Raising the step limits does not help.
+
+Turning tables on for such a collection takes four steps:
+
+1. Add the attributes the columns need to the collection's own ontology, with the domains of the classes they fill, and bump the minor version. A new attribute is an additive change, so the sweep runs a delta extraction of the new terms only, not a full one.
+2. Write `mappings.yaml` in that ontology's terms, not the example's. A discovered ontology names its terms differently (`missionName` rather than `name`, `launchedBy` rather than `launchedOn`), and publish refuses any term the ontology lacks.
+3. Give the collection `ontology_dir`, so Terraform uploads `ontology.ttl`, `shapes.ttl`, `mappings.yaml` and `metrics.osi.yaml`, and the sweep publishes and activates the version `owl:versionInfo` names. Without `ontology_dir`, a mapping file beside a master that was published with the CLI is never seen.
+4. Upload the CSVs to the collection's landing folder (`landing/<collection>/tables/<name>.csv`). The next sweep binds them, with no model calls.
+
+Check the mapping before applying, with the same code publish runs:
+
+```bash
+python -c "from knowledge_store.ontology import model; from knowledge_store.structured import mapping; \
+d='ontology/<collection>'; mapping.load(d, model.load(data=open(d + '/ontology.ttl').read()))"
+```
+
+It returns the mapping, or raises naming the first term the ontology does not have. patternode-platform's Knowledge Store lab did this for its missions collection (ontology 1.1.0).
+
 ## Snapshot into gold
 
 The first backend copies the table at its snapshot into the lake. The sweep stage `bind` runs
