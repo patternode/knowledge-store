@@ -362,11 +362,11 @@ def test_a_private_table_is_hidden_and_a_broken_snapshot_is_not_activated(tmp_pa
     assert report["misses"] == [], report["misses"]
     public = lookup_rows(lake, "LaunchVehicle")
     private = lookup_rows(lake, "LaunchVehicle", private=True)
-    assert public["total"] == 0 and private["total"] > 0
+    assert "total" not in public and "logical_table" not in public and private["total"] > 0
     hidden = private["rows"][0]["values"]["name"]["cell"]
     assert lookup_rows(lake, "", cell_ids=[hidden])["cells"] == []
     assert lookup_rows(lake, "", cell_ids=[hidden], private=True)["cells"]
-    assert gateway.call(root, "lookup_rows", {"collection": "missions", "type": "LaunchVehicle"})["total"] == 0
+    assert "error" in gateway.call(root, "lookup_rows", {"collection": "missions", "type": "LaunchVehicle"})
     assert gateway.call(root, "lookup_rows",
                         {"collection": "missions", "type": "LaunchVehicle", "caller_private": True})["total"] > 0
 

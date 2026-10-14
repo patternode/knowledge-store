@@ -24,7 +24,8 @@ def visible(item: dict, private: bool) -> bool:
 def public_names(e: dict) -> dict:
     """What a public caller may see of an entity's names, types and counts: what public documents
     say of it (the projection's `public`). Without that provenance: no aliases, no counts."""
-    p = e.get("public") if isinstance(e.get("public"), dict) else {}
+    p = e.get("public") if isinstance(e.get("public"), dict) else {
+        k: e.get(f"public_{k}") for k in ("type", "types", "aliases", "docs", "links")}  # a graph store's flat form
     types = list(p.get("types") or [])
     return {"aliases": list(p.get("aliases") or []), "types": types or [e["type"]],
             "type": (p.get("type") or types[0]) if types else e["type"],

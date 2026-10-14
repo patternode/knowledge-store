@@ -214,7 +214,7 @@ def lookup_rows(lake: Store, type_name: str, filters: list[dict] | None = None, 
         rows = _by_row(cells)
         return {"cells": [_cell_view(c, rows) for c in cells if c["cell"] in wanted]}
     table = mapping.by_class(type_name) or mapping.table(type_name)
-    if table is None:
+    if table is None or _hidden(lake, table, private):  # a private table is not named to a public caller
         return {"error": f"no mapped type {type_name!r}; call describe_structured"}
     bound = binding(lake).get(table.logical_table) or {}
     rows = [_row(table, key, cols) for key, cols in _groups(cells, table).items() if _keep(cols, table, filters or [])]

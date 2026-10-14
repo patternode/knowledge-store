@@ -129,9 +129,15 @@ class AgeStore:
             c.close()
 
 
-_COLUMNS = "s agtype, o agtype, p agtype, scope agtype, id agtype, name agtype, type agtype, aliases agtype, " \
-           "docs agtype, links agtype, nscope agtype"
-_FIELDS = ("id", "name", "type", "aliases", "docs", "links", "scope")
+_FIELDS = ("id", "name", "type", "aliases", "docs", "links", "scope", "public_type", "public_types", "public_aliases",
+           "public_docs", "public_links")
+_NODE_COLUMNS = ", ".join(f"{f} agtype" for f in _FIELDS)
+_COLUMNS = "s agtype, o agtype, p agtype, scope agtype, " + _NODE_COLUMNS.replace("scope agtype", "nscope agtype")
+
+
+def _returned(v: str) -> str:
+    """The node fields, read off the variable v, in _FIELDS order."""
+    return ", ".join(f"{v}.{f}" for f in _FIELDS)
 
 
 class _Bound:
@@ -140,8 +146,7 @@ class _Bound:
 
     def node(self, node_id):
         rows = self.store._cypher(
-            self.key, "MATCH (n:Entity {id: $id}) RETURN n.id, n.name, n.type, n.aliases, n.docs, n.links, n.scope",
-            "id agtype, name agtype, type agtype, aliases agtype, docs agtype, links agtype, scope agtype", {"id": node_id})
+            self.key, f"MATCH (n:Entity {{id: $id}}) RETURN {_returned('n')}", _NODE_COLUMNS, {"id": node_id})
         return dict(zip(_FIELDS, map(_agtype, rows[0]))) if rows else None
 
     def adjacent(self, ids, private):
@@ -149,7 +154,7 @@ class _Bound:
         params = {"ids": list(dict.fromkeys(ids))}
         for pattern, s, o in (("(x:Entity)-[r]->(y:Entity)", "x", "y"), ("(y:Entity)-[r]->(x:Entity)", "y", "x")):
             q = (f"MATCH {pattern} WHERE x.id IN $ids "
-                 f"RETURN {s}.id, {o}.id, r.p, r.scope, y.id, y.name, y.type, y.aliases, y.docs, y.links, y.scope")
+                 f"RETURN {s}.id, {o}.id, r.p, r.scope, {_returned('y')}")
             for row in self.store._cypher(self.key, q, _COLUMNS, params):
                 v = [_agtype(x) for x in row]
                 out.append(({"s": v[0], "o": v[1], "p": v[2], "scope": v[3]}, dict(zip(_FIELDS, v[4:]))))

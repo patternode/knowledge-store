@@ -100,6 +100,11 @@ def rows(entities: list[dict], passages: dict, spec, base: str) -> tuple[list[di
         props = {"id": e["id"], "iri": base + e["id"], "name": e["label"], "type": e["type"], "types": types,
                  "aliases": list(e["aliases"]), "scope": e.get("scope", "public"), "docs": len(e["docs"]),
                  "links": len(e["out"]) + len(e["in"]), "mentioned_in": list(e["passages"])}
+        if isinstance(e.get("public"), dict):  # what public documents say of it, flat (no map properties in Neo4j)
+            p = e["public"]
+            props.update({"public_type": p.get("type") or "", "public_types": list(p.get("types") or []),
+                          "public_aliases": list(p.get("aliases") or []), "public_docs": int(p.get("docs") or 0),
+                          "public_links": int(p.get("links") or 0)})
         for a in e["attributes"]:
             k = property_of(a["p"])
             props.setdefault(k, []).append(a["v"])

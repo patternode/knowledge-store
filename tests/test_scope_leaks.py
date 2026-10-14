@@ -199,3 +199,37 @@ def test_a_metric_over_a_private_table_is_hidden(tmp_path):
     assert "error" in aggregate(lake, type_name="Mission", op="count")
     shown = aggregate(lake, metric="atlas_v_launches", private=True)
     assert "error" not in shown and shown["figure"]
+
+
+# -- graph stores (Neo4j, AGE) keep the public view flat -------------------------------------
+
+def test_graph_rows_carry_the_public_view_and_brief_reads_it():
+    from types import SimpleNamespace as NS
+    from knowledge_store.graph import rows, traverse
+    spec = NS(classes={}, ancestors=lambda t: [t])
+    e = {"id": "entity/org/nova", "label": "Agency Nova", "type": "SecretUnit", "types": ["Organisation", "SecretUnit"],
+         "aliases": ["BLACKBIRD", "Nova"], "scope": "public", "docs": ["d1", "d2"], "out": [], "in": [],
+         "passages": [], "attributes": [],
+         "public": {"type": "Organisation", "types": ["Organisation"], "aliases": ["Nova"], "docs": 1, "links": 0}}
+    nodes, _ = rows([e], {}, spec, "https://x/")
+    n = nodes[0]["props"]
+    assert n["public_type"] == "Organisation" and n["public_aliases"] == ["Nova"]
+    seen = traverse.brief({k: n.get(k) for k in ("id", "name", "type", "aliases", "docs", "links", "scope",
+                                                  "public_type", "public_types", "public_aliases",
+                                                  "public_docs", "public_links")}, private=False)
+    assert seen["type"] == "Organisation" and seen["aliases"] == ["Nova"] and seen["docs"] == 1
+    assert "BLACKBIRD" in traverse.brief({**n, "name": n["name"]}, private=True)["aliases"]
+
+
+def test_a_graph_store_node_loaded_before_the_public_view_shows_no_aliases():
+    from knowledge_store.graph import traverse
+    old = {"id": "x", "name": "X", "type": "Organisation", "aliases": ["BLACKBIRD"], "docs": 3, "links": 2,
+           "scope": "public", "public_type": None, "public_types": None, "public_aliases": None}
+    seen = traverse.brief(old, private=False)
+    assert seen["aliases"] == [] and seen["docs"] == 0
+
+
+def test_the_graph_stores_return_the_public_fields():
+    from knowledge_store.graph import age, neo4j
+    for f in ("public_type", "public_types", "public_aliases", "public_docs", "public_links"):
+        assert f".{f}" in neo4j._BRIEF and f in age._FIELDS and f"y.{f}" in age._returned("y")
