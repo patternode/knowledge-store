@@ -91,6 +91,11 @@ def _visible(cell: dict, private: bool) -> bool:
     return private or cell.get("scope", "public") == "public"
 
 
+def _hidden(lake: Store, table: Table, private: bool) -> bool:
+    """A private table, for a public caller: as describe() leaves it out, so do the queries."""
+    return not private and (binding(lake).get(table.logical_table) or {}).get("scope", table.scope) == "private"
+
+
 def _column(table: Table, name: str) -> Column | None:
     """A mapped column, or a key column, which is filtered as text."""
     col = table.column(name)
@@ -263,7 +268,8 @@ def aggregate(lake: Store, *, metric: str = "", type_name: str = "", op: str = "
         return {"error": "this collection has no mapped tables"}
     if metric:
         m = next((x for x in mapping.metrics if x.name == metric), None)
-        if m is None:
+        src = mapping.table(m.source_table) if m else None
+        if m is None or (src is not None and _hidden(lake, src, private)):
             return {"error": f"no metric {metric!r}; call describe_structured"}
         parsed = _SELECT.match(m.expression)
         if not parsed:
@@ -286,7 +292,7 @@ def aggregate(lake: Store, *, metric: str = "", type_name: str = "", op: str = "
         return {"metric": metric, "description": m.description, "id": f"m:{metric}/{out['snapshot']}",
                 "figure": figure, "snapshot": out["snapshot"], "filters": wh, "type": table.class_name}
     table = mapping.by_class(type_name) or mapping.table(type_name)
-    if table is None:
+    if table is None or _hidden(lake, table, private):
         return {"error": f"no mapped type {type_name!r}"}
     if op not in AGG:
         return {"error": f"op must be one of {', '.join(AGG)}"}

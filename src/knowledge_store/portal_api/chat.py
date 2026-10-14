@@ -78,8 +78,8 @@ def tool_config() -> dict:
                                     "inputSchema": {"json": schema(t)}}} for t in TOOLS]}
 
 
-def vocabulary(idx: Index) -> str:
-    o = idx.ontology
+def vocabulary(idx: Index, private: bool = False) -> str:
+    o = idx.ontology_view(private)
     lines = []
     for c in o["classes"]:
         par = f" (a kind of {', '.join(c['parents'])})" if c["parents"] else ""
@@ -206,10 +206,10 @@ def _priced(rec: workbench.Recorder, model_id: str, usage: dict, reported: bool)
     return workbench.query_cost(rec.steps, model_id=model_id, usage=usage if reported else None, provider=spend_provider())
 
 
-def system_text(idx: Index) -> str:
+def system_text(idx: Index, private: bool = False) -> str:
     """The portal prompt. A collection with the catalog's mapping is told which questions the tables answer."""
     from ..structured.query import describe
-    return SYSTEM.format(profile=profile_text(idx), vocabulary=vocabulary(idx)) + valves.table_query_note(
+    return SYSTEM.format(profile=profile_text(idx), vocabulary=vocabulary(idx, private)) + valves.table_query_note(
         valves.table_questions(describe(idx.lake)))
 
 
@@ -218,7 +218,7 @@ def ask(idx: Index, question: str, history: list[dict] | None, *, private: bool,
     brt = brt or client()
     rec = workbench.Recorder(on_step)
     model_id = model_id or os.environ.get("CHAT_MODEL_ID", "us.anthropic.claude-sonnet-5")
-    system = [{"text": system_text(idx)},
+    system = [{"text": system_text(idx, private)},
               {"cachePoint": {"type": "default"}}]
     messages = []
     for turn in (history or [])[-valves.MAX_HISTORY_TURNS:]:  # the handler bounds it; kept bounded here too
@@ -275,7 +275,7 @@ def analyse(idx: Index, question: str, about: dict | None, *, private: bool, mod
     brt = brt or client()
     rec = workbench.Recorder(on_step)
     model_id = model_id or os.environ.get("CHAT_MODEL_ID", "us.anthropic.claude-sonnet-5")
-    system = [{"text": workbench.ANALYST.format(collection=profile_text(idx), version=idx.version, ontology=vocabulary(idx))},
+    system = [{"text": workbench.ANALYST.format(collection=profile_text(idx), version=idx.version, ontology=vocabulary(idx, private))},
               {"cachePoint": {"type": "default"}}]
     messages = [{"role": "user", "content": [{"text": workbench.analyst_prompt(question, about)}]}]
     config = tool_config()

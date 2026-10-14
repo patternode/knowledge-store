@@ -90,7 +90,8 @@ def test_the_bound_catalog_adds_every_table_question_to_the_prompt(tmp_path):
 
     from types import SimpleNamespace as NS
     from knowledge_store.portal_api.chat import system_text
-    idx = NS(lake=lake, ontology={"classes": [], "relations": [], "attributes": []},
+    onto = {"classes": [], "relations": [], "attributes": []}
+    idx = NS(lake=lake, ontology=onto, ontology_view=lambda private: onto,
              summary={"profile": {"name": "Missions", "description": "A catalog."}})
     portal = system_text(idx)
     for question in questions:

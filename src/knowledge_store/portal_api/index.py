@@ -16,8 +16,12 @@ from collections import Counter, defaultdict
 
 from .. import graph, layout
 from ..graph import traverse
+from ..graph.traverse import public_names
 
 CACHE_S = 60
+MAX_QUERY = 200   # characters of a search query that are read
+PUBLIC_SUMMARY = ("profile", "version", "chain", "built_at")
+PUBLIC_HISTORY = ("version", "kind", "base", "published_at", "in_chain")
 
 
 def tokens(s: str) -> list[str]:
@@ -52,31 +56,65 @@ class Index:
     def visible(item: dict, private: bool) -> bool:
         return private or item.get("scope", "public") == "public"
 
+    @staticmethod
+    def names(e: dict, private: bool) -> dict:
+        """The entity's aliases, types and counts as the caller may see them: for a public caller,
+        only what public documents say (two documents naming the same thing share one node)."""
+        if private:
+            return {"aliases": e["aliases"], "types": e["types"], "type": e["type"], "docs": len(e["docs"]),
+                    "links": len(e["out"]) + len(e["in"])}
+        return public_names(e)
+
     def entity_view(self, e: dict, private: bool) -> dict:
-        def ok(row):
-            return any(self.visible(self.passages.get(p, {}), private) for p in row["passages"])
-        return {**e, "attributes": [a for a in e["attributes"] if ok(a)], "out": [r for r in e["out"] if ok(r)],
-                "in": [r for r in e["in"] if ok(r)],
-                "passages": [p for p in e["passages"] if self.visible(self.passages.get(p, {}), private)],
-                "docs": [d for d in e["docs"] if self.visible(self.docs.get(d, {}), private)]}
+        def shown(p):
+            return self.visible(self.passages.get(p) or {"scope": "private"}, private)
+
+        def rows(rs):
+            return [{**r, "passages": [p for p in r["passages"] if shown(p)]} for r in rs if any(map(shown, r["passages"]))]
+        n = self.names(e, private)
+        return {**{k: v for k, v in e.items() if k != "public"}, "aliases": n["aliases"], "types": n["types"], "type": n["type"],
+                "attributes": rows(e["attributes"]), "out": rows(e["out"]), "in": rows(e["in"]),
+                "passages": [p for p in e["passages"] if shown(p)],
+                "docs": [d for d in e["docs"] if self.visible(self.docs.get(d) or {"scope": "private"}, private)]}
 
     def summary_view(self, private: bool) -> dict:
         """The summary, with candidate evidence from private documents withheld from callers
-        outside the private scope (a term seen only in private documents is withheld entirely)."""
+        outside the private scope (a term seen only in private documents is withheld entirely).
+        A public caller gets a list of fields known to hold only what public documents say."""
         if private:
             return self.summary
         cands = []
         for t in self.summary.get("candidates") or []:
             ev = [e for e in t.get("evidence") or [] if e.get("scope", "private") == "public"]
             if ev:
-                cands.append({**t, "evidence": ev, "docs": len({e["doc_id"] for e in ev}),
-                              "definitions": t.get("definitions") if t.get("scope") == "public" else []})
-        return {**self.summary, "candidates": cands}
+                p = t.get("public") or {}
+                cands.append({"kind": t.get("kind"), "term": p.get("term") or t.get("term"), "also": p.get("also") or [],
+                              "docs": p.get("docs") or len({e["doc_id"] for e in ev}), "definitions": p.get("definitions") or [],
+                              "evidence": ev, "covered_by": t.get("covered_by"), "scope": "public"})
+        out = {k: self.summary[k] for k in PUBLIC_SUMMARY if k in self.summary}
+        out["history"] = [{k: h.get(k) for k in PUBLIC_HISTORY} for h in self.summary.get("history") or []]
+        out["sources"] = [s for s in self.summary.get("sources") or [] if s.get("scope") == "public"]
+        if (self.summary.get("public") or {}).get("counts"):
+            out["counts"] = self.summary["public"]["counts"]
+        return {**out, "candidates": cands}
+
+    def ontology_view(self, private: bool) -> dict:
+        """The ontology with its counts: of what public documents show (ontology.json as written),
+        or for a private-scope caller, of everything."""
+        full = self.summary.get("ontology_counts")
+        if not private or not full:
+            return self.ontology
+        o = self.ontology
+        return {**o, "classes": [{**c, "count": full["classes"].get(c["name"], 0)} for c in o["classes"]],
+                "relations": [{**r, "count": full["properties"].get(r["name"], 0)} for r in o["relations"]],
+                "attributes": [{**a, "count": full["properties"].get(a["name"], 0)} for a in o["attributes"]],
+                "observed": full["observed"]}
 
     # -- queries --------------------------------------------------------------------------
 
     def search_entities(self, q: str = "", type_: str | None = None, *, private: bool, limit: int = 25,
                         offset: int = 0) -> dict:
+        q = (q or "")[:MAX_QUERY]
         ids = self.subtree(type_) if type_ else list(self.entities)
         qt = set(tokens(q))
         scored = []
@@ -84,29 +122,33 @@ class Index:
             e = self.entities[i]
             if not self.visible(e, private):
                 continue
+            n = self.names(e, private)
+            if type_ and type_ not in n["types"]:
+                continue
             if qt:
-                names = " ".join([e["label"], *e["aliases"]]).lower()
+                names = " ".join([e["label"], *n["aliases"]]).lower()
                 nt = set(tokens(names))
                 hit = len(qt & nt)
                 if not hit and q.lower() not in names:
                     continue
                 score = hit + (2 if q.lower() == e["label"].lower() else 0)
             else:
-                score = len(e["docs"]) + len(e["out"]) + len(e["in"])
+                score = n["docs"] + n["links"]
             scored.append((score, e["label"].lower(), i))
         scored.sort(key=lambda x: (-x[0], x[1], x[2]))
         page = scored[offset:offset + limit]
-        return {"total": len(scored), "items": [self.brief(self.entities[i]) for _, _, i in page]}
+        return {"total": len(scored), "items": [self.brief(self.entities[i], private) for _, _, i in page]}
 
     def subtree(self, type_: str) -> list[str]:
         return list(dict.fromkeys(self.by_type.get(type_, [])))
 
-    def brief(self, e: dict) -> dict:
-        return {"id": e["id"], "label": e["label"], "type": e["type"], "aliases": e["aliases"][:5],
-                "docs": len(e["docs"]), "links": len(e["out"]) + len(e["in"])}
+    def brief(self, e: dict, private: bool = False) -> dict:
+        n = self.names(e, private)
+        return {"id": e["id"], "label": e["label"], "type": n["type"], "aliases": n["aliases"][:5],
+                "docs": n["docs"], "links": n["links"]}
 
     def search_passages(self, q: str, *, private: bool, limit: int = 6) -> list[dict]:
-        qt = tokens(q)
+        qt = tokens((q or "")[:MAX_QUERY])
         n = max(1, len(self.passages))
         scored = []
         for pid, c in self._ptoks.items():
@@ -133,8 +175,9 @@ class Index:
             ids = [focus] + [r["o"] for r in e["out"]] + [r["s"] for r in e["in"]]
         else:
             ids = self.subtree(type_) if type_ else list(self.entities)
-            ids.sort(key=lambda i: (-(len(self.entities[i]["out"]) + len(self.entities[i]["in"])),
-                                    self.entities[i]["label"].lower(), i))
+            if type_ and not private:
+                ids = [i for i in ids if type_ in self.names(self.entities[i], False)["types"]]
+            ids.sort(key=lambda i: (-self.names(self.entities[i], private)["links"], self.entities[i]["label"].lower(), i))
         keep = [i for i in dict.fromkeys(ids) if i in self.entities and self.visible(self.entities[i], private)][:limit]
         ks = set(keep)
         edges = []
@@ -142,8 +185,7 @@ class Index:
             for r in self.entity_view(self.entities[i], private)["out"]:
                 if r["o"] in ks:
                     edges.append({"s": i, "o": r["o"], "p": r["p"]})
-        return {"nodes": [self.brief(self.entities[i]) for i in keep], "edges": edges}
-
+        return {"nodes": [self.brief(self.entities[i], private) for i in keep], "edges": edges}
 
     def neighbourhood(self, focus: str, *, hops: int = 1, private: bool, limit: int = 40) -> dict:
         return traverse.neighbourhood(self.adjacency, focus, hops=hops, private=private, limit=limit)
