@@ -36,7 +36,7 @@ def data_base(spec: OntologySpec) -> str:
 
 def slug(name: str) -> str:
     s = re.sub(r"[^0-9a-z]+", "-", name.lower()).strip("-")
-    return s[:80] or hashlib.sha1(name.encode()).hexdigest()[:12]
+    return s[:80] or hashlib.sha1(name.encode(), usedforsecurity=False).hexdigest()[:12]
 
 
 class Iris:
@@ -63,7 +63,7 @@ class Iris:
         return self._iri("graph", version, doc_id)
 
     def assertion(self, s, p, o) -> URIRef:
-        h = hashlib.sha1(f"{s}|{p}|{o}".encode()).hexdigest()[:20]
+        h = hashlib.sha1(f"{s}|{p}|{o}".encode(), usedforsecurity=False).hexdigest()[:20]
         return self._iri("assertion", h)
 
 
