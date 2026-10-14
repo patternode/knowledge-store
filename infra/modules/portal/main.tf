@@ -296,6 +296,12 @@ resource "aws_cloudfront_distribution" "this" {
   origin {
     origin_id   = "api"
     domain_name = replace(aws_apigatewayv2_api.this.api_endpoint, "https://", "")
+    # The Lambda refuses a request without this header, so the execute-api endpoint, which is
+    # public, cannot be used to go round CloudFront and its web ACL.
+    custom_header {
+      name  = "x-origin-verify"
+      value = random_password.origin.result
+    }
     custom_origin_config {
       http_port              = 80
       https_port             = 443
@@ -412,6 +418,12 @@ resource "aws_iam_role_policy" "api" {
 }
 
 # With site_sign_in: the service clients' credentials, which the Lambda reads once per instance.
+# Shared by CloudFront (sent to the API origin) and the Lambda (required on every request).
+resource "random_password" "origin" {
+  length  = 48
+  special = false
+}
+
 resource "aws_secretsmanager_secret" "service_clients" {
   count                   = local.site ? 1 : 0
   name                    = "${var.name}/portal/service-clients"
@@ -450,6 +462,7 @@ resource "aws_lambda_function" "api" {
       CHAT_MODEL_ID   = var.chat_model_id
       PRIVATE_GROUP   = var.private_group
       DAILY_QUESTIONS = tostring(var.daily_questions)
+      ORIGIN_SECRET   = random_password.origin.result
       }, local.anthropic ? { ANTHROPIC_API_KEY_SECRET = var.anthropic_api_key_secret_arn } : {},
       var.agent_runtime_arn != "" ? { AGENT_RUNTIME_ARN = var.agent_runtime_arn, AGENT_RUNTIME_QUALIFIER = var.agent_runtime_qualifier } : {},
       local.site ? {

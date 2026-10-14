@@ -52,6 +52,7 @@ page polls GET /api/chat.
 from __future__ import annotations
 
 import datetime as dt
+import hmac
 import json
 import logging
 import os
@@ -307,10 +308,23 @@ def list_requests(lk, limit: int = 50) -> list[dict]:
     return [json.loads(lk.get(k)) for k in keys]
 
 
+def from_cloudfront(event: dict) -> bool:
+    """True when the request came through CloudFront, which adds the x-origin-verify header that
+    ORIGIN_SECRET names; the execute-api endpoint is public, and without this would go round the
+    web ACL. With no ORIGIN_SECRET set (a local run), every request passes."""
+    secret = os.environ.get("ORIGIN_SECRET", "")
+    if not secret:
+        return True
+    got = {k.lower(): v for k, v in (event.get("headers") or {}).items()}.get("x-origin-verify") or ""
+    return hmac.compare_digest(got.encode(), secret.encode())
+
+
 def handler(event, context):
     if "chat_job" in event:  # self-invocation
         answer_job(event["chat_job"])
         return {"ok": True}
+    if not from_cloudfront(event):
+        return reply(403, {"error": "Forbidden"})
     method = event.get("requestContext", {}).get("http", {}).get("method", "GET")
     path = event.get("rawPath") or event.get("requestContext", {}).get("http", {}).get("path", "")
     path = path[len("/api"):] if path.startswith("/api") else path
@@ -399,7 +413,7 @@ def handler(event, context):
         if path == "/summary":
             return reply(200, idx.summary_view(private) | {"private": private})
         if path == "/ontology":
-            return reply(200, idx.ontology)
+            return reply(200, idx.ontology_view(private))
         if path == "/entities":
             q = str(qs.get("q") or "")
             if len(q) > MAX_SEARCH_CHARS:

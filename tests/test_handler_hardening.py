@@ -78,7 +78,7 @@ def test_portal_loop_bounds_history_itself(monkeypatch):
         version, passages, entities, lake = "1.0.0", {}, {}, None
 
     brt = Brt()
-    monkeypatch.setattr(chat, "system_text", lambda idx: "s")
+    monkeypatch.setattr(chat, "system_text", lambda idx, private=False: "s")
     chat.ask(Idx(), "now?", [{"q": 5, "a": "x"}, {"q": "Q" * 9000, "a": "A" * 9000}], private=False, brt=brt)
     texts = [m["content"][0]["text"] for m in brt.messages[:2]]
     assert texts == ["Q" * valves.MAX_QUESTION_CHARS, "A" * 4000]
@@ -237,3 +237,21 @@ def test_local_server_sends_no_cors_header(tmp_path, monkeypatch):
     finally:
         srv.shutdown()
         srv.server_close()
+
+
+# -- the origin header CloudFront adds -------------------------------------------------------
+
+def test_without_the_origin_secret_set_every_request_passes(monkeypatch):
+    monkeypatch.delenv("ORIGIN_SECRET", raising=False)
+    assert handler.from_cloudfront({"headers": {}})
+
+
+def test_with_the_origin_secret_set_only_cloudfront_requests_pass(monkeypatch):
+    monkeypatch.setenv("ORIGIN_SECRET", "s3cret")
+    assert handler.from_cloudfront({"headers": {"x-origin-verify": "s3cret"}})
+    assert handler.from_cloudfront({"headers": {"X-Origin-Verify": "s3cret"}})
+    assert not handler.from_cloudfront({"headers": {"x-origin-verify": "wrong"}})
+    assert not handler.from_cloudfront({"headers": {}})
+    assert not handler.from_cloudfront({})
+    res = handler.handler({"rawPath": "/api/collections", "requestContext": {"http": {"method": "GET"}}, "headers": {}}, None)
+    assert res["statusCode"] == 403
