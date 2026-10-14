@@ -50,7 +50,7 @@ reference:
 
 | Secret | Where it lives | What `main.tf` holds |
 |---|---|---|
-| AWS credentials | `AWS_PROFILE`, SSO, or an OIDC role in CI (`AWS_ROLE_ARN`, see the workflow) | nothing |
+| AWS credentials | `AWS_PROFILE`, SSO, or OIDC roles in CI (`AWS_PLAN_ROLE_ARN` and `AWS_ROLE_ARN`, see [CI](#ci)) | nothing |
 | Anthropic API key, with `llm_provider = "anthropic"` | a Secrets Manager secret you create | `anthropic_api_key_secret_arn` |
 | The portal's service clients, with `site_sign_in` | Secrets Manager, created by the stack | nothing |
 | Cognito passwords | Cognito, emailed to `admin_email` | nothing |
@@ -62,6 +62,52 @@ aws secretsmanager create-secret --name knowledge-store/anthropic-api-key --secr
 ```
 
 then set `llm_provider = "anthropic"` and `anthropic_api_key_secret_arn` to the ARN it prints.
+
+## CI
+
+The workflow in `.github/workflows/terraform.yml` plans on every pull request and applies from
+`main` when you run it by hand. It uses two IAM roles, each trusting GitHub's OIDC provider
+(`token.actions.githubusercontent.com`) for one job only, set as repository variables:
+
+| Variable | Job | Rights | Trust: `token.actions.githubusercontent.com:sub` |
+|---|---|---|---|
+| `AWS_PLAN_ROLE_ARN` | `plan`, on pull requests | read-only: `ReadOnlyAccess`, plus `s3:GetObject` and `s3:ListBucket` on the state bucket | `repo:<org>/<repo>:pull_request` |
+| `AWS_ROLE_ARN` | `apply`, in the `production` environment | administrator-level, as for any apply | `repo:<org>/<repo>:environment:production` |
+
+Both trust policies also require `token.actions.githubusercontent.com:aud` = `sts.amazonaws.com`.
+For example, the apply role's:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": { "Federated": "arn:aws:iam::<account>:oidc-provider/token.actions.githubusercontent.com" },
+    "Action": "sts:AssumeRoleWithWebIdentity",
+    "Condition": {
+      "StringEquals": {
+        "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+        "token.actions.githubusercontent.com:sub": "repo:<org>/<repo>:environment:production"
+      }
+    }
+  }]
+}
+```
+
+Why two roles: a pull request runs the workflow and the Terraform from its own branch, and
+`terraform plan` can run code (providers, data sources), so whoever can open a pull request can
+act with the plan role. That role must not be able to change anything.
+
+- **Protect `production`.** A job that names the environment gets its `sub`, whatever branch it
+  runs from, so the environment's rules are what guard the apply role: require reviewers, and
+  limit its deployment branches to `main`.
+- **The plan role can read the state,** and the state holds secrets (with `site_sign_in`, the
+  service clients' credentials). Treat it as sensitive. With `site_sign_in`, refreshing the
+  service clients' secret also needs `secretsmanager:GetSecretValue` on
+  `<name>/portal/service-clients`, which `ReadOnlyAccess` does not include.
+- **`-lock=false` on plan:** a read-only role cannot write the state's lock file. The plan is
+  never applied, so it can at worst be stale; the apply takes the lock.
+- **Actions are pinned to commit SHAs.** Update them deliberately (for example with Dependabot).
 
 ## What goes where
 

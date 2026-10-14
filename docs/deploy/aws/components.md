@@ -66,7 +66,7 @@ Start there to see every connection.
 | | |
 |---|---|
 | **Job** | Builds the pipeline's image (x86_64) and the agent's image (arm64, which AgentCore Runtime requires) from this repository, inside your account. Nothing is built on the machine that runs Terraform. |
-| **AWS** | An artifacts bucket `<name>-build-<account>`. Two ECR repositories, `<name>-pipeline` and `<name>-agent`, which scan on push and keep the last 10 images. Two CodeBuild projects, `<name>-image` and `<name>-agent-image`. An EventBridge rule that starts both when a new source bundle lands. |
+| **AWS** | An artifacts bucket `<name>-build-<account>`. Two ECR repositories, `<name>-pipeline` and `<name>-agent`, which scan on push and keep the last 10 images. Two CodeBuild projects, `<name>-image` and `<name>-agent-image`. An EventBridge rule that starts both when a new source bundle lands. The bucket requires TLS. Any object written under its `source/` starts a privileged build, so only the identity that applies Terraform should be allowed to write there. Tags are mutable, since the pipeline and agent run `:latest`, which each build moves; each build is also tagged with the first 12 characters of its bundle's hash. |
 | **Terraform** | [`modules/image-build`](../../../infra/modules/image-build/main.tf). `archive_file.source` zips the repository (Dockerfile, `pyproject.toml`, `src/`) under its content hash. The upload (`aws_s3_object.source`) starts the builds, so an unchanged source never rebuilds. |
 | **Your inputs** | `name`, `permissions_boundary` |
 
@@ -111,7 +111,7 @@ Start there to see every connection.
 | | |
 |---|---|
 | **Job** | Sign-in for people. Only an administrator creates users (no self sign-up). Members of `private-readers` may read private sources. |
-| **AWS** | A user pool `<name>` with a password policy and email recovery. A managed sign-in domain `<name>-<account>`. One public web client: authorisation code with PKCE, no secret, 60-minute tokens. The `private-readers` group, and the admin user. |
+| **AWS** | A user pool `<name>` with a password policy, optional authenticator-app (TOTP) MFA and email recovery. Deletion protection is off unless the module's `deletion_protection` is set, so that destroying works. A managed sign-in domain `<name>-<account>`. One public web client: authorisation code with PKCE, no secret, 60-minute tokens. The `private-readers` group, and the admin user. |
 | **Terraform** | [`modules/identity`](../../../infra/modules/identity/main.tf). Its callback URLs are the portal's URLs, both the custom domain and CloudFront's. |
 | **Your inputs** | `admin_email`, `admin_private`, `portal_domain`, `site_sign_in` |
 
@@ -124,7 +124,7 @@ holds two client-credentials clients, `<name>-site-public` (scopes `agent.invoke
 | | |
 |---|---|
 | **Job** | A static chat page and its API on one URL. The API checks the person's daily quota, then answers asynchronously by asking the agent as that person, with their own access token. Until the agent runs, it answers with its own tool loop. It also gives a person a short-lived link to a source document they may read. |
-| **AWS** | Three request paths:<br>• **CloudFront** serves `/*` from a private S3 bucket (`<name>-site-<account>`, through origin access control) and sends `/api/*` to API Gateway.<br>• **API Gateway** is an HTTP API with a Cognito JWT authorizer on every route, throttled to 20 requests a second.<br>• **The Lambda** is `<name>-portal-api` (Python 3.12, a zip built by Terraform), with reserved concurrency as the concurrency valve.<br>DynamoDB `<name>-chat` (on demand, with a TTL) holds answers, their steps while they run, quotas, and the workbench's ontology use totals (which never expire). With `portal_domain`, CloudFront serves your domain with your ACM certificate. |
+| **AWS** | Three request paths:<br>• **CloudFront** serves `/*` from a private S3 bucket (`<name>-site-<account>`, through origin access control) and sends `/api/*` to API Gateway.<br>• **API Gateway** is an HTTP API with a Cognito JWT authorizer on every route, throttled to 20 requests a second, with an access log line per request in `/aws/vendedlogs/apigateway/<name>-portal`.<br>• **The Lambda** is `<name>-portal-api` (Python 3.12, a zip built by Terraform), with reserved concurrency as the concurrency valve.<br>DynamoDB `<name>-chat` (on demand, with a TTL) holds answers, their steps while they run, quotas, and the workbench's ontology use totals (which never expire). With `portal_domain`, CloudFront serves your domain with your ACM certificate. |
 | **Terraform** | [`modules/portal`](../../../infra/modules/portal/main.tf): `aws_cloudfront_distribution.this`, `aws_apigatewayv2_*`, `aws_lambda_function.api`, `aws_dynamodb_table.chat`. `aws_s3_object.config` writes the page's `config.json` (sign-in endpoints and redirect URL). |
 | **Your inputs** | `portal_title`, `portal_domain`, `daily_questions`, `valves.chat_concurrency`, `chat_model_id`, `llm_provider`, `log_retention_days` |
 
@@ -166,7 +166,10 @@ holds two client-credentials clients, `<name>-site-public` (scopes `agent.invoke
 - **Least privilege:** each role may do only its own job (below). The graph tools may only read
   Neptune; the pipeline alone writes to it.
 - **Supply chain:** images are built in your account from the repository you deployed. The only
-  outside pull is the Python base image from ECR Public.
+  outside pull is the Python base image from ECR Public, pinned by digest in the Dockerfiles.
+- **Deployment:** the launch stack's deploy project runs with administrator rights, so whoever may
+  start or change it, or invoke its Starter function, is effectively an administrator. See
+  [SECURITY.md](../../../SECURITY.md#the-launch-stack-cloudformation) for the rights to restrict.
 
 ## IAM roles
 
@@ -175,14 +178,14 @@ actions, or the component fails at run time.
 
 | Role | Assumed by | May |
 |---|---|---|
-| `<name>-codebuild` | CodeBuild | Read the source bundle; push to the two ECR repositories; write build logs |
-| `<name>-build-trigger` | EventBridge | Start the two CodeBuild projects |
+| `<name>-codebuild` | CodeBuild (the two image projects only) | Read the source bundle; push to the two ECR repositories; write the two projects' build logs |
+| `<name>-build-trigger` | EventBridge (the source-uploaded rule only) | Start the two CodeBuild projects |
 | `<name>-pipeline-exec` | ECS | Pull the pipeline image; write its logs (`AmazonECSTaskExecutionRolePolicy`) |
-| `<name>-pipeline-task` | the pipeline's task | Read, write and list the lake; read source buckets you configured; invoke Bedrock models; read the Anthropic key secret (if used); connect to Neptune, then read, write and delete data in it; start and get Knowledge Base ingestion jobs |
+| `<name>-pipeline-task` | the pipeline's task | Read, write and list the lake; read source buckets you configured; invoke the extraction model (`extraction_model_id`); read the Anthropic key secret (if used); connect to Neptune, then read, write and delete data in it; start and get Knowledge Base ingestion jobs |
 | `<name>-pipe` | EventBridge Pipes | Receive from the uploads queue; run the pipeline task; pass its two roles |
 | `<name>-scheduler` | EventBridge Scheduler | Run the pipeline task; pass its two roles |
 | `<name>-knowledge-base` | Bedrock | Invoke the embedding model; read the lake's `kb/` prefix; write and query the vector index |
-| `<name>-portal-api` | Lambda | Read the lake's served layers; write ontology requests (`collections/*/ontology/requests/*`, the workbench); read and write the chat table; invoke Bedrock models; invoke itself (for asynchronous answers); write logs |
+| `<name>-portal-api` | Lambda | Read the lake's served layers; write ontology requests (`collections/*/ontology/requests/*.json`, the workbench); read and write the chat table; invoke the chat model (`chat_model_id`); invoke itself (for asynchronous answers); write logs |
 | `<name>-tools-graph` | Lambda | Read the lake's gold, ontology and config layers; connect to Neptune and read data only; VPC networking and logs |
 | `<name>-tools-passages` | Lambda | Read the lake's gold, silver and config layers; `bedrock:Retrieve` on the Knowledge Base; logs |
 | `<name>-agent-interceptor` | Lambda | Write logs |
