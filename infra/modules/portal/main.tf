@@ -158,6 +158,17 @@ locals {
   site_files = [for f in fileset(var.portal_dir, "**") : f if !startswith(f, "config.") && !endswith(f, ".md")]
   # the lake layers the API serves, under each collections/<id>/ (see src/knowledge_store/layout.py)
   served_prefixes = ["gold", "portal", "ontology", "config", "silver", "bronze"]
+  # Bedrock: the chat model only. A cross-region inference profile (us., eu., global. ...) needs
+  # the profile and its foundation model in every region it routes to (none for global.). A model
+  # given as an ARN (an application inference profile) keeps the broad grant, since its
+  # foundation model cannot be read from the id.
+  model_base = replace(var.chat_model_id, "/^(us|us-gov|eu|apac|jp|au|ca|global)\\./", "")
+  model_resources = startswith(var.chat_model_id, "arn:") ? ["arn:aws:bedrock:*::foundation-model/*",
+    "arn:aws:bedrock:*:${data.aws_caller_identity.me.account_id}:inference-profile/*",
+    "arn:aws:bedrock:*:${data.aws_caller_identity.me.account_id}:application-inference-profile/*"] : [
+    "arn:aws:bedrock:*::foundation-model/${local.model_base}",
+    "arn:aws:bedrock:*:${data.aws_caller_identity.me.account_id}:inference-profile/${var.chat_model_id}",
+  ]
 }
 
 # --- static site --------------------------------------------------------------------------
@@ -285,6 +296,12 @@ resource "aws_cloudfront_distribution" "this" {
   origin {
     origin_id   = "api"
     domain_name = replace(aws_apigatewayv2_api.this.api_endpoint, "https://", "")
+    # The Lambda refuses a request without this header, so the execute-api endpoint, which is
+    # public, cannot be used to go round CloudFront and its web ACL.
+    custom_header {
+      name  = "x-origin-verify"
+      value = random_password.origin.result
+    }
     custom_origin_config {
       http_port              = 80
       https_port             = 443
@@ -387,12 +404,11 @@ resource "aws_iam_role_policy" "api" {
     # The one place the portal writes to the lake: ontology requests that curators keep from the
     # workbench (knowledge_store.workbench), which the candidate register reads.
     { Sid = "KeepRequests", Effect = "Allow", Action = "s3:PutObject",
-    Resource = "${var.lake_bucket_arn}/collections/*/ontology/requests/*" },
+    Resource = "${var.lake_bucket_arn}/collections/*/ontology/requests/*.json" },
     { Sid = "Chat", Effect = "Allow", Action = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem"],
     Resource = aws_dynamodb_table.chat.arn },
     { Sid = "Models", Effect = "Allow", Action = ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"],
-      Resource = ["arn:aws:bedrock:*::foundation-model/*",
-    "arn:aws:bedrock:*:${data.aws_caller_identity.me.account_id}:inference-profile/*"] },
+    Resource = local.model_resources },
     { Sid = "SelfInvoke", Effect = "Allow", Action = "lambda:InvokeFunction",
     Resource = "arn:aws:lambda:${data.aws_region.current.region}:${data.aws_caller_identity.me.account_id}:function:${var.name}-portal-api" },
     ], local.anthropic ? [{ Sid = "AnthropicKey", Effect = "Allow", Action = "secretsmanager:GetSecretValue",
@@ -402,6 +418,12 @@ resource "aws_iam_role_policy" "api" {
 }
 
 # With site_sign_in: the service clients' credentials, which the Lambda reads once per instance.
+# Shared by CloudFront (sent to the API origin) and the Lambda (required on every request).
+resource "random_password" "origin" {
+  length  = 48
+  special = false
+}
+
 resource "aws_secretsmanager_secret" "service_clients" {
   count                   = local.site ? 1 : 0
   name                    = "${var.name}/portal/service-clients"
@@ -440,6 +462,7 @@ resource "aws_lambda_function" "api" {
       CHAT_MODEL_ID   = var.chat_model_id
       PRIVATE_GROUP   = var.private_group
       DAILY_QUESTIONS = tostring(var.daily_questions)
+      ORIGIN_SECRET   = random_password.origin.result
       }, local.anthropic ? { ANTHROPIC_API_KEY_SECRET = var.anthropic_api_key_secret_arn } : {},
       var.agent_runtime_arn != "" ? { AGENT_RUNTIME_ARN = var.agent_runtime_arn, AGENT_RUNTIME_QUALIFIER = var.agent_runtime_qualifier } : {},
       local.site ? {
@@ -489,6 +512,14 @@ resource "aws_apigatewayv2_route" "api" {
   authorizer_id      = local.site ? null : aws_apigatewayv2_authorizer.jwt.id
 }
 
+# One line per API request. The /aws/vendedlogs/ prefix keeps API Gateway's log delivery on the
+# account's shared CloudWatch Logs resource policy, which has a size limit, to one wildcard entry.
+resource "aws_cloudwatch_log_group" "api_access" {
+  name              = "/aws/vendedlogs/apigateway/${var.name}-portal"
+  retention_in_days = var.log_retention_days
+  tags              = var.tags
+}
+
 resource "aws_apigatewayv2_stage" "default" {
   api_id      = aws_apigatewayv2_api.this.id
   name        = "$default"
@@ -496,6 +527,16 @@ resource "aws_apigatewayv2_stage" "default" {
   default_route_settings {
     throttling_burst_limit = var.api_throttle.burst_limit
     throttling_rate_limit  = var.api_throttle.rate_limit
+  }
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_access.arn
+    format = jsonencode({
+      requestId        = "$context.requestId", ip = "$context.identity.sourceIp", requestTime = "$context.requestTime",
+      httpMethod       = "$context.httpMethod", path = "$context.path", routeKey = "$context.routeKey",
+      status           = "$context.status", protocol = "$context.protocol", responseLength = "$context.responseLength",
+      integrationError = "$context.integrationErrorMessage", authorizerError = "$context.authorizer.error",
+      sub              = "$context.authorizer.claims.sub"
+    })
   }
   tags = var.tags
 }

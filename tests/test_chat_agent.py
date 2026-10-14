@@ -3,6 +3,7 @@ model claims is checked against the passages the caller can read, and only check
 
 from __future__ import annotations
 
+import json
 from types import SimpleNamespace
 
 import pytest
@@ -161,9 +162,17 @@ def test_a_failing_agent_claims_nothing(mixed):
         messages = []
 
         def __call__(self, prompt):
-            raise RuntimeError("model call budget spent")
+            raise RuntimeError("AccessDenied on arn:aws:s3:::secret-bucket")
     out = app.answer("Who launched Mission Alpha?", "m", None, Tools(root), agent_factory=Broken)
-    assert out["abstained"] and "budget" in out["error"]
+    assert out["abstained"] and out["error"] == app.FAILED  # the exception is logged, not returned
+    assert "arn:" not in json.dumps(out) and "RuntimeError" not in json.dumps(out)
+
+
+def test_a_spent_model_budget_is_said_plainly():
+    counts, _, before_model = app.limit_hooks()
+    for _ in range(app.valves.MAX_MODEL_CALLS + 1):
+        before_model(type("E", (), {})())
+    assert app._failure(counts) == app.BUDGET_SPENT and app._failure({}) == app.FAILED
 
 
 def test_question_limits():
@@ -242,5 +251,5 @@ def test_streamed_runs_report_steps_then_the_result():
     assert list(app.streamed(work)) == [{"step": {"n": 1}}, {"step": {"n": 2}}, {"result": {"answer": "yes"}}]
 
     def broken(on_step):
-        raise RuntimeError("boom")
-    assert "boom" in list(app.streamed(broken))[-1]["result"]["error"]
+        raise RuntimeError("boom at neptune.internal:8182")
+    assert list(app.streamed(broken))[-1]["result"]["error"] == app.FAILED

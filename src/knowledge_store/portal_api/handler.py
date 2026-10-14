@@ -52,6 +52,7 @@ page polls GET /api/chat.
 from __future__ import annotations
 
 import datetime as dt
+import hmac
 import json
 import logging
 import os
@@ -60,12 +61,51 @@ import uuid
 
 from .. import collections, layout, site_grant, workbench
 from ..claims import private_reader, subject
+from ..agent import valves
 from ..config import load_profile
+from ..graph import traverse
 from ..store import S3Store, put_json, store_from_uri
 from . import agent_client, chat, index, state as chat_state
 
 log = logging.getLogger()
 log.setLevel(logging.INFO)
+
+MAX_ANSWER_CHARS = 4000     # an earlier answer passed back as history
+MAX_SEARCH_CHARS = 200      # q for /api/entities
+MAX_VERSION_CHARS = 32      # ontology_version kept with a request
+MAX_OFFSET = 100_000
+
+
+class BadRequest(ValueError):
+    """A malformed request: its message goes back to the caller with a 400."""
+
+
+class Failed(RuntimeError):
+    """A question that failed for a reason the person may be told; any other failure is logged
+    and reported to them generically."""
+
+
+def number(qs: dict, name: str, default: int, lo: int, hi: int) -> int:
+    """An integer query parameter, clamped to [lo, hi]; anything else that is not an integer is a 400."""
+    raw = qs.get(name)
+    if raw in (None, ""):
+        return default
+    try:
+        n = int(str(raw).strip())
+    except ValueError:
+        raise BadRequest(f"{name} must be an integer") from None
+    return max(lo, min(n, hi))
+
+
+def history_of(body: dict) -> list[dict]:
+    """The earlier turns the page sends with a question, as the agent's history_messages keeps them:
+    strings only, the question cut to the question cap and the answer to MAX_ANSWER_CHARS."""
+    h = body.get("history")
+    out = []
+    for t in (h if isinstance(h, list) else [])[-valves.MAX_HISTORY_TURNS:]:
+        if isinstance(t, dict) and isinstance(t.get("q"), str) and isinstance(t.get("a"), str) and t["q"] and t["a"]:
+            out.append({"q": t["q"][:valves.MAX_QUESTION_CHARS], "a": t["a"][:MAX_ANSWER_CHARS]})
+    return out
 
 _lake = None
 _state = None
@@ -217,18 +257,18 @@ def answer_job(job: dict) -> None:
                                    session_id=agent_client.session_for(job["sub"], job["private"]),
                                    on_step=progress)
             if out.get("error") and not (out.get("answer") or out.get("report")):
-                raise RuntimeError(out["error"])
+                raise RuntimeError(f"the agent failed: {out['error']}")  # its text can carry internals: logged only
             if mode == "gaps" and not out.get("report"):  # an agent built before the workbench answers instead
-                raise RuntimeError("The agent returned no report. It predates the workbench: rebuild its image and "
+                raise Failed("The agent returned no report. It predates the workbench: rebuild its image and "
                                    "re-create the Runtime (agent.runtime false, then true).")
         else:
             idx = index.load(collections.scoped(lake(), cid), cid)
             if idx is None:
-                raise RuntimeError("the knowledge graph is not built yet")
+                raise Failed("The knowledge graph is not built yet.")
             if mode == "gaps":
                 out = chat.analyse(idx, job["question"], job.get("about"), private=job["private"], on_step=progress)
                 if out.get("error"):
-                    raise RuntimeError(out["error"])
+                    raise Failed(out["error"])
             else:
                 out = chat.ask(idx, job["question"], job.get("history"), private=job["private"], on_step=progress)
         item = {"status": "done", "mode": mode, **out}
@@ -236,7 +276,8 @@ def answer_job(job: dict) -> None:
             record_usage(cid, out)
     except Exception as e:
         log.exception("chat failed")
-        item = {"status": "failed", "mode": mode, "error": str(e)[:500], "steps": progress.steps}
+        msg = str(e)[:500] if isinstance(e, Failed) else "The question could not be answered. Try again later."
+        item = {"status": "failed", "mode": mode, "error": msg, "steps": progress.steps}
     state().put_chat(job["id"], job["sub"], item)
 
 
@@ -251,15 +292,39 @@ def about_of(body: dict) -> dict | None:
             "steps": [str(s)[:200] for s in (a.get("steps") or [])[:20] if isinstance(s, str)]}
 
 
+def body_of(event: dict) -> dict:
+    """A POST's JSON body, which must be an object."""
+    try:
+        body = json.loads(event.get("body") or "{}")
+    except ValueError:
+        raise BadRequest("the body is not JSON") from None
+    if not isinstance(body, dict):
+        raise BadRequest("the body is a JSON object")
+    return body
+
+
 def list_requests(lk, limit: int = 50) -> list[dict]:
     keys = sorted((k for k in lk.list(workbench.REQUESTS + "/") if k.endswith(".json")), reverse=True)[:limit]
     return [json.loads(lk.get(k)) for k in keys]
+
+
+def from_cloudfront(event: dict) -> bool:
+    """True when the request came through CloudFront, which adds the x-origin-verify header that
+    ORIGIN_SECRET names; the execute-api endpoint is public, and without this would go round the
+    web ACL. With no ORIGIN_SECRET set (a local run), every request passes."""
+    secret = os.environ.get("ORIGIN_SECRET", "")
+    if not secret:
+        return True
+    got = {k.lower(): v for k, v in (event.get("headers") or {}).items()}.get("x-origin-verify") or ""
+    return hmac.compare_digest(got.encode(), secret.encode())
 
 
 def handler(event, context):
     if "chat_job" in event:  # self-invocation
         answer_job(event["chat_job"])
         return {"ok": True}
+    if not from_cloudfront(event):
+        return reply(403, {"error": "Forbidden"})
     method = event.get("requestContext", {}).get("http", {}).get("method", "GET")
     path = event.get("rawPath") or event.get("requestContext", {}).get("http", {}).get("path", "")
     path = path[len("/api"):] if path.startswith("/api") else path
@@ -329,11 +394,16 @@ def handler(event, context):
         if path == "/requests" and method == "GET":
             return reply(200, {"requests": list_requests(lk)})
         if path == "/requests" and method == "POST":
-            body = json.loads(event.get("body") or "{}")
-            q = str(body.get("question") or "").strip()
-            if not q or not isinstance(body.get("report"), dict):
-                return reply(400, {"error": "a request needs the question and its report"})
-            key, rec = workbench.request_record(q, body["report"], version=body.get("ontology_version"), by=sub)
+            body = body_of(event)
+            q = body.get("question")
+            q = q.strip() if isinstance(q, str) else ""
+            if not q or len(q) > valves.MAX_QUESTION_CHARS or not isinstance(body.get("report"), dict):
+                return reply(400, {"error": f"a request needs the question (up to {valves.MAX_QUESTION_CHARS} "
+                                            "characters) and its report"})
+            version = body.get("ontology_version")
+            if version is not None and not (isinstance(version, str) and len(version) <= MAX_VERSION_CHARS):
+                return reply(400, {"error": f"ontology_version is a version string of up to {MAX_VERSION_CHARS} characters"})
+            key, rec = workbench.request_record(q, body["report"], version=version, by=sub)
             put_json(lk, key, rec)
             return reply(201, {"id": rec["id"]})
         idx = index.load(lk, cid)
@@ -343,18 +413,22 @@ def handler(event, context):
         if path == "/summary":
             return reply(200, idx.summary_view(private) | {"private": private})
         if path == "/ontology":
-            return reply(200, idx.ontology)
+            return reply(200, idx.ontology_view(private))
         if path == "/entities":
-            return reply(200, idx.search_entities(qs.get("q", ""), qs.get("type") or None, private=private,
-                                                  limit=min(int(qs.get("limit", 50)), 200),
-                                                  offset=int(qs.get("offset", 0))))
+            q = str(qs.get("q") or "")
+            if len(q) > MAX_SEARCH_CHARS:
+                return reply(400, {"error": f"search with up to {MAX_SEARCH_CHARS} characters"})
+            return reply(200, idx.search_entities(q, qs.get("type") or None, private=private,
+                                                  limit=number(qs, "limit", 50, 1, 200),
+                                                  offset=number(qs, "offset", 0, 0, MAX_OFFSET)))
         if path == "/entity":
             e = idx.entities.get(qs.get("id", ""))
             if not e or not idx.visible(e, private):
                 return reply(404, {"error": "no such entity"})
             v = idx.entity_view(e, private)
             refs = {i for r in v["out"] + v["in"] for i in (r.get("o"), r.get("s")) if i}
-            return reply(200, {**v, "labels": {i: idx.entities[i]["label"] for i in refs if i in idx.entities},
+            return reply(200, {**v, "labels": {i: idx.entities[i]["label"] for i in refs
+                                               if i in idx.entities and idx.visible(idx.entities[i], private)},
                                "passage_text": {p: idx.passage_view(p) for p in v["passages"][:40]},
                                "doc_info": {d: idx.docs.get(d) for d in v["docs"]}})
         if path == "/passage":
@@ -364,18 +438,20 @@ def handler(event, context):
             return reply(200, idx.passage_view(qs["id"]))
         if path == "/graph":
             return reply(200, idx.graph(qs.get("type") or None, private=private, focus=qs.get("focus") or None,
-                                        limit=min(int(qs.get("limit", 150)), 400)))
+                                        limit=number(qs, "limit", 150, 1, 400)))
         if path == "/neighbourhood":
-            return reply(200, idx.neighbourhood(qs.get("id", ""), hops=int(qs.get("hops", 1)), private=private,
-                                                limit=min(int(qs.get("limit", 150)), 200)))
+            return reply(200, idx.neighbourhood(qs.get("id", ""), private=private,
+                                                hops=number(qs, "hops", 1, 1, traverse.MAX_NEIGHBOURHOOD_HOPS),
+                                                limit=number(qs, "limit", 150, 1, 200)))
         if path == "/paths":
-            return reply(200, idx.paths(qs.get("from", ""), qs.get("to", ""), max_hops=int(qs.get("hops", 3)),
-                                        private=private, limit=int(qs.get("limit", 10))))
+            return reply(200, idx.paths(qs.get("from", ""), qs.get("to", ""), max_hops=number(qs, "hops", 3, 1, traverse.MAX_HOPS),
+                                        private=private, limit=number(qs, "limit", 10, 1, 20)))
         if path == "/chat" and method == "POST":
-            body = json.loads(event.get("body") or "{}")
-            q = str(body.get("question") or "").strip()
-            if not q or len(q) > 2000:
-                return reply(400, {"error": "ask a question of up to 2000 characters"})
+            body = body_of(event)
+            q = body.get("question")
+            q = q.strip() if isinstance(q, str) else ""
+            if not q or len(q) > valves.MAX_QUESTION_CHARS:
+                return reply(400, {"error": f"ask a question of up to {valves.MAX_QUESTION_CHARS} characters"})
             if not take_quota(sub):
                 return reply(429, {"error": "You have reached today's question limit."})
             mode = body.get("mode") or "ask"
@@ -383,13 +459,15 @@ def handler(event, context):
                 return reply(400, {"error": "mode is ask or gaps"})
             job = {"id": uuid.uuid4().hex, "sub": sub, "private": private, "question": q, "collection": cid,
                    "mode": mode, "about": about_of(body),
-                   "history": [h for h in (body.get("history") or [])[-6:] if isinstance(h, dict)]}
+                   "history": history_of(body)}
             if agent_client.configured() and not site_grant.enabled():
                 job["token"] = bearer(event)  # the agent acts as this person: it gets their token, never stored
             state().put_chat(job["id"], sub, {"status": "pending", "mode": mode})
             dispatch(job, context)
             return reply(202, {"id": job["id"]})
         return reply(404, {"error": f"no route {method} {path}"})
-    except Exception as e:
+    except BadRequest as e:
+        return reply(400, {"error": str(e)})
+    except Exception:
         log.exception("request failed")
-        return reply(500, {"error": str(e)[:300]})
+        return reply(500, {"error": "The request failed. Try again later."})

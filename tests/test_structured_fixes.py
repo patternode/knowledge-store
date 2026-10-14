@@ -251,7 +251,7 @@ def test_a_table_made_private_after_the_first_bind_is_rebound_private(tmp_path):
     _set_version(private, "2.0.0")
     versions.publish(lake, private, by="test", activate=True)
     bind(lake)
-    assert lookup_rows(lake, "LaunchVehicle")["total"] == 0
+    assert "total" not in lookup_rows(lake, "LaunchVehicle")  # now hidden from a public caller
     assert lookup_rows(lake, "LaunchVehicle", private=True)["total"] > 0
 
 

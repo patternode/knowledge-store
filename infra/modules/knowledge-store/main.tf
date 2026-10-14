@@ -226,6 +226,13 @@ module "agent" {
   prod_version         = var.agent.prod_version
   agent_model_id       = var.agent.model_id
   idle_session_minutes = var.agent.idle_session_minutes
+  # The portal's chat state table (modules/portal names it "<name>-chat"); the agent keeps its own
+  # count there under agent#, above the portal's daily_questions so a retry is not refused.
+  invocation_quota = {
+    table_name        = "${var.name}-chat"
+    daily_limit       = coalesce(var.agent.daily_invocations, 2 * var.daily_questions)
+    exempt_client_ids = [for k in sort(keys(local.site_clients)) : module.identity.machine_client_ids[k]]
+  }
   neptune = var.knowledge_graph.enabled ? {
     endpoint                 = module.knowledge_graph[0].endpoint
     port                     = module.knowledge_graph[0].port

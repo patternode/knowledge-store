@@ -45,6 +45,15 @@ variable "machine_clients" {
     tools.private (what the agent may read for it through the Gateway).
   EOT
 }
+variable "deletion_protection" {
+  type        = bool
+  default     = false
+  description = <<-EOT
+    Refuse to delete the user pool (and its users) until this is set back to false and applied.
+    Off by default, like the knowledge graph's, so that terraform destroy and deleting the launch
+    stack keep working; turn it on for a long-lived deployment.
+  EOT
+}
 variable "tags" {
   type    = map(string)
   default = {}
@@ -57,8 +66,11 @@ resource "aws_cognito_user_pool" "this" {
   name                     = var.name
   username_attributes      = ["email"]
   auto_verified_attributes = ["email"]
-  mfa_configuration        = "OFF"
-  deletion_protection      = "INACTIVE"
+  # People may add an authenticator app (TOTP). Not "ON": that would stop every existing user at
+  # their next sign-in, and the portal has no MFA set-up flow of its own.
+  mfa_configuration   = "OPTIONAL"
+  deletion_protection = var.deletion_protection ? "ACTIVE" : "INACTIVE"
+  software_token_mfa_configuration { enabled = true }
 
   admin_create_user_config { allow_admin_create_user_only = true }
   password_policy {

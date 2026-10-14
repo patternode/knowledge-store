@@ -31,6 +31,9 @@ output "agent" {
     gateway_url   = module.agent.gateway_url
     guardrail_id  = module.agent.guardrail_id
     image_project = module.build.agent_codebuild_project
+    # per person per day, counted by the agent itself; 0 for none
+    invocation_limit = module.agent.invocation_limit
+    model_grants     = module.agent.model_grants
   }
 }
 

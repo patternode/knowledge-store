@@ -49,3 +49,36 @@ run "the_agent_waits_for_its_image" {
     error_message = "the Runtime is created only with agent.runtime = true"
   }
 }
+
+run "the_agent_limits_each_caller_and_its_model" {
+  command = plan
+  variables {
+    daily_questions = 25
+  }
+  assert {
+    condition     = module.knowledge_store.agent.invocation_limit == 50
+    error_message = "by default the agent allows twice daily_questions per person per day"
+  }
+  assert {
+    condition = toset(module.knowledge_store.agent.model_grants) == toset([
+      "arn:aws:bedrock:*::foundation-model/anthropic.claude-sonnet-5",
+      "arn:aws:bedrock:us-east-1:123456789012:inference-profile/us.anthropic.claude-sonnet-5",
+    ])
+    error_message = "the Runtime may call only the configured model's inference profile and its foundation model"
+  }
+}
+
+run "the_agent_limit_can_be_set_or_off" {
+  command = plan
+  variables {
+    agent = { daily_invocations = 0, model_id = "anthropic.claude-sonnet-5" }
+  }
+  assert {
+    condition     = module.knowledge_store.agent.invocation_limit == 0
+    error_message = "daily_invocations = 0 turns the agent's own limit off"
+  }
+  assert {
+    condition     = toset(module.knowledge_store.agent.model_grants) == toset(["arn:aws:bedrock:*::foundation-model/anthropic.claude-sonnet-5"])
+    error_message = "a foundation model id is granted as itself, with no inference profile"
+  }
+}

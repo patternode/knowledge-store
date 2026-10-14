@@ -248,9 +248,23 @@ window.KS = (() => {
   // collection, in the shape /api/usage returns, so the ontology page can show either.
   const USAGE_KEY = (c) => `ks.usage.session.${c}`;
   const LEVELS = ['queried', 'read', 'cited'], KINDS = ['classes', 'relations', 'attributes'];
+  // Term names come from the model and the documents, so each kind's map has no prototype: a term
+  // called __proto__ or constructor is then an ordinary key and never reaches Object.prototype.
+  const termMap = (o) => {
+    const m = Object.create(null);
+    if (o && typeof o === 'object' && !Array.isArray(o)) {
+      for (const [term, row] of Object.entries(o)) {
+        if (row && typeof row === 'object') m[term] = { queried: +row.queried || 0, read: +row.read || 0, cited: +row.cited || 0 };
+      }
+    }
+    return m;
+  };
   function sessionUsage(c) {
-    const empty = { questions: 0, classes: {}, relations: {}, attributes: {} };
-    try { return { ...empty, ...(JSON.parse(sstore.get(USAGE_KEY(c)) || 'null') || {}) }; } catch { return empty; }
+    let saved = null;
+    try { saved = JSON.parse(sstore.get(USAGE_KEY(c)) || 'null'); } catch { saved = null; }
+    const u = { questions: +(saved && saved.questions) || 0 };
+    for (const k of KINDS) u[k] = termMap(saved && saved[k]);
+    return u;
   }
   function addSessionUsage(c, hits) {
     if (!c || !hits) return;
@@ -259,7 +273,7 @@ window.KS = (() => {
     for (const k of KINDS) {
       for (const [term, levels] of Object.entries(hits[k] || {})) {
         const row = u[k][term] || (u[k][term] = { queried: 0, read: 0, cited: 0 });
-        for (const lv of levels || []) if (LEVELS.includes(lv)) row[lv] += 1;
+        for (const lv of Array.isArray(levels) ? levels : []) if (LEVELS.includes(lv)) row[lv] += 1;
       }
     }
     sstore.set(USAGE_KEY(c), JSON.stringify(u));

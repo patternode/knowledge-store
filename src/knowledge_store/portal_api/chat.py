@@ -78,8 +78,8 @@ def tool_config() -> dict:
                                     "inputSchema": {"json": schema(t)}}} for t in TOOLS]}
 
 
-def vocabulary(idx: Index) -> str:
-    o = idx.ontology
+def vocabulary(idx: Index, private: bool = False) -> str:
+    o = idx.ontology_view(private)
     lines = []
     for c in o["classes"]:
         par = f" (a kind of {', '.join(c['parents'])})" if c["parents"] else ""
@@ -126,7 +126,8 @@ def _run_tool(idx: Index, name: str, args: dict, private: bool) -> dict:
         if not e or not idx.visible(e, private):
             return {"error": f"no entity {args.get('id')!r}; use search_entities for its id"}
         v = idx.entity_view(e, private)
-        label = {i: idx.entities[i]["label"] for r in v["out"] + v["in"] for i in (r.get("o"), r.get("s")) if i in idx.entities}
+        label = {i: idx.entities[i]["label"] for r in v["out"] + v["in"] for i in (r.get("o"), r.get("s"))
+                 if i in idx.entities and idx.visible(idx.entities[i], private)}
         return {**v, "out": [{**r, "o_label": label.get(r["o"])} for r in v["out"][:60]],
                 "in": [{**r, "s_label": label.get(r["s"])} for r in v["in"][:60]], "passages": v["passages"][:30]}
     if name == "search_passages":
@@ -205,10 +206,10 @@ def _priced(rec: workbench.Recorder, model_id: str, usage: dict, reported: bool)
     return workbench.query_cost(rec.steps, model_id=model_id, usage=usage if reported else None, provider=spend_provider())
 
 
-def system_text(idx: Index) -> str:
+def system_text(idx: Index, private: bool = False) -> str:
     """The portal prompt. A collection with the catalog's mapping is told which questions the tables answer."""
     from ..structured.query import describe
-    return SYSTEM.format(profile=profile_text(idx), vocabulary=vocabulary(idx)) + valves.table_query_note(
+    return SYSTEM.format(profile=profile_text(idx), vocabulary=vocabulary(idx, private)) + valves.table_query_note(
         valves.table_questions(describe(idx.lake)))
 
 
@@ -217,13 +218,14 @@ def ask(idx: Index, question: str, history: list[dict] | None, *, private: bool,
     brt = brt or client()
     rec = workbench.Recorder(on_step)
     model_id = model_id or os.environ.get("CHAT_MODEL_ID", "us.anthropic.claude-sonnet-5")
-    system = [{"text": system_text(idx)},
+    system = [{"text": system_text(idx, private)},
               {"cachePoint": {"type": "default"}}]
     messages = []
-    for turn in (history or [])[-6:]:
-        if turn.get("q") and turn.get("a"):
-            messages += [{"role": "user", "content": [{"text": turn["q"]}]},
-                         {"role": "assistant", "content": [{"text": turn["a"]}]}]
+    for turn in (history or [])[-valves.MAX_HISTORY_TURNS:]:  # the handler bounds it; kept bounded here too
+        if isinstance(turn, dict) and isinstance(turn.get("q"), str) and isinstance(turn.get("a"), str) \
+                and turn["q"] and turn["a"]:
+            messages += [{"role": "user", "content": [{"text": turn["q"][:valves.MAX_QUESTION_CHARS]}]},
+                         {"role": "assistant", "content": [{"text": turn["a"][:4000]}]}]
     messages.append({"role": "user", "content": [{"text": question}]})
     trace, usage, provider, reported = [], _blank_usage(), spend_provider(), False
     figures: dict[str, dict] = {}  # every figure a tool returned in this question, by id
@@ -273,7 +275,7 @@ def analyse(idx: Index, question: str, about: dict | None, *, private: bool, mod
     brt = brt or client()
     rec = workbench.Recorder(on_step)
     model_id = model_id or os.environ.get("CHAT_MODEL_ID", "us.anthropic.claude-sonnet-5")
-    system = [{"text": workbench.ANALYST.format(collection=profile_text(idx), version=idx.version, ontology=vocabulary(idx))},
+    system = [{"text": workbench.ANALYST.format(collection=profile_text(idx), version=idx.version, ontology=vocabulary(idx, private))},
               {"cachePoint": {"type": "default"}}]
     messages = [{"role": "user", "content": [{"text": workbench.analyst_prompt(question, about)}]}]
     config = tool_config()

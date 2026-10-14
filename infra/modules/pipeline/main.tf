@@ -105,6 +105,17 @@ data "aws_caller_identity" "me" {}
 
 locals {
   anthropic = var.llm_provider == "anthropic" && var.anthropic_api_key_secret_arn != ""
+  # Bedrock: the extraction model only. A cross-region inference profile (us., eu., global. ...)
+  # needs the profile and its foundation model in every region it routes to (none for global.). A
+  # model given as an ARN (an application inference profile) keeps the broad grant, since its
+  # foundation model cannot be read from the id.
+  model_base = replace(var.extraction_model_id, "/^(us|us-gov|eu|apac|jp|au|ca|global)\\./", "")
+  model_resources = startswith(var.extraction_model_id, "arn:") ? ["arn:aws:bedrock:*::foundation-model/*",
+    "arn:aws:bedrock:*:${data.aws_caller_identity.me.account_id}:inference-profile/*",
+    "arn:aws:bedrock:*:${data.aws_caller_identity.me.account_id}:application-inference-profile/*"] : [
+    "arn:aws:bedrock:*::foundation-model/${local.model_base}",
+    "arn:aws:bedrock:*:${data.aws_caller_identity.me.account_id}:inference-profile/${var.extraction_model_id}",
+  ]
 }
 
 resource "aws_ecs_cluster" "this" {
@@ -171,8 +182,7 @@ resource "aws_iam_role_policy" "task" {
     Resource = "${var.lake_bucket_arn}/*" },
     { Sid = "LakeList", Effect = "Allow", Action = ["s3:ListBucket"], Resource = var.lake_bucket_arn },
     { Sid = "Models", Effect = "Allow", Action = ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"],
-      Resource = ["arn:aws:bedrock:*::foundation-model/*",
-    "arn:aws:bedrock:*:${data.aws_caller_identity.me.account_id}:inference-profile/*"] },
+    Resource = local.model_resources },
     ], length(var.extra_read_bucket_arns) == 0 ? [] : [
     { Sid = "SourceBuckets", Effect = "Allow", Action = ["s3:GetObject", "s3:ListBucket"],
     Resource = concat(var.extra_read_bucket_arns, [for b in var.extra_read_bucket_arns : "${b}/*"]) },
@@ -231,6 +241,7 @@ resource "aws_ecs_task_definition" "pipeline" {
 resource "aws_sqs_queue" "dlq" {
   name                      = "${var.name}-uploads-dlq"
   message_retention_seconds = 1209600
+  sqs_managed_sse_enabled   = true
   tags                      = var.tags
 }
 
@@ -239,6 +250,7 @@ resource "aws_sqs_queue" "uploads" {
   visibility_timeout_seconds = 300
   message_retention_seconds  = 86400
   redrive_policy             = jsonencode({ deadLetterTargetArn = aws_sqs_queue.dlq.arn, maxReceiveCount = 5 })
+  sqs_managed_sse_enabled    = true
   tags                       = var.tags
 }
 

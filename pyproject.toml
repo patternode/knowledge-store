@@ -8,7 +8,7 @@ dependencies = [
   "anthropic>=0.78,<1",
   "rdflib>=7.1",
   "pyshacl>=0.30",
-  "pypdf>=5",
+  "pypdf>=6.0",
   "pyyaml>=6",
 ]
 

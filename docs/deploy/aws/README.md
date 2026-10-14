@@ -552,6 +552,7 @@ the requests and from the terms extraction found missing, for a curator to publi
 |---|---|
 | Pipeline | `/ecs/<name>-pipeline` |
 | Chat API | `/aws/lambda/<name>-portal-api` |
+| Chat API requests (access log) | `/aws/vendedlogs/apigateway/<name>-portal` |
 | Graph tools | `/aws/lambda/<name>-tools-graph` |
 | Passage tools | `/aws/lambda/<name>-tools-passages` |
 | Agent | under `/aws/bedrock-agentcore/` |

@@ -9,6 +9,16 @@
 # Public. Each source change is a new bundle key, so it rebuilds; an unchanged source does not.
 # The first build takes a few minutes after the first apply; the pipeline's task definition
 # uses :latest, so tasks started after the build pick it up.
+#
+# Tags stay MUTABLE: every build moves :latest, and the pipeline's task definition and the agent
+# runtime name :latest, because the build runs after the apply that uploads the source, so the
+# <hash> tag does not exist yet when Terraform writes them. Making the tags immutable would need
+# consumers to name <hash> (or a digest) once its build has finished, which is a second apply.
+#
+# Anyone who can write under source/ in the build bucket starts a privileged build that pushes to
+# these repositories. Only the applying identity should hold s3:PutObject on that prefix; the
+# bucket policy cannot name that identity here without breaking applies by other principals, so
+# restrict it in IAM (SECURITY.md, "Hardening a deployment").
 
 terraform {
   required_providers {
@@ -39,6 +49,18 @@ variable "tags" {
 
 data "aws_caller_identity" "me" {}
 data "aws_region" "current" {}
+data "aws_partition" "current" {}
+
+locals {
+  account = data.aws_caller_identity.me.account_id
+  region  = data.aws_region.current.region
+  arn     = data.aws_partition.current.partition
+  # Built from the names rather than the resources' arn attributes, which would be cycles.
+  project_arns = concat(["arn:${local.arn}:codebuild:${local.region}:${local.account}:project/${var.name}-image"],
+  var.build_agent ? ["arn:${local.arn}:codebuild:${local.region}:${local.account}:project/${var.name}-agent-image"] : [])
+  log_groups = concat(["/codebuild/${var.name}-image"], var.build_agent ? ["/codebuild/${var.name}-agent-image"] : [])
+  rule_arn   = "arn:${local.arn}:events:${local.region}:${local.account}:rule/${var.name}-source-uploaded"
+}
 
 resource "aws_ecr_repository" "pipeline" {
   name                 = "${var.name}-pipeline"
@@ -71,6 +93,16 @@ resource "aws_s3_bucket_public_access_block" "artifacts" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_policy" "artifacts" {
+  bucket = aws_s3_bucket.artifacts.id
+  policy = jsonencode({ Version = "2012-10-17", Statement = [{
+    Sid       = "DenyInsecureTransport", Effect = "Deny", Principal = "*", Action = "s3:*",
+    Resource  = [aws_s3_bucket.artifacts.arn, "${aws_s3_bucket.artifacts.arn}/*"],
+    Condition = { Bool = { "aws:SecureTransport" = "false" } }
+  }] })
+  depends_on = [aws_s3_bucket_public_access_block.artifacts]
+}
+
 resource "aws_s3_bucket_notification" "artifacts" {
   bucket      = aws_s3_bucket.artifacts.id
   eventbridge = true
@@ -99,14 +131,18 @@ resource "aws_iam_role" "codebuild" {
   name                 = "${var.name}-codebuild"
   permissions_boundary = var.permissions_boundary
   assume_role_policy = jsonencode({ Version = "2012-10-17", Statement = [{
-  Effect = "Allow", Principal = { Service = "codebuild.amazonaws.com" }, Action = "sts:AssumeRole" }] })
+    Effect    = "Allow", Principal = { Service = "codebuild.amazonaws.com" }, Action = "sts:AssumeRole",
+    Condition = { StringEquals = { "aws:SourceAccount" = local.account }, ArnLike = { "aws:SourceArn" = local.project_arns } }
+  }] })
   tags = var.tags
 }
 
 resource "aws_iam_role_policy" "codebuild" {
   role = aws_iam_role.codebuild.id
   policy = jsonencode({ Version = "2012-10-17", Statement = [
-    { Effect = "Allow", Action = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"], Resource = "*" },
+    { Effect = "Allow", Action = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
+      Resource = flatten([for g in local.log_groups : ["arn:${local.arn}:logs:${local.region}:${local.account}:log-group:${g}",
+    "arn:${local.arn}:logs:${local.region}:${local.account}:log-group:${g}:*"]]) },
     { Effect = "Allow", Action = ["s3:GetObject", "s3:GetObjectVersion"], Resource = "${aws_s3_bucket.artifacts.arn}/source/*" },
     { Effect = "Allow", Action = ["ecr:GetAuthorizationToken"], Resource = "*" },
     { Effect = "Allow", Action = ["ecr:BatchCheckLayerAvailability", "ecr:CompleteLayerUpload", "ecr:InitiateLayerUpload",
@@ -172,7 +208,9 @@ resource "aws_iam_role" "events" {
   name                 = "${var.name}-build-trigger"
   permissions_boundary = var.permissions_boundary
   assume_role_policy = jsonencode({ Version = "2012-10-17", Statement = [{
-  Effect = "Allow", Principal = { Service = "events.amazonaws.com" }, Action = "sts:AssumeRole" }] })
+    Effect    = "Allow", Principal = { Service = "events.amazonaws.com" }, Action = "sts:AssumeRole",
+    Condition = { StringEquals = { "aws:SourceAccount" = local.account }, ArnLike = { "aws:SourceArn" = local.rule_arn } }
+  }] })
   tags = var.tags
 }
 

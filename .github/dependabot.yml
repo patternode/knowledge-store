@@ -1,0 +1,22 @@
+# Keeps the SHA-pinned actions, the digest-pinned base images, the Python dependency floors and
+# the Terraform providers current. Each update is a pull request for CI to check. The cooldown
+# waits a few days after a release, so a hijacked version is usually pulled before it is proposed.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directories: ["/", "/examples/deployment"]
+    schedule: { interval: weekly }
+    cooldown: { default-days: 3 }
+    groups: { actions: { patterns: ["*"] } }
+  - package-ecosystem: docker
+    directory: "/"
+    schedule: { interval: weekly }
+    cooldown: { default-days: 3 }
+  - package-ecosystem: pip
+    directory: "/"
+    schedule: { interval: weekly }
+    cooldown: { default-days: 3 }
+  - package-ecosystem: terraform
+    directory: "/infra/stack"
+    schedule: { interval: monthly }
+    cooldown: { default-days: 3 }

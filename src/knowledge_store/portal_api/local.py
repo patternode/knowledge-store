@@ -2,8 +2,11 @@
 
     python -m knowledge_store.portal_api.local --lake ./build/lake --portal ./portal [--port 8765]
 
-Every caller is treated as a private-scope user. Chat needs model access (LLM_PROVIDER and
-credentials); everything else reads the projection only. Answers are kept in memory.
+Every caller is treated as a private-scope user, so the server listens on 127.0.0.1 only and
+answers only requests addressed to it by a loopback name (a Host of localhost, 127.0.0.1 or [::1]
+with its port: DNS rebinding is refused), sends no CORS header (other websites cannot read its
+replies), and refuses a POST whose Origin is another site's. Chat needs model access (LLM_PROVIDER
+and credentials); everything else reads the projection only. Answers are kept in memory.
 """
 
 from __future__ import annotations
@@ -25,6 +28,28 @@ class _Ctx:
     function_name = "local"
 
 
+LOOPBACK = ("localhost", "127.0.0.1", "[::1]")
+
+
+def allowed_hosts(port: int) -> set[str]:
+    return {f"{h}:{port}" for h in LOOPBACK}
+
+
+def refusal(method: str, host: str | None, origin: str | None, port: int, content_type: str | None = None) -> str | None:
+    """Why a request to the local server is refused, or None. Its Host must name this server by a
+    loopback name; a state-changing request with an Origin must come from one of those too, and
+    must be JSON (a form or text/plain POST is what a page elsewhere can send without a preflight)."""
+    hosts = allowed_hosts(port)
+    if (host or "").strip().lower() not in hosts:
+        return "this server answers only on localhost"
+    if method not in ("GET", "HEAD", "OPTIONS") and origin is not None \
+            and origin.strip().lower() not in {f"http://{h}" for h in hosts}:
+        return "cross-origin requests are refused"
+    if method not in ("GET", "HEAD", "OPTIONS") and not (content_type or "").lower().startswith("application/json"):
+        return "send JSON (content-type application/json)"
+    return None
+
+
 def serve(lake_dir: str, portal_dir: str, port: int) -> None:
     handler._lake = LocalStore(lake_dir)
     handler._state = MemoryState()
@@ -34,6 +59,17 @@ def serve(lake_dir: str, portal_dir: str, port: int) -> None:
     handler.dispatch = lambda job, _ctx: threading.Thread(target=handler.answer_job, args=(job,), daemon=True).start()
 
     class H(BaseHTTPRequestHandler):
+        def _refused(self, method: str) -> bool:
+            why = refusal(method, self.headers.get("host"), self.headers.get("origin"), port, self.headers.get("content-type"))
+            if why:
+                data = json.dumps({"error": why}).encode()
+                self.send_response(403)
+                self.send_header("content-type", "application/json")
+                self.send_header("content-length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+            return bool(why)
+
         def _api(self, method: str):
             u = urlparse(self.path)
             length = int(self.headers.get("content-length") or 0)
@@ -45,11 +81,12 @@ def serve(lake_dir: str, portal_dir: str, port: int) -> None:
             self.send_response(res["statusCode"])
             for k, v in res["headers"].items():
                 self.send_header(k, v)
-            self.send_header("access-control-allow-origin", "*")
             self.end_headers()
             self.wfile.write(res["body"].encode())
 
         def do_GET(self):
+            if self._refused("GET"):
+                return
             if self.path.startswith("/api/"):
                 return self._api("GET")
             rel = urlparse(self.path).path.lstrip("/") or "index.html"
@@ -67,6 +104,8 @@ def serve(lake_dir: str, portal_dir: str, port: int) -> None:
             self.wfile.write(data)
 
         def do_POST(self):
+            if self._refused("POST"):
+                return
             return self._api("POST")
 
         def log_message(self, *a):
