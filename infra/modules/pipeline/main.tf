@@ -241,6 +241,7 @@ resource "aws_ecs_task_definition" "pipeline" {
 resource "aws_sqs_queue" "dlq" {
   name                      = "${var.name}-uploads-dlq"
   message_retention_seconds = 1209600
+  sqs_managed_sse_enabled   = true
   tags                      = var.tags
 }
 
@@ -249,6 +250,7 @@ resource "aws_sqs_queue" "uploads" {
   visibility_timeout_seconds = 300
   message_retention_seconds  = 86400
   redrive_policy             = jsonencode({ deadLetterTargetArn = aws_sqs_queue.dlq.arn, maxReceiveCount = 5 })
+  sqs_managed_sse_enabled    = true
   tags                       = var.tags
 }
 
