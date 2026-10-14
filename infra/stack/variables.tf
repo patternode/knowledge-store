@@ -214,6 +214,9 @@ variable "agent" {
     runtime      = optional(bool, false)
     prod_version = optional(string, "")
     model_id     = optional(string, "us.anthropic.claude-sonnet-5")
+    # Runtime invocations per person per day, counted by the agent itself (a person can call the
+    # Runtime directly with their token); null for twice daily_questions, 0 for no limit
+    daily_invocations = optional(number)
   })
   default = {}
 }
