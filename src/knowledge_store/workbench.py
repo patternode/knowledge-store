@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import logging
 import time
 import uuid
 from typing import Callable
@@ -110,7 +111,7 @@ class Recorder:
             try:
                 self.emit(s)
             except Exception:  # reporting progress must never break the answer
-                pass
+                logging.getLogger(__name__).warning("progress report failed", exc_info=True)
         return s
 
     def model_call(self) -> dict:

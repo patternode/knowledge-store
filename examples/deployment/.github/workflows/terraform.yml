@@ -1,6 +1,11 @@
 # Plan on every pull request; apply from main when you run the workflow by hand.
-# Needs an IAM role that trusts GitHub's OIDC provider for this repository (AWS_ROLE_ARN), and
-# backend.hcl committed. Protect the "production" environment so an apply waits for a reviewer.
+#
+# Two IAM roles that trust GitHub's OIDC provider, each for one job (see the README, "CI"):
+#   AWS_PLAN_ROLE_ARN  read-only; its trust allows sub repo:<org>/<repo>:pull_request
+#   AWS_ROLE_ARN       applies;   its trust allows sub repo:<org>/<repo>:environment:production
+# Pull requests run code from their branch, so the plan job never gets the role that applies.
+# Commit backend.hcl. Protect the "production" environment: required reviewers, and deployment
+# branches limited to main, so that only a reviewed run from main gets the apply role.
 name: terraform
 on:
   pull_request:
@@ -14,27 +19,33 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: aws-actions/configure-aws-credentials@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          persist-credentials: false
+      - uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4.3.1
+        with:
+          role-to-assume: ${{ vars.AWS_PLAN_ROLE_ARN }}
           aws-region: us-east-1
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
         with:
           terraform_version: "1.14.3"
       - run: terraform init -input=false -backend-config=backend.hcl
+      # -lock=false: the read-only role cannot write the state's lock file. A plan only reads the
+      # state and is never applied, so at worst it is stale; the apply below takes the lock.
       - run: terraform plan -input=false -lock=false
   apply:
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - uses: actions/checkout@v4
-      - uses: aws-actions/configure-aws-credentials@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4.3.1
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: us-east-1
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
         with:
           terraform_version: "1.14.3"
       - run: terraform init -input=false -backend-config=backend.hcl

@@ -12,7 +12,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Callable
 
-from .html_text import html_to_text
+from .html_text import html_title_and_text
 
 
 class UnsupportedFormat(Exception):
@@ -56,10 +56,7 @@ def parse_markdown(data: bytes) -> ParseResult:
 
 
 def parse_html(data: bytes) -> ParseResult:
-    raw = _decode(data)
-    m = re.search(r"<title[^>]*>(.*?)</title>", raw, re.I | re.S)
-    title = " ".join(m.group(1).split()) if m else None
-    text = html_to_text(raw)
+    title, text = html_title_and_text(_decode(data))  # HTMLParser, not a regex: linear on crafted input
     return ParseResult(text, title or _first_line_title(text), "html@1")
 
 
@@ -106,6 +103,11 @@ PARSERS: dict[str, Callable[[bytes], ParseResult]] = {
     ".pdf": parse_pdf,
 }
 
+# Inputs over these sizes are refused before parsing: a document that large is almost certainly
+# not prose, and parsing it would hold the worker for minutes or exhaust its memory.
+MAX_BYTES = 20 * 2**20
+MAX_BYTES_BY_PARSER: dict[Callable[[bytes], ParseResult], int] = {parse_pdf: 100 * 2**20}
+
 CONTENT_TYPES = {"text/plain": ".txt", "text/markdown": ".md", "text/html": ".html",
                  "application/json": ".json", "application/pdf": ".pdf", "text/csv": ".csv"}
 
@@ -116,4 +118,7 @@ def parse(data: bytes, ext: str, content_type: str | None = None) -> ParseResult
         fn = PARSERS.get(CONTENT_TYPES.get(content_type.split(";")[0].strip().lower(), ""))
     if fn is None:
         raise UnsupportedFormat(f"no parser for {ext or content_type or 'unknown format'}")
+    cap = MAX_BYTES_BY_PARSER.get(fn, MAX_BYTES)
+    if len(data) > cap:
+        raise UnsupportedFormat(f"{len(data)} bytes is over the {cap // 2**20} MB limit for this format")
     return fn(data)

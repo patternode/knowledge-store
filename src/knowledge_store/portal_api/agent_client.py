@@ -22,6 +22,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import logging
 import os
 import time
 import urllib.error
@@ -29,6 +30,7 @@ import urllib.parse
 import urllib.request
 import uuid
 
+log = logging.getLogger(__name__)
 
 _clients: dict = {}
 _tokens: dict[str, tuple[float, str]] = {}
@@ -51,6 +53,8 @@ def service_token(private: bool, now: float | None = None) -> str:
     if hit and hit[0] - 60 > now:
         return hit[1]
     c = _service_clients()
+    if not str(c.get("token_endpoint", "")).startswith("https://"):  # it is sent the client secret
+        raise RuntimeError("the service clients' token_endpoint is not an https:// URL")
     basic = base64.b64encode(f"{c[which]['id']}:{c[which]['secret']}".encode()).decode()
     req = urllib.request.Request(c["token_endpoint"], data=b"grant_type=client_credentials", method="POST", headers={
         "Authorization": f"Basic {basic}", "Content-Type": "application/x-www-form-urlencoded"})
@@ -58,7 +62,8 @@ def service_token(private: bool, now: float | None = None) -> str:
         with urllib.request.urlopen(req, timeout=15) as r:
             out = json.loads(r.read())
     except urllib.error.HTTPError as e:
-        raise RuntimeError(f"service sign-in {e.code}: {e.read()[:200].decode(errors='replace')}") from e
+        log.error("service sign-in %s: %s", e.code, e.read()[:500].decode(errors="replace"))
+        raise RuntimeError(f"service sign-in failed ({e.code})") from None
     _tokens[which] = (now + int(out.get("expires_in", 3600)), out["access_token"])
     return out["access_token"]
 
@@ -99,7 +104,8 @@ def ask(token: str, payload: dict, session_id: str | None = None, timeout: int =
                 return read_events(r, on_step)
             body = r.read()
     except urllib.error.HTTPError as e:
-        raise RuntimeError(f"agent {e.code}: {e.read()[:300].decode(errors='replace')}") from e
+        log.error("agent %s: %s", e.code, e.read()[:500].decode(errors="replace"))
+        raise RuntimeError(f"the agent failed ({e.code})") from None
     return _decode(body)
 
 

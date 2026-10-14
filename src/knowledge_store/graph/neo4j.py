@@ -19,7 +19,8 @@ from collections import defaultdict
 from . import safe_name, stamp
 
 BATCH = 1000
-_BRIEF = "{.id, .name, .type, .aliases, .docs, .links, .scope}"
+_BRIEF = ("{.id, .name, .type, .aliases, .docs, .links, .scope, .public_type, .public_types, .public_aliases, "
+          ".public_docs, .public_links}")
 
 
 def _chunks(rows: list, n: int = BATCH):

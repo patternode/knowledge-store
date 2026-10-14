@@ -10,6 +10,8 @@
 #
 # The agent acts only as its caller: the Runtime accepts the caller's Cognito access token and the
 # agent presents the same token to the Gateway, so it can never read more than the person asking.
+# Because a person can call the Runtime directly with that token, the agent also counts each
+# person's invocations per day itself (invocation_quota, agent/quota.py), not only the portal.
 #
 # Two applies: the Runtime needs its image, which CodeBuild builds after the first apply. Set
 # runtime_enabled = true once the agent image exists in ECR. Until then the chat API answers with
@@ -70,7 +72,22 @@ variable "prod_version" {
   default     = ""
   description = "a Runtime version to pin as the prod endpoint; empty for none (DEFAULT always follows the latest)"
 }
-variable "agent_model_id" { type = string }
+variable "agent_model_id" {
+  type        = string
+  description = "the model the agent calls: a cross-region inference profile id (us.anthropic...), a foundation model id, or an ARN"
+}
+variable "invocation_quota" {
+  type = object({
+    table_name        = string       # the portal's chat state table, in this account and region; the agent counts under "agent#<sub>#<day>"
+    daily_limit       = number       # invocations per person per UTC day; 0 for none
+    exempt_client_ids = list(string) # the portal's service clients (site sign-in), counted by the portal
+  })
+  default     = null
+  description = <<-EOT
+    A per-person daily limit on Runtime invocations, enforced by the agent itself: the Runtime accepts
+    a person's own token, so the portal's daily_questions alone does not bound a direct caller. null for none.
+  EOT
+}
 variable "neptune" {
   type = object({
     endpoint                 = string
@@ -124,9 +141,21 @@ data "aws_region" "current" {}
 data "aws_caller_identity" "me" {}
 
 locals {
-  region   = data.aws_region.current.region
-  account  = data.aws_caller_identity.me.account_id
-  ident    = replace(var.name, "-", "_")
+  region  = data.aws_region.current.region
+  account = data.aws_caller_identity.me.account_id
+  ident   = replace(var.name, "-", "_")
+  quota   = var.invocation_quota != null ? var.invocation_quota.daily_limit > 0 : false
+  # The model the Runtime may call: a cross-region inference profile (us.anthropic.claude-...) in
+  # this account and region, and its foundation model in whichever region the profile routes to.
+  # An ARN (an application inference profile, say) keeps the broad grant: its models are not in its name.
+  model_parts   = split(".", var.agent_model_id)
+  model_arn     = startswith(var.agent_model_id, "arn:")
+  model_profile = !local.model_arn && length(local.model_parts) > 2 && contains(["us", "eu", "apac", "global", "jp", "au", "ca", "us-gov"], local.model_parts[0])
+  model_base    = local.model_profile ? join(".", slice(local.model_parts, 1, length(local.model_parts))) : var.agent_model_id
+  model_resources = local.model_arn ? ["arn:aws:bedrock:*::foundation-model/*", "arn:aws:bedrock:*:${local.account}:inference-profile/*"] : concat(
+    ["arn:aws:bedrock:*::foundation-model/${local.model_base}"],
+    local.model_profile ? ["arn:aws:bedrock:${local.region}:${local.account}:inference-profile/${var.agent_model_id}"] : [],
+  )
   runtime  = var.runtime_enabled && var.agent_image_uri != ""
   in_graph = var.neptune != null
   # what each toolset reads in the lake (per collection, under collections/<id>/)
@@ -426,7 +455,7 @@ resource "aws_iam_role_policy" "runtime" {
     { Sid = "ImageLayers", Effect = "Allow", Action = ["ecr:BatchGetImage", "ecr:GetDownloadUrlForLayer"],
     Resource = "arn:aws:ecr:${local.region}:${local.account}:repository/${var.name}-agent" },
     { Sid = "Models", Effect = "Allow", Action = ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"],
-    Resource = ["arn:aws:bedrock:*::foundation-model/*", "arn:aws:bedrock:*:${local.account}:inference-profile/*"] },
+    Resource = local.model_resources },
     { Sid = "Logs", Effect = "Allow", Action = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents",
       "logs:DescribeLogStreams", "logs:DescribeLogGroups"],
     Resource = ["arn:aws:logs:${local.region}:${local.account}:log-group:/aws/bedrock-agentcore/*"] },
@@ -435,6 +464,10 @@ resource "aws_iam_role_policy" "runtime" {
     Condition = { StringEquals = { "cloudwatch:namespace" = "bedrock-agentcore" } } },
     ], var.guardrail.enabled ? [
     { Sid = "Guardrail", Effect = "Allow", Action = "bedrock:ApplyGuardrail", Resource = aws_bedrock_guardrail.this[0].guardrail_arn },
+    ] : [], local.quota ? [
+    # the agent's own daily count, and only that: rows whose key starts agent#
+    { Sid = "InvocationQuota", Effect = "Allow", Action = "dynamodb:UpdateItem", Resource = "arn:aws:dynamodb:${local.region}:${local.account}:table/${var.invocation_quota.table_name}",
+    Condition = { "ForAllValues:StringLike" = { "dynamodb:LeadingKeys" = ["agent#*"] } } },
   ] : []) })
 }
 
@@ -470,6 +503,10 @@ resource "aws_bedrockagentcore_agent_runtime" "agent" {
     }, var.guardrail.enabled ? {
     GUARDRAIL_ID      = aws_bedrock_guardrail.this[0].guardrail_id
     GUARDRAIL_VERSION = aws_bedrock_guardrail_version.this[0].version
+    } : {}, local.quota ? {
+    AGENT_QUOTA_TABLE          = var.invocation_quota.table_name
+    AGENT_DAILY_INVOCATIONS    = tostring(var.invocation_quota.daily_limit)
+    AGENT_QUOTA_EXEMPT_CLIENTS = join(",", var.invocation_quota.exempt_client_ids)
   } : {})
   depends_on = [aws_iam_role_policy.runtime]
   tags       = var.tags
@@ -488,5 +525,7 @@ output "gateway_url" { value = aws_bedrockagentcore_gateway.this.gateway_url }
 output "gateway_id" { value = aws_bedrockagentcore_gateway.this.gateway_id }
 output "runtime_arn" { value = try(aws_bedrockagentcore_agent_runtime.agent[0].agent_runtime_arn, "") }
 output "runtime_qualifier" { value = local.runtime && var.prod_version != "" ? "prod" : "DEFAULT" }
+output "invocation_limit" { value = local.quota ? var.invocation_quota.daily_limit : 0 }
+output "model_grants" { value = local.model_resources }
 output "guardrail_id" { value = try(aws_bedrock_guardrail.this[0].guardrail_id, "") }
 output "tool_functions" { value = { graph = aws_lambda_function.graph.function_name, passages = aws_lambda_function.passages.function_name } }

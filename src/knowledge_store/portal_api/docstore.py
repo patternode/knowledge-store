@@ -22,7 +22,7 @@ from collections import Counter
 
 from .. import layout
 from ..graph import traverse
-from .index import Index, tokens
+from .index import MAX_QUERY, Index, public_names, tokens
 
 log = logging.getLogger("docstore")
 
@@ -42,6 +42,9 @@ def ensure_indexes(db) -> None:
     db.entities.create_index([("g", ASCENDING), ("tokens", ASCENDING)])
     db.entities.create_index([("g", ASCENDING), ("rank", DESCENDING), ("label_lc", ASCENDING)])
     db.entities.create_index([("g", ASCENDING), ("links", DESCENDING), ("label_lc", ASCENDING)])
+    db.entities.create_index([("g", ASCENDING), ("ptokens", ASCENDING)])
+    db.entities.create_index([("g", ASCENDING), ("prank", DESCENDING), ("label_lc", ASCENDING)])
+    db.entities.create_index([("g", ASCENDING), ("plinks", DESCENDING), ("label_lc", ASCENDING)])
     db.passages.create_index([("g", ASCENDING), ("tokens", ASCENDING)])
 
 
@@ -49,8 +52,18 @@ def key_for(collection: str, version: str, built_at: str) -> str:
     return f"{collection}@{version}@{re.sub(r'[^0-9]', '', built_at)[:14]}"
 
 
-def _names(e: dict) -> str:
-    return " ".join([e["label"], *e["aliases"]]).lower()
+def _names(e: dict, private: bool = True) -> str:
+    return " ".join([e["label"], *Index.names(e, private)["aliases"]]).lower()
+
+
+def _row(e: dict, key: str) -> dict:
+    """An entity as stored: with what a public caller may see of it (public, matched by ptokens,
+    ranked by prank and plinks), so a public search never reads a private-only name."""
+    pub = public_names(e)
+    return {**e, "_id": f"{key}|{e['id']}", "g": key, "public": pub, "tokens": sorted(set(tokens(_names(e)))),
+            "ptokens": sorted(set(tokens(_names(e, False)))), "label_lc": e["label"].lower(),
+            "rank": len(e["docs"]) + len(e["out"]) + len(e["in"]), "links": len(e["out"]) + len(e["in"]),
+            "prank": pub["docs"] + pub["links"], "plinks": pub["links"]}
 
 
 def load(db, key: str, entities: list[dict], passages: dict, docs: dict) -> dict:
@@ -58,10 +71,7 @@ def load(db, key: str, entities: list[dict], passages: dict, docs: dict) -> dict
     ensure_indexes(db)
     drop(db, key)
     rows = {
-        "entities": [{**e, "_id": f"{key}|{e['id']}", "g": key, "tokens": sorted(set(tokens(_names(e)))),
-                      "label_lc": e["label"].lower(), "rank": len(e["docs"]) + len(e["out"]) + len(e["in"]),
-                      "links": len(e["out"]) + len(e["in"])}
-                     for e in entities],
+        "entities": [_row(e, key) for e in entities],
         "passages": [{**p, "_id": f"{key}|{pid}", "id": pid, "g": key, "tokens": sorted(set(tokens(p["text"])))}
                      for pid, p in passages.items()],
         "docs": [{**d, "_id": f"{key}|{did}", "id": did, "g": key} for did, d in docs.items()],
@@ -84,7 +94,8 @@ def keys(db, collection: str) -> list[str]:
 def _plain(doc: dict | None) -> dict | None:
     if doc is None:
         return None
-    return {k: v for k, v in doc.items() if k not in ("_id", "g", "tokens", "label_lc", "rank", "links")}
+    return {k: v for k, v in doc.items()
+            if k not in ("_id", "g", "tokens", "ptokens", "label_lc", "rank", "links", "prank", "plinks")}
 
 
 class _Lookup:
@@ -162,30 +173,32 @@ class DocIndex(Index):
         return [d["id"] for d in self.db.entities.find({"g": self.key, "types": type_}, {"id": 1})]
 
     def search_entities(self, q="", type_=None, *, private, limit=25, offset=0):
+        q = (q or "")[:MAX_QUERY]
         flt: dict = {"g": self.key}
         if type_:
-            flt["types"] = type_
+            flt["types" if private else "public.types"] = type_
         if not private:
             flt["scope"] = "public"
         qt = set(tokens(q))
         if not qt:
             total = self.db.entities.count_documents(flt)
-            page = self.db.entities.find(flt).sort([("rank", -1), ("label_lc", 1), ("_id", 1)]).skip(offset).limit(limit)
-            return {"total": total, "items": [self.brief(_plain(e)) for e in page]}
-        match = [{"tokens": {"$in": sorted(qt)}}, {"label_lc": {"$regex": re.escape(q.lower())}},
-                 {"aliases": {"$regex": re.escape(q), "$options": "i"}}]
+            rank = "rank" if private else "prank"
+            page = self.db.entities.find(flt).sort([(rank, -1), ("label_lc", 1), ("_id", 1)]).skip(offset).limit(limit)
+            return {"total": total, "items": [self.brief(_plain(e), private) for e in page]}
+        match = [{"tokens" if private else "ptokens": {"$in": sorted(qt)}}, {"label_lc": {"$regex": re.escape(q.lower())}},
+                 {"aliases" if private else "public.aliases": {"$regex": re.escape(q), "$options": "i"}}]
         scored = []
         for e in self.db.entities.find({**flt, "$or": match}).limit(CANDIDATES):
-            names = _names(e)
+            names = _names(e, private)
             hit = len(qt & set(tokens(names)))
             if not hit and q.lower() not in names:
                 continue
             scored.append((hit + (2 if q.lower() == e["label"].lower() else 0), e["label"].lower(), e["id"], e))
         scored.sort(key=lambda x: (-x[0], x[1], x[2]))
-        return {"total": len(scored), "items": [self.brief(_plain(e)) for *_, e in scored[offset:offset + limit]]}
+        return {"total": len(scored), "items": [self.brief(_plain(e), private) for *_, e in scored[offset:offset + limit]]}
 
     def search_passages(self, q, *, private, limit=6):
-        qt = tokens(q)
+        qt = tokens((q or "")[:MAX_QUERY])
         if not qt:
             return []
         n = max(1, self.db.passages.count_documents({"g": self.key}))
@@ -213,14 +226,14 @@ class DocIndex(Index):
             return super().graph(type_, private=private, limit=limit, focus=focus)
         flt: dict = {"g": self.key}
         if type_:
-            flt["types"] = type_
+            flt["types" if private else "public.types"] = type_
         if not private:
             flt["scope"] = "public"
-        order = [("links", -1), ("label_lc", 1), ("_id", 1)]
+        order = [("links" if private else "plinks", -1), ("label_lc", 1), ("_id", 1)]
         top = [_plain(e) for e in self.db.entities.find(flt).sort(order).limit(limit)]
         for e in top:
             self.entities.cache[e["id"]] = e
         ks = {e["id"] for e in top}
         edges = [{"s": e["id"], "o": r["o"], "p": r["p"]} for e in top
                  for r in self.entity_view(e, private)["out"] if r["o"] in ks]
-        return {"nodes": [self.brief(e) for e in top], "edges": edges}
+        return {"nodes": [self.brief(e, private) for e in top], "edges": edges}

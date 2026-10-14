@@ -4,6 +4,7 @@ terraform {
   required_providers {
     aws     = { source = "hashicorp/aws", version = "~> 6.66" }
     archive = { source = "hashicorp/archive", version = "~> 2.7" }
+    random  = { source = "hashicorp/random", version = "~> 3.7" }
   }
 
   # Partial configuration: bucket and region come from backend.hcl, which ../bootstrap writes.

@@ -23,8 +23,12 @@ class _Extractor(HTMLParser):
         self.in_cell = False
         self.row: list[str] = []
         self.cell: list[str] = []
+        self.title: list[str] | None = None  # the first <title>'s text, collected while inside it
+        self.in_title = False
 
     def handle_starttag(self, tag, attrs):
+        if tag == "title" and self.title is None:
+            self.title, self.in_title = [], True
         if tag in _SKIP:
             self.skip += 1
         elif tag in ("td", "th"):
@@ -36,6 +40,8 @@ class _Extractor(HTMLParser):
             self.parts.append("\n")
 
     def handle_endtag(self, tag):
+        if tag == "title":
+            self.in_title = False
         if tag in _SKIP:
             self.skip = max(0, self.skip - 1)
         elif tag in ("td", "th"):
@@ -51,6 +57,8 @@ class _Extractor(HTMLParser):
             self.parts.append("\n")
 
     def handle_data(self, data):
+        if self.in_title:
+            self.title.append(data)
         if self.skip:
             return
         if self.in_cell:
@@ -71,13 +79,19 @@ def _join_row(cells: list[str]) -> str:
 
 
 def html_to_text(raw: str) -> str:
+    return html_title_and_text(raw)[1]
+
+
+def html_title_and_text(raw: str) -> tuple[str | None, str]:
+    """The <title> (whitespace collapsed, None if absent or empty) and the text, in one linear parse."""
     p = _Extractor()
     p.feed(raw)
     p.close()
+    title = " ".join("".join(p.title or ()).split()) or None
     text = html.unescape("".join(p.parts)).replace("\xa0", " ")
     lines = [" ".join(line.split()) for line in text.splitlines()]
     out: list[str] = []
     for line in lines:
         if line or (out and out[-1]):
             out.append(line)
-    return re.sub(r"\n{3,}", "\n\n", "\n".join(out)).strip()
+    return title, re.sub(r"\n{3,}", "\n\n", "\n".join(out)).strip()

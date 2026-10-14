@@ -21,10 +21,30 @@ def visible(item: dict, private: bool) -> bool:
     return private or item.get("scope", "public") == "public"
 
 
-def brief(n: dict) -> dict:
+def public_names(e: dict) -> dict:
+    """What a public caller may see of an entity's names, types and counts: what public documents
+    say of it (the projection's `public`). Without that provenance: no aliases, no counts."""
+    p = e.get("public") if isinstance(e.get("public"), dict) else {
+        k: e.get(f"public_{k}") for k in ("type", "types", "aliases", "docs", "links")}  # a graph store's flat form
+    types = list(p.get("types") or [])
+    return {"aliases": list(p.get("aliases") or []), "types": types or [e["type"]],
+            "type": (p.get("type") or types[0]) if types else e["type"],
+            "docs": int(p.get("docs") or 0), "links": int(p.get("links") or 0)}
+
+
+def _shown(n: dict, private: bool) -> dict:
+    """A node's type, aliases and counts as the caller may see them."""
+    if private:
+        return {"type": n["type"], "aliases": list(n.get("aliases") or []), "docs": n.get("docs", 0),
+                "links": n.get("links", 0)}
+    return public_names(n)
+
+
+def brief(n: dict, private: bool = False) -> dict:
     """The shape the index's brief() gives an entity."""
-    return {"id": n["id"], "label": n["name"], "type": n["type"], "aliases": list(n.get("aliases") or [])[:5],
-            "docs": n.get("docs", 0), "links": n.get("links", 0)}
+    v = _shown(n, private)
+    return {"id": n["id"], "label": n["name"], "type": v["type"], "aliases": v["aliases"][:5],
+            "docs": v["docs"], "links": v["links"]}
 
 
 def _steps(adj, frontier: list[str], private: bool):
@@ -56,11 +76,11 @@ def neighbourhood(adj, focus: str, *, hops: int = 1, private: bool, limit: int =
                 dist[n["id"]] = (d, n)
                 nxt.append(n["id"])
         frontier = nxt
-    keep = sorted(dist.items(), key=lambda kv: (kv[1][0], -kv[1][1].get("links", 0), kv[1][1]["name"].lower(), kv[0]))
+    keep = sorted(dist.items(), key=lambda kv: (kv[1][0], -_shown(kv[1][1], private)["links"], kv[1][1]["name"].lower(), kv[0]))
     keep = keep[:limit]
     ks = {k for k, _ in keep}
     edges = {(e["s"], e["p"], e["o"]) for e, _, _ in _steps(adj, sorted(ks), private) if e["s"] in ks and e["o"] in ks}
-    return {"nodes": [brief(n) for _, (_, n) in keep],
+    return {"nodes": [brief(n, private) for _, (_, n) in keep],
             "edges": [{"s": s, "o": o, "p": p} for s, p, o in sorted(edges)], "hops": hops}
 
 
@@ -113,7 +133,7 @@ def paths(adj, source: str, target: str, *, max_hops: int = 3, private: bool, li
 
     back(target, [], [])
     chains.sort()
-    return {"paths": [{"nodes": [brief(nodes[i]) for i in ids], "edges": [{"s": s, "o": o, "p": p} for s, p, o in rels]}
+    return {"paths": [{"nodes": [brief(nodes[i], private) for i in ids], "edges": [{"s": s, "o": o, "p": p} for s, p, o in rels]}
                       for ids, rels in chains[:limit]],
             "hops": dist[target], "truncated": truncated or len(chains) >= MAX_ENUMERATED}
 
@@ -125,14 +145,14 @@ class MemoryAdjacency:
         self.idx = idx
 
     def _scope(self, pids) -> str:
-        return "public" if any(self.idx.passages.get(p, {}).get("scope") == "public" for p in pids) else "private"
+        return "public" if any((self.idx.passages.get(p) or {}).get("scope") == "public" for p in pids) else "private"
 
     def node(self, node_id):
         e = self.idx.entities.get(node_id)
         if not e:
             return None
         return {"id": e["id"], "name": e["label"], "type": e["type"], "aliases": e["aliases"], "docs": len(e["docs"]),
-                "links": len(e["out"]) + len(e["in"]), "scope": e.get("scope", "public")}
+                "links": len(e["out"]) + len(e["in"]), "scope": e.get("scope", "public"), "public": public_names(e)}
 
     def adjacent(self, ids, private):
         out = []

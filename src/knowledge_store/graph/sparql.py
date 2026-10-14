@@ -11,7 +11,9 @@ SparqlIndex answers the index's entity queries (portal_api/index.py) from the st
     search_entities, list_entities   labels and synonyms, typed through rdfs:subClassOf* in the
                                      ontology graph, so a query for a class finds its subclasses
     get_entity                       the entity's types, names, and every reified fact about it
-                                     with the passages it was extracted from
+                                     with the passages it was extracted from; each name and type
+                                     with the scope of the graph that states it, so a public
+                                     caller sees and searches only what public documents say
     neighbourhood, find_paths        traverse.py over node() and adjacent(), each a few queries
 
 The passages' text is not in the graph (it is in the lake's silver layer); a passage is a node
@@ -215,6 +217,7 @@ class SparqlIndex:
         self.class_iri = {c["name"]: c.get("iri") or self.ns + c["name"] for c in self.ontology["classes"]}
         self.passages = _Lookup(self._fetch_passages)
         self.entities = _Lookup(self._fetch_entities)
+        self._gscope: dict[str, bool] = {}
         self.adjacency = _Adjacency(self)
 
     # the parts of Index that need nothing but entities, passages and docs
@@ -224,11 +227,17 @@ class SparqlIndex:
         self.entities.fetch([r["o"] for r in e["out"]] + [r["s"] for r in e["in"]])
         return self._Index.entity_view(self, e, private)
 
-    def brief(self, e: dict) -> dict:
-        return self._Index.brief(self, e)
+    def brief(self, e: dict, private: bool = False) -> dict:
+        return self._Index.brief(self, e, private)
+
+    def names(self, e: dict, private: bool) -> dict:
+        return self._Index.names(e, private)
 
     def summary_view(self, private: bool) -> dict:
         return self._Index.summary_view(self, private)
+
+    def ontology_view(self, private: bool) -> dict:
+        return self._Index.ontology_view(self, private)
 
     def neighbourhood(self, focus: str, *, hops: int = 1, private: bool, limit: int = 40) -> dict:
         return traverse.neighbourhood(self.adjacency, focus, hops=hops, private=private, limit=limit)
@@ -272,19 +281,40 @@ class SparqlIndex:
                                                               "scope": value(r, "scope", "public")}
         return out
 
+    def _public_graphs(self, graphs) -> dict[str, bool]:
+        """graph IRI -> whether it is a public document's: every ks:scope it states is public, and
+        so is its document's in the projection. A graph that states no scope is not public."""
+        want = [g for g in dict.fromkeys(graphs) if g not in self._gscope]
+        scopes: dict[str, set] = {g: set() for g in want}
+        for part in chunks([g for g in want if not _IRI_BAD.search(g)]):
+            vals = " ".join(iri(g) for g in part)
+            for r in self.client.select(
+                    f"SELECT DISTINCT ?g ?scope WHERE {{ VALUES ?g {{ {vals} }} GRAPH ?g {{ ?x ks:scope ?scope }} }}"):
+                scopes[value(r, "g")].add(value(r, "scope"))
+        for g in want:
+            d = urllib.parse.unquote(g.rsplit("/", 1)[-1]) if g.startswith(self.base + "graph/") else ""
+            if d in self.docs:
+                scopes[g].add(self.docs[d].get("scope", "public"))
+            self._gscope[g] = scopes[g] == {"public"}
+        return self._gscope
+
     def _fetch_entities(self, ids: list[str]) -> dict[str, dict]:
         safe = [i for i in ids if _ID.match(i) and i.startswith("entity/")]
         nodes: dict[str, dict] = {}
         facts: dict[tuple, set] = {}
+        stated: list[tuple[dict, str, str, str]] = []
         for part in chunks(safe):
             vals = " ".join(iri(self.base + i) for i in part)
             for r in self.client.select(
-                    f"SELECT ?e ?k ?v WHERE {{ VALUES ?e {{ {vals} }} "
+                    f"SELECT ?e ?k ?v ?g WHERE {{ VALUES ?e {{ {vals} }} GRAPH ?g {{ "
                     f"{{ ?e a ?v . BIND(\"t\" AS ?k) }} UNION {{ ?e rdfs:label ?v . BIND(\"l\" AS ?k) }} UNION "
-                    f"{{ ?e skos:altLabel ?v . BIND(\"a\" AS ?k) }} UNION {{ ?e ks:mentionedIn ?v . BIND(\"m\" AS ?k) }} }}"):
-                n = nodes.setdefault(self._short(value(r, "e"), ""), {"t": set(), "l": [], "a": set(), "m": set()})
+                    f"{{ ?e skos:altLabel ?v . BIND(\"a\" AS ?k) }} UNION {{ ?e ks:mentionedIn ?v . BIND(\"m\" AS ?k) }} }} }}"):
+                n = nodes.setdefault(self._short(value(r, "e"), ""), {"t": set(), "l": set(), "a": set(), "m": set(),
+                                                                     "pt": set(), "pl": set(), "pa": set()})
                 k, v = value(r, "k"), value(r, "v")
-                (n[k].append(v) if k == "l" else n[k].add(v))
+                n[k].add(v)
+                if k != "m":
+                    stated.append((n, k, v, value(r, "g")))
             for r in self.client.select(
                     f"SELECT ?s ?p ?o ?src WHERE {{ VALUES ?x {{ {vals} }} "
                     f"{{ ?a rdf:subject ?x }} UNION {{ ?a rdf:object ?x }} "
@@ -294,6 +324,10 @@ class SparqlIndex:
                 srcs = facts.setdefault(key, set())
                 if "src" in r:
                     srcs.add(self._short(value(r, "src"), "passage"))
+        public = self._public_graphs(g for *_, g in stated)
+        for n, k, v, g in stated:
+            if public.get(g):
+                n["p" + k].add(v)
         pids = {self._short(m, "passage") for n in nodes.values() for m in n["m"]} | {p for s in facts.values() for p in s}
         self.passages.fetch(sorted(pids))
         out = {}
@@ -301,14 +335,17 @@ class SparqlIndex:
             types = sorted({local_name(t) for t in n["t"] if t.startswith(self.ns) and local_name(t) in self.classes})
             if not types:
                 continue
-            most = [t for t in types if not any(t != u and t in self.ancestors(u) for u in types)]
             mentioned = sorted(self._short(m, "passage") for m in n["m"])
             docs = sorted({self.passages.get(p, {}).get("doc", "") for p in mentioned} - {""})
-            out[eid] = {"id": eid, "type": most[0], "types": types,
-                        "label": (sorted(n["l"]) or [eid.rsplit("/", 1)[-1]])[0], "aliases": sorted(n["a"]),
+            out[eid] = {"id": eid, "type": self._most(types)[0], "types": types,
+                        "label": (sorted(n["pl"]) or sorted(n["l"]) or [eid.rsplit("/", 1)[-1]])[0], "aliases": sorted(n["a"]),
                         "attributes": [], "out": [], "in": [], "passages": mentioned, "docs": docs,
                         "scope": "public" if any(self.docs.get(d, {}).get("scope", "public") == "public" for d in docs)
                         else "private"}
+            ptypes = sorted({local_name(t) for t in n["pt"]} & set(types))
+            if out[eid]["scope"] == "public" and ptypes:
+                out[eid]["public"] = {"type": self._most(ptypes)[0], "types": ptypes, "aliases": sorted(n["pa"]),
+                                      "docs": sum(1 for d in docs if self.docs.get(d, {}).get("scope") == "public")}
         for (s, p, kind, o), srcs in sorted(facts.items()):
             if not p.startswith(self.ns):
                 continue
@@ -322,13 +359,21 @@ class SparqlIndex:
                     out[sid]["out"].append({"p": prop, "o": oid, "passages": cited})
                 if oid in out:
                     out[oid]["in"].append({"p": prop, "s": sid, "passages": cited})
+        for e in out.values():
+            if "public" in e:
+                e["public"]["links"] = sum(1 for r in e["out"] + e["in"]
+                                           if any(self.passages.get(p, {}).get("scope") == "public" for p in r["passages"]))
         return out
+
+    def _most(self, types: list[str]) -> list[str]:
+        return [t for t in types if not any(t != u and t in self.ancestors(u) for u in types)]
 
     # -- search ----------------------------------------------------------------------------------
 
     def search_entities(self, q: str = "", type_: str | None = None, *, private: bool, limit: int = 25,
                         offset: int = 0) -> dict:
-        from ..portal_api.index import tokens
+        from ..portal_api.index import MAX_QUERY, tokens
+        q = (q or "")[:MAX_QUERY]
         if type_ and type_ not in self.classes:
             return {"total": 0, "items": [], "error": f"no type {type_!r} in the ontology; see describe_ontology"}
         typed = f"?e a/rdfs:subClassOf* {iri(self.class_iri[type_])} ." if type_ else ""
@@ -351,17 +396,21 @@ class SparqlIndex:
             e = self.entities.get(i)
             if not e or not self.visible(e, private):
                 continue
+            n = self.names(e, private)
+            if type_ and not private and not any(type_ in self.ancestors(t) for t in n["types"]):
+                continue
             if qt:
-                names = " ".join([e["label"], *e["aliases"]]).lower()
+                names = " ".join([e["label"], *n["aliases"]]).lower()
                 hit = len(set(qt) & set(tokens(names)))
                 if not hit and q.lower() not in names:
                     continue
                 score = hit + (2 if q.lower() == e["label"].lower() else 0)
             else:
-                score = len(e["docs"]) + len(e["out"]) + len(e["in"])
+                score = n["docs"] + n["links"]
             scored.append((score, e["label"].lower(), i))
         scored.sort(key=lambda x: (-x[0], x[1], x[2]))
-        return {"total": len(scored), "items": [self.brief(self.entities[i]) for _, _, i in scored[offset:offset + limit]]}
+        return {"total": len(scored),
+                "items": [self.brief(self.entities[i], private) for _, _, i in scored[offset:offset + limit]]}
 
 
 _cache: dict[str, dict] = {}

@@ -32,7 +32,8 @@ How it answers:
    Bedrock Guardrail checks each remaining claim against that source. The answer shown is built
    from the claims that survive. With none, the agent says it cannot answer from the sources.
 
-The limits around all of this are in agent/valves.py.
+The limits around all of this are in agent/valves.py. Each caller's daily number of invocations is
+limited here too (agent/quota.py), not only in the portal, since the Runtime accepts their token directly.
 
 The same code runs locally against the lake and in-process tools (answer_locally), which is how
 the evaluation (knowledge_store.evals) runs without a deployment.
@@ -51,7 +52,7 @@ import threading
 import time
 
 from .. import workbench
-from . import grounding, valves
+from . import grounding, quota as quotas, valves
 from .grounding import GapReport, GroundedAnswer
 
 log = logging.getLogger("agent")
@@ -145,6 +146,16 @@ def add_limits(agent, recorder: "workbench.Recorder | None" = None) -> dict:
         agent.add_hook(tool_step, AfterToolCallEvent)
         recorder.live = True
     return counts
+
+
+FAILED = "The question could not be answered. Try again later."
+BUDGET_SPENT = "The model call budget for this question was spent before an answer."
+
+
+def _failure(counts: dict) -> str:
+    """What a caller is told when a question fails. The exception itself is logged, never returned:
+    its text can name ARNs, buckets and endpoints, and the portal stores and shows what comes back."""
+    return BUDGET_SPENT if counts.get("model_calls", 0) > valves.MAX_MODEL_CALLS else FAILED
 
 
 def _accumulated(agent) -> dict | None:
@@ -287,13 +298,13 @@ def answer(question: str, collection: str, history: list[dict] | None, tools, *,
             report["failures"] += failures2
             if not failures2:
                 break
-    except Exception as e:  # a limit, a model error or an unparseable answer: say so, claim nothing
+    except Exception:  # a limit, a model error or an unparseable answer: say so, claim nothing
         log.exception("agent failed")
         rec.backfill(getattr(agent, "messages", []) or [])
-        rec.step("error", "The agent stopped before answering", f"{type(e).__name__}: {str(e)[:200]}")
+        rec.step("error", "The agent stopped before answering", _failure(counts))
         out = grounding.render([], {}, [])
         spent = _accumulated(agent)
-        return {**out, "error": f"{type(e).__name__}: {str(e)[:300]}", "grounding": report,
+        return {**out, "error": _failure(counts), "grounding": report,
                 "limits": counts, "usage": spent, "ms": round(1000 * (time.monotonic() - started)),
                 "steps": rec.steps, "ontology_hits": rec.hits(), "cost": _cost(rec, spent)}
     if not result.answerable:
@@ -351,12 +362,12 @@ def analyse(question: str, collection: str, tools, *, about: dict | None = None,
     try:
         result = agent(workbench.analyst_prompt(question, about)).structured_output
         rec.backfill(getattr(agent, "messages", []) or [])
-    except Exception as e:
+    except Exception:
         log.exception("analyst failed")
         rec.backfill(getattr(agent, "messages", []) or [])
-        rec.step("error", "The analyst stopped before reporting", f"{type(e).__name__}: {str(e)[:200]}")
+        rec.step("error", "The analyst stopped before reporting", _failure(counts))
         spent = _accumulated(agent)
-        return {"error": f"{type(e).__name__}: {str(e)[:300]}", "steps": rec.steps, "limits": counts,
+        return {"error": _failure(counts), "steps": rec.steps, "limits": counts,
                 "usage": spent, "cost": _cost(rec, spent)}
     report = workbench.clean_report(result.model_dump() if hasattr(result, "model_dump") else dict(result))
     o = report["ontology"]
@@ -386,9 +397,9 @@ def streamed(work):
     def go():
         try:
             q.put({"result": work(lambda s: q.put({"step": s}))})
-        except Exception as e:  # report to the caller rather than end the stream silently
+        except Exception:  # report to the caller rather than end the stream silently; the detail is logged
             log.exception("question failed")
-            q.put({"result": {"error": f"{type(e).__name__}: {str(e)[:300]}"}})
+            q.put({"result": {"error": FAILED}})
         q.put(done)
 
     threading.Thread(target=go, daemon=True).start()
@@ -474,9 +485,23 @@ def _bearer(context) -> str | None:
     return os.environ.get("DEV_BEARER_TOKEN")
 
 
-def make_app():
+def admit(token: str | None, quota: "quotas.AgentQuota | None") -> str | None:
+    """None if the caller may ask now, else why not. Counts the invocation against the caller's
+    daily limit (agent/quota.py), which holds even when the Runtime is called without the portal.
+    A limit that cannot be checked refuses: the limit is the only bound on a direct caller's spend."""
+    if quota is None:
+        return None
+    try:
+        return quota.check(token)
+    except Exception:
+        log.exception("quota check failed")
+        return "the daily limit could not be checked; try again shortly"
+
+
+def make_app(quota: "quotas.AgentQuota | None" = None):
     from bedrock_agentcore.runtime import BedrockAgentCoreApp
     app = BedrockAgentCoreApp()
+    quota = quota if quota is not None else quotas.AgentQuota.from_env()
 
     @app.entrypoint
     def invoke(payload: dict, context=None):
@@ -484,6 +509,9 @@ def make_app():
         token = _bearer(context)
         if not token:
             return {"error": "no caller token: the agent acts only as its caller"}
+        refused = admit(token, quota)
+        if refused:
+            return {"error": refused, "quota": True}
 
         def work(on_step=None):
             with GatewayTools(os.environ["GATEWAY_MCP_URL"], token) as tools:
@@ -493,9 +521,9 @@ def make_app():
             return streamed(work)  # a generator: the runtime sends it as server-sent events
         try:
             return work()
-        except Exception as e:  # report to the caller rather than a bare 500
+        except Exception:  # report to the caller rather than a bare 500; the detail is logged
             log.exception("question failed")
-            return {"error": f"{type(e).__name__}: {str(e)[:300]}"}
+            return {"error": FAILED}
 
     return app
 

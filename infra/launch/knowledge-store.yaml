@@ -71,12 +71,18 @@ Parameters:
   SourceUrl:
     Type: String
     Default: https://github.com/patternode/knowledge-store/archive/3c6948a5ca410ae2fab829e1f339156aa481bc17.zip
-    Description: The release to deploy, as an https:// or s3:// URL of a zip of the repository.
+    AllowedPattern: "^(https|s3)://[^\\s]+$"
+    ConstraintDescription: an https:// or s3:// URL
+    Description: >-
+      The release to deploy, as an https:// or s3:// URL of a zip of the repository. The build runs
+      it with administrator rights, so name only a release you trust, and set SourceSha256.
   SourceSha256:
     Type: String
     Default: ""
     AllowedPattern: "^([0-9a-f]{64})?$"
-    Description: Optional sha256 of the release zip; the build refuses a zip that does not match.
+    Description: >-
+      sha256 of the release zip; the build refuses a zip that does not match. Optional, but
+      recommended: without it the build runs whatever the URL serves.
   TerraformVersion:
     Type: String
     Default: 1.14.3
@@ -115,7 +121,10 @@ Resources:
             Condition: { Bool: { "aws:SecureTransport": "false" } }
 
   # Terraform creates IAM roles, buckets, CloudFront, Cognito, Lambda, ECS, CodeBuild and AgentCore
-  # resources, so the role that runs it needs broad rights. It is used only by this project's build.
+  # resources, so the role that runs it needs broad rights. Only this stack's deploy project may
+  # assume it. That makes the deploy project, and the Starter function that starts it,
+  # administrator-equivalent: anyone who may start or change either can act as administrator.
+  # Restrict those rights to administrators (see SECURITY.md, "The launch stack").
   DeployerRole:
     Type: AWS::IAM::Role
     Properties:
@@ -125,7 +134,11 @@ Resources:
           - Effect: Allow
             Principal: { Service: codebuild.amazonaws.com }
             Action: sts:AssumeRole
-            Condition: { StringEquals: { "aws:SourceAccount": !Ref AWS::AccountId } }
+            Condition:
+              StringEquals:
+                "aws:SourceAccount": !Ref AWS::AccountId
+                # Built by hand rather than !GetAtt Deployer.Arn, which would be a cycle.
+                "aws:SourceArn": !Sub arn:${AWS::Partition}:codebuild:${AWS::Region}:${AWS::AccountId}:project/${DeploymentName}-deploy
       ManagedPolicyArns: [arn:aws:iam::aws:policy/AdministratorAccess]
       Description: Runs Knowledge Store's Terraform from the launch stack's CodeBuild project
 
@@ -167,7 +180,12 @@ Resources:
                 - curl -fsSLo tf.sums "https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_SHA256SUMS"
                 - awk -v f="terraform_${TF_VERSION}_linux_amd64.zip" '$2==f {print $1"  tf.zip"}' tf.sums | sha256sum -c -
                 - unzip -o -q tf.zip -d /usr/local/bin && terraform version
-                - if [[ "$SOURCE_URL" == s3://* ]]; then aws s3 cp "$SOURCE_URL" source.zip; else curl -fsSLo source.zip "$SOURCE_URL"; fi
+                - |
+                  case "$SOURCE_URL" in
+                    s3://*) aws s3 cp "$SOURCE_URL" source.zip ;;
+                    https://*) curl -fsSL --proto '=https' --proto-redir '=https' -o source.zip "$SOURCE_URL" ;;
+                    *) echo "SOURCE_URL must be an https:// or s3:// URL" >&2; exit 1 ;;
+                  esac
                 - if [ -n "${SOURCE_SHA256:-}" ]; then echo "$SOURCE_SHA256  source.zip" | sha256sum -c -; fi
                 - rm -rf src && mkdir src && unzip -q source.zip -d src
                 - STACK_DIR=$(dirname "$(find src -path '*/infra/stack/versions.tf' | head -1)") && test -n "$STACK_DIR" && echo "$STACK_DIR" > /tmp/stackdir
