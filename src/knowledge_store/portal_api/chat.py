@@ -126,7 +126,8 @@ def _run_tool(idx: Index, name: str, args: dict, private: bool) -> dict:
         if not e or not idx.visible(e, private):
             return {"error": f"no entity {args.get('id')!r}; use search_entities for its id"}
         v = idx.entity_view(e, private)
-        label = {i: idx.entities[i]["label"] for r in v["out"] + v["in"] for i in (r.get("o"), r.get("s")) if i in idx.entities}
+        label = {i: idx.entities[i]["label"] for r in v["out"] + v["in"] for i in (r.get("o"), r.get("s"))
+                 if i in idx.entities and idx.visible(idx.entities[i], private)}
         return {**v, "out": [{**r, "o_label": label.get(r["o"])} for r in v["out"][:60]],
                 "in": [{**r, "s_label": label.get(r["s"])} for r in v["in"][:60]], "passages": v["passages"][:30]}
     if name == "search_passages":
@@ -220,10 +221,11 @@ def ask(idx: Index, question: str, history: list[dict] | None, *, private: bool,
     system = [{"text": system_text(idx)},
               {"cachePoint": {"type": "default"}}]
     messages = []
-    for turn in (history or [])[-6:]:
-        if turn.get("q") and turn.get("a"):
-            messages += [{"role": "user", "content": [{"text": turn["q"]}]},
-                         {"role": "assistant", "content": [{"text": turn["a"]}]}]
+    for turn in (history or [])[-valves.MAX_HISTORY_TURNS:]:  # the handler bounds it; kept bounded here too
+        if isinstance(turn, dict) and isinstance(turn.get("q"), str) and isinstance(turn.get("a"), str) \
+                and turn["q"] and turn["a"]:
+            messages += [{"role": "user", "content": [{"text": turn["q"][:valves.MAX_QUESTION_CHARS]}]},
+                         {"role": "assistant", "content": [{"text": turn["a"][:4000]}]}]
     messages.append({"role": "user", "content": [{"text": question}]})
     trace, usage, provider, reported = [], _blank_usage(), spend_provider(), False
     figures: dict[str, dict] = {}  # every figure a tool returned in this question, by id

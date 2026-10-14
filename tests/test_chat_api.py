@@ -57,7 +57,7 @@ def test_an_agent_error_is_a_failed_question(mixed, monkeypatch):
     monkeypatch.setattr(agent_client, "ask", lambda *a, **k: {"error": "no caller token"})
     r = handler.handler(event("POST", "/api/chat", body={"question": "Who?"}), None)
     item = state.get_chat(json.loads(r["body"])["id"])["body"]
-    assert item["status"] == "failed" and "no caller token" in item["error"]
+    assert item["status"] == "failed" and item["error"] and "no caller token" not in item["error"]  # logged, not shown
 
 
 def test_documents_open_only_in_scope(mixed):
