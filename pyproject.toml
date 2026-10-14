@@ -5,7 +5,7 @@ description = "Domain-agnostic ontology discovery and extraction from unstructur
 requires-python = ">=3.12"
 license = "Apache-2.0"
 dependencies = [
-  "anthropic>=0.78,<1",
+  "anthropic>=0.78,<2",
   "rdflib>=7.1",
   "pyshacl>=0.30",
   "pypdf>=6.0",
