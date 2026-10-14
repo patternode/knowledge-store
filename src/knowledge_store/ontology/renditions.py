@@ -33,6 +33,7 @@ from typing import Callable
 
 from rdflib import Graph
 
+from ..graph import safe_name
 from . import model
 
 # --- master readers ----------------------------------------------------------------------------
@@ -155,13 +156,14 @@ def _neo4j_cypher(spec: model.OntologySpec) -> str:
            "CREATE INDEX entity_g IF NOT EXISTS FOR (n:Entity) ON (n.g);",
            "CREATE INDEX entity_iri IF NOT EXISTS FOR (n:Entity) ON (n.iri);",
            "CREATE INDEX entity_name IF NOT EXISTS FOR (n:Entity) ON (n.name);"]
+    # Names go into query text, so each is checked as an identifier (as the loaders check labels).
     for c in sorted(spec.classes.values(), key=lambda t: t.local):
-        lab = label_of(c.local)
-        out.append(f"CREATE INDEX {c.local.lower()}_name IF NOT EXISTS FOR (n:{lab}) ON (n.name);")
+        lab = safe_name(label_of(c.local))
+        out.append(f"CREATE INDEX {safe_name(c.local).lower()}_name IF NOT EXISTS FOR (n:{lab}) ON (n.name);")
     for p in sorted(spec.attributes.values(), key=lambda t: t.local):
         for d in p.domain:
-            out.append(f"CREATE INDEX {d.lower()}_{p.local.lower()} IF NOT EXISTS FOR (n:{label_of(d)}) "
-                       f"ON (n.{property_of(p.local)});")
+            out.append(f"CREATE INDEX {safe_name(d).lower()}_{safe_name(p.local).lower()} IF NOT EXISTS "
+                       f"FOR (n:{safe_name(label_of(d))}) ON (n.{safe_name(property_of(p.local))});")
     return "\n".join(out) + "\n"
 
 
@@ -177,7 +179,7 @@ def _age_sql(spec: model.OntologySpec) -> str:
            'CREATE UNIQUE INDEX ON "{graph}"."Entity" '
            "(ag_catalog.agtype_access_operator(VARIADIC ARRAY[properties, '\"id\"'::agtype]));"]
     for p in sorted(spec.relations.values(), key=lambda t: t.local):
-        t = rel_type(p.local)
+        t = safe_name(rel_type(p.local))
         out += [f"SELECT create_elabel('{{graph}}', '{t}');",
                 f'CREATE INDEX ON "{{graph}}"."{t}" (start_id);',
                 f'CREATE INDEX ON "{{graph}}"."{t}" (end_id);']
