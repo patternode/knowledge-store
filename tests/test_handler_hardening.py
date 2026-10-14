@@ -255,3 +255,22 @@ def test_with_the_origin_secret_set_only_cloudfront_requests_pass(monkeypatch):
     assert not handler.from_cloudfront({})
     res = handler.handler({"rawPath": "/api/collections", "requestContext": {"http": {"method": "GET"}}, "headers": {}}, None)
     assert res["statusCode"] == 403
+
+
+# -- credentials only over https -------------------------------------------------------------
+
+def test_the_service_token_is_never_requested_over_plain_http(monkeypatch):
+    monkeypatch.setattr(agent_client, "_clients", {"token_endpoint": "http://example.com/oauth2/token",
+                                                   "public": {"id": "a", "secret": "b"}})
+    monkeypatch.setattr(agent_client, "_tokens", {})
+    with pytest.raises(RuntimeError, match="https"):
+        agent_client.service_token(False)
+
+
+def test_the_eval_runner_sends_its_token_only_over_https_or_to_localhost():
+    from knowledge_store.evals.run import api_target
+    for bad in ("http://example.com", "ftp://example.com", "file:///etc/passwd"):
+        with pytest.raises(SystemExit):
+            api_target(bad, "tok", "c")
+    api_target("https://example.com", "tok", "c")
+    api_target("http://localhost:8765", "tok", "c")

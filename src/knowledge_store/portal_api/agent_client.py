@@ -53,6 +53,8 @@ def service_token(private: bool, now: float | None = None) -> str:
     if hit and hit[0] - 60 > now:
         return hit[1]
     c = _service_clients()
+    if not str(c.get("token_endpoint", "")).startswith("https://"):  # it is sent the client secret
+        raise RuntimeError("the service clients' token_endpoint is not an https:// URL")
     basic = base64.b64encode(f"{c[which]['id']}:{c[which]['secret']}".encode()).decode()
     req = urllib.request.Request(c["token_endpoint"], data=b"grant_type=client_credentials", method="POST", headers={
         "Authorization": f"Basic {basic}", "Content-Type": "application/x-www-form-urlencoded"})

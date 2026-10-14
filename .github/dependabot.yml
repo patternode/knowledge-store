@@ -1,0 +1,17 @@
+# Keeps the SHA-pinned actions, the digest-pinned base images, the Python dependency floors and
+# the Terraform providers current. Each update is a pull request for CI to check.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directories: ["/", "/examples/deployment"]
+    schedule: { interval: weekly }
+    groups: { actions: { patterns: ["*"] } }
+  - package-ecosystem: docker
+    directory: "/"
+    schedule: { interval: weekly }
+  - package-ecosystem: pip
+    directory: "/"
+    schedule: { interval: weekly }
+  - package-ecosystem: terraform
+    directory: "/infra/stack"
+    schedule: { interval: monthly }

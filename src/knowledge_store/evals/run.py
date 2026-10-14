@@ -25,6 +25,7 @@ import json
 import os
 import sys
 import time
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -45,6 +46,10 @@ def local_target(lake_uri: str, collection: str, model_id: str | None):
 
 def api_target(url: str, token: str, collection: str, timeout_s: int = 300):
     base = url.rstrip("/")
+    # The token goes with every call: https, or plain http only to this machine (the local server).
+    host = urllib.parse.urlsplit(base).hostname or ""
+    if not (base.startswith("https://") or (base.startswith("http://") and host in ("localhost", "127.0.0.1", "::1"))):
+        raise SystemExit(f"--api must be an https:// URL (or http://localhost): {url!r}")
 
     def call(method: str, path: str, body: dict | None = None) -> dict:
         req = urllib.request.Request(base + path, method=method, data=json.dumps(body).encode() if body else None,
