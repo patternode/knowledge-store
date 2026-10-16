@@ -32,7 +32,9 @@ provider "aws" {
 }
 
 module "knowledge_store" {
-  source = "git::https://github.com/patternode/knowledge-store.git//infra/modules/knowledge-store?ref=3c6948a5ca410ae2fab829e1f339156aa481bc17"
+  # Pinned to a release tag (vX.Y.Z). Each release is on the repository's Releases page with its
+  # notes; to upgrade, move the tag, read those notes, plan and apply.
+  source = "git::https://github.com/patternode/knowledge-store.git//infra/modules/knowledge-store?ref=v0.2.0"
 
   admin_email = "you@example.org"
   name        = "knowledge-store"
