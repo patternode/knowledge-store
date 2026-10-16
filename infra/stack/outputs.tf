@@ -32,3 +32,7 @@ output "provided_ontologies" {
   description = "collections that bring their own ontology, and the files uploaded for each"
 }
 output "sign_in" { value = module.knowledge_store.sign_in }
+output "branding" {
+  value       = module.knowledge_store.branding
+  description = "what the branding input became: brand.css, the logo's and icon's served paths, and the further files' paths"
+}
