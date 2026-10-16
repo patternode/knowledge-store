@@ -46,6 +46,8 @@ provenance:
 | Fulfilled by | FE-001, FE-002, FE-008, FE-009, FE-010 |
 | Date | 2026-10-16 |
 
+<!-- deck:slide label="In one sentence" -->
+
 ## The solution in one sentence
 
 A reader asks a question of a collection in plain language and gets an answer made only of statements that link to the passage or the table cell they came from, so that every sentence can be checked by opening its source.
@@ -56,9 +58,15 @@ Documents answer questions slowly and a model answers them fluently but unverifi
 
 The reader clicks a numbered citation and sees the quoted words highlighted in the passage, or the row of the table with the cell highlighted. When the sources cannot answer, the reader is told so and what was missing, and can ask what it would take.
 
+<!-- deck:slide label="On one page" title="The solution on one page" -->
+
 ## Diagram
 
-The diagram is generated from the two tables below with the pattern skill's model tool (`model emit index.md components.drawio`, then `model render`); it is not yet emitted.
+![UC-001 participants and interactions](./components.svg)
+
+Generated from the Participants and Interactions tables with the model skill; `components.drawio` is the source.
+
+<!-- deck:slide label="Participants" -->
 
 ## Participants
 
@@ -72,6 +80,8 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | 06 Grounding checks | Re-reads every citation and keeps what passes | solution |
 | 07 Guardrail | Screens the question; checks each claim's grounding | external |
 
+<!-- deck:slide label="Interactions" -->
+
 ## Interactions
 
 | Interface | Provider | Consumer | Purpose |
@@ -83,7 +93,27 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | IF-05 | 06 Grounding checks | 04 Answering agent | claims in, kept claims and failures out |
 | IF-06 | 07 Guardrail | 04 Answering agent | question screened, claims checked |
 
+<!-- deck:slide label="Catalogue mapping" -->
+
+## Catalogue Mapping
+
+What each local participant stands for in the catalogue: an actor or an external system is a gap by design (no artefact of this catalogue realises a person or a vendor); a solution participant realises or partly realises a building block.
+
+| Local ID | Maps To | Relationship |
+|---|---|---|
+| 01 | gap | gap |
+| 02 | ABB-018 Chat page | realises |
+| 03 | ABB-019 Chat API | realises |
+| 04 | ABB-014 Answering agent | realises |
+| 05 | ABB-012 Fixed query tools | partial |
+| 06 | ABB-015 Claim grounding and checks | realises |
+| 07 | gap | gap |
+
 ## Scenarios
+
+Step through the flows in the [animated walkthrough](./scenarios.html).
+
+<!-- deck:html src="./scenarios.html" title="The flow" header="true" -->
 
 ### S1 Main success scenario
 
@@ -117,6 +147,8 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | 2 | 04 Answering agent | 06 Grounding checks | cite a cell with its value, or a figure with its computation | IF-05 |
 | 3 | 06 Grounding checks | 05 Tools | recompute the figure from the snapshot | IF-04 |
 | 4 | 02 Chat page | 01 Reader | show the row with the cell highlighted | IF-01 |
+
+<!-- deck:slide label="Data and measures" title="Data and measures" -->
 
 ## Data
 

@@ -46,6 +46,8 @@ provenance:
 | Fulfilled by | FE-022, FE-017 |
 | Date | 2026-10-16 |
 
+<!-- deck:slide label="In one sentence" -->
+
 ## The solution in one sentence
 
 An administrator puts documents into a collection's landing folder, or points the collection at a source, and the next sweep ingests, refines, extracts and projects them without anyone running a step, so that the store stays current with what is written.
@@ -56,9 +58,15 @@ A store that needs an operator to run a pipeline falls behind the documents. The
 
 Upload and wait. The status page shows the stage; the chat answers from the new documents at the next sweep.
 
+<!-- deck:slide label="On one page" title="The solution on one page" -->
+
 ## Diagram
 
-The diagram is generated from the two tables below with the pattern skill's model tool (`model emit index.md components.drawio`, then `model render`); it is not yet emitted.
+![UC-002 participants and interactions](./components.svg)
+
+Generated from the Participants and Interactions tables with the model skill; `components.drawio` is the source.
+
+<!-- deck:slide label="Participants" -->
 
 ## Participants
 
@@ -70,6 +78,8 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | 04 Sweep | Ingest, refine, discover or publish, extract, bind, project, load | solution |
 | 05 Lake | Bronze, silver, gold and the ontology | solution |
 
+<!-- deck:slide label="Interactions" -->
+
 ## Interactions
 
 | Interface | Provider | Consumer | Purpose |
@@ -79,7 +89,25 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | IF-03 | 04 Sweep | 03 Upload trigger | run task |
 | IF-04 | 05 Lake | 04 Sweep | read and write the layers |
 
+<!-- deck:slide label="Catalogue mapping" -->
+
+## Catalogue Mapping
+
+What each local participant stands for in the catalogue: an actor or an external system is a gap by design (no artefact of this catalogue realises a person or a vendor); a solution participant realises or partly realises a building block.
+
+| Local ID | Maps To | Relationship |
+|---|---|---|
+| 01 | gap | gap |
+| 02 | ABB-002 Lake and layering | partial |
+| 03 | ABB-004 Sweep orchestration | partial |
+| 04 | ABB-004 Sweep orchestration | realises |
+| 05 | ABB-002 Lake and layering | realises |
+
 ## Scenarios
+
+Step through the flows in the [animated walkthrough](./scenarios.html).
+
+<!-- deck:html src="./scenarios.html" title="The flow" header="true" -->
 
 ### S1 Main success scenario
 
@@ -97,6 +125,8 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | Step | Actor | Target | Action | Interface |
 |---|---|---|---|---|
 | 1 | 04 Sweep | 05 Lake | refine; with enough documents, discover a draft and stop at awaiting curation | IF-04 |
+
+<!-- deck:slide label="Data and measures" title="Data and measures" -->
 
 ## Data
 

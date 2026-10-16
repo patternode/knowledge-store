@@ -46,6 +46,8 @@ provenance:
 | Fulfilled by | FE-003, FE-005 |
 | Date | 2026-10-16 |
 
+<!-- deck:slide label="In one sentence" -->
+
 ## The solution in one sentence
 
 A curator gives a collection an ontology they already have, as a Turtle master beside optional shapes, a table mapping and metrics, and the store publishes and extracts against it, so that the graph is typed in the organisation's own terms from the first document.
@@ -56,9 +58,15 @@ An organisation with a standard's ontology, or one of its own, should not have o
 
 The collection's ontology_dir names the files; apply uploads them; the sweep publishes the version owl:versionInfo names and activates it. To change it, bump the version and apply.
 
+<!-- deck:slide label="On one page" title="The solution on one page" -->
+
 ## Diagram
 
-The diagram is generated from the two tables below with the pattern skill's model tool (`model emit index.md components.drawio`, then `model render`); it is not yet emitted.
+![UC-003 participants and interactions](./components.svg)
+
+Generated from the Participants and Interactions tables with the model skill; `components.drawio` is the source.
+
+<!-- deck:slide label="Participants" -->
 
 ## Participants
 
@@ -69,6 +77,8 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | 03 Sweep | Publishes and activates the provided version | solution |
 | 04 Ontology store | Versions, renditions, manifests, the active pointer | solution |
 
+<!-- deck:slide label="Interactions" -->
+
 ## Interactions
 
 | Interface | Provider | Consumer | Purpose |
@@ -77,7 +87,24 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | IF-02 | 03 Sweep | 02 Deployment inputs | read config/ontology |
 | IF-03 | 04 Ontology store | 03 Sweep | publish, activate |
 
+<!-- deck:slide label="Catalogue mapping" -->
+
+## Catalogue Mapping
+
+What each local participant stands for in the catalogue: an actor or an external system is a gap by design (no artefact of this catalogue realises a person or a vendor); a solution participant realises or partly realises a building block.
+
+| Local ID | Maps To | Relationship |
+|---|---|---|
+| 01 | gap | gap |
+| 02 | ABB-023 Deployment automation | partial |
+| 03 | ABB-006 Ontology versioning and renditions | realises |
+| 04 | ABB-006 Ontology versioning and renditions | partial |
+
 ## Scenarios
+
+Step through the flows in the [animated walkthrough](./scenarios.html).
+
+<!-- deck:html src="./scenarios.html" title="The flow" header="true" -->
 
 ### S1 Main success scenario
 
@@ -94,6 +121,8 @@ The diagram is generated from the two tables below with the pattern skill's mode
 |---|---|---|---|---|
 | 1 | 03 Sweep | 02 Deployment inputs | find a changed file under the same version | IF-02 |
 | 2 | 03 Sweep | 04 Ontology store | refuse; write the reason to the status | IF-03 |
+
+<!-- deck:slide label="Data and measures" title="Data and measures" -->
 
 ## Data
 

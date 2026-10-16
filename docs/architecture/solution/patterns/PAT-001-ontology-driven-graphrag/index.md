@@ -13,6 +13,8 @@ author: "Patternode (Dermot O'Brien)"
 realises: [CAP-003, CAP-004, CAP-005, CAP-006, CAP-007, CAP-008, CAP-009]
 serves: [UC-001, UC-002, UC-003, UC-004, UC-005, UC-006, UC-007, UC-008]
 implemented_by: [REF-001]
+model:
+  diagram: components.drawio
 provenance:
   origin: ai-generated
   review_state: ai-raw
@@ -20,7 +22,11 @@ provenance:
 
 # PAT-001 Ontology-driven GraphRAG with grounded answers
 
+<!-- deck:cover subtitle="The logical pattern: ontology, extraction with provenance, the graph as record, grounded answering" footnote="Reversed from the implementation at 0.3.0. Draft." -->
+
 The logical pattern: technology-agnostic, in architecture building blocks. REF-001 is its physical form on AWS. Every use case in [../../problem/use-cases](../../../problem/use-cases/README.md) is realised by this pattern, and its scenarios walk theirs across the blocks named here; in UML terms this document is the use-case realization and the pattern it applies, in one.
+
+<!-- deck:slide label="Context" -->
 
 ## Context
 
@@ -28,12 +34,16 @@ An organisation has documents and wants to answer questions from them with every
 
 The audience is a team building a knowledge store over its own documents, in any domain, who will own the ontology.
 
+<!-- deck:slide label="Non-goals" -->
+
 ### Non-goals
 
 - A general chat assistant: the agent answers from the collection or abstains.
 - A model as judge of truth: every check is code, with the guardrail as a second, bounded opinion.
 - Free querying by the model: the tools are fixed.
 - A document management system: sources are read, never managed.
+
+<!-- deck:slide label="Quality attributes" -->
 
 ### Quality attributes
 
@@ -45,9 +55,15 @@ The audience is a team building a knowledge store over its own documents, in any
 | Rebuildability | A projection is lost | The next sweep rebuilds it from gold; the pointer moves when counts check |
 | Governance | A term is proposed from a document | It stays a candidate until a person publishes a version containing it |
 
+<!-- deck:slide label="Component view" -->
+
 ## Diagram
 
-The component view is the as-built diagram in REF-001 ([../../../aws/architecture.svg](../../../aws/architecture.svg)) read with the ABB labels below; a logical draw.io is to be emitted from the Required Building Blocks table with the model tool.
+![PAT-001 building blocks and interfaces](./components.svg)
+
+Generated from the Required Building Blocks and Interfaces tables with the model skill (`components.drawio` is the source); the as-built picture is REF-001's.
+
+<!-- deck:slide label="Building blocks" -->
 
 ## Required Building Blocks
 
@@ -76,22 +92,45 @@ The component view is the as-built diagram in REF-001 ([../../../aws/architectur
 | ABB-021 Evaluation runner and scorer | Right, not only grounded |
 | ABB-022 Model access and ledger | One client, every call priced |
 
+<!-- deck:slide label="Interfaces" -->
+
 ## Interfaces
 
 | Interface | Provider | Consumer | Purpose |
 |---|---|---|---|
-| IF-01 | ABB-002 | every block | the lake port and layout |
-| IF-02 | ABB-006 | ABB-009, ABB-011, ABB-014 | renditions per version |
-| IF-03 | ABB-012 | ABB-014 | fixed tools as the caller |
-| IF-04 | ABB-013 | ABB-014 | passage search and read |
-| IF-05 | ABB-014 | ABB-019 | the answer, steps streamed |
-| IF-06 | ABB-020 | ABB-012, ABB-014, ABB-019 | who is asking; the scope |
-| IF-07 | ABB-022 | ABB-005, ABB-009, ABB-014 | the model, priced |
-| IF-08 | ABB-017 | ABB-007 | ontology requests |
+| IF-01 | ABB-002 Lake and layering | ABB-004 Sweep orchestration | the lake port and layout |
+| IF-02 | ABB-001 Source adapters | ABB-004 Sweep orchestration | items and bytes from each source |
+| IF-03 | ABB-003 Document refinement | ABB-009 Ontology-guided extraction | silver passages |
+| IF-04 | ABB-005 Ontology discovery and review | ABB-006 Ontology versioning and renditions | a draft to publish |
+| IF-05 | ABB-006 Ontology versioning and renditions | ABB-009 Ontology-guided extraction | the tool schema and shapes of the active version |
+| IF-06 | ABB-006 Ontology versioning and renditions | ABB-014 Answering agent | the agent rendition |
+| IF-07 | ABB-006 Ontology versioning and renditions | ABB-011 Graph record and projection | the store renditions and the T-Box |
+| IF-08 | ABB-008 Table mapping definition | ABB-010 Table binding | the structured mapping rendition |
+| IF-09 | ABB-009 Ontology-guided extraction | ABB-011 Graph record and projection | gold per document per version |
+| IF-10 | ABB-010 Table binding | ABB-012 Fixed query tools | snapshots, cells and figures |
+| IF-11 | ABB-011 Graph record and projection | ABB-012 Fixed query tools | the projections to query |
+| IF-12 | ABB-003 Document refinement | ABB-013 Passage search by meaning | passages to index and read |
+| IF-13 | ABB-012 Fixed query tools | ABB-014 Answering agent | fixed tools as the caller |
+| IF-14 | ABB-013 Passage search by meaning | ABB-014 Answering agent | passage search and read |
+| IF-15 | ABB-014 Answering agent | ABB-015 Claim grounding and checks | proposed claims; repairs back |
+| IF-16 | ABB-016 Valves and quotas | ABB-014 Answering agent | limits on every call |
+| IF-17 | ABB-014 Answering agent | ABB-017 Workbench | steps, usage, gap reports |
+| IF-18 | ABB-017 Workbench | ABB-007 Candidate register and revision proposal | ontology requests |
+| IF-19 | ABB-009 Ontology-guided extraction | ABB-007 Candidate register and revision proposal | candidates |
+| IF-20 | ABB-007 Candidate register and revision proposal | ABB-006 Ontology versioning and renditions | a revision draft |
+| IF-21 | ABB-014 Answering agent | ABB-019 Chat API | the answer, steps streamed |
+| IF-22 | ABB-019 Chat API | ABB-018 Chat page | the HTTP API |
+| IF-23 | ABB-020 Identity and scope | ABB-019 Chat API | who is asking |
+| IF-24 | ABB-020 Identity and scope | ABB-012 Fixed query tools | the caller's scope on every call |
+| IF-25 | ABB-022 Model access and ledger | ABB-009 Ontology-guided extraction | the model, priced |
+| IF-26 | ABB-022 Model access and ledger | ABB-014 Answering agent | the model, priced |
+| IF-27 | ABB-021 Evaluation runner and scorer | ABB-014 Answering agent | evaluation questions |
 
 ## Scenarios
 
 The scenarios are the use cases': UC-001 S1 to S3 for answering, UC-002 for the sweep, UC-003 to UC-005 for the ontology lifecycle, UC-006 for tables, UC-007 for evaluation, UC-008 for scope. Each step of each is a call across one of the interfaces above.
+
+<!-- deck:slide label="Controls" -->
 
 ## Controls
 
@@ -104,6 +143,8 @@ The scenarios are the use cases': UC-001 S1 to S3 for answering, UC-002 for the 
 | Publish refuses an understated bump | ABB-006 | A silent semantic change |
 | Candidates stay out of the graph | ABB-007 | Document text changing the ontology |
 | Documents as data | ABB-003, ABB-009 | Document text being executed or trusted |
+
+<!-- deck:slide label="Decisions" -->
 
 ## Decisions
 

@@ -46,6 +46,8 @@ provenance:
 | Fulfilled by | FE-006, FE-010 |
 | Date | 2026-10-16 |
 
+<!-- deck:slide label="In one sentence" -->
+
 ## The solution in one sentence
 
 A curator takes the terms extraction could not place and the ontology requests kept from the workbench, and publishes them as the next minor version, so that the ontology grows from demand without a term entering it unread.
@@ -56,9 +58,15 @@ An ontology that cannot grow is abandoned; one that grows by itself drifts. Grow
 
 candidates --propose writes a revision draft one minor version up; the curator reviews and publishes; the next sweep runs a delta extraction of the new terms only.
 
+<!-- deck:slide label="On one page" title="The solution on one page" -->
+
 ## Diagram
 
-The diagram is generated from the two tables below with the pattern skill's model tool (`model emit index.md components.drawio`, then `model render`); it is not yet emitted.
+![UC-005 participants and interactions](./components.svg)
+
+Generated from the Participants and Interactions tables with the model skill; `components.drawio` is the source.
+
+<!-- deck:slide label="Participants" -->
 
 ## Participants
 
@@ -70,16 +78,36 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | 04 CLI | candidates --propose; publish | solution |
 | 05 Ontology store | Drafts and versions | solution |
 
+<!-- deck:slide label="Interactions" -->
+
 ## Interactions
 
 | Interface | Provider | Consumer | Purpose |
 |---|---|---|---|
-| IF-01 | 02 Candidate register | 01 Curator | read what extraction could not place |
-| IF-02 | 03 Workbench | 02 Candidate register | requests merged in as asked terms |
+| IF-01 | 02 Candidate register | 01 Curator | candidates to read |
+| IF-02 | 03 Workbench | 02 Candidate register | requests as asked terms |
 | IF-03 | 04 CLI | 01 Curator | propose, publish |
-| IF-04 | 05 Ontology store | 04 CLI | write the revision draft; publish the minor version |
+| IF-04 | 05 Ontology store | 04 CLI | draft, publish |
+
+<!-- deck:slide label="Catalogue mapping" -->
+
+## Catalogue Mapping
+
+What each local participant stands for in the catalogue: an actor or an external system is a gap by design (no artefact of this catalogue realises a person or a vendor); a solution participant realises or partly realises a building block.
+
+| Local ID | Maps To | Relationship |
+|---|---|---|
+| 01 | gap | gap |
+| 02 | ABB-007 Candidate register and revision proposal | realises |
+| 03 | ABB-017 Workbench | realises |
+| 04 | ABB-023 Deployment automation | partial |
+| 05 | ABB-006 Ontology versioning and renditions | realises |
 
 ## Scenarios
+
+Step through the flows in the [animated walkthrough](./scenarios.html).
+
+<!-- deck:html src="./scenarios.html" title="The flow" header="true" -->
 
 ### S1 Main success scenario
 
@@ -91,6 +119,8 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | 4 | 04 CLI | 05 Ontology store | consolidate with the current ontology held fixed; write the draft at the next minor version | IF-04 |
 | 5 | 01 Curator | 04 CLI | pull, edit, diff; publish and activate | IF-03 |
 | 6 | 05 Ontology store | 01 Curator | the next sweep extracts the delta for the selected documents | IF-04 |
+
+<!-- deck:slide label="Data and measures" title="Data and measures" -->
 
 ## Data
 

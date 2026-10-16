@@ -46,6 +46,8 @@ provenance:
 | Fulfilled by | FE-017, FE-018, FE-019, FE-021 |
 | Date | 2026-10-16 |
 
+<!-- deck:slide label="In one sentence" -->
+
 ## The solution in one sentence
 
 An administrator applies one Terraform module, or launches one CloudFormation stack, into their own AWS account with their collections, models, network and valves, and has a working store after a second apply switches the agent on, so that nothing is run or hosted anywhere else.
@@ -56,9 +58,15 @@ A reference architecture that takes a platform team to stand up is not adopted. 
 
 A portal URL, an upload location per collection, the pipeline logs and the evaluate command; images built in the account; a tag to move for the next release.
 
+<!-- deck:slide label="On one page" title="The solution on one page" -->
+
 ## Diagram
 
-The diagram is generated from the two tables below with the pattern skill's model tool (`model emit index.md components.drawio`, then `model render`); it is not yet emitted.
+![UC-009 participants and interactions](./components.svg)
+
+Generated from the Participants and Interactions tables with the model skill; `components.drawio` is the source.
+
+<!-- deck:slide label="Participants" -->
 
 ## Participants
 
@@ -70,6 +78,8 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | 04 Launch stack | CloudFormation running the same Terraform | solution |
 | 05 AWS account | Where everything lands | external |
 
+<!-- deck:slide label="Interactions" -->
+
 ## Interactions
 
 | Interface | Provider | Consumer | Purpose |
@@ -79,7 +89,25 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | IF-03 | 05 AWS account | 02 Terraform module | resources created |
 | IF-04 | 04 Launch stack | 01 Administrator | parameters in, the same apply |
 
+<!-- deck:slide label="Catalogue mapping" -->
+
+## Catalogue Mapping
+
+What each local participant stands for in the catalogue: an actor or an external system is a gap by design (no artefact of this catalogue realises a person or a vendor); a solution participant realises or partly realises a building block.
+
+| Local ID | Maps To | Relationship |
+|---|---|---|
+| 01 | gap | gap |
+| 02 | ABB-023 Deployment automation | realises |
+| 03 | ABB-023 Deployment automation | partial |
+| 04 | ABB-023 Deployment automation | partial |
+| 05 | gap | gap |
+
 ## Scenarios
+
+Step through the flows in the [animated walkthrough](./scenarios.html).
+
+<!-- deck:html src="./scenarios.html" title="The flow" header="true" -->
 
 ### S1 Main success scenario
 
@@ -103,6 +131,8 @@ The diagram is generated from the two tables below with the pattern skill's mode
 |---|---|---|---|---|
 | 1 | 01 Administrator | 04 Launch stack | launch the CloudFormation stack with its parameters | IF-04 |
 | 2 | 04 Launch stack | 02 Terraform module | run the same apply in a CodeBuild project | IF-04 |
+
+<!-- deck:slide label="Data and measures" title="Data and measures" -->
 
 ## Data
 

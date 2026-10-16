@@ -46,6 +46,8 @@ provenance:
 | Fulfilled by | FE-004, FE-005 |
 | Date | 2026-10-16 |
 
+<!-- deck:slide label="In one sentence" -->
+
 ## The solution in one sentence
 
 A curator lets the store propose a first ontology from a sample of the documents, reviews the draft in git, and publishes it as a version, so that a collection with no ontology gets one a person has read and approved.
@@ -56,9 +58,15 @@ Writing an ontology from nothing is slow; taking one a model wrote unread is uns
 
 A draft with each term's document support and the review's applied and skipped edits; the curator pulls, edits, diffs and publishes 0.1.0, or in auto mode the sweep publishes it provisionally.
 
+<!-- deck:slide label="On one page" title="The solution on one page" -->
+
 ## Diagram
 
-The diagram is generated from the two tables below with the pattern skill's model tool (`model emit index.md components.drawio`, then `model render`); it is not yet emitted.
+![UC-004 participants and interactions](./components.svg)
+
+Generated from the Participants and Interactions tables with the model skill; `components.drawio` is the source.
+
+<!-- deck:slide label="Participants" -->
 
 ## Participants
 
@@ -71,6 +79,8 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | 05 CLI | pull, diff, publish, activate | solution |
 | 06 Ontology store | Versions and the active pointer | solution |
 
+<!-- deck:slide label="Interactions" -->
+
 ## Interactions
 
 | Interface | Provider | Consumer | Purpose |
@@ -80,7 +90,26 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | IF-03 | 05 CLI | 01 Curator | pull, diff, publish |
 | IF-04 | 06 Ontology store | 05 CLI | publish and activate |
 
+<!-- deck:slide label="Catalogue mapping" -->
+
+## Catalogue Mapping
+
+What each local participant stands for in the catalogue: an actor or an external system is a gap by design (no artefact of this catalogue realises a person or a vendor); a solution participant realises or partly realises a building block.
+
+| Local ID | Maps To | Relationship |
+|---|---|---|
+| 01 | gap | gap |
+| 02 | ABB-005 Ontology discovery and review | realises |
+| 03 | gap | gap |
+| 04 | ABB-006 Ontology versioning and renditions | partial |
+| 05 | ABB-023 Deployment automation | partial |
+| 06 | ABB-006 Ontology versioning and renditions | realises |
+
 ## Scenarios
+
+Step through the flows in the [animated walkthrough](./scenarios.html).
+
+<!-- deck:html src="./scenarios.html" title="The flow" header="true" -->
 
 ### S1 Main success scenario
 
@@ -98,6 +127,8 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | Step | Actor | Target | Action | Interface |
 |---|---|---|---|---|
 | 1 | 02 Sweep | 06 Ontology store | publish the draft as 0.1.0, noted provisional, and continue to extraction | IF-04 |
+
+<!-- deck:slide label="Data and measures" title="Data and measures" -->
 
 ## Data
 

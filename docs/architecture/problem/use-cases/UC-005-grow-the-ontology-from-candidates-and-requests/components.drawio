@@ -1,0 +1,52 @@
+<mxfile host="model-skill" type="device" compressed="false">
+  <diagram id="p-uc-005-grow-the-ontology-from-candidates-and-requests" name="UC-005 Grow the ontology from candidates and requests">
+    <mxGraphModel dx="1422" dy="798" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" value="Structure" parent="0" />
+        <mxCell id="frame" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="0" y="0" width="700" height="616" as="geometry" /></mxCell>
+        <object id="local-01" label="Curator" local_id="01" pattern="actor" role_in_this_use_case="Decides what the next version holds">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+            <mxGeometry x="180" y="40" width="220" height="80" as="geometry"/>
+          </mxCell>
+        </object>
+        <object id="local-02" label="Candidate register" local_id="02" pattern="solution" role_in_this_use_case="Terms with their documents, evidence and nearest existing term">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+            <mxGeometry x="40" y="248" width="220" height="80" as="geometry"/>
+          </mxCell>
+        </object>
+        <object id="local-03" label="Workbench" local_id="03" pattern="solution" role_in_this_use_case="Gap reports kept as ontology requests">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+            <mxGeometry x="40" y="456" width="220" height="80" as="geometry"/>
+          </mxCell>
+        </object>
+        <object id="local-04" label="CLI" local_id="04" pattern="solution" role_in_this_use_case="candidates --propose; publish">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+            <mxGeometry x="320" y="248" width="220" height="80" as="geometry"/>
+          </mxCell>
+        </object>
+        <object id="local-05" label="Ontology store" local_id="05" pattern="solution" role_in_this_use_case="Drafts and versions">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+            <mxGeometry x="320" y="456" width="220" height="80" as="geometry"/>
+          </mxCell>
+        </object>
+        <object id="IF-01" label="candidates to read" iface_id="IF-01">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="local-02" target="local-01"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="150" y="184"/></Array></mxGeometry>
+          </mxCell>
+        </object>
+        <object id="IF-02" label="requests as asked terms" iface_id="IF-02">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="local-03" target="local-02"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="150" y="392"/></Array></mxGeometry>
+          </mxCell>
+        </object>
+        <object id="IF-03" label="propose, publish" iface_id="IF-03">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="local-04" target="local-01"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="430" y="184"/></Array></mxGeometry>
+          </mxCell>
+        </object>
+        <object id="IF-04" label="draft, publish" iface_id="IF-04">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="local-05" target="local-04"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="430" y="392"/></Array></mxGeometry>
+          </mxCell>
+        </object>
+        <mxCell id="lyr-S1" value="S1 Main success scenario" parent="0" visible="0" /><object id="S1-badge-1" label="1" scenario="S1" step="1"><mxCell style="ellipse;whiteSpace=wrap;html=1;fillColor=#14B8A6;strokeColor=none;fontColor=#FFFFFF;fontSize=14;fontStyle=1;" vertex="1" parent="lyr-S1"><mxGeometry x="25" y="45" width="30" height="30" as="geometry" /></mxCell></object><object id="S1-flow-1" label="1" scenario="S1" step="1" iface_id="IF-02" from="01" to="03"><mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeWidth=2;strokeColor=#0F8C7E;fontColor=#0F8C7E;fontSize=13;fontStyle=1;labelBackgroundColor=#FFFFFF;" edge="1" parent="lyr-S1" source="local-01" target="local-03"><mxGeometry relative="1" as="geometry" /></mxCell></object><object id="S1-badge-2" label="2" scenario="S1" step="2"><mxCell style="ellipse;whiteSpace=wrap;html=1;fillColor=#14B8A6;strokeColor=none;fontColor=#FFFFFF;fontSize=14;fontStyle=1;" vertex="1" parent="lyr-S1"><mxGeometry x="61" y="45" width="30" height="30" as="geometry" /></mxCell></object><object id="S1-flow-2" label="2" scenario="S1" step="2" iface_id="IF-03" from="01" to="04"><mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeWidth=2;strokeColor=#0F8C7E;fontColor=#0F8C7E;fontSize=13;fontStyle=1;labelBackgroundColor=#FFFFFF;" edge="1" parent="lyr-S1" source="local-01" target="local-04"><mxGeometry relative="1" as="geometry" /></mxCell></object><object id="S1-badge-3" label="3" scenario="S1" step="3"><mxCell style="ellipse;whiteSpace=wrap;html=1;fillColor=#14B8A6;strokeColor=none;fontColor=#FFFFFF;fontSize=14;fontStyle=1;" vertex="1" parent="lyr-S1"><mxGeometry x="365" y="305" width="30" height="30" as="geometry" /></mxCell></object><object id="S1-flow-3" label="3" scenario="S1" step="3" iface_id="IF-01" from="04" to="02"><mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeWidth=2;strokeColor=#0F8C7E;fontColor=#0F8C7E;fontSize=13;fontStyle=1;labelBackgroundColor=#FFFFFF;" edge="1" parent="lyr-S1" source="local-04" target="local-02"><mxGeometry relative="1" as="geometry" /></mxCell></object><object id="S1-badge-4" label="4" scenario="S1" step="4"><mxCell style="ellipse;whiteSpace=wrap;html=1;fillColor=#14B8A6;strokeColor=none;fontColor=#FFFFFF;fontSize=14;fontStyle=1;" vertex="1" parent="lyr-S1"><mxGeometry x="401" y="305" width="30" height="30" as="geometry" /></mxCell></object><object id="S1-flow-4" label="4" scenario="S1" step="4" iface_id="IF-04" from="04" to="05"><mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeWidth=2;strokeColor=#0F8C7E;fontColor=#0F8C7E;fontSize=13;fontStyle=1;labelBackgroundColor=#FFFFFF;" edge="1" parent="lyr-S1" source="local-04" target="local-05"><mxGeometry relative="1" as="geometry" /></mxCell></object><object id="S1-badge-5" label="5" scenario="S1" step="5"><mxCell style="ellipse;whiteSpace=wrap;html=1;fillColor=#14B8A6;strokeColor=none;fontColor=#FFFFFF;fontSize=14;fontStyle=1;" vertex="1" parent="lyr-S1"><mxGeometry x="97" y="45" width="30" height="30" as="geometry" /></mxCell></object><object id="S1-flow-5" label="5" scenario="S1" step="5" iface_id="IF-03" from="01" to="04"><mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeWidth=2;strokeColor=#0F8C7E;fontColor=#0F8C7E;fontSize=13;fontStyle=1;labelBackgroundColor=#FFFFFF;" edge="1" parent="lyr-S1" source="local-01" target="local-04"><mxGeometry relative="1" as="geometry" /></mxCell></object><object id="S1-badge-6" label="6" scenario="S1" step="6"><mxCell style="ellipse;whiteSpace=wrap;html=1;fillColor=#14B8A6;strokeColor=none;fontColor=#FFFFFF;fontSize=14;fontStyle=1;" vertex="1" parent="lyr-S1"><mxGeometry x="365" y="435" width="30" height="30" as="geometry" /></mxCell></object><object id="S1-flow-6" label="6" scenario="S1" step="6" iface_id="IF-04" from="05" to="01"><mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeWidth=2;strokeColor=#0F8C7E;fontColor=#0F8C7E;fontSize=13;fontStyle=1;labelBackgroundColor=#FFFFFF;" edge="1" parent="lyr-S1" source="local-05" target="local-01"><mxGeometry relative="1" as="geometry" /></mxCell></object></root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -46,6 +46,8 @@ provenance:
 | Fulfilled by | FE-007 |
 | Date | 2026-10-16 |
 
+<!-- deck:slide label="In one sentence" -->
+
 ## The solution in one sentence
 
 A curator maps a CSV, TSV or JSON table to the ontology's classes and attributes and publishes the mapping with the version, so that a question about a filter, a total or an exact value is answered from the table and cites the cell or the recomputed figure.
@@ -56,9 +58,15 @@ A table parsed as prose loses its schema; a total cannot be quoted. The table ne
 
 Catalogue questions are answered from rows and figures, each citation opening the row with the cell highlighted; a metric is recomputed before it is shown.
 
+<!-- deck:slide label="On one page" title="The solution on one page" -->
+
 ## Diagram
 
-The diagram is generated from the two tables below with the pattern skill's model tool (`model emit index.md components.drawio`, then `model render`); it is not yet emitted.
+![UC-006 participants and interactions](./components.svg)
+
+Generated from the Participants and Interactions tables with the model skill; `components.drawio` is the source.
+
+<!-- deck:slide label="Participants" -->
 
 ## Participants
 
@@ -70,6 +78,8 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | 04 Structured tools | describe, lookup_rows, aggregate | solution |
 | 05 Reader | Asks a catalogue question | actor |
 
+<!-- deck:slide label="Interactions" -->
+
 ## Interactions
 
 | Interface | Provider | Consumer | Purpose |
@@ -79,7 +89,25 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | IF-03 | 04 Structured tools | 03 Sweep | cells and rows from the snapshot |
 | IF-04 | 04 Structured tools | 05 Reader | through the agent: a cell or a figure cited |
 
+<!-- deck:slide label="Catalogue mapping" -->
+
+## Catalogue Mapping
+
+What each local participant stands for in the catalogue: an actor or an external system is a gap by design (no artefact of this catalogue realises a person or a vendor); a solution participant realises or partly realises a building block.
+
+| Local ID | Maps To | Relationship |
+|---|---|---|
+| 01 | gap | gap |
+| 02 | ABB-008 Table mapping definition | realises |
+| 03 | ABB-010 Table binding | realises |
+| 04 | ABB-012 Fixed query tools | partial |
+| 05 | gap | gap |
+
 ## Scenarios
+
+Step through the flows in the [animated walkthrough](./scenarios.html).
+
+<!-- deck:html src="./scenarios.html" title="The flow" header="true" -->
 
 ### S1 Main success scenario
 
@@ -90,6 +118,8 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | 3 | 03 Sweep | 04 Structured tools | bind the file: rows as entities keyed by the key columns, values as cells with the snapshot hash; validate with SHACL | IF-03 |
 | 4 | 05 Reader | 04 Structured tools | ask a catalogue question; the agent looks up rows or aggregates | IF-04 |
 | 5 | 04 Structured tools | 05 Reader | the claim cites the cell or the figure; the check recomputes it | IF-04 |
+
+<!-- deck:slide label="Data and measures" title="Data and measures" -->
 
 ## Data
 

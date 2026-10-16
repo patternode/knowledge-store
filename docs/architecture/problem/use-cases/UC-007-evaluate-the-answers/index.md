@@ -46,6 +46,8 @@ provenance:
 | Fulfilled by | FE-016 |
 | Date | 2026-10-16 |
 
+<!-- deck:slide label="In one sentence" -->
+
 ## The solution in one sentence
 
 An evaluator runs a set of questions with the facts a right answer states and the documents it should cite against a lake or the deployed chat, and reads a deterministic score, so that a release or an ontology change can be judged against the last.
@@ -56,9 +58,15 @@ Grounded is not the same as right. Without a set and a scorer, a change to the p
 
 A report with accuracy, mean score, grounded share, source hits, false abstentions and missed abstentions, overall and per question kind.
 
+<!-- deck:slide label="On one page" title="The solution on one page" -->
+
 ## Diagram
 
-The diagram is generated from the two tables below with the pattern skill's model tool (`model emit index.md components.drawio`, then `model render`); it is not yet emitted.
+![UC-007 participants and interactions](./components.svg)
+
+Generated from the Participants and Interactions tables with the model skill; `components.drawio` is the source.
+
+<!-- deck:slide label="Participants" -->
 
 ## Participants
 
@@ -69,6 +77,8 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | 03 Agent | Answers each question | solution |
 | 04 Scorer | Deterministic measures and the report | solution |
 
+<!-- deck:slide label="Interactions" -->
+
 ## Interactions
 
 | Interface | Provider | Consumer | Purpose |
@@ -77,7 +87,24 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | IF-02 | 03 Agent | 02 Runner | each question, as a person |
 | IF-03 | 04 Scorer | 02 Runner | answers in, measures out |
 
+<!-- deck:slide label="Catalogue mapping" -->
+
+## Catalogue Mapping
+
+What each local participant stands for in the catalogue: an actor or an external system is a gap by design (no artefact of this catalogue realises a person or a vendor); a solution participant realises or partly realises a building block.
+
+| Local ID | Maps To | Relationship |
+|---|---|---|
+| 01 | gap | gap |
+| 02 | ABB-021 Evaluation runner and scorer | realises |
+| 03 | ABB-014 Answering agent | realises |
+| 04 | ABB-021 Evaluation runner and scorer | partial |
+
 ## Scenarios
+
+Step through the flows in the [animated walkthrough](./scenarios.html).
+
+<!-- deck:html src="./scenarios.html" title="The flow" header="true" -->
 
 ### S1 Main success scenario
 
@@ -87,6 +114,8 @@ The diagram is generated from the two tables below with the pattern skill's mode
 | 2 | 02 Runner | 03 Agent | ask each question, polling the API or calling in process | IF-02 |
 | 3 | 02 Runner | 04 Scorer | score must, must_not, first, sources and abstention | IF-03 |
 | 4 | 04 Scorer | 01 Evaluator | write report.md and results.json | IF-03 |
+
+<!-- deck:slide label="Data and measures" title="Data and measures" -->
 
 ## Data
 

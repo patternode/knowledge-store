@@ -1,0 +1,117 @@
+{
+  "lockfile": 1,
+  "skills": {
+    "aaa-create-abb": {
+      "version": "0.5.0",
+      "source": "folder",
+      "ref": null,
+      "path": "skills/aaa-create-abb",
+      "commit": null,
+      "hash": "682ad3ada3c81cb7"
+    },
+    "aaa-create-capability": {
+      "version": "0.5.0",
+      "source": "folder",
+      "ref": null,
+      "path": "skills/aaa-create-capability",
+      "commit": null,
+      "hash": "253f35bb3635ce8b"
+    },
+    "aaa-create-context": {
+      "version": "0.5.0",
+      "source": "folder",
+      "ref": null,
+      "path": "skills/aaa-create-context",
+      "commit": null,
+      "hash": "b77d71ef1a9362e9"
+    },
+    "aaa-create-platform": {
+      "version": "0.5.0",
+      "source": "folder",
+      "ref": null,
+      "path": "skills/aaa-create-platform",
+      "commit": null,
+      "hash": "2f97f907361d7c20"
+    },
+    "aaa-create-runtime-agent": {
+      "version": "0.5.1",
+      "source": "folder",
+      "ref": null,
+      "path": "skills/aaa-create-runtime-agent",
+      "commit": null,
+      "hash": "3e081e8845c24c5f"
+    },
+    "aaa-create-sbb": {
+      "version": "0.5.0",
+      "source": "folder",
+      "ref": null,
+      "path": "skills/aaa-create-sbb",
+      "commit": null,
+      "hash": "f4987734f7a2afd3"
+    },
+    "aaa-create-service": {
+      "version": "0.5.0",
+      "source": "folder",
+      "ref": null,
+      "path": "skills/aaa-create-service",
+      "commit": null,
+      "hash": "583aed499c3c0e4d"
+    },
+    "aaa-create-strategy": {
+      "version": "0.5.0",
+      "source": "folder",
+      "ref": null,
+      "path": "skills/aaa-create-strategy",
+      "commit": null,
+      "hash": "451fc7425a438692"
+    },
+    "aaa-rung": {
+      "version": "0.5.1",
+      "source": "folder",
+      "ref": null,
+      "path": "skills/aaa-rung",
+      "commit": null,
+      "hash": "5be2b43cea6e880e"
+    },
+    "cross-reference": {
+      "version": "0.3.0",
+      "source": "folder",
+      "ref": null,
+      "path": "skills/cross-reference",
+      "commit": null,
+      "hash": "56a8d37af537db16"
+    },
+    "markdown-deck": {
+      "version": "0.6.8",
+      "source": "folder",
+      "ref": null,
+      "path": "skills/markdown-deck",
+      "commit": null,
+      "hash": "d4c6ff41c900a5a0"
+    },
+    "model": {
+      "version": "0.9.0",
+      "source": "folder",
+      "ref": null,
+      "path": "skills/model",
+      "commit": null,
+      "hash": "9c6677feeb296916"
+    },
+    "pattern": {
+      "version": "0.11.0",
+      "source": "folder",
+      "ref": null,
+      "path": "skills/pattern",
+      "commit": null,
+      "hash": "9d789c56a5aca51f"
+    },
+    "use-case": {
+      "version": "0.3.0",
+      "source": "folder",
+      "ref": null,
+      "path": "skills/use-case",
+      "commit": null,
+      "hash": "b4b370c35ee318c6"
+    }
+  }
+}
