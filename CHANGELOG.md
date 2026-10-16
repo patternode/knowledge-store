@@ -2,21 +2,43 @@
 
 Notable changes are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [semantic versioning](https://semver.org/).
 
-## [Unreleased]
+From 0.2.0 on, releases are made by Release Please from the pull requests merged to `main`: a pull request's title is its line here, and the release pull request adds the next section, bumps the version and, when merged, tags `vX.Y.Z` and publishes the GitHub Release. The rules are in [CONTRIBUTING.md](CONTRIBUTING.md#releases). Do not add lines here by hand.
 
-### Documentation
+## [0.2.0] - 2026-10-16
 
-- [Security design](docs/architecture/security.md): how the design keeps people, data and spend safe, boundary by boundary (identity and sign-in, scope following the token, the page, the API, the agent's grounding and valves, untrusted documents, storage, network, roles, supply chain and deployment, logging), its known limitations and where each control lives. `SECURITY.md` and the components guide link to it.
-- [Permissions, protection and classification from the source](docs/architecture/source-controls.md): how a source's scope travels with a document's passages through every layer today, and a design for the controls a document carries of its own (classification on a declared scale, who may read it, handling caveats), captured at ingest with their origin, kept beside the passages in bronze, silver, gold, the projection, Neptune and the Knowledge Base, and enforced from the caller's entitlement at every hop, with a specification of the metadata each source item carries at ingestion: the envelope, the descriptive keys, the control record, what each adapter reads, the version rule, what bronze records and the validation; and the flow from a knowledge steward's upload with its metadata through each stage of the sweep to the enforced answer, followed with a worked document and two askers, with what each stage trusts. Linked from the security design.
-- [Substituting the branding](docs/branding.md): everything a person sees that carries a name, a mark or a colour, where each comes from, and how to replace it: `portal_title`, `portal_domain`, the `branding` input for the logo, the icon, the colour tokens and the typeface, a fork for the page's copy, the Cognito sign-in page and emails, the names in the data, and what the licence asks a fork to keep.
-- `docs/architecture/aws/structured.md` explains how to add tables to a collection whose ontology came from discovery (the attributes to add, a mapping in that ontology's terms, `ontology_dir` and the CSV upload) and the symptom when the mapping is missing.
+Cut by hand from everything merged since 0.1.2, before Release Please took over. AWS is the one supported deployment. The Azure and Google Cloud deployments built and withdrawn between 0.1.2 and 0.2.0 were never released, and the graph and document backends they brought stay, in `docs/architecture/aws/backends.md`.
 
 ### Added
 
-- `branding`: the portal under a brand of your own with no copy of the page. A logo (`branding.logo`) and an icon (`branding.icon`) are served under `brand/` and named in `config.json`; colour tokens for light and dark mode (`colors`, `colors_dark`) and a stylesheet of your own (`stylesheet`) are written to `brand.css`, which both pages now link after their styles; further files such as a font (`files`) are served under `brand/`. A missing file, a wrong image format, a file outside `brand/` or a colour value that is not one value is refused before the plan. The page uses a logo or icon path only when it is under `brand/`. Fonts and the common image formats are served with their content types.
+- The chat agent behind the portal: answers are claims with verbatim quotes, every citation is checked against the passage the caller can read, failures get one repair turn, and only checked claims are shown, with links to their passages and documents. It declines when the sources cannot answer.
+- Valves: a Bedrock Guardrail on questions and on the grounding of claims, tool and model call limits per question, the chat API's reserved concurrency, and an optional monthly budget.
+- An evaluation framework (`python -m knowledge_store.evals`) with deterministic scoring, an evaluation set for the space-missions example, and one for the Sherlock Holmes stories (`examples/evals/sherlock-holmes.yaml`, collection `holmes`): ten questions across lookup, list, multi-hop, comparison and unanswerable, including where Moriarty appears (The Final Problem, Reichenbach as a whole word) and where he was born, which the stories never say. Each answer was checked against the fetched text.
+- A minimal chat page (`chat/`), which replaces the explorer as the AWS portal, and an ontology page beside it (`chat/ontology.html`): the active ontology as a force-directed graph, with core classes, population arcs, declared relations and the relations seen in the data but not declared, and its statistics. The projection's ontology index gains `observed`, the class-to-class counts behind it.
+- The workbench beside the chat ([docs/workbench.md](docs/workbench.md)). It shows the agent's steps as they happen (the agent streams them, and the portal keeps them with the pending answer). "What would it take?" runs an analyst that reports the ontology extensions, data and missed extraction a question needs, and curators can keep its report as an ontology request, which the candidate register reads (`asked`). The ontology terms each answer asked for, read and cited are counted per collection (all time and per month), with a question overlay on the ontology page. The workbench groups steps, cost, ontology terms and this session, and each section starts collapsed.
+- A citation opens with the quoted words highlighted in the passage. A citation of a mapped table shows that row, with the cited cell highlighted.
+- Structured lookup, per collection. A collection turns it on by placing `mappings.yaml` (and, optionally, `metrics.osi.yaml`) next to its ontology. A collection without those files is unchanged. Publish checks the mapping and writes an R2RML rendition. The sweep binds each mapped CSV, TSV or JSON array as a snapshot and skips it in refine and extract, so an unmapped CSV stays prose. `describe_structured`, `lookup_rows` and `aggregate` read that snapshot, and a cell or a metric citation is checked against it. Core vocabulary 1.1.0 adds `ks:Cell` and `ks:recordedIn`. A live Context Ontology Accelerator source is not wired up.
+- On AWS, a minimal GraphRAG reference architecture: the sweep loads the gold RDF into Amazon Neptune (one named graph per document, and the ontology), and the agent's graph tools query it with fixed SPARQL built from the ontology (`knowledge_graph`, on by default).
+- A Bedrock Knowledge Base on S3 Vectors over every passage, one vector per passage, for search by meaning (`knowledge_base`, on by default).
+- Bring your own ontology: a collection's `ontology_dir` is published and activated in place of discovery, and changed by bumping its version.
+- A review pass after discovery that adds hierarchy, merges near-duplicates and fixes domains, ranges and datatypes, recorded edit by edit in the draft's report (`discovery.review`, on by default).
+- Publish refuses an `owl:versionIRI` that does not name the version, and accepts a change to the ontology's own label or comment as a patch.
+- AWS inputs for deploying into an existing estate, each optional with today's behaviour as its default: `network` (the VPC's CIDR and zones, a NAT gateway, or a VPC and subnets you bring), `portal_domain` (the portal on your own domain with an ACM certificate), `permissions_boundary` (on every IAM role) and `log_retention_days`. A `portal_cloudfront_domain` output.
 - `portal_web_acl_arn` attaches an existing web ACL, such as a CloudFront flat-rate plan's, to the portal's distribution, and `api_throttle` sets the portal API's throttle (default 20 a second, burst 50, as before). Both are off or unchanged by default.
-- An evaluation set for the Sherlock Holmes stories (`examples/evals/sherlock-holmes.yaml`, collection `holmes`): ten questions across lookup, list, multi-hop, comparison and unanswerable, including where Moriarty appears (The Final Problem, Reichenbach as a whole word) and where he was born, which the stories never say. Each answer was checked against the fetched text.
-- [Scalability](docs/architecture/aws/scalability.md): what limits each part of the stack as a collection grows, what an organisation's curated data needs, and Neptune compared with Neo4j as the graph, with the managed services' limits and sources.
+- Sign-in through a host website (`site_sign_in`): a website that signs people in frames the portal and hands each person's page a short ES256 grant for the lab, which the portal API verifies on every request (`knowledge_store.site_grant`) in place of Cognito. Roles decide who may read and who may read private sources. The portal asks the agent as a public or a private service client, and CloudFront lets the website frame the pages. Off by default.
+- Optional graph and document backends (Neo4j, PostgreSQL with Apache AGE, MongoDB) filled by a `load` stage, the `age` rendition, a MongoDB chat state, and configurable claim names.
+- An AWS installation pack (`docs/deploy/aws/`): a step-by-step guide, every parameter with a worksheet, the components and how the Terraform expresses them, and the reference architecture diagram, also as an editable draw.io file (`docs/deploy/aws/architecture.drawio`) beside the SVG and PNG, which show sign-in through a host website and the ontology page.
+
+### Changed
+
+- AWS: the agent module is the chat agent and its tools only. Memory, Code Interpreter, Browser, Evaluations, Registry, Harness, the Cedar policy engine and the agent's own client-credentials identity are removed; the interceptor still scopes every tool call to the caller. The `agent` variable is now `{ runtime, prod_version, model_id }`, and the launch stack's agent parameters are replaced by EnableKnowledgeGraph, EnableKnowledgeBase and EnableAgentRuntime.
+- The tools are split into a graph toolset and a passages toolset, one Lambda each (`TOOLSET`), with a schema each (`tools/schema-graph.json`, `tools/schema-passages.json`).
+- `examples/agent` (the task agent's client) is removed; `python -m knowledge_store.evals --api` calls the deployed chat.
+- Neptune's default instance class is `db.t3.medium` (was `db.t4g.medium`), after a deploy in us-east-1 found no `t4g.medium` capacity in four zones. An existing cluster's instance changes in place, with a restart, unless `knowledge_graph.instance_class` is set.
+- The evaluation report names its two mistake counts: "False negatives: abstained on an answerable question" and "False positives: answered an unanswerable question". The `score.py` docstring and the evaluation section of the AWS architecture define true and false positives and negatives. The keys in `results.json` (`false_abstentions`, `missed_abstentions`) are unchanged.
+- The valves include the catalog questions a mapped table answers: Juno's sample cost, the Atlas V missions, that count, their total sample cost, and the name of `atlas-v-551`. When the collection's mapping has the attribute or the metric, those questions are added to the agent's prompt and to the portal's prompt. A claim from one of them is checked against the cell or the figure. The tool-budget message and the guardrail say the same.
+- boto3 is now the `aws` extra instead of a core dependency. Install with `pip install ".[aws]"` to use S3 lakes, Bedrock or DynamoDB. The pipeline image installs it by default.
+- The README describes the core and links the AWS guide.
+- `THIRD_PARTY_NOTICES.md` lists the optional extras' dependencies and their licences.
 
 ### Fixed
 
@@ -30,65 +52,18 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 - The grounding guardrail sees a cited cell's whole row and a figure's computation, not just `column: value`.
 - The question cost keeps model calls the hooks did not report.
 - The chat page: switching collection closes the old collection's sources; a focused workbench section keeps focus while a question runs; citation links' expanded state stays in step with the source panel; highlights stay aligned after characters such as `İ`; a closed workbench stays closed; a sample link to a mapped table (`tables/<name>.csv`) opens its bound snapshot (`GET /api/table`).
-
-### Fixed
-
+- The chat page stalled after every sign-in: its own `history()` function hid `window.history`, so stripping the sign-in code from the URL threw. Renamed. The page's files are now served with `Cache-Control: no-cache`, so a browser never runs a previous release's `app.js` against a new page.
+- The passage tools could not read the collection's `ontology/active.json`, which the index loads first, so every passage search failed with an S3 403. Their role now reads the ontology layer, as the graph tools' does.
 - A mapped CSV is found when it is uploaded into the collection's landing folder, not only when its key ends with the mapping's `tables/` path. The same bytes uploaded again under the mapped path stay visible. Two files of that name are reported rather than one being chosen. A `mappings.yaml` added beside an already published ontology version is reported instead of ignored, and the sweep publishes that ontology before it parses uploads.
 - The space-missions evaluation set asks the catalog as well as the documents: Juno's sample cost, the Atlas V missions, that count, their total sample cost, and the name of `atlas-v-551`. An offline smoke test answers those from the bound tables.
+- Fixes from a full security review and scan (#76): private-only names, types and summary fields kept from public callers, the agent's own daily limit, CloudFront's origin header required by the API, internal redirects and oversized inputs refused at ingest, and narrower IAM.
 
-### Changed
+### Documentation
 
-- The evaluation report names its two mistake counts: "False negatives: abstained on an answerable question" and "False positives: answered an unanswerable question". The `score.py` docstring and the evaluation section of the AWS architecture define true and false positives and negatives. The keys in `results.json` (`false_abstentions`, `missed_abstentions`) are unchanged.
-- The valves include the catalog questions a mapped table answers: Juno's sample cost, the Atlas V missions, that count, their total sample cost, and the name of `atlas-v-551`. When the collection's mapping has the attribute or the metric, those questions are added to the agent's prompt and to the portal's prompt. A claim from one of them is checked against the cell or the figure. The tool-budget message and the guardrail say the same.
+- `docs/architecture/aws/structured.md` explains how to add tables to a collection whose ontology came from discovery (the attributes to add, a mapping in that ontology's terms, `ontology_dir` and the CSV upload) and the symptom when the mapping is missing.
+- [Scalability](docs/architecture/aws/scalability.md): what limits each part of the stack as a collection grows, what an organisation's curated data needs, and Neptune compared with Neo4j as the graph, with the managed services' limits and sources.
 
-### Removed
-
-- The Azure deployment (`deploy/azure/`) and its code: the Blob Storage lake, the `foundry` model provider, Entra ID sign-in for AGE, the Azure host, token verification (`authn.py`) and the MCP server it served (`tools/mcp.py`). The `azure` extra is gone.
-- Google Cloud: the Cloud Storage lake, the `vertex` model provider, the Spanner Graph rendition and the `gcp` extra.
-- The reference architectures for Azure and Google Cloud. AWS is the one supported deployment; the graph and document backends stay, in `docs/architectures/backends.md`.
-
-### Added since 0.1.2
-
-- The workbench groups steps, cost, ontology terms and this session. Each section starts collapsed.
-- A citation opens with the quoted words highlighted in the passage. A citation of a mapped table shows that row, with the cited cell highlighted.
-- Structured lookup, per collection. A collection turns it on by placing `mappings.yaml` (and, optionally, `metrics.osi.yaml`) next to its ontology. A collection without those files is unchanged. Publish checks the mapping and writes an R2RML rendition. The sweep binds each mapped CSV, TSV or JSON array as a snapshot and skips it in refine and extract, so an unmapped CSV stays prose. `describe_structured`, `lookup_rows` and `aggregate` read that snapshot, and a cell or a metric citation is checked against it. Core vocabulary 1.1.0 adds `ks:Cell` and `ks:recordedIn`. A live Context Ontology Accelerator source is not wired up.
-- The workbench beside the chat ([docs/workbench.md](docs/workbench.md)). It shows the agent's steps as they happen (the agent streams them, and the portal keeps them with the pending answer). "What would it take?" runs an analyst that reports the ontology extensions, data and missed extraction a question needs, and curators can keep its report as an ontology request, which the candidate register reads (`asked`). The ontology terms each answer asked for, read and cited are counted per collection (all time and per month), with a question overlay on the ontology page.
-- On AWS, a minimal GraphRAG reference architecture: the sweep loads the gold RDF into Amazon Neptune (one named graph per document, and the ontology), and the agent's graph tools query it with fixed SPARQL built from the ontology (`knowledge_graph`, on by default).
-- A Bedrock Knowledge Base on S3 Vectors over every passage, one vector per passage, for search by meaning (`knowledge_base`, on by default).
-- The agent is now a chat agent behind the portal: answers are claims with verbatim quotes, every citation is checked against the passage the caller can read, failures get one repair turn, and only checked claims are shown, with links to their passages and documents. It declines when the sources cannot answer.
-- Valves: a Bedrock Guardrail on questions and on the grounding of claims, tool and model call limits per question, the chat API's reserved concurrency, and an optional monthly budget.
-- An evaluation framework (`python -m knowledge_store.evals`) with deterministic scoring, and an evaluation set for the space-missions example.
-- A minimal chat page (`chat/`), which replaces the explorer as the AWS portal.
-- An ontology page beside the chat (`chat/ontology.html`): the active ontology as a force-directed graph, with core classes, population arcs, declared relations and the relations seen in the data but not declared, and its statistics. The projection's ontology index gains `observed`, the class-to-class counts behind it.
-
-- Bring your own ontology: a collection's `ontology_dir` is published and activated in place of discovery, and changed by bumping its version.
-- A review pass after discovery that adds hierarchy, merges near-duplicates and fixes domains, ranges and datatypes, recorded edit by edit in the draft's report (`discovery.review`, on by default).
-- Publish refuses an `owl:versionIRI` that does not name the version, and accepts a change to the ontology's own label or comment as a patch.
-- AWS inputs for deploying into an existing estate, each optional with today's behaviour as its default: `network` (the VPC's CIDR and zones, a NAT gateway, or a VPC and subnets you bring), `portal_domain` (the portal on your own domain with an ACM certificate), `permissions_boundary` (on every IAM role) and `log_retention_days`. A `portal_cloudfront_domain` output.
-- The AWS reference architecture as an editable draw.io file (`docs/deploy/aws/architecture.drawio`), beside the SVG and PNG, which now show sign-in through a host website and the ontology page.
-- Sign-in through a host website (`site_sign_in`): a website that signs people in frames the portal and hands each person's page a short ES256 grant for the lab, which the portal API verifies on every request (`knowledge_store.site_grant`) in place of Cognito. Roles decide who may read and who may read private sources. The portal asks the agent as a public or a private service client, and CloudFront lets the website frame the pages. Off by default.
-- The passage tools could not read the collection's `ontology/active.json`, which the index loads first, so every passage search failed with an S3 403. Their role now reads the ontology layer, as the graph tools' does.
-- The chat page stalled after every sign-in: its own `history()` function hid `window.history`, so stripping the sign-in code from the URL threw. Renamed. The page's files are now served with `Cache-Control: no-cache`, so a browser never runs a previous release's `app.js` against a new page.
-- Neptune's default instance class is `db.t3.medium` (was `db.t4g.medium`), after a deploy in us-east-1 found no `t4g.medium` capacity in four zones. An existing cluster's instance changes in place, with a restart, unless `knowledge_graph.instance_class` is set.
-- An AWS installation pack (`docs/deploy/aws/`): a step-by-step guide, every parameter with a worksheet, the components and how the Terraform expresses them, and the reference architecture diagram.
-
-### Added
-
-- An Azure deployment (`deploy/azure/`): Blob Storage lake, Claude in Microsoft Foundry, Entra ID sign-in, a Function App for the portal API, chat and MCP tools, and API Management in front of MCP.
-- Cloud ports: `BlobStore` and `GcsStore` lakes, the `foundry` and `vertex` model providers, a MongoDB chat state, and configurable claim names.
-- Optional graph and document backends (Neo4j, PostgreSQL with Apache AGE, MongoDB) filled by a `load` stage, and `age` and `spanner` renditions.
-- Reference architectures for Azure and Google Cloud (`docs/architectures/`).
-
-### Changed
-
-- AWS: the agent module is the chat agent and its tools only. Memory, Code Interpreter, Browser, Evaluations, Registry, Harness, the Cedar policy engine and the agent's own client-credentials identity are removed; the interceptor still scopes every tool call to the caller. The `agent` variable is now `{ runtime, prod_version, model_id }`, and the launch stack's agent parameters are replaced by EnableKnowledgeGraph, EnableKnowledgeBase and EnableAgentRuntime.
-- The tools are split into a graph toolset and a passages toolset, one Lambda each (`TOOLSET`), with a schema each (`tools/schema-graph.json`, `tools/schema-passages.json`).
-- `examples/agent` (the task agent's client) is removed; `python -m knowledge_store.evals --api` calls the deployed chat.
-
-- Azure's deployment code moved from `infra/azure/` and `functions/azure/` to `deploy/azure/`. AWS stays in `infra/`, so pinned AWS module paths do not change.
-- boto3 is now the `aws` extra instead of a core dependency. Install with `pip install ".[aws]"` to use S3 lakes, Bedrock or DynamoDB. The pipeline image installs it by default.
-- The README describes the core and links a guide per cloud.
-- `THIRD_PARTY_NOTICES.md` lists the optional extras' dependencies and their licences.
+## [0.1.2] - 2026-10-03
 
 ### Fixed
 

@@ -523,9 +523,11 @@ command prints its estimate and stops.
 `terraform apply tfplan`. Collections, profiles, valves, quotas, models and the schedule can all
 change in place.
 
-**Upgrade.** Check out the new release, read its `CHANGELOG.md` entry, then plan and apply. A
-change to the code rebuilds the images (CodeBuild starts on its own). The portal and tool Lambdas
-are updated by the apply.
+**Upgrade.** Releases are tagged `vX.Y.Z`, each with its notes on the repository's Releases page
+and its section in `CHANGELOG.md`. Move `ref` in your deployment's module source to the new tag
+(or check out the tag, if you run `infra/stack`), read the notes, then plan and apply. A change to
+the code rebuilds the images (CodeBuild starts on its own). The portal and tool Lambdas are
+updated by the apply.
 
 **Pin the agent.** Once a Runtime version is tested, set `agent = { runtime = true, prod_version = "<version>" }`.
 The portal then calls the `prod` endpoint, and new versions do not reach users until you move the pin.
