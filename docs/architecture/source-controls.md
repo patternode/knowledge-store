@@ -121,6 +121,165 @@ Facts carry no control of their own. An assertion cites passages (`ks:extractedF
 (`ks:recordedIn`), and its effective control is computed from them at the hop that serves it.
 Storing it would be a second copy that could drift.
 
+## The metadata that comes with each source item: a specification
+
+This is the contract between an adapter and ingest. An adapter yields one item per piece of
+content with the envelope below, and ingest records it in bronze beside the bytes, unchanged.
+Everything downstream reads bronze, so what an adapter does not say here is never known later.
+
+### The envelope
+
+Every item carries these, as [`adapters/base.py`](../../src/knowledge_store/adapters/base.py)
+defines them today:
+
+| Field | Required | Rule |
+|---|---|---|
+| `key` | yes | The item's stable identity within the source: an S3 key, a URL, a relative path. Never changes for the same item |
+| `version` | yes | Changes whenever the content or the controls change. Ingest skips an item whose key and version it has stored, so a version that does not change with the controls hides a permission change (below) |
+| `name` | yes | A file name, for the extension and as a fallback title |
+| `uri` | yes | Where the item can be read at the source, for the document link and `ks:source` |
+| `content_type` | no | The media type as the source states it; the extension decides the parser when it is absent |
+| `metadata` | no | The descriptive metadata and the controls, as below. An empty mapping is valid |
+
+### Descriptive metadata
+
+`metadata` is a JSON object. These keys are reserved and read; any other key is kept as given,
+shown to a curator, and never interpreted:
+
+| Key | Type | Meaning |
+|---|---|---|
+| `title` | string | The title the source gives; the parser's title wins when the document carries one |
+| `author`, `authors` | string, list of strings | Who wrote it, as the source states |
+| `created`, `modified` | ISO 8601 timestamp | When it was written and last changed at the source |
+| `language` | BCP 47 tag | Its language |
+| `folder` | string | Its folder within the source (the S3 adapter sets this today) |
+| `source_system` | string | The system it came from, such as `s3`, `sharepoint`, `confluence` |
+| `source_id` | string | The system's own id for it, when that is not the key |
+| `labels` | list of strings | Tags or labels the source attaches that are not controls |
+| `controls` | list of control records | The security requirements, below |
+
+The whole object is at most 32 KB as JSON, and a value is at most 4 KB; an item over either is
+recorded in the run's manifest as `metadata_too_large` and ingested with its controls alone.
+
+### A control record
+
+```json
+{
+  "kind": "classification",
+  "value": "confidential",
+  "origin": "system",
+  "evidence": "x-amz-meta-classification",
+  "stated_at": "2026-10-02T14:05:00Z",
+  "stated_by": "sharepoint:site-owner"
+}
+```
+
+| Field | Required | Rule |
+|---|---|---|
+| `kind` | yes | `classification`, `permission` or `handling` |
+| `value` | yes | For a classification, a level of the deployment's scale or one of its aliases, matched without case; for a permission, a principal as the source states it, which the deployment's mapping turns into a group name the token carries; for handling, one of `no-export`, `no-model`, `quote-only`, or `expires:<ISO 8601 date>` |
+| `origin` | yes | `source` (the source's configured defaults), `system` (read from the source system), `marking` (read from the document's text), `curator` |
+| `evidence` | no | What it was read from: an attribute or tag name, a property, or for a marking the passage id, which refine fills in |
+| `stated_at` | no | When the source said it, ISO 8601; absent means at fetch time |
+| `stated_by` | no | The principal at the source that set it, when the system says |
+
+A value is trimmed and at most 256 characters, and an item carries at most 64 control records.
+An adapter does not compute effective values: it reports every control it can see, and refine
+computes the effective classification, permissions and handling from all of them, most
+restrictive first, as [Where a requirement originates](#where-a-requirement-originates) says.
+
+### Where each adapter reads them
+
+| Adapter | Reads | As |
+|---|---|---|
+| `s3_landing` | the object's tags `classification`, `readers` (comma-separated) and `handling` (comma-separated); the same as user metadata (`x-amz-meta-classification`, `x-amz-meta-readers`, `x-amz-meta-handling`), which a console upload or `aws s3 cp --metadata` can set | `origin = "system"`, `evidence` the tag or header name, `stated_at` the object's last-modified time |
+| `s3_landing` | a folder's defaults in `.controls.json` beside the files (a name starting with a dot is never a document); the nearest folder up to the source's prefix applies | `origin = "system"`, `evidence` the file's key |
+| `s3_landing` | a per-file sidecar `<name>.controls.json` beside the file, for an upload tool that cannot set tags; the sidecar is not a document | `origin = "system"`, `evidence` the sidecar's key |
+| `http_urls` | nothing from the page; the source's configured defaults alone | `origin = "source"` |
+| `local_dir` | `.controls.json` folders and `<name>.controls.json` sidecars, for development and tests | as for `s3_landing` |
+| a source-system adapter (SharePoint, Confluence, Drive) | the item's sensitivity label, its permissions as principals, and its retention label, through the system's API | `origin = "system"`, `evidence` the API field, `stated_by` the label's or permission's grantor when the API gives one |
+
+A `.controls.json` file is a JSON object with a `controls` list in the form above, and may also
+carry the descriptive keys, which apply to every file in the folder that does not state its own.
+
+When an adapter can see several of these for one item, it reports all of them: the source's
+defaults, the folder's, the object's. Nothing is dropped as redundant, since the record of what
+each one said is the point, and refine applies the most restrictive.
+
+### The version rule
+
+An item's `version` is the content stamp the source gives (an etag, a modified time) joined with
+a digest of its control records, in a fixed order, so that a permission or label changed at the
+source makes the item new to ingest although its bytes are the same. The S3 adapter's version is
+therefore `<etag>+<sha256 of the sorted controls>[:16]`, and the same rule holds for any adapter
+that reads controls. Ingest sees the same digest, stores nothing new under bronze's content key,
+and rewrites `meta.json`.
+
+### What bronze records
+
+`meta.json` beside the bytes keeps the envelope and the metadata as received, with what ingest
+adds:
+
+```json
+{
+  "doc_id": "<sha256 of the bytes>",
+  "source": "policies", "adapter": "s3_landing", "scope": "private",
+  "source_key": "landing/policies/hr/leave.pdf", "source_uri": "s3://<lake>/landing/policies/hr/leave.pdf",
+  "source_version": "\"9b2f...\"+3c1d0a7e5b9f4e2a", "source_keys": ["landing/policies/hr/leave.pdf"],
+  "name": "leave.pdf", "ext": ".pdf", "content_type": "application/pdf", "bytes": 184320,
+  "metadata": {
+    "folder": "hr", "modified": "2026-09-30T09:12:00Z",
+    "controls": [
+      {"kind": "classification", "value": "internal", "origin": "source"},
+      {"kind": "classification", "value": "confidential", "origin": "system",
+       "evidence": "x-amz-meta-classification", "stated_at": "2026-09-30T09:12:00Z"},
+      {"kind": "permission", "value": "hr-staff", "origin": "system", "evidence": "readers"},
+      {"kind": "handling", "value": "no-export", "origin": "system", "evidence": "handling"}
+    ]
+  },
+  "controls_digest": "3c1d0a7e5b9f4e2a",
+  "fetched_at": "2026-10-16T02:40:11Z"
+}
+```
+
+`scope` stays, derived from the effective classification so that everything reading bronze today
+keeps working: `public` for the lowest level, `private` for any other. The effective values are
+not written here; refine computes them into the silver record, so bronze stays what the source
+said and nothing more.
+
+### Validation at ingest
+
+| Finding | What ingest does |
+|---|---|
+| A control with an unknown `kind` or `origin`, a classification value on no level or alias of the scale, a handling value outside the set, or a malformed date | The item is ingested with the control replaced by `classification = <the scale's highest level>`, `origin = "source"`, `evidence = "invalid control"`, and the run's manifest records `controls_invalid` with the original. A document is never made public by a control that could not be read |
+| A permission value the deployment's mapping does not know | Kept as given and recorded as `permission_unmapped`. It matches no caller until the mapping names it, so while it is the document's only permission nobody can read the document, and the manifest says why |
+| An `expires` date in the past | The item is ingested, recorded as `expired`, and the first sweep removes it from every layer but bronze |
+| `.controls.json` that does not parse | The folder's files are ingested as if it were absent, with `controls_file_invalid` in the manifest |
+| Metadata over the size limits | As above: `metadata_too_large`, the controls kept |
+
+The manifest row for an item (`manifests/ingest/<run>.jsonl`) carries these findings beside its
+status, so a curator can list what a sweep could not read, and the workbench can show it.
+
+### Configuration
+
+The deployment declares the scale and the mappings once, in Terraform beside the sources:
+
+```hcl
+controls = {
+  scale   = ["public", "internal", "confidential", "restricted"]
+  aliases = { "official" = "internal", "secret" = "restricted" }
+  # a source's permission values to the groups the token carries
+  groups  = { "HR Staff" = "hr-staff", "sharepoint:hr-site-members" = "hr-staff" }
+  # the clearance a token's groups or roles give
+  clearance = { "private-readers" = "internal", "executives" = "restricted" }
+}
+```
+
+Each source keeps `scope`, and may add `controls`: a list of records in the form above, with
+`origin = "source"`, as its defaults. A deployment that declares no `controls` block has the
+two-level scale and today's mapping, and every adapter's reading of tags and sidecars still
+lands in bronze, so the record is kept from the first sweep even before the scale is declared.
+
 ## How it travels
 
 | Layer | What changes |
