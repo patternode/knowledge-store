@@ -226,6 +226,22 @@ window.KS = (() => {
     return { cfg, error, signedIn: !error && !!t, claims: t ? jwtClaims(t.id_token || '') : {} };
   }
   const brandName = () => str((cfg.brand && cfg.brand.name) || 'Knowledge Store');
+  // The brand from config.json: the name into the header, and the icon and the logo when the
+  // deployment supplied them (Terraform serves both under brand/; brand.css carries its colours).
+  // Only a path under brand/ is used, so config.json cannot point the page at another origin.
+  function applyBrand() {
+    const b = cfg.brand || {};
+    const name = brandName();
+    const el = document.getElementById('brand-name');
+    if (el) el.textContent = name;
+    const asset = (v) => (/^brand\/[\w.-]+$/.test(String(v || '')) ? String(v) : '');
+    const icon = document.getElementById('favicon');
+    if (icon && asset(b.icon)) icon.setAttribute('href', asset(b.icon));
+    if (el && asset(b.logo) && !el.parentElement.querySelector('.logo')) {
+      el.before(h('img', { class: 'logo', src: asset(b.logo), alt: '', width: '28', height: '28' }));
+    }
+    return name;
+  }
 
   // What a page shows a person who is not signed in: in site mode, a way to the website (the page
   // cannot sign them in itself); otherwise the portal's own sign-in.
@@ -279,6 +295,6 @@ window.KS = (() => {
     sstore.set(USAGE_KEY(c), JSON.stringify(u));
   }
 
-  return { $, h, clear, sstore, lstore, sessionUsage, addSessionUsage, safeUrl, sleep, str, jwtClaims, auth, api, ApiError, start, brandName, signedOutNotice,
+  return { $, h, clear, sstore, lstore, sessionUsage, addSessionUsage, safeUrl, sleep, str, jwtClaims, auth, api, ApiError, start, brandName, applyBrand, signedOutNotice,
     get cfg() { return cfg; }, COLL_KEY };
 })();

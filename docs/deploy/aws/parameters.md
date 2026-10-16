@@ -43,6 +43,7 @@ Copy this table, fill in the right-hand column, and keep it with the deployment'
 | Collections: ids, names, descriptions | `collections` | |
 | Ontology per collection: curated, auto, or your own | `collections.<id>.ontology_mode`, `ontology_dir` | |
 | Portal title | `portal_title` | |
+| A logo, an icon, colours and a typeface of your own | `branding` | |
 | Questions per person per day | `daily_questions` | |
 
 ## Account, region and naming
@@ -73,7 +74,13 @@ Copy this table, fill in the right-hand column, and keep it with the deployment'
 
 | Parameter | Default | Description |
 |---|---|---|
-| `portal_title` | `Knowledge Store` | The name in the portal's header. |
+| `portal_title` | `Knowledge Store` | The name in the portal's header and the browser tab. Everything else a brand touches is in the [branding guide](../../branding.md). |
+| `branding` | none | The portal under a brand of your own, served beside the page with no copy of it. All fields optional; paths are relative to where you run Terraform. |
+| `branding.logo` | none | An image before the name in the header: svg, png, jpg, jpeg, webp or gif. |
+| `branding.icon` | none | The browser tab's icon: svg, png or ico. |
+| `branding.colors`, `branding.colors_dark` | `{}` | The page's colour tokens to override, by name without the leading `--`, for light mode and for dark; `colors` alone applies to both. |
+| `branding.stylesheet` | none | A CSS file of your own, served after the page's styles. |
+| `branding.files` | `{}` | More files to serve beside the page, by served path under `brand/`: `{ "brand/font.woff2" = "assets/font.woff2" }`. |
 | `portal_domain.name` | empty | A domain of your own for the portal. Leave empty to use CloudFront's domain only. |
 | `portal_domain.certificate_arn` | empty | An ACM certificate covering that name, in `us-east-1` (CloudFront requires it there). Set both fields or neither. |
 | `admin_private` | `true` | Put the admin user in `private-readers`, the group that may read private sources. |

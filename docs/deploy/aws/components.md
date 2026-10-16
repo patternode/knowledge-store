@@ -125,8 +125,8 @@ holds two client-credentials clients, `<name>-site-public` (scopes `agent.invoke
 |---|---|
 | **Job** | A static chat page and its API on one URL. The API checks the person's daily quota, then answers asynchronously by asking the agent as that person, with their own access token. Until the agent runs, it answers with its own tool loop. It also gives a person a short-lived link to a source document they may read. |
 | **AWS** | Three request paths:<br>• **CloudFront** serves `/*` from a private S3 bucket (`<name>-site-<account>`, through origin access control) and sends `/api/*` to API Gateway.<br>• **API Gateway** is an HTTP API with a Cognito JWT authorizer on every route, throttled to 20 requests a second, with an access log line per request in `/aws/vendedlogs/apigateway/<name>-portal`.<br>• **The Lambda** is `<name>-portal-api` (Python 3.12, a zip built by Terraform), with reserved concurrency as the concurrency valve.<br>DynamoDB `<name>-chat` (on demand, with a TTL) holds answers, their steps while they run, quotas, and the workbench's ontology use totals (which never expire). With `portal_domain`, CloudFront serves your domain with your ACM certificate. |
-| **Terraform** | [`modules/portal`](../../../infra/modules/portal/main.tf): `aws_cloudfront_distribution.this`, `aws_apigatewayv2_*`, `aws_lambda_function.api`, `aws_dynamodb_table.chat`. `aws_s3_object.config` writes the page's `config.json` (sign-in endpoints and redirect URL). |
-| **Your inputs** | `portal_title`, `portal_domain`, `daily_questions`, `valves.chat_concurrency`, `chat_model_id`, `llm_provider`, `log_retention_days` |
+| **Terraform** | [`modules/portal`](../../../infra/modules/portal/main.tf): `aws_cloudfront_distribution.this`, `aws_apigatewayv2_*`, `aws_lambda_function.api`, `aws_dynamodb_table.chat`. `aws_s3_object.config` writes the page's `config.json` (sign-in endpoints and redirect URL), and `aws_s3_object.brand_css`, `brand_asset` and `brand_file` serve the deployment's brand beside the page. |
+| **Your inputs** | `portal_title`, `branding`, `portal_domain`, `daily_questions`, `valves.chat_concurrency`, `chat_model_id`, `llm_provider`, `log_retention_days` |
 
 ### Agent: Gateway, tools, guardrail and Runtime
 
@@ -145,6 +145,9 @@ holds two client-credentials clients, `<name>-site-public` (scopes `agent.invoke
 | **Terraform** | `aws_budgets_budget.monthly` in the module's `main.tf`, created only when `budget.monthly_usd > 0`. |
 
 ## Security model
+
+The design, with its reasons and its known limitations, is
+[Security design](../../architecture/security.md). In short:
 
 - **People:** every API route needs a valid Cognito token, which API Gateway checks before the
   Lambda runs. The agent's Runtime and Gateway accept only tokens from the portal's client. The

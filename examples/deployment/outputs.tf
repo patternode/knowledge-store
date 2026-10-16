@@ -14,3 +14,4 @@ output "knowledge_base" { value = module.knowledge_store.knowledge_base }
 output "evaluate" { value = module.knowledge_store.evaluate }
 output "provided_ontologies" { value = module.knowledge_store.provided_ontologies }
 output "sign_in" { value = module.knowledge_store.sign_in }
+output "branding" { value = module.knowledge_store.branding }

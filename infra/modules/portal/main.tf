@@ -39,6 +39,23 @@ variable "brand_name" {
   type    = string
   default = "Knowledge Store"
 }
+variable "branding" {
+  description = <<-EOT
+    The deployment's own brand beside the name, uploaded with the page: a logo and an icon
+    (served under brand/ and named in config.json), colour tokens and a stylesheet (written to
+    brand.css, which both pages link after their own styles), and more files under brand/. Paths
+    are absolute, or relative to where Terraform runs. The module's variables.tf has the rules.
+  EOT
+  type = object({
+    logo        = optional(string)
+    icon        = optional(string)
+    colors      = optional(map(string), {})
+    colors_dark = optional(map(string), {})
+    stylesheet  = optional(string)
+    files       = optional(map(string), {})
+  })
+  default = {}
+}
 variable "lake_bucket" { type = string }
 variable "lake_bucket_arn" { type = string }
 variable "cognito_issuer" {
@@ -154,8 +171,21 @@ locals {
   # the URL people use: the custom domain when there is one, else CloudFront's own
   url = local.custom ? "https://${var.domain_name}/" : "https://${aws_cloudfront_distribution.this.domain_name}/"
   mime = { html = "text/html; charset=utf-8", js = "text/javascript; charset=utf-8", css = "text/css; charset=utf-8",
-  json = "application/json", svg = "image/svg+xml", png = "image/png", ico = "image/x-icon" }
-  site_files = [for f in fileset(var.portal_dir, "**") : f if !startswith(f, "config.") && !endswith(f, ".md")]
+    json = "application/json", svg = "image/svg+xml", png = "image/png", ico = "image/x-icon", jpg = "image/jpeg",
+    jpeg = "image/jpeg", webp = "image/webp", gif = "image/gif", woff = "font/woff", woff2 = "font/woff2",
+  ttf = "font/ttf", otf = "font/otf" }
+  ext = { for k, p in { logo = var.branding.logo, icon = var.branding.icon } : k => lower(element(reverse(split(".", p)), 0)) if p != null }
+  # brand.css is written from the branding input (below), so the folder's placeholder is not uploaded.
+  site_files = [for f in fileset(var.portal_dir, "**") : f if !startswith(f, "config.") && !endswith(f, ".md") && f != "brand.css"]
+  # The logo and the icon, as served: brand/logo.svg, brand/icon.png, ...
+  brand_assets = { for k, e in local.ext : k => "brand/${k}.${e}" }
+  # The page's colour tokens overridden for light and for dark mode, then the deployment's own CSS.
+  brand_css = join("\n", compact([
+    "/* Written by Terraform from the branding input. The page's own tokens are in styles.css. */",
+    length(var.branding.colors) > 0 ? ":root {\n${join("\n", [for k, v in var.branding.colors : "  --${k}: ${v};"])}\n}" : "",
+    length(var.branding.colors_dark) > 0 ? "@media (prefers-color-scheme: dark) {\n  :root {\n${join("\n", [for k, v in var.branding.colors_dark : "    --${k}: ${v};"])}\n  }\n}" : "",
+    var.branding.stylesheet != null ? file(var.branding.stylesheet) : "",
+  ]))
   # the lake layers the API serves, under each collections/<id>/ (see src/knowledge_store/layout.py)
   served_prefixes = ["gold", "portal", "ontology", "config", "silver", "bronze"]
   # Bedrock: the chat model only. A cross-region inference profile (us., eu., global. ...) needs
@@ -200,17 +230,52 @@ resource "aws_s3_object" "site" {
   cache_control = "no-cache"
 }
 
+# The brand: brand.css always (empty of rules by default), the logo and the icon when given, and
+# any further files, all served beside the page with the same cache rule as its own files.
+resource "aws_s3_object" "brand_css" {
+  bucket        = aws_s3_bucket.site.id
+  key           = "brand.css"
+  content       = local.brand_css
+  content_type  = local.mime.css
+  cache_control = "no-cache"
+}
+
+resource "aws_s3_object" "brand_asset" {
+  for_each      = local.brand_assets
+  bucket        = aws_s3_bucket.site.id
+  key           = each.value
+  source        = each.key == "logo" ? var.branding.logo : var.branding.icon
+  etag          = filemd5(each.key == "logo" ? var.branding.logo : var.branding.icon)
+  content_type  = lookup(local.mime, local.ext[each.key], "application/octet-stream")
+  cache_control = "no-cache"
+}
+
+resource "aws_s3_object" "brand_file" {
+  for_each      = var.branding.files
+  bucket        = aws_s3_bucket.site.id
+  key           = each.key
+  source        = each.value
+  etag          = filemd5(each.value)
+  content_type  = lookup(local.mime, lower(element(reverse(split(".", each.key)), 0)), "application/octet-stream")
+  cache_control = "no-cache"
+}
+
+locals {
+  # What the page reads: the name, and the logo and icon by their served paths when there are any.
+  brand = merge({ name = var.brand_name }, local.brand_assets)
+}
+
 resource "aws_s3_object" "config" {
   bucket = aws_s3_bucket.site.id
   key    = "config.json"
   content = local.site ? jsonencode({
     mode    = "site"
-    brand   = { name = var.brand_name }
+    brand   = local.brand
     apiBase = "/api"
     site    = { origin = local.site_origin, lab = var.site_sign_in.lab }
     }) : jsonencode({
     mode        = "hosted"
-    brand       = { name = var.brand_name }
+    brand       = local.brand
     apiBase     = "/api"
     redirectUri = local.url
     cognito     = { domain = var.cognito_domain_url, clientId = var.cognito_client_id }
@@ -554,4 +619,8 @@ output "cloudfront_url" { value = "https://${aws_cloudfront_distribution.this.do
 output "domain_name" { value = aws_cloudfront_distribution.this.domain_name }
 output "distribution_id" { value = aws_cloudfront_distribution.this.id }
 output "site_bucket" { value = aws_s3_bucket.site.id }
+output "branding" {
+  description = "what the branding input became: brand.css, the logo's and icon's served paths, and the further files' paths"
+  value       = { css = local.brand_css, assets = local.brand_assets, files = sort(keys(var.branding.files)) }
+}
 output "api_function" { value = aws_lambda_function.api.function_name }

@@ -86,6 +86,7 @@ button, select, textarea { font: inherit; color: inherit; }
   padding: 14px 24px; background: var(--surface); border-bottom: 1px solid var(--border);
 }
 .brand { margin: 0; font-size: 1.1rem; font-weight: 600; }
+.logo { height: 28px; width: auto; align-self: center; }
 .nav { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
 .navlink { color: var(--muted); text-decoration: none; padding: 2px 0; border-bottom: 2px solid transparent; }
 .navlink:hover { color: var(--text); }

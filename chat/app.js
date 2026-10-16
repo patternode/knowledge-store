@@ -1002,8 +1002,8 @@ function main() {
   async function boot() {
     const started = await window.KS.start();
     const { cfg, error, signedIn, claims } = started;
-    const brand = window.KS.brandName();
-    $('#brand-name').textContent = brand; document.title = brand;
+    const brand = window.KS.applyBrand();
+    document.title = brand;
     wire();
     if (cfg.mode === 'hosted') {
       if (!cfg.oidc || !cfg.oidc.clientId) return notice(h('p', { class: 'error', text: error }));

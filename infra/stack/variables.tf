@@ -142,6 +142,51 @@ variable "portal_title" {
   default     = "Knowledge Store"
   description = "the name in the portal's header"
 }
+variable "branding" {
+  description = <<-EOT
+    The portal under a brand of your own, beside portal_title (the name). Nothing here needs a
+    copy of the page: Terraform uploads what you name beside it. Every path is absolute or
+    relative to where you run Terraform. All optional:
+      logo         an image shown before the name in the header: svg, png, jpg, jpeg, webp or gif
+      icon         the browser tab's icon: svg, png or ico
+      colors       the page's colour tokens to override, by name without the leading "--", for
+                   example { action = "#0a5a3c", link = "#0a5a3c" }; the tokens are in chat/styles.css
+      colors_dark  the same for dark mode; without it, colors apply to both modes
+      stylesheet   a CSS file of your own, served after the page's styles (and after the tokens
+                   above); a typeface goes here as @font-face, with its file in files
+      files        more files to serve beside the page, by their served path under brand/:
+                   { "brand/font.woff2" = "assets/font.woff2" }
+    docs/branding.md walks through it. The rules are the module's.
+  EOT
+  type = object({
+    logo        = optional(string)
+    icon        = optional(string)
+    colors      = optional(map(string), {})
+    colors_dark = optional(map(string), {})
+    stylesheet  = optional(string)
+    files       = optional(map(string), {})
+  })
+  default = {}
+  validation {
+    condition = alltrue([for p in concat([for p in [var.branding.logo, var.branding.icon, var.branding.stylesheet] : p if p != null],
+    values(var.branding.files)) : fileexists(p)])
+    error_message = "every branding path must name a file that exists, absolute or relative to where Terraform runs."
+  }
+  validation {
+    condition = ((var.branding.logo == null || contains(["svg", "png", "jpg", "jpeg", "webp", "gif"], lower(element(reverse(split(".", var.branding.logo)), 0))))
+    && (var.branding.icon == null || contains(["svg", "png", "ico"], lower(element(reverse(split(".", var.branding.icon)), 0)))))
+    error_message = "branding.logo must be an svg, png, jpg, jpeg, webp or gif file, and branding.icon an svg, png or ico file."
+  }
+  validation {
+    condition = alltrue([for e in concat([for k, v in var.branding.colors : [k, v]], [for k, v in var.branding.colors_dark : [k, v]]) :
+    can(regex("^[a-z][a-z0-9-]*$", e[0])) && can(regex("^[^;{}\n]+$", e[1]))])
+    error_message = "branding colour keys are token names without the leading -- (action, link, bg, ...), and each value is one CSS value."
+  }
+  validation {
+    condition     = alltrue([for k in keys(var.branding.files) : can(regex("^brand/[A-Za-z0-9][A-Za-z0-9._-]*$", k))])
+    error_message = "branding.files keys are served paths directly under brand/, such as brand/font.woff2."
+  }
+}
 variable "admin_private" {
   type        = bool
   default     = true

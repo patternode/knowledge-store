@@ -58,6 +58,8 @@ module "knowledge_store" {
   # extraction_model_id = "us.anthropic.claude-sonnet-5"
   # chat_model_id       = "us.anthropic.claude-sonnet-5"
   # portal_title        = "Knowledge Store"
+  # The portal under your own brand, with no copy of the page (docs/branding.md):
+  # branding = { logo = "brand/logo.svg", icon = "brand/icon.png", colors = { action = "#0a5a3c", link = "#0a5a3c" } }
 
   # The chat agent. The first apply builds its image; once CodeBuild has pushed it, set runtime =
   # true and apply again. Until then the portal answers with its own tool loop.
