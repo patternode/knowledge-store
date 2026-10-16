@@ -1,0 +1,100 @@
+/**
+ * Knowledge Store documentation site theme.
+ *
+ * The brand is Midnight Terminal (DEC-001) set in IBM Plex (DEC-003), defined in
+ * patternode-business under marketing/brand. tokens.css beside this file is a copy of the
+ * brand's tokens.css, re-copied when the brand changes and never edited here. This file maps
+ * the brand's role tokens onto the Infima variables Docusaurus reads, so the site never names
+ * a brand colour itself.
+ */
+
+/* IBM Plex, self-hosted from the Fontsource packages (SIL Open Font Licence), under the family
+ * names the token stacks use. */
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/400-italic.css';
+@import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+@import './tokens.css';
+
+:root {
+  /* Type */
+  --ifm-font-family-base: var(--pn-font-sans);
+  --ifm-font-family-monospace: var(--pn-font-mono);
+  --ifm-heading-font-weight: 600;
+  --ifm-code-font-size: 95%;
+
+  /* Indigo is the action colour on light surfaces: the cyan seed is 2.33:1 on white. */
+  --ifm-color-primary: var(--pn-action);
+  --ifm-color-primary-dark: var(--pn-secondary-800);
+  --ifm-color-primary-darker: var(--pn-secondary-800);
+  --ifm-color-primary-darkest: var(--pn-secondary-900);
+  --ifm-color-primary-light: var(--pn-secondary-600);
+  --ifm-color-primary-lighter: var(--pn-secondary-500);
+  --ifm-color-primary-lightest: var(--pn-secondary-400);
+  --ifm-link-color: var(--pn-link);
+
+  /* Surfaces and text */
+  --ifm-background-color: var(--pn-bg);
+  --ifm-background-surface-color: var(--pn-surface);
+  --ifm-navbar-background-color: var(--pn-surface);
+  --ifm-font-color-base: var(--pn-text);
+  --ifm-color-content-secondary: var(--pn-text-muted);
+  --ifm-toc-border-color: var(--pn-border);
+  --ifm-table-border-color: var(--pn-border);
+  --ifm-hr-border-color: var(--pn-border);
+  --ifm-code-background: var(--pn-surface-raised);
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+
+  /* The footer is the navy ground with the cyan line, in both colour modes. */
+  --ifm-footer-background-color: var(--pn-brand-navy);
+  --ifm-footer-color: var(--pn-neutral-300);
+  --ifm-footer-link-color: var(--pn-neutral-100);
+  --ifm-footer-title-color: var(--pn-neutral-50);
+}
+
+[data-theme='dark'] {
+  /* Cyan is the action colour on dark surfaces. The role tokens switch with the theme
+   * attribute; only the Infima ramp around the primary has to be restated. */
+  --ifm-color-primary-dark: var(--pn-primary-500);
+  --ifm-color-primary-darker: var(--pn-primary-500);
+  --ifm-color-primary-darkest: var(--pn-primary-600);
+  --ifm-color-primary-light: var(--pn-primary-300);
+  --ifm-color-primary-lighter: var(--pn-primary-200);
+  --ifm-color-primary-lightest: var(--pn-primary-100);
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+.footer {
+  border-top: 2px solid var(--pn-brand-cyan);
+}
+
+.navbar__title {
+  font-weight: 600;
+}
+
+/* The guides are table-heavy; let tables use the full column width, and line numbers up in
+ * their columns. */
+.markdown table {
+  display: table;
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The architecture diagram is drawn for a light page, so it gets a light plate in dark mode
+ * instead of dark ink on a dark page. */
+.markdown img {
+  display: block;
+  max-width: 100%;
+  margin: 1.5rem auto;
+  background: #ffffff;
+  padding: 1rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: var(--pn-radius-md);
+}
+
+[data-theme='dark'] .markdown img {
+  background: var(--pn-neutral-50);
+  border-color: var(--ifm-color-emphasis-400);
+}

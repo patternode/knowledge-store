@@ -1,0 +1,170 @@
+/**
+ * Patternode brand tokens.
+ * Source of truth: patternode-business/marketing/brand/tokens.json. Copies elsewhere are generated.
+ * STATUS: DEC-001 colour, option B (Midnight Terminal); DEC-003 type, IBM Plex. Role names are stable.
+ * Ramps are OKLCH-generated 50-950 steps; the seed colour sits at its nearest step.
+ * Rule: never use primary (cyan) 500 or lighter for text or chart marks on a light surface (below 3:1).
+ */
+:root {
+  /* Ramps */
+  --pn-primary-50: #ecf9ff;
+  --pn-primary-100: #d5f2fe;
+  --pn-primary-200: #afe4f9;
+  --pn-primary-300: #79d0f1;
+  --pn-primary-400: #00b8e6;
+  --pn-primary-500: #0099c0;
+  --pn-primary-600: #007fa0;
+  --pn-primary-700: #006681;
+  --pn-primary-800: #004e64;
+  --pn-primary-900: #00394a;
+  --pn-primary-950: #002531;
+  --pn-secondary-50: #f4f6ff;
+  --pn-secondary-100: #e8ecff;
+  --pn-secondary-200: #d1d8ff;
+  --pn-secondary-300: #b3bdff;
+  --pn-secondary-400: #909cff;
+  --pn-secondary-500: #7077ff;
+  --pn-secondary-600: #5a56f5;
+  --pn-secondary-700: #4f46e5;
+  --pn-secondary-800: #352da5;
+  --pn-secondary-900: #261e7d;
+  --pn-secondary-950: #170e5a;
+  --pn-tertiary-50: #fff3f6;
+  --pn-tertiary-100: #ffe5ea;
+  --pn-tertiary-200: #ffcbd6;
+  --pn-tertiary-300: #ffa4b9;
+  --pn-tertiary-400: #ff6d98;
+  --pn-tertiary-500: #e8457c;
+  --pn-tertiary-600: #ca2464;
+  --pn-tertiary-700: #a80a4f;
+  --pn-tertiary-800: #84003c;
+  --pn-tertiary-900: #62002a;
+  --pn-tertiary-950: #43001a;
+  --pn-neutral-50: #f5f7fb;
+  --pn-neutral-100: #e9edf5;
+  --pn-neutral-200: #d5dbe9;
+  --pn-neutral-300: #b9c2d8;
+  --pn-neutral-400: #9ba6c0;
+  --pn-neutral-500: #7e8aa7;
+  --pn-neutral-600: #67738e;
+  --pn-neutral-700: #525c74;
+  --pn-neutral-800: #3e465a;
+  --pn-neutral-900: #2c3342;
+  --pn-neutral-950: #1b202c;
+  --pn-success-50: #eefbef;
+  --pn-success-100: #daf5de;
+  --pn-success-200: #b8eac0;
+  --pn-success-300: #89d898;
+  --pn-success-400: #55c06f;
+  --pn-success-500: #16a34a;
+  --pn-success-600: #008b3b;
+  --pn-success-700: #00702e;
+  --pn-success-800: #005622;
+  --pn-success-900: #003f17;
+  --pn-success-950: #00290c;
+  --pn-warning-50: #fff5ed;
+  --pn-warning-100: #ffe8d7;
+  --pn-warning-200: #ffd0ad;
+  --pn-warning-300: #f8b179;
+  --pn-warning-400: #e78d40;
+  --pn-warning-500: #d97706;
+  --pn-warning-600: #aa5c00;
+  --pn-warning-700: #8a4900;
+  --pn-warning-800: #6b3700;
+  --pn-warning-900: #4f2700;
+  --pn-warning-950: #351800;
+  --pn-danger-50: #fff4f2;
+  --pn-danger-100: #ffe6e3;
+  --pn-danger-200: #ffcdc6;
+  --pn-danger-300: #ffa89e;
+  --pn-danger-400: #ff7569;
+  --pn-danger-500: #f13f39;
+  --pn-danger-600: #dc2626;
+  --pn-danger-700: #af000e;
+  --pn-danger-800: #880009;
+  --pn-danger-900: #660004;
+  --pn-danger-950: #450002;
+  --pn-info-50: #f0f8ff;
+  --pn-info-100: #ddf0ff;
+  --pn-info-200: #b9e0ff;
+  --pn-info-300: #89cbfc;
+  --pn-info-400: #56afed;
+  --pn-info-500: #2393d7;
+  --pn-info-600: #0284c7;
+  --pn-info-700: #006296;
+  --pn-info-800: #004b74;
+  --pn-info-900: #003656;
+  --pn-info-950: #00233a;
+
+  /* Brand constants */
+  --pn-brand-navy: #1b202c;
+  --pn-brand-cyan: #00b8e6;
+  --pn-logo-line: #00b8e6;
+
+  /* Roles, light */
+  --pn-surface: #ffffff;
+  --pn-chart-down: #d4541c;
+  --pn-bg: var(--pn-neutral-50);
+  --pn-surface-raised: var(--pn-neutral-100);
+  --pn-border: var(--pn-neutral-200);
+  --pn-text: var(--pn-neutral-950);
+  --pn-text-muted: var(--pn-neutral-700);
+  --pn-action: var(--pn-secondary-700);
+  --pn-action-hover: var(--pn-secondary-800);
+  --pn-link: var(--pn-secondary-700);
+  --pn-accent: var(--pn-primary-700);
+  --pn-focus: var(--pn-primary-600);
+  --pn-chart-line: var(--pn-primary-600);
+  --pn-chart-up: var(--pn-primary-600);
+  --pn-cat-1: #00b8e6;
+  --pn-cat-2: #7077ff;
+  --pn-cat-3: #e69f00;
+  --pn-cat-4: #e8457c;
+  --pn-cat-5: #009e73;
+  --pn-cat-6: #9ba6c0;
+
+  /* Type, DEC-003: IBM Plex Sans and IBM Plex Mono (SIL Open Font Licence). Load the faces, or the stacks fall back. */
+  --pn-font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --pn-font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Consolas, monospace;
+  --pn-radius-sm: 4px;
+  --pn-radius-md: 8px;
+  --pn-radius-lg: 12px; /* the logo tile radius at 64px */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --pn-chart-down: #ff8a3d;
+    --pn-bg: var(--pn-neutral-950);
+    --pn-surface: var(--pn-neutral-900);
+    --pn-surface-raised: var(--pn-neutral-800);
+    --pn-border: var(--pn-neutral-800);
+    --pn-text: var(--pn-neutral-50);
+    --pn-text-muted: var(--pn-neutral-400);
+    --pn-action: var(--pn-primary-400);
+    --pn-action-hover: var(--pn-primary-300);
+    --pn-link: var(--pn-secondary-300);
+    --pn-accent: var(--pn-primary-300);
+    --pn-focus: var(--pn-primary-400);
+    --pn-chart-line: var(--pn-primary-400);
+    --pn-chart-up: var(--pn-primary-400);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --pn-chart-down: #ff8a3d;
+  --pn-bg: var(--pn-neutral-950);
+  --pn-surface: var(--pn-neutral-900);
+  --pn-surface-raised: var(--pn-neutral-800);
+  --pn-border: var(--pn-neutral-800);
+  --pn-text: var(--pn-neutral-50);
+  --pn-text-muted: var(--pn-neutral-400);
+  --pn-action: var(--pn-primary-400);
+  --pn-action-hover: var(--pn-primary-300);
+  --pn-link: var(--pn-secondary-300);
+  --pn-accent: var(--pn-primary-300);
+  --pn-focus: var(--pn-primary-400);
+  --pn-chart-line: var(--pn-primary-400);
+  --pn-chart-up: var(--pn-primary-400);
+}
