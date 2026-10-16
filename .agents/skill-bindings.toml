@@ -1,0 +1,55 @@
+bindingsVersion = "1.0"
+
+# Where this repository keeps its architecture, for the skills declared in skills.json.
+# Every relative path resolves against this file's directory. The architecture lives under
+# docs/architecture (style B on the architecture continuum's landscape: the architecture of a
+# standalone component, in the component's own repository), in three folders that follow the
+# continuum's spaces, problem, solution and runtime, plus decisions. docs/architecture/README.md
+# is the map.
+
+[suite.aaa-create-strategy]
+outcomeDir = "../docs/architecture/problem/outcomes"
+useCaseDir = "../docs/architecture/problem/use-cases"
+
+[suite.aaa-create-platform]
+platformDir = "../docs/architecture"
+
+[suite.aaa-create-capability]
+capabilityDir = "../docs/architecture/problem/capabilities"
+platformDir   = "../docs/architecture"
+
+[suite.aaa-create-context]
+contextDir  = "../docs/architecture/solution/contexts"
+platformDir = "../docs/architecture"
+
+[suite.aaa-create-abb]
+abbDir = "../docs/architecture/solution/abbs"
+
+[suite.aaa-create-sbb]
+sbbDir = "../docs/architecture/solution/sbbs"
+
+[suite.aaa-create-service]
+serviceDir = "../docs/architecture/runtime/services"
+
+[suite.aaa-rung]
+capabilityDir    = "../docs/architecture/problem/capabilities"
+abbDir           = "../docs/architecture/solution/abbs"
+sbbDir           = "../docs/architecture/solution/sbbs"
+decisionDir      = "../docs/architecture/decisions"
+considerationDir = "../docs/architecture/decisions"
+patternDir       = "../docs/architecture/solution/patterns"
+
+[suite.pattern]
+# Patterns at any scope. PAT-NNN is the logical series; REF-NNN is kept for the physical
+# reference architecture this repository is, as patternode-architecture does.
+outputDir = "../docs/architecture/solution/patterns"
+idSeries  = "PAT"
+
+[suite.use-case]
+outputDir = "../docs/architecture/problem/use-cases"
+idSeries  = "UC"
+
+[suite.cross-reference]
+# This catalogue's short code is ks; other catalogues cite its identifiers as ks:SV-001.
+namespaces = "../docs/architecture/registers/identifier-namespaces.csv"
+schemes    = "../docs/architecture/registers/identifier-schemes.csv"
