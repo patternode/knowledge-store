@@ -8,7 +8,7 @@
       "include-v-in-tag": true,
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": false,
-      "extra-files": ["src/knowledge_store/__init__.py"],
+      "extra-files": ["src/knowledge_store/__init__.py", "infra/launch/knowledge-store.yaml"],
       "changelog-sections": [
         { "type": "feat", "section": "Added" },
         { "type": "fix", "section": "Fixed" },
