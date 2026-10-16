@@ -6,6 +6,8 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 ### Documentation
 
+- [Security design](docs/architecture/security.md): how the design keeps people, data and spend safe, boundary by boundary (identity and sign-in, scope following the token, the page, the API, the agent's grounding and valves, untrusted documents, storage, network, roles, supply chain and deployment, logging), its known limitations and where each control lives. `SECURITY.md` and the components guide link to it.
+- [Substituting the branding](docs/branding.md): everything a person sees that carries a name, a mark or a colour, where each comes from, and how to replace it: `portal_title`, `portal_domain`, a fork of `chat/` for the icon, a logo, the colour tokens, the typeface and the copy, the Cognito sign-in page and emails, the names in the data, and what the licence asks a fork to keep.
 - `docs/architecture/aws/structured.md` explains how to add tables to a collection whose ontology came from discovery (the attributes to add, a mapping in that ontology's terms, `ontology_dir` and the CSV upload) and the symptom when the mapping is missing.
 
 ### Added

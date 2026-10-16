@@ -147,7 +147,9 @@ The deployment code is in [`infra/`](infra): the module
 repository of your own ([`examples/deployment`](examples/deployment)). Read
 [QUICKSTART.md](QUICKSTART.md) to try it, and [docs/deploy/aws](docs/deploy/aws/README.md) to
 install it in your own AWS estate. The pipeline image is built inside your account from this
-repository's source.
+repository's source. How the design keeps people, data and spend safe is
+[docs/architecture/security.md](docs/architecture/security.md), and how to deploy it under your
+own name, mark and colours is [docs/branding.md](docs/branding.md).
 
 ## Install
 

@@ -146,6 +146,9 @@ holds two client-credentials clients, `<name>-site-public` (scopes `agent.invoke
 
 ## Security model
 
+The design, with its reasons and its known limitations, is
+[Security design](../../architecture/security.md). In short:
+
 - **People:** every API route needs a valid Cognito token, which API Gateway checks before the
   Lambda runs. The agent's Runtime and Gateway accept only tokens from the portal's client. The
   agent presents the person's own token to the Gateway, so it can never read more than the person

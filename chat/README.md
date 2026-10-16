@@ -46,6 +46,8 @@ ontology page's one library, D3, is served from this folder (`vendor/`).
   `GET /api/usage` or this session's totals; curators also get a Requests tab.
 - `vendor/d3.min.js`: D3 7.9.0, unmodified (see `vendor/README.md`).
 - `styles.css`: colour tokens on `:root`, light and dark themes from `prefers-color-scheme`.
+  Which tokens, files and inputs to change for a brand of your own is
+  [docs/branding.md](../docs/branding.md).
 - `config.json`: not in this folder. Terraform generates it when it uploads the folder.
 
 ## Configuration

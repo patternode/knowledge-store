@@ -73,7 +73,7 @@ Copy this table, fill in the right-hand column, and keep it with the deployment'
 
 | Parameter | Default | Description |
 |---|---|---|
-| `portal_title` | `Knowledge Store` | The name in the portal's header. |
+| `portal_title` | `Knowledge Store` | The name in the portal's header and the browser tab. Everything else a brand touches is in the [branding guide](../../branding.md). |
 | `portal_domain.name` | empty | A domain of your own for the portal. Leave empty to use CloudFront's domain only. |
 | `portal_domain.certificate_arn` | empty | An ACM certificate covering that name, in `us-east-1` (CloudFront requires it there). Set both fields or neither. |
 | `admin_private` | `true` | Put the admin user in `private-readers`, the group that may read private sources. |
