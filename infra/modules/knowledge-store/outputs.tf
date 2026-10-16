@@ -3,6 +3,10 @@ output "portal_cloudfront_domain" {
   value       = module.portal.domain_name
   description = "with portal_domain set: point a CNAME (or a Route 53 alias) for that name at this"
 }
+output "branding" {
+  description = "what the branding input became: brand.css, the logo's and icon's served paths, and the further files' paths"
+  value       = module.portal.branding
+}
 output "lake_bucket" { value = module.lake.bucket }
 output "upload_to" {
   value       = { for id, c in local.collections : id => "s3://${module.lake.bucket}/landing/${id}/" }

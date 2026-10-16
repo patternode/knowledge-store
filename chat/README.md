@@ -46,7 +46,11 @@ ontology page's one library, D3, is served from this folder (`vendor/`).
   `GET /api/usage` or this session's totals; curators also get a Requests tab.
 - `vendor/d3.min.js`: D3 7.9.0, unmodified (see `vendor/README.md`).
 - `styles.css`: colour tokens on `:root`, light and dark themes from `prefers-color-scheme`.
-  Which tokens, files and inputs to change for a brand of your own is
+- `brand.css`: the deployment's brand, linked by both pages after their own styles. On AWS,
+  Terraform writes it from the `branding` input (colour tokens for light and dark mode, then a
+  stylesheet of the deployment's own) and does not upload this folder's placeholder; locally, put
+  the same rules in the placeholder to try them. The logo and the icon the input names are served
+  under `brand/` and named in `config.json`. Which tokens and inputs to set is
   [docs/branding.md](../docs/branding.md).
 - `config.json`: not in this folder. Terraform generates it when it uploads the folder.
 
@@ -59,14 +63,15 @@ portal's:
 ```json
 {
   "mode": "hosted",
-  "brand": { "name": "Knowledge Store" },
+  "brand": { "name": "Knowledge Store", "logo": "brand/logo.svg", "icon": "brand/icon.png" },
   "apiBase": "/api",
   "redirectUri": "https://<distribution>/",
   "cognito": { "domain": "https://<prefix>.auth.<region>.amazoncognito.com", "clientId": "<app client id>", "scope": "openid email" }
 }
 ```
 
-`cognito.scope` is optional and defaults to `openid email`. In hosted mode the page signs in with
+`brand.logo` and `brand.icon` are present only when the deployment set them; the page uses a
+path only when it is under `brand/`. `cognito.scope` is optional and defaults to `openid email`. In hosted mode the page signs in with
 Cognito's hosted UI (authorization code with PKCE) and sends the Cognito access token as
 `Authorization: Bearer <token>` on every `/api` call, refreshing it shortly before it expires.
 

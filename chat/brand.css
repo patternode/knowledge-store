@@ -1,0 +1,3 @@
+/* The deployment's brand. On AWS, Terraform writes this file from the branding input (colour
+   tokens for light and dark mode, then a stylesheet of the deployment's own) and this placeholder
+   is not uploaded. Locally, put the same rules here to try them; docs/branding.md lists the tokens. */

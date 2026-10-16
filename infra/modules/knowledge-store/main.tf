@@ -194,13 +194,21 @@ module "portal" {
   daily_questions              = var.daily_questions
   reserved_concurrency         = var.valves.chat_concurrency
   brand_name                   = var.portal_title
-  agent_runtime_arn            = module.agent.runtime_arn
-  agent_runtime_qualifier      = module.agent.runtime_qualifier
-  domain_name                  = var.portal_domain.name
-  certificate_arn              = var.portal_domain.certificate_arn
-  site_sign_in                 = var.site_sign_in
-  api_throttle                 = var.api_throttle
-  web_acl_arn                  = var.portal_web_acl_arn
+  branding = { # paths made absolute here, since the portal module resolves them from where it runs
+    logo        = var.branding.logo == null ? null : abspath(var.branding.logo)
+    icon        = var.branding.icon == null ? null : abspath(var.branding.icon)
+    colors      = var.branding.colors
+    colors_dark = var.branding.colors_dark
+    stylesheet  = var.branding.stylesheet == null ? null : abspath(var.branding.stylesheet)
+    files       = { for k, p in var.branding.files : k => abspath(p) }
+  }
+  agent_runtime_arn       = module.agent.runtime_arn
+  agent_runtime_qualifier = module.agent.runtime_qualifier
+  domain_name             = var.portal_domain.name
+  certificate_arn         = var.portal_domain.certificate_arn
+  site_sign_in            = var.site_sign_in
+  api_throttle            = var.api_throttle
+  web_acl_arn             = var.portal_web_acl_arn
   service_clients = local.site ? {
     token_endpoint = module.identity.token_endpoint
     public         = { id = module.identity.machine_client_ids["site-public"], secret = module.identity.machine_client_secrets["site-public"] }

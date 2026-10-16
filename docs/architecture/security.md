@@ -135,7 +135,10 @@ The page is static HTML, CSS and JavaScript with no build step and no external s
 from its own origin only, no inline code, images from its origin or data URIs, connections to its
 own origin and Cognito, no objects, no base element, and no frames. No server text reaches
 `innerHTML`: the DOM is built from nodes and `textContent`, so a document title or an answer
-cannot inject markup.
+cannot inject markup. A deployment's brand (`brand.css`, a logo and an icon under `brand/`) is
+written by Terraform into the same bucket, so it comes from the same origin; the page takes a
+logo or icon path from `config.json` only when it is under `brand/`, and a colour value that
+could close its rule is refused before the plan.
 
 CloudFront adds the managed security headers (`X-Content-Type-Options`, `Referrer-Policy`,
 `Strict-Transport-Security`, `X-Frame-Options`). With site sign-in, a policy of the stack's own

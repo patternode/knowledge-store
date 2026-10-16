@@ -643,7 +643,7 @@ function main() {
   async function boot() {
     const started = await window.KS.start();
     const { cfg, error, signedIn, claims } = started;
-    $('#brand-name').textContent = window.KS.brandName();
+    document.title = `Ontology · ${window.KS.applyBrand()}`;
     if (typeof d3 === 'undefined') return notice(h('p', { class: 'error', text: 'The graph library (vendor/d3.min.js) did not load.' }));
     wire();
     if (cfg.mode === 'hosted') {

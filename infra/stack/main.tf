@@ -20,6 +20,7 @@ module "knowledge_store" {
   extraction_model_id          = var.extraction_model_id
   chat_model_id                = var.chat_model_id
   portal_title                 = var.portal_title
+  branding                     = var.branding
   admin_private                = var.admin_private
   daily_questions              = var.daily_questions
   force_destroy_lake           = var.force_destroy_lake
