@@ -7,6 +7,7 @@ What runs where. A service is the deployable unit, the C4 container: built, vers
 | [services.csv](services.csv) | SV-001 to SV-009, each with a page under [services/](services/) naming its code, its role and its findings against the continuum |
 | [nodes.csv](nodes.csv) | DN-001 to DN-016 |
 | [stores.csv](stores.csv) | ST-001 to ST-018, with the context that owns each and the services that write and read it |
+| [deployable-units.md](deployable-units.md) | The C4 container view: every deployable unit and store with the SBB that realises it, and how the C4 levels sit on the continuum |
 
 ## Services
 
