@@ -78,7 +78,11 @@ a passage is restricted and a reviewer can check it against the source.
 | The source's configuration | `scope = "private"`; a default classification or readers for the whole source | ingest, from `config/sources.json`, as today |
 | The source system | an S3 object's tags or user metadata; a SharePoint sensitivity label and its permissions; a Confluence page restriction; a Drive file's sharing | the adapter, in `SourceItem.metadata`, under a reserved key `controls` |
 | The document's own markings | `CONFIDENTIAL` in a header or footer; a classification line in front matter; a portion marking at the start of a paragraph | refine, by a marking detector configured per deployment (patterns on a scale) |
-| A curator | an override that tightens a document, or a correction with a reason | the portal, as a request kept in the lake, like an ontology request |
+| The knowledge steward | an override that tightens a document, or a correction with a reason | the portal, as a request kept in the lake, like an ontology request |
+
+The knowledge steward is the person who looks after a collection: the curator of the other
+notes, a private reader who uploads and tags documents, publishes the ontology, and reads the
+workbench. The flow below is written from where they sit.
 
 Precedence is by restriction, not by origin: the effective control is the most restrictive of
 everything that was said. A marking can tighten what the source system said and never loosen it.
@@ -280,6 +284,144 @@ Each source keeps `scope`, and may add `controls`: a list of records in the form
 two-level scale and today's mapping, and every adapter's reading of tags and sidecars still
 lands in bronze, so the record is kept from the first sweep even before the scale is declared.
 
+## How the specification is used: from the steward to the enforced answer
+
+The specification above is the first link of one chain. Each stage reads what the stage before
+wrote and adds its own, and nothing after the adapter goes back to the source. This section
+follows the chain end to end, with the `leave.pdf` of the bronze example above, and two people
+who ask about it afterwards: one in HR, whose token carries the group `hr-staff` and a
+clearance of `confidential`, and one outside HR, with a clearance of `internal`.
+
+### Who does what
+
+| Who | Does | Through |
+|---|---|---|
+| The deployer | Declares the scale, the aliases, the group mapping and the clearances once; sets each source's defaults | Terraform (`controls`, `sources[].controls`) |
+| The knowledge steward | Puts documents in, with their controls: tags at upload, a folder's `.controls.json`, or a sidecar; reads what a sweep could not read; overrides with a reason; watches the workbench | the lake's `landing/`, the portal |
+| The source system | States labels and permissions of its own, which an adapter reads | its API or its object metadata |
+| The adapter | Turns what it sees into control records, and folds them into the version | `SourceItem.metadata.controls` |
+| Ingest | Records the item as received, and what it could not read | bronze `meta.json`, the manifest |
+| Refine | Computes the effective controls; reads markings | the silver record, the passages |
+| Extraction | Extracts facts from the text; code writes the controls beside them; the shapes refuse a graph without a classification | gold |
+| Projection and load | Carry the controls into the projection, Neptune and the Knowledge Base | the index, the named graphs, the passage metadata |
+| The interceptor | Writes the caller's entitlement into every tool call | the Gateway |
+| The tools and the portal API | Serve only what the entitlement allows | `visible(item, caller)` |
+| The grounding check | Drops any claim citing a passage the caller may not read | the agent |
+| The page | Shows the answer's classification, and refuses a link the handling forbids | the chat page |
+
+### The flow
+
+```
+ the steward                           the pipeline (a sweep)                       the lake
+ ───────────                           ──────────────────────                       ────────
+ uploads hr/leave.pdf with tags  ──▶  adapter: tags + hr/.controls.json + source   landing/
+ (classification, readers,            defaults -> control records; version =
+  handling), or a sidecar             etag + digest of the controls
+                                           │
+                                      ingest: bronze meta.json as received;         bronze/
+                                      a manifest row with any finding
+     ▲ reads the findings                  │
+     │ (controls_invalid, ...)        refine: effective classification,             silver/
+     │ overrides with a reason        permissions, handling -> the document
+     │                                record; markings -> passage controls
+     │                                     │
+     │                                extract: the model sees text only; code       gold/
+     │                                writes ks:Control beside the facts;
+     │                                the shapes refuse a graph without one
+     │                                     │
+     │                                project and load: the index, Neptune's         index, Neptune,
+     │                                named graph, the passage's KB metadata         the Knowledge Base
+     │
+ a person asks ──▶ portal API: entitlement from the verified token; quota
+                       │
+                   agent (Runtime): the same token
+                       │
+                   Gateway: the interceptor writes {clearance, groups} into the call
+                       │
+                   tools: Neptune filtered by the graph's controls; the Knowledge
+                   Base filtered by the passage's metadata; each hit checked again
+                       │
+                   grounding: every citation read back as the caller; a passage
+                   the caller may not read fails, and its claim is dropped
+                       │
+                   the answer, with the most restrictive classification it cites;
+                   a document link only where the handling allows it
+```
+
+### Step by step, with `leave.pdf`
+
+1. The deployer has declared the scale `public < internal < confidential < restricted`, mapped
+   the source system's `HR Staff` to the group `hr-staff`, and given the source `policies` a
+   default of `internal` (`scope = "private"`, and a `controls` record with `origin = "source"`).
+2. The steward uploads `hr/leave.pdf` to the source's landing folder with the tags
+   `classification = confidential`, `readers = HR Staff` and `handling = no-export`, or with
+   `hr/leave.pdf.controls.json` beside it saying the same. The upload starts a sweep.
+3. The adapter lists the item. It reads the tags (or the sidecar), the folder's `.controls.json`
+   if there is one, and the source's defaults, and yields the item with four control records in
+   `metadata.controls`, each with its origin and evidence, and a version of the object's etag
+   joined with the digest of those records.
+4. Ingest stores the bytes once under their hash and writes `meta.json` as the specification
+   shows: the records as received, `controls_digest`, and `scope = "private"` derived for
+   compatibility. Every record is valid, so the manifest row says `stored` and nothing else. Had
+   the tag said `top secret`, a level the scale does not have, the row would say
+   `controls_invalid`, and the document would be treated as `restricted` until the steward
+   corrected the tag or added the alias.
+5. Refine parses the text into passages and computes the effective controls from all four
+   records, most restrictive first: classification `confidential` (the tag over the source's
+   `internal`), permission `hr-staff` (the mapping of `HR Staff`), handling `no-export`. The
+   silver record carries them, and every passage inherits them. The marking detector finds no
+   portion marking, so no passage carries a control of its own.
+6. Extraction sends the passages to the model with the ontology, and the model knows nothing of
+   the controls. Code adds the `ks:Control` nodes, `ks:classification` and `ks:readableBy` to
+   the document's graph beside the model's facts, and the SHACL gate passes it because the
+   classification is there.
+7. Projection tags the document, its passages, its entity names and its candidate evidence with
+   the effective controls. The loader writes the graph to Neptune as it is, and writes each
+   passage to the Knowledge Base with `classification = confidential` and
+   `readable_by = ["hr-staff"]` in its metadata.
+8. The HR person asks how much leave carries over. The portal API reads their entitlement
+   (`clearance = confidential`, `groups = ["hr-staff"]`) from the token, takes a question from
+   their quota, and passes the question to the agent with the same token. The interceptor
+   writes the entitlement into every tool call. The Knowledge Base filter allows the passage,
+   the graph tools answer from the document's graph, the citation check reads the passage back
+   as the caller and passes, and the answer shows, marked `Confidential`. The sources panel lists
+   the passage; the Open document button is absent, because the handling says `no-export`.
+9. The person outside HR asks the same question. Their entitlement is `clearance = internal`
+   with no HR group. The Knowledge Base filter excludes the passage, the graph tools filter the
+   document's graph out of every name, fact and path, and nothing the model could ask for
+   returns it. Had anything slipped through, the citation check would fail the passage and drop
+   the claim. The agent answers that the sources cannot answer the question, and the workbench
+   shows the steps that found nothing, with no trace of the passage's text.
+10. The steward opens the collection's status and sees the sweep's findings: none for this
+    document. For another, `controls_invalid` names the tag that could not be read, and
+    `permission_unmapped` names a principal the deployer must add to the mapping. The steward
+    fixes the tag at the source, or asks the deployer for the mapping, and the next sweep clears
+    the finding.
+11. Later, HR decides the policy is for everyone. The steward changes the tag to
+    `classification = internal` and removes `readers`. The object's etag is unchanged but the
+    controls' digest is not, so the adapter yields a new version; ingest rewrites `meta.json`;
+    refine, projection and load take the new controls without a model call, since the bytes and
+    the facts are the same. From the next sweep, both people's questions are answered from it.
+12. If instead the steward tightens a document the source has marked too loosely, they keep an
+    override in the portal with a reason. It is stored like an ontology request, with
+    `origin = "curator"`, and refine applies it on the next sweep as one more record, most
+    restrictive first. A loosening override is applied the same way, and its reason is the
+    record of the decision.
+
+### What each stage trusts
+
+The chain holds because each stage trusts exactly one thing from the stage before:
+
+| Stage | Trusts | Never trusts |
+|---|---|---|
+| The adapter | the source system's own statements | the document's text |
+| Ingest | the adapter's records, which it validates | a record it cannot read, which becomes the highest level |
+| Refine | bronze | the model, which it has not called |
+| Extraction | the silver record's effective controls, written by code | the model's output, which is checked for grounding and never writes a control |
+| The tools | the entitlement the interceptor wrote | an entitlement in the request, which the interceptor overwrites |
+| The grounding check | the passage read back as the caller | what a tool returned |
+| The page | the answer's classification and handling, from the agent | nothing it computes itself |
+
 ## How it travels
 
 | Layer | What changes |
@@ -386,6 +528,8 @@ leaves a deployment with no controls declared behaving as it does today.
 7. Handling: `no-export` on links, `no-model` in refine, `expires` in the sweep, `quote-only` in
    the citation check.
 8. The answer's classification in the agent's result and on the page; the workbench's steps.
-9. The marking detector and portion markings.
-10. An evaluation set with controlled documents: questions that a cleared person can have
+9. The steward's view: a sweep's findings in the collection's status for private readers, and
+   overrides kept as requests, with their reasons, applied by refine.
+10. The marking detector and portion markings.
+11. An evaluation set with controlled documents: questions that a cleared person can have
     answered and an uncleared one must be refused, scored like the others.
