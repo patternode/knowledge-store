@@ -12,3 +12,6 @@ terraform.tfvars
 .build/
 examples/sherlock-holmes/stories/
 !infra/stack/.terraform.lock.hcl
+# The documentation site (Docusaurus): dependencies, cache and output.
+node_modules/
+.docusaurus/

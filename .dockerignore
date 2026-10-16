@@ -5,3 +5,7 @@ examples
 docs
 **/__pycache__
 *.egg-info
+node_modules
+.docusaurus
+build
+site

@@ -1,0 +1,57 @@
+// @ts-check
+// The sidebar lists the repository's pages in reading order: what it is, how to install it, how
+// it is built, the examples, then the project files. Ids are file paths without the extension.
+
+/** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
+const sidebars = {
+  docs: [
+    {type: 'doc', id: 'README', label: 'Overview'},
+    {type: 'doc', id: 'QUICKSTART', label: 'Quick start on AWS'},
+    {
+      type: 'category',
+      label: 'Architecture',
+      link: {type: 'doc', id: 'docs/architecture/README'},
+      items: [
+        'docs/architecture/aws/aws',
+        'docs/architecture/aws/backends',
+        'docs/architecture/aws/structured',
+        'docs/architecture/aws/scalability',
+        'docs/architecture/security',
+        'docs/architecture/source-controls',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Deploy on AWS',
+      link: {type: 'doc', id: 'docs/deploy/aws/README'},
+      items: ['docs/deploy/aws/components', 'docs/deploy/aws/parameters'],
+    },
+    {type: 'doc', id: 'docs/core-vocabulary', label: 'Core vocabulary'},
+    {type: 'doc', id: 'docs/workbench', label: 'The workbench'},
+    {type: 'doc', id: 'docs/w3id/README', label: 'Permanent identifiers'},
+    {type: 'doc', id: 'chat/README', label: 'Chat page'},
+    {type: 'doc', id: 'docs/branding', label: 'Branding'},
+    {
+      type: 'category',
+      label: 'Examples',
+      items: [
+        {type: 'doc', id: 'examples/space-missions/README', label: 'Space missions corpus'},
+        {type: 'doc', id: 'examples/deployment/README', label: 'Deployment template'},
+        {type: 'doc', id: 'examples/deployment/ontology/README', label: 'Deployment ontology'},
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Project',
+      items: [
+        {type: 'doc', id: 'CONTRIBUTING', label: 'Contributing'},
+        {type: 'doc', id: 'SECURITY', label: 'Security'},
+        {type: 'doc', id: 'CODE_OF_CONDUCT', label: 'Code of conduct'},
+        {type: 'doc', id: 'THIRD_PARTY_NOTICES', label: 'Third-party notices'},
+        {type: 'doc', id: 'CHANGELOG', label: 'Changelog'},
+      ],
+    },
+  ],
+};
+
+export default sidebars;
