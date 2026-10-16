@@ -19,6 +19,8 @@ cd infra/stack && terraform init -backend=false && terraform validate
 
 The stack itself is the module in `infra/modules/knowledge-store`; `infra/stack` and `examples/deployment` are roots that call it. When you move or rename a resource inside the module, add a `moved` block so existing deployments plan cleanly.
 
+The documentation site is built with [Docusaurus](https://docusaurus.io/) from the repository's own Markdown (`npm ci`, then `npm run build`; `npm run start` previews it). The build is strict: a broken link, anchor or image fails it, and CI builds it on every pull request. A relative link to a file that is not a page (code, Terraform, a sample document) becomes a link to that file on GitHub, so write links as they read on GitHub. Which Markdown files are pages is decided in `site/src/remark-repo-links.cjs`; a merge to `main` publishes the site.
+
 The tests run offline with a fake model (`tests/fake_llm.py`). Please add a test with every change in behaviour.
 
 ## Pull requests

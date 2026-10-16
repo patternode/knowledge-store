@@ -10,6 +10,8 @@ It runs on AWS, in one account from one Terraform stack, or on your own machine 
 folder. Model calls go to Claude through Amazon Bedrock, so no data leaves your account, or to
 the Anthropic API.
 
+The documentation site, [patternode.github.io/knowledge-store](https://patternode.github.io/knowledge-store/), is built from this repository's Markdown: this page, the guides under `docs/`, the example READMEs and the project files.
+
 ## Briefings
 
 Short films on [patternode.com/briefings](https://patternode.com/briefings/) explain Knowledge
