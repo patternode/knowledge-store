@@ -42,7 +42,7 @@ Releases are made from the pull requests merged to `main`, by [Release Please](h
 
 Before Release Please, versions were tagged by hand and `CHANGELOG.md` was written by hand. 0.2.0 was the last of those, cut from everything merged since 0.1.2. The workflow publishes a version the manifest names but no tag carries, from its `CHANGELOG.md` section, so a hand-cut version is possible but should not be needed again.
 
-Settings the maintainer keeps (nothing in the repository can set them): under Actions, "Allow GitHub Actions to create and approve pull requests" is on, or the release pull request cannot be opened; under Pull Requests, the default squash message is the pull request title; and, optionally, a fine-grained token with contents and pull requests write as the repository secret `RELEASE_PLEASE_TOKEN`, without which the release pull request has no CI run until it is closed and reopened (a pull request opened with the workflow's own token starts no other workflow).
+Settings the maintainer keeps (nothing in the repository can set them): the repository secret `RELEASE_PLEASE_TOKEN`, a fine-grained token scoped to this repository with contents and pull requests write, which the workflow uses to open the release pull request so that it gets CI runs (a pull request opened with the workflow's own token starts no other workflow, and the organisation may not allow Actions to open pull requests at all); and, under Pull Requests, the default squash message set to the pull request title. Without the secret the workflow falls back to its own token, which needs "Allow GitHub Actions to create and approve pull requests" on under Actions, and the release pull request then has no CI run until it is closed and reopened.
 
 ## Writing style
 
