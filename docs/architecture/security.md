@@ -118,6 +118,11 @@ after the Gateway has verified the token. It overwrites whatever the model or th
 that argument, and only a real boolean true: a call that arrives without the interceptor, such as
 a local run, serves public content.
 
+The scope is the one control a source states about its documents today. How it travels from
+the source to the passage and the answer, and the design for the controls a document carries of
+its own (its classification, who may read it, and how it may be handled), is
+[Permissions, protection and classification from the source](source-controls.md).
+
 Two more rules on the portal API: ontology drafts and ontology requests are for curators, which
 is to say private readers, because a draft's samples can quote private documents. A link to a
 source document or a bound table is signed only after the scope check, and lasts ten minutes.
@@ -365,6 +370,7 @@ These are the places where the design accepts a risk or leaves a decision to you
 | A second factor is optional | the portal has no set-up flow, and requiring it locks out existing users | add it per user; or sign people in through a website that requires one |
 | The `execute-api` endpoint is reachable | API Gateway's HTTP API has no private mode behind CloudFront | the origin header makes it useless; `api_throttle` still bounds it |
 | Private scope is a filter, not separate storage | one lake, one graph, one index per stack | put content that needs a hard boundary in its own stack or account |
+| A document's own classification and permissions are not captured | scope is per source, not per document | the design in [source controls](source-controls.md); until then, a source per audience |
 | Prompt injection through documents | document text must reach the models to be extracted | curated mode; grounding; weigh the corpus |
 | DNS rebinding on the URL adapter | the connection resolves the name again | list only hosts you trust |
 | The Runtime is reachable with a valid token | that is how the portal calls it | the agent's own daily count; the valves |
