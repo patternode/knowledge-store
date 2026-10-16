@@ -4,18 +4,18 @@ bindingsVersion = "1.0"
 # Every relative path resolves against this file's directory. The architecture lives under
 # docs/architecture (style B on the architecture continuum's landscape: the architecture of a
 # standalone component, in the component's own repository), in three folders that follow the
-# continuum's spaces, problem, solution and runtime, plus decisions. docs/architecture/README.md
+# continuum's spaces, demand, solution and runtime, plus decisions. docs/architecture/README.md
 # is the map.
 
 [suite.aaa-create-strategy]
-outcomeDir = "../docs/architecture/problem/outcomes"
-useCaseDir = "../docs/architecture/problem/use-cases"
+outcomeDir = "../docs/architecture/demand/outcomes"
+useCaseDir = "../docs/architecture/demand/use-cases"
 
 [suite.aaa-create-platform]
 platformDir = "../docs/architecture"
 
 [suite.aaa-create-capability]
-capabilityDir = "../docs/architecture/problem/capabilities"
+capabilityDir = "../docs/architecture/demand/capabilities"
 platformDir   = "../docs/architecture"
 
 [suite.aaa-create-context]
@@ -32,7 +32,7 @@ sbbDir = "../docs/architecture/solution/sbbs"
 serviceDir = "../docs/architecture/runtime/services"
 
 [suite.aaa-rung]
-capabilityDir    = "../docs/architecture/problem/capabilities"
+capabilityDir    = "../docs/architecture/demand/capabilities"
 abbDir           = "../docs/architecture/solution/abbs"
 sbbDir           = "../docs/architecture/solution/sbbs"
 decisionDir      = "../docs/architecture/decisions"
@@ -137,7 +137,7 @@ idSeries = "REF"
 physical = "most"
 
 [suite.use-case]
-outputDir = "../docs/architecture/problem/use-cases"
+outputDir = "../docs/architecture/demand/use-cases"
 idSeries  = "UC"
 
 [suite.cross-reference]

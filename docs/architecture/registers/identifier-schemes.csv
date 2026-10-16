@@ -1,10 +1,10 @@
 scheme,prefix,pattern,entity,home,deliverable_type,auto_link,notes
 platform,PL,PL-[0-9]{3},Platform,platform.md,,linked,One platform: this component
-outcome,OC,OC-[0-9]{3},Outcome,problem/outcomes/{id}-*/index.md,,linked,Registered in problem/outcomes.csv
-use-case,UC,UC-[0-9]{3},Use case,problem/use-cases/{id}-*/index.md,,linked,"Registered in problem/use-cases.csv. UML sense: a set of behaviours that gives an actor an observable result of value; scenarios are owned and cited as UC-001 S1"
-capability,CAP,CAP-[0-9]{3},Capability,problem/capabilities/{id}-*/index.md,,linked,Registered in problem/capabilities.csv
-product,PRD,PRD-[0-9]{3},Product,problem/product.md,,linked,One product: this component as shipped
-feature,FE,FE-[0-9]{3},Product feature,,,off,"A row of problem/features.csv, with no page of its own. Something the product does that its users value; fulfils use cases; implemented by services"
+outcome,OC,OC-[0-9]{3},Outcome,demand/outcomes/{id}-*/index.md,,linked,Registered in demand/outcomes.csv
+use-case,UC,UC-[0-9]{3},Use case,demand/use-cases/{id}-*/index.md,,linked,"Registered in demand/use-cases.csv. UML sense: a set of behaviours that gives an actor an observable result of value; scenarios are owned and cited as UC-001 S1"
+capability,CAP,CAP-[0-9]{3},Capability,demand/capabilities/{id}-*/index.md,,linked,Registered in demand/capabilities.csv
+product,PRD,PRD-[0-9]{3},Product,demand/product.md,,linked,One product: this component as shipped
+feature,FE,FE-[0-9]{3},Product feature,,,off,"A row of demand/features.csv, with no page of its own. Something the product does that its users value; fulfils use cases; implemented by services"
 bounded-context,BC,BC-[0-9]{3},Bounded context,solution/contexts/{id}-*/index.md,,linked,Registered in solution/contexts.csv
 abb,ABB,ABB-[0-9]{3},Architecture building block,solution/abbs/{id}-*/index.md,,linked,Registered in solution/abbs.csv
 sbb,SBB,SBB-[0-9]{3},Solution building block,solution/sbbs/{id}-*/index.md,,linked,Registered in solution/sbbs.csv

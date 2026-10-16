@@ -4,9 +4,9 @@ title: "The domain and its subdomains"
 
 # The domain and its subdomains
 
-The domain is knowledge from documents: taking what an organisation has written and making it answerable, with every answer traceable to what was written. The subdomains are the problem space the bounded contexts map to; a subdomain says what the problem is, a context says where the model that solves it lives.
+The domain is knowledge from documents: taking what an organisation has written and making it answerable, with every answer traceable to what was written. The subdomains are the demand space the bounded contexts map to; a subdomain says what is needed, a context says where the model that meets it lives.
 
-| Subdomain | What the problem is | Kind | Maps to |
+| Subdomain | What is needed | Kind | Maps to |
 |---|---|---|---|
 | Sources and documents | Getting content in, keeping an immutable copy, and cutting it into the units a citation points at | supporting | BC-001 Ingestion |
 | Ontology | Saying what the documents are about, in terms a person owns, versioned and grown without drift | core | BC-002 Ontology |

@@ -24,7 +24,7 @@ provenance:
 
 <!-- deck:cover subtitle="The logical pattern: ontology, extraction with provenance, the graph as record, grounded answering" footnote="Reversed from the implementation at 0.3.0. Draft." -->
 
-The logical pattern: technology-agnostic, in architecture building blocks. REF-001 is its physical form on AWS. Every use case in [../../problem/use-cases](../../../problem/use-cases/README.md) is realised by this pattern, and its scenarios walk theirs across the blocks named here; in UML terms this document is the use-case realization and the pattern it applies, in one.
+The logical pattern: technology-agnostic, in architecture building blocks. REF-001 is its physical form on AWS. Every use case in [../../demand/use-cases](../../../demand/use-cases/README.md) is realised by this pattern, and its scenarios walk theirs across the blocks named here; in UML terms this document is the use-case realization and the pattern it applies, in one.
 
 <!-- deck:slide label="Context" -->
 

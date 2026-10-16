@@ -55,7 +55,7 @@ Knowledge Store takes a corpus of documents, applies an ontology to it (one the 
 
 ## Capabilities it provides
 
-The capability model is [problem/capabilities/README.md](problem/capabilities/README.md). CAP-001 is the L1 capability, grounded knowledge from documents; CAP-002 to CAP-013 are its L2 capabilities, each provided by this platform.
+The capability model is [demand/capabilities/README.md](demand/capabilities/README.md). CAP-001 is the L1 capability, grounded knowledge from documents; CAP-002 to CAP-013 are its L2 capabilities, each provided by this platform.
 
 ## Bounded contexts it contains
 

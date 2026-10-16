@@ -10,7 +10,7 @@ The folders follow the continuum's three spaces, plus decisions. A register (CSV
 |---|---|---|
 | [platform.md](platform.md) | PL-001 Knowledge Store: what it provides, owns and contains | PL |
 | [landscape.md](landscape.md) | Where the platform sits: what it consumes, who consumes it | |
-| [problem/](problem/) | The problem space: [domains](problem/domains.md), [outcomes](problem/outcomes.csv), [use cases](problem/use-cases/README.md), [capabilities](problem/capabilities/README.md), the [product](problem/product.md) and its [features](problem/features.csv) | OC, UC, CAP, PRD, FE |
+| [demand/](demand/) | The demand space: [domains](demand/domains.md), [outcomes](demand/outcomes.csv), [use cases](demand/use-cases/README.md), [capabilities](demand/capabilities/README.md), the [product](demand/product.md) and its [features](demand/features.csv) | OC, UC, CAP, PRD, FE |
 | [solution/](solution/) | The solution space: [bounded contexts](solution/contexts/README.md), [architecture building blocks](solution/abbs/README.md), [solution building blocks](solution/sbbs/README.md), [patterns](solution/patterns/README.md) and [contracts](solution/contracts.csv) | BC, ABB, SBB, PAT, REF, CT |
 | [runtime/](runtime/README.md) | What runs where: [services](runtime/services.csv), [nodes](runtime/nodes.csv) and [stores](runtime/stores.csv) | SV, DN, ST |
 | [decisions/](decisions/README.md) | Decision records and open considerations | ADR, CN |
@@ -57,7 +57,7 @@ From the bottom: pick a service in [runtime/services.csv](runtime/services.csv),
 Each use case and pattern is also a model: the `model` skill reads its Participants, Interactions, Interfaces and Scenarios tables, emits `components.drawio` beside it, validates the diagram against the document, stamps the exported `components.svg` (the `.render.json` is its record) and, for a use case, animates `scenarios.html`. The `pattern` skill's `publish.py` runs the same steps for a folder and builds a deck under `dist/`, which is ignored. After editing a table, run from the repository root:
 
 ```bash
-python3 .agents/skills/pattern/scripts/publish.py docs/architecture/problem/use-cases --recursive --render never --no-pdf
+python3 .agents/skills/pattern/scripts/publish.py docs/architecture/demand/use-cases --recursive --render never --no-pdf
 python3 .agents/skills/pattern/scripts/publish.py docs/architecture/solution/patterns --recursive --render never --no-pdf
 ```
 
