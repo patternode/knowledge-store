@@ -51,3 +51,14 @@ From the bottom: pick a service in [runtime/services.csv](runtime/services.csv),
 - Prose: no em dashes inside sentences, no bold inside sentences, British spelling, one paragraph per line (the repository's CONTRIBUTING.md).
 - Dates are the date the page was reversed, not the date the decision was made; `provenance.review_state` is `ai-raw` until a person reviews a page.
 - Identifiers in body text are plain; the cross-reference skill turns them into links where a site renders them.
+
+## Diagrams and decks
+
+Each use case and pattern is also a model: the `model` skill reads its Participants, Interactions, Interfaces and Scenarios tables, emits `components.drawio` beside it, validates the diagram against the document, stamps the exported `components.svg` (the `.render.json` is its record) and, for a use case, animates `scenarios.html`. The `pattern` skill's `publish.py` runs the same steps for a folder and builds a deck under `dist/`, which is ignored. After editing a table, run from the repository root:
+
+```bash
+python3 .agents/skills/pattern/scripts/publish.py docs/architecture/problem/use-cases --recursive --render never --no-pdf
+python3 .agents/skills/pattern/scripts/publish.py docs/architecture/solution/patterns --recursive --render never --no-pdf
+```
+
+The skills are installed by `node <ai-assisted-work>/bin/skills.mjs sync` from `.agents/skills.json`; `markdown-deck` needs `npm install` in its folder once. The first layout of a diagram is by rank and is meant to be refined by hand in draw.io, then re-exported and stamped (`model.py stamp components.svg --diagram components.drawio --layer Structure`).
