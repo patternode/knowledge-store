@@ -12,7 +12,9 @@ name: Deploy site
 
 on:
   push:
-    branches: [main]
+    # publish is the branch the site is published from while work is staged there ahead of
+    # main; a push to either deploys. The github-pages environment must allow both branches.
+    branches: [main, publish]
   workflow_dispatch:
 
 permissions:
