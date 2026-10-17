@@ -132,3 +132,80 @@
   margin-left: auto;
   font-weight: 600;
 }
+
+/* Card grids on the building block catalogue pages (docs/architecture/solution/abbs and sbbs). */
+.ks-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0 1.5rem;
+}
+.ks-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 1.1rem 0.9rem;
+  border: 1px solid var(--pn-border);
+  border-top: 3px solid var(--pn-brand-cyan);
+  border-radius: 0.6rem;
+  background: var(--ifm-background-surface-color);
+  box-shadow: 0 1px 2px rgba(27, 32, 44, 0.06);
+}
+.ks-card h4 {
+  margin: 0.15rem 0 0.5rem;
+  font-size: 1.05rem;
+  line-height: 1.3;
+}
+.ks-card p {
+  margin: 0 0 0.6rem;
+  font-size: 0.9rem;
+}
+.ks-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+.ks-card__id {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--pn-primary-700);
+}
+.ks-card__tag {
+  display: inline-block;
+  padding: 0.05rem 0.5rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  background: var(--ifm-color-emphasis-100);
+  color: var(--ifm-color-emphasis-800);
+}
+.ks-card__facts {
+  margin: auto 0 0;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--pn-border);
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.2rem 0.6rem;
+  font-size: 0.82rem;
+}
+.ks-card__facts dt {
+  font-weight: 600;
+  color: var(--ifm-color-emphasis-700);
+}
+.ks-card__facts dd {
+  margin: 0;
+}
+.ks-card__products {
+  margin: auto 0 0;
+  padding: 0.6rem 0 0 1.1rem;
+  border-top: 1px solid var(--pn-border);
+  font-size: 0.82rem;
+}
+.ks-card__products li {
+  margin: 0.1rem 0;
+}
+[data-theme='dark'] .ks-card {
+  box-shadow: none;
+}

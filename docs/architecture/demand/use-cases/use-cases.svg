@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 866" width="1400" height="866" font-family="IBM Plex Sans, Segoe UI, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
+<title id="t">Use cases of Knowledge Store</title>
+<desc id="d">Four actors on the left, a reader, a curator, an administrator and an evaluator, each linked to the use cases they perform inside the PL-001 Knowledge Store boundary, and each use case linked on the right to the outcome it serves: OC-001 answers a reader can check, OC-002 an ontology the organisation owns, OC-003 a store the organisation runs itself.</desc>
+<rect width="1400" height="866" fill="#ffffff"/>
+<text x="30" y="36" font-size="20" font-weight="bold" fill="#1b202c" text-anchor="start">Use cases of Knowledge Store</text>
+<text x="30" y="58" font-size="12" font-weight="normal" fill="#525c74" text-anchor="start">Who gets what from the store. An actor on the left performs the use cases it is joined to; each use case serves one outcome on the right.</text>
+<rect x="390" y="96" width="530" height="730" rx="14" fill="#f5f7fb" stroke="#d5dbe9" stroke-width="1.2"/>
+<text x="655" y="122" font-size="12" font-weight="bold" fill="#525c74" text-anchor="middle">PL-001 Knowledge Store</text>
+<path d="M260,203 C330,203 300,168 420,168" fill="none" stroke="#007fa0" stroke-width="1.4" opacity="0.8"/>
+<path d="M260,203 C330,203 300,238 420,238" fill="none" stroke="#007fa0" stroke-width="1.4" opacity="0.8"/>
+<path d="M260,425 C330,425 300,320 420,320" fill="none" stroke="#007fa0" stroke-width="1.4" opacity="0.8"/>
+<path d="M260,425 C330,425 300,390 420,390" fill="none" stroke="#007fa0" stroke-width="1.4" opacity="0.8"/>
+<path d="M260,425 C330,425 300,460 420,460" fill="none" stroke="#007fa0" stroke-width="1.4" opacity="0.8"/>
+<path d="M260,425 C330,425 300,530 420,530" fill="none" stroke="#007fa0" stroke-width="1.4" opacity="0.8"/>
+<path d="M260,647 C330,647 300,612 420,612" fill="none" stroke="#007fa0" stroke-width="1.4" opacity="0.8"/>
+<path d="M260,647 C330,647 300,682 420,682" fill="none" stroke="#007fa0" stroke-width="1.4" opacity="0.8"/>
+<path d="M260,764 C330,764 300,764 420,764" fill="none" stroke="#007fa0" stroke-width="1.4" opacity="0.8"/>
+<path d="M890,168 C980,168 970,487.3333333333333 1060,487.3333333333333" fill="none" stroke="#5a56f5" stroke-width="1.4" opacity="0.6"/>
+<path d="M890,238 C980,238 970,703.3333333333333 1060,703.3333333333333" fill="none" stroke="#5a56f5" stroke-width="1.4" opacity="0.6"/>
+<path d="M890,320 C980,320 970,595.3333333333333 1060,595.3333333333333" fill="none" stroke="#5a56f5" stroke-width="1.4" opacity="0.6"/>
+<path d="M890,390 C980,390 970,595.3333333333333 1060,595.3333333333333" fill="none" stroke="#5a56f5" stroke-width="1.4" opacity="0.6"/>
+<path d="M890,460 C980,460 970,595.3333333333333 1060,595.3333333333333" fill="none" stroke="#5a56f5" stroke-width="1.4" opacity="0.6"/>
+<path d="M890,530 C980,530 970,487.3333333333333 1060,487.3333333333333" fill="none" stroke="#5a56f5" stroke-width="1.4" opacity="0.6"/>
+<path d="M890,612 C980,612 970,703.3333333333333 1060,703.3333333333333" fill="none" stroke="#5a56f5" stroke-width="1.4" opacity="0.6"/>
+<path d="M890,682 C980,682 970,703.3333333333333 1060,703.3333333333333" fill="none" stroke="#5a56f5" stroke-width="1.4" opacity="0.6"/>
+<path d="M890,764 C980,764 970,487.3333333333333 1060,487.3333333333333" fill="none" stroke="#5a56f5" stroke-width="1.4" opacity="0.6"/>
+<circle cx="92" cy="181" r="9" fill="#1b202c"/>
+<path d="M92,190 v24 M78,201 h28 M92,214 l-11,18 M92,214 l11,18" stroke="#1b202c" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+<text x="118" y="201" font-size="13" font-weight="bold" fill="#1b202c" text-anchor="start">Reader</text>
+<text x="118" y="217" font-size="10.5" font-weight="normal" fill="#7e8aa7" text-anchor="start">A signed-in person</text>
+<circle cx="92" cy="403" r="9" fill="#1b202c"/>
+<path d="M92,412 v24 M78,423 h28 M92,436 l-11,18 M92,436 l11,18" stroke="#1b202c" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+<text x="118" y="423" font-size="13" font-weight="bold" fill="#1b202c" text-anchor="start">Curator</text>
+<text x="118" y="439" font-size="10.5" font-weight="normal" fill="#7e8aa7" text-anchor="start">Owns the ontology</text>
+<circle cx="92" cy="625" r="9" fill="#1b202c"/>
+<path d="M92,634 v24 M78,645 h28 M92,658 l-11,18 M92,658 l11,18" stroke="#1b202c" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+<text x="118" y="645" font-size="13" font-weight="bold" fill="#1b202c" text-anchor="start">Administrator</text>
+<text x="118" y="661" font-size="10.5" font-weight="normal" fill="#7e8aa7" text-anchor="start">Runs the store</text>
+<circle cx="92" cy="742" r="9" fill="#1b202c"/>
+<path d="M92,751 v24 M78,762 h28 M92,775 l-11,18 M92,775 l11,18" stroke="#1b202c" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+<text x="118" y="762" font-size="13" font-weight="bold" fill="#1b202c" text-anchor="start">Evaluator</text>
+<text x="118" y="778" font-size="10.5" font-weight="normal" fill="#7e8aa7" text-anchor="start">Judges the answers</text>
+<rect x="420" y="140" width="470" height="56" rx="28" fill="#ecf9ff" stroke="#afe4f9" stroke-width="1.2"/>
+<text x="446" y="164" font-size="10.5" font-weight="bold" fill="#007fa0" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">UC-001</text>
+<text x="446" y="182" font-size="12.5" font-weight="bold" fill="#1b202c" text-anchor="start">Ask a question and get a grounded answer</text>
+<rect x="822.4" y="158" width="41.6" height="20" rx="10" fill="#afe4f9" stroke="#afe4f9" stroke-width="1"/>
+<text x="843.1999999999999" y="172" font-size="9.5" font-weight="normal" fill="#007fa0" text-anchor="middle">high</text>
+<rect x="420" y="210" width="470" height="56" rx="28" fill="#ecf9ff" stroke="#afe4f9" stroke-width="1.2"/>
+<text x="446" y="234" font-size="10.5" font-weight="bold" fill="#007fa0" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">UC-008</text>
+<text x="446" y="252" font-size="12.5" font-weight="bold" fill="#1b202c" text-anchor="start">Sign in and read within scope</text>
+<rect x="822.4" y="228" width="41.6" height="20" rx="10" fill="#afe4f9" stroke="#afe4f9" stroke-width="1"/>
+<text x="843.1999999999999" y="242" font-size="9.5" font-weight="normal" fill="#007fa0" text-anchor="middle">high</text>
+<rect x="420" y="292" width="470" height="56" rx="28" fill="#ecf9ff" stroke="#afe4f9" stroke-width="1.2"/>
+<text x="446" y="316" font-size="10.5" font-weight="bold" fill="#007fa0" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">UC-003</text>
+<text x="446" y="334" font-size="12.5" font-weight="bold" fill="#1b202c" text-anchor="start">Bring an ontology to a collection</text>
+<rect x="828.8" y="310" width="35.2" height="20" rx="10" fill="#ffffff" stroke="#afe4f9" stroke-width="1"/>
+<text x="846.4" y="324" font-size="9.5" font-weight="normal" fill="#007fa0" text-anchor="middle">low</text>
+<rect x="420" y="362" width="470" height="56" rx="28" fill="#ecf9ff" stroke="#afe4f9" stroke-width="1.2"/>
+<text x="446" y="386" font-size="10.5" font-weight="bold" fill="#007fa0" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">UC-004</text>
+<text x="446" y="404" font-size="12.5" font-weight="bold" fill="#1b202c" text-anchor="start">Discover and curate an ontology from the documents</text>
+<rect x="828.8" y="380" width="35.2" height="20" rx="10" fill="#ffffff" stroke="#afe4f9" stroke-width="1"/>
+<text x="846.4" y="394" font-size="9.5" font-weight="normal" fill="#007fa0" text-anchor="middle">low</text>
+<rect x="420" y="432" width="470" height="56" rx="28" fill="#ecf9ff" stroke="#afe4f9" stroke-width="1.2"/>
+<text x="446" y="456" font-size="10.5" font-weight="bold" fill="#007fa0" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">UC-005</text>
+<text x="446" y="474" font-size="12.5" font-weight="bold" fill="#1b202c" text-anchor="start">Grow the ontology from candidates and requests</text>
+<rect x="828.8" y="450" width="35.2" height="20" rx="10" fill="#ffffff" stroke="#afe4f9" stroke-width="1"/>
+<text x="846.4" y="464" font-size="9.5" font-weight="normal" fill="#007fa0" text-anchor="middle">low</text>
+<rect x="420" y="502" width="470" height="56" rx="28" fill="#ecf9ff" stroke="#afe4f9" stroke-width="1.2"/>
+<text x="446" y="526" font-size="10.5" font-weight="bold" fill="#007fa0" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">UC-006</text>
+<text x="446" y="544" font-size="12.5" font-weight="bold" fill="#1b202c" text-anchor="start">Map a table beside the documents</text>
+<rect x="828.8" y="520" width="35.2" height="20" rx="10" fill="#ffffff" stroke="#afe4f9" stroke-width="1"/>
+<text x="846.4" y="534" font-size="9.5" font-weight="normal" fill="#007fa0" text-anchor="middle">low</text>
+<rect x="420" y="584" width="470" height="56" rx="28" fill="#ecf9ff" stroke="#afe4f9" stroke-width="1.2"/>
+<text x="446" y="608" font-size="10.5" font-weight="bold" fill="#007fa0" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">UC-002</text>
+<text x="446" y="626" font-size="12.5" font-weight="bold" fill="#1b202c" text-anchor="start">Load documents into a collection</text>
+<rect x="809.6" y="602" width="54.400000000000006" height="20" rx="10" fill="#d5f2fe" stroke="#afe4f9" stroke-width="1"/>
+<text x="836.8000000000001" y="616" font-size="9.5" font-weight="normal" fill="#007fa0" text-anchor="middle">medium</text>
+<rect x="420" y="654" width="470" height="56" rx="28" fill="#ecf9ff" stroke="#afe4f9" stroke-width="1.2"/>
+<text x="446" y="678" font-size="10.5" font-weight="bold" fill="#007fa0" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">UC-009</text>
+<text x="446" y="696" font-size="12.5" font-weight="bold" fill="#1b202c" text-anchor="start">Deploy the store in your own account</text>
+<rect x="828.8" y="672" width="35.2" height="20" rx="10" fill="#ffffff" stroke="#afe4f9" stroke-width="1"/>
+<text x="846.4" y="686" font-size="9.5" font-weight="normal" fill="#007fa0" text-anchor="middle">low</text>
+<rect x="420" y="736" width="470" height="56" rx="28" fill="#ecf9ff" stroke="#afe4f9" stroke-width="1.2"/>
+<text x="446" y="760" font-size="10.5" font-weight="bold" fill="#007fa0" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">UC-007</text>
+<text x="446" y="778" font-size="12.5" font-weight="bold" fill="#1b202c" text-anchor="start">Evaluate the answers</text>
+<rect x="828.8" y="754" width="35.2" height="20" rx="10" fill="#ffffff" stroke="#afe4f9" stroke-width="1"/>
+<text x="846.4" y="768" font-size="9.5" font-weight="normal" fill="#007fa0" text-anchor="middle">low</text>
+<rect x="1060" y="441.3333333333333" width="300" height="92" rx="8" fill="#f4f6ff" stroke="#d1d8ff" stroke-width="1.2"/>
+<text x="1076" y="463.3333333333333" font-size="10.5" font-weight="bold" fill="#5a56f5" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">OC-001</text>
+<text x="1076" y="483.3333333333333" font-size="12.5" font-weight="bold" fill="#1b202c" text-anchor="start">Answers a reader can check</text>
+<text x="1076" y="501.3333333333333" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="start">Every shown statement passed the citation</text>
+<text x="1076" y="515.3333333333333" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="start">and grounding checks</text>
+<rect x="1060" y="549.3333333333333" width="300" height="92" rx="8" fill="#f4f6ff" stroke="#d1d8ff" stroke-width="1.2"/>
+<text x="1076" y="571.3333333333333" font-size="10.5" font-weight="bold" fill="#5a56f5" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">OC-002</text>
+<text x="1076" y="591.3333333333333" font-size="12.5" font-weight="bold" fill="#1b202c" text-anchor="start">An ontology the organisation owns</text>
+<text x="1076" y="609.3333333333333" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="start">Every version curated by a person; a change</text>
+<text x="1076" y="623.3333333333333" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="start">costs what its class allows</text>
+<rect x="1060" y="657.3333333333333" width="300" height="92" rx="8" fill="#f4f6ff" stroke="#d1d8ff" stroke-width="1.2"/>
+<text x="1076" y="679.3333333333333" font-size="10.5" font-weight="bold" fill="#5a56f5" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">OC-003</text>
+<text x="1076" y="699.3333333333333" font-size="12.5" font-weight="bold" fill="#1b202c" text-anchor="start">A store the organisation runs itself</text>
+<text x="1076" y="717.3333333333333" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="start">One account, one stack, idle cost close to</text>
+<text x="1076" y="731.3333333333333" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="start">nothing</text>
+<text x="1210" y="122" font-size="12" font-weight="bold" fill="#525c74" text-anchor="middle">Outcomes</text>
+<text x="110" y="122" font-size="12" font-weight="bold" fill="#525c74" text-anchor="middle">Actors</text>
+<text x="30" y="852" font-size="10.5" font-weight="normal" fill="#7e8aa7" text-anchor="start">Frequency tag: how often the use case runs. Every use case is realised by AP-001 and RA-001.</text>
+</svg>

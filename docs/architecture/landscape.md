@@ -6,20 +6,7 @@ title: "Landscape: where Knowledge Store sits"
 
 A platform landscape is the layers of platforms, which exist and which depends on which. Knowledge Store is one platform, so its landscape is its position: what it consumes below it, and who consumes it above.
 
-```
-  consumers     Patternode's Knowledge Store lab (patternode-platform, deployments/knowledge-store, a pinned release)
-                Any organisation's deployment from examples/deployment, pinned to a release
-                A person's own AI assistant, over MCP, where the consumer exposes the tools (pna:AP-002)
-                      │ the module (CT-010), the chat page and API (CT-001), the tools (CT-002, CT-003), the CLI (CT-014)
-                      ▼
-  this platform  PL-001 Knowledge Store: BC-001 to BC-008
-                      │
-                      ▼ what it consumes, X-as-a-Service
-  below           Amazon Bedrock: Claude models, the embedding model, Knowledge Bases, Guardrails, AgentCore Runtime and Gateway
-                  Amazon Neptune (the graph), S3 and S3 Vectors (the record and the index), DynamoDB (chat state)
-                  Cognito (sign-in), CloudFront and API Gateway (the edge), Lambda, ECS Fargate, CodeBuild and ECR (compute and builds)
-                  Or, off AWS: the Anthropic API for models, a local folder as the lake, and optionally Neo4j, Apache AGE or MongoDB
-```
+![Landscape: the consumers of Knowledge Store above it, reaching it through the module, the chat page and API, the tools over MCP and the CLI; PL-001 Knowledge Store with its eight bounded contexts in the middle; and below it the managed services it consumes, or their alternatives off AWS](./landscape.svg)
 
 | Relationship | With | Through |
 |---|---|---|
