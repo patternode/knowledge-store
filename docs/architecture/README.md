@@ -30,7 +30,7 @@ The design notes that predate the catalogue stay in place and carry the reasonin
 
 ## Checking it
 
-`npm run check:architecture` runs the `aaa-continuum` skill over this folder: every page against its schema, every identifier against [the schemes register](registers/identifier-schemes.csv) and the folder it names, every register against its pages, every relation against the page it names and its inverse, the two pattern documents against their type, and every exported diagram against its render record. The `Architecture` workflow runs it on a pull request that changes this folder, with warnings failing too; a pull request that changes anything else never runs it. The skills are optional for everyone else, and [AGENTS.md](../../AGENTS.md) says how to install them.
+`npm run check:architecture` runs the `aaa-continuum` skill over this folder: every page against its schema, every identifier against [the schemes register](registers/identifier-schemes.csv) and the folder it names, every register against its pages, every relation against the page it names and its inverse, the two pattern documents against their type, and every exported diagram against its render record. It is run by hand at checkpoints, not by CI, with warnings failing too. The skills are optional for everyone else, and [AGENTS.md](../../AGENTS.md) says how to install them.
 
 ## Reading it end to end
 
