@@ -27,7 +27,7 @@ maturity:
   assessor: "Patternode (Dermot O'Brien), reversed from the implementation"
 subdomain_kind: core
 provided_by_platform: PL-001
-realised_by_abbs: [ABB-017, ABB-007]
+realised_by_abbs: [ABB-014, ABB-018, ABB-019]
 gaps:
   - "Usage keeps term names, never questions, so a curator sees demand but not the asks behind it"
 provenance:
@@ -45,7 +45,7 @@ provenance:
 | Status | Draft, reversed from the implementation at 0.3.0 |
 | Subdomain | core |
 | Maturity | 3, target 4 |
-| Realised by | ABB-017, ABB-007 |
+| Realised by | ABB-014, ABB-018, ABB-019 |
 
 Showing how an answer was found and what it cost, which ontology terms questions ask for, read and cite, and what it would take to answer a question the store could not, kept as a request the next ontology version can take.
 

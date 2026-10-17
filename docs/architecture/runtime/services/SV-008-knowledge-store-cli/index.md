@@ -10,7 +10,7 @@ created: 2026-10-16
 last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
-realises: [SBB-013, SBB-014]
+realises: [SBB-013]
 part_of: BC-008
 composes_contexts: [BC-001, BC-002, BC-003, BC-004, BC-008]
 runtime_type: native
@@ -33,7 +33,7 @@ Every stage as a command, the ontology lifecycle (pull, diff, publish, activate,
 | Identifier | SV-008, slug `knowledge-store-cli` |
 | Kind | Service, native |
 | Context | BC-008; composes BC-001, BC-002, BC-003, BC-004, BC-008 as built |
-| Realises | SBB-013, SBB-014 |
+| Realises | SBB-013 |
 | Node | DN-004, DN-014 |
 | Code | `src/knowledge_store/cli.py (console script knowledge-store)` |
 | Talks to | The lake and the model; whatever the command needs. |

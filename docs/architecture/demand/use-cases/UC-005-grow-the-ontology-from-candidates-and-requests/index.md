@@ -21,8 +21,8 @@ success_criteria:
   - "The delta extraction touches only the selected documents"
 frequency: low
 supports_outcome: OC-002
-realised_by_abbs: [ABB-007, ABB-017, ABB-006, ABB-009]
-realised_by: [PAT-001, REF-001]
+realised_by_abbs: [ABB-024, ABB-014]
+realised_by: [AP-001, RA-001]
 fulfilled_by_features: [FE-006, FE-010]
 model:
   diagram: components.drawio
@@ -42,7 +42,7 @@ provenance:
 | Owner | Patternode (Dermot O'Brien) |
 | Outcome | OC-002 |
 | Rests on | The implementation as released; this use case is reversed from it |
-| Realised by | PAT-001 Ontology-driven GraphRAG (logical) and REF-001 Knowledge Store on AWS (physical) |
+| Realised by | AP-001 Ontology-driven GraphRAG (logical) and RA-001 Knowledge Store on AWS (physical) |
 | Fulfilled by | FE-006, FE-010 |
 | Date | 2026-10-16 |
 
@@ -98,10 +98,10 @@ What each local participant stands for in the catalogue: an actor or an external
 | Local ID | Maps To | Relationship |
 |---|---|---|
 | 01 | gap | gap |
-| 02 | ABB-007 Candidate register and revision proposal | realises |
-| 03 | ABB-017 Workbench | realises |
-| 04 | ABB-023 Deployment automation | partial |
-| 05 | ABB-006 Ontology versioning and renditions | realises |
+| 02 | ABB-002 Lake | partial |
+| 03 | ABB-014 Answering agent | partial |
+| 04 | ABB-028 Command line | realises |
+| 05 | ABB-002 Lake | partial |
 
 ## Scenarios
 

@@ -1,10 +1,10 @@
 id,name,actor,outcome,realised_by,realised_by_abbs,fulfilled_by_features,frequency,path
-UC-001,Ask a question and get a grounded answer,A reader (a signed-in person),OC-001,PAT-001 REF-001,ABB-014 ABB-015 ABB-016 ABB-017 ABB-012 ABB-013 ABB-019 ABB-018,FE-001 FE-002 FE-008 FE-009 FE-010,high,use-cases/UC-001-ask-a-question-and-get-a-grounded-answer/index.md
-UC-002,Load documents into a collection,An administrator,OC-003,PAT-001 REF-001,ABB-001 ABB-002 ABB-003 ABB-004 ABB-009,FE-022 FE-017,medium,use-cases/UC-002-load-documents-into-a-collection/index.md
-UC-003,Bring an ontology to a collection,A curator,OC-002,PAT-001 REF-001,ABB-006 ABB-008 ABB-004,FE-003 FE-005,low,use-cases/UC-003-bring-an-ontology-to-a-collection/index.md
-UC-004,Discover and curate an ontology from the documents,A curator,OC-002,PAT-001 REF-001,ABB-005 ABB-006 ABB-004,FE-004 FE-005,low,use-cases/UC-004-discover-and-curate-an-ontology-from-the-documents/index.md
-UC-005,Grow the ontology from candidates and requests,A curator,OC-002,PAT-001 REF-001,ABB-007 ABB-017 ABB-006 ABB-009,FE-006 FE-010,low,use-cases/UC-005-grow-the-ontology-from-candidates-and-requests/index.md
-UC-006,Map a table beside the documents,A curator,OC-001,PAT-001 REF-001,ABB-008 ABB-010 ABB-012 ABB-015,FE-007,low,use-cases/UC-006-map-a-table-beside-the-documents/index.md
-UC-007,Evaluate the answers,An evaluator,OC-001,PAT-001 REF-001,ABB-021 ABB-014,FE-016,low,use-cases/UC-007-evaluate-the-answers/index.md
-UC-008,Sign in and read within scope,A reader,OC-003,PAT-001 REF-001,ABB-020 ABB-019 ABB-012,FE-012 FE-013 FE-024,high,use-cases/UC-008-sign-in-and-read-within-scope/index.md
-UC-009,Deploy the store in your own account,An administrator,OC-003,PAT-001 REF-001,ABB-023 ABB-022 ABB-002,FE-017 FE-018 FE-019 FE-021,low,use-cases/UC-009-deploy-the-store-in-your-own-account/index.md
+UC-001,Ask a question and get a grounded answer,A reader (a signed-in person),OC-001,AP-001 RA-001,ABB-014 ABB-015 ABB-016 ABB-017 ABB-012 ABB-013 ABB-019 ABB-018,FE-001 FE-002 FE-008 FE-009 FE-010,high,use-cases/UC-001-ask-a-question-and-get-a-grounded-answer/index.md
+UC-002,Load documents into a collection,An administrator,OC-003,AP-001 RA-001,ABB-001 ABB-002 ABB-003 ABB-004 ABB-009,FE-022 FE-017,medium,use-cases/UC-002-load-documents-into-a-collection/index.md
+UC-003,Bring an ontology to a collection,A curator,OC-002,AP-001 RA-001,ABB-006 ABB-008 ABB-004,FE-003 FE-005,low,use-cases/UC-003-bring-an-ontology-to-a-collection/index.md
+UC-004,Discover and curate an ontology from the documents,A curator,OC-002,AP-001 RA-001,ABB-005 ABB-006 ABB-004,FE-004 FE-005,low,use-cases/UC-004-discover-and-curate-an-ontology-from-the-documents/index.md
+UC-005,Grow the ontology from candidates and requests,A curator,OC-002,AP-001 RA-001,ABB-007 ABB-017 ABB-006 ABB-009,FE-006 FE-010,low,use-cases/UC-005-grow-the-ontology-from-candidates-and-requests/index.md
+UC-006,Map a table beside the documents,A curator,OC-001,AP-001 RA-001,ABB-008 ABB-010 ABB-012 ABB-015,FE-007,low,use-cases/UC-006-map-a-table-beside-the-documents/index.md
+UC-007,Evaluate the answers,An evaluator,OC-001,AP-001 RA-001,ABB-021 ABB-014,FE-016,low,use-cases/UC-007-evaluate-the-answers/index.md
+UC-008,Sign in and read within scope,A reader,OC-003,AP-001 RA-001,ABB-020 ABB-019 ABB-012,FE-012 FE-013 FE-024,high,use-cases/UC-008-sign-in-and-read-within-scope/index.md
+UC-009,Deploy the store in your own account,An administrator,OC-003,AP-001 RA-001,ABB-023 ABB-022 ABB-002,FE-017 FE-018 FE-019 FE-021,low,use-cases/UC-009-deploy-the-store-in-your-own-account/index.md

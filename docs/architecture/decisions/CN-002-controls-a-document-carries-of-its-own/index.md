@@ -18,7 +18,7 @@ criteria:
   - "No gap in enforcement"
   - "Steward effort per source"
   - "Cost per call"
-affects: [CAP-009, ABB-020, ABB-001]
+affects: [CAP-009, ABB-027, ABB-024]
 provenance:
   origin: ai-generated
   review_state: ai-raw
@@ -36,6 +36,6 @@ How do a source document's permissions, protection and classification travel wit
 
 Criteria: No gap in enforcement; Steward effort per source; Cost per call.
 
-Status: open. Affects CAP-009, ABB-020, ABB-001.
+Status: open. Affects CAP-009, ABB-027, ABB-024.
 
 The design, its open decisions and its implementation order are in docs/architecture/source-controls.md; ADR-010 records the current choice.

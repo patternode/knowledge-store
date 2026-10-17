@@ -21,8 +21,8 @@ success_criteria:
   - "A private table is invisible to a public caller"
 frequency: low
 supports_outcome: OC-001
-realised_by_abbs: [ABB-008, ABB-010, ABB-012, ABB-015]
-realised_by: [PAT-001, REF-001]
+realised_by_abbs: [ABB-024, ABB-012, ABB-014]
+realised_by: [AP-001, RA-001]
 fulfilled_by_features: [FE-007]
 model:
   diagram: components.drawio
@@ -42,7 +42,7 @@ provenance:
 | Owner | Patternode (Dermot O'Brien) |
 | Outcome | OC-001 |
 | Rests on | The implementation as released; this use case is reversed from it |
-| Realised by | PAT-001 Ontology-driven GraphRAG (logical) and REF-001 Knowledge Store on AWS (physical) |
+| Realised by | AP-001 Ontology-driven GraphRAG (logical) and RA-001 Knowledge Store on AWS (physical) |
 | Fulfilled by | FE-007 |
 | Date | 2026-10-16 |
 
@@ -98,9 +98,9 @@ What each local participant stands for in the catalogue: an actor or an external
 | Local ID | Maps To | Relationship |
 |---|---|---|
 | 01 | gap | gap |
-| 02 | ABB-008 Table mapping definition | realises |
-| 03 | ABB-010 Table binding | realises |
-| 04 | ABB-012 Fixed query tools | partial |
+| 02 | ABB-002 Lake | partial |
+| 03 | ABB-024 Ingestion and extraction pipeline | realises |
+| 04 | ABB-012 Graph tools | partial |
 | 05 | gap | gap |
 
 ## Scenarios

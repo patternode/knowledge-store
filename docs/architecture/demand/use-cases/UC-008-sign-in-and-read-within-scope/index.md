@@ -21,7 +21,7 @@ success_criteria:
 frequency: high
 supports_outcome: OC-003
 realised_by_abbs: [ABB-020, ABB-019, ABB-012]
-realised_by: [PAT-001, REF-001]
+realised_by: [AP-001, RA-001]
 fulfilled_by_features: [FE-012, FE-013, FE-024]
 model:
   diagram: components.drawio
@@ -41,7 +41,7 @@ provenance:
 | Owner | Patternode (Dermot O'Brien) |
 | Outcome | OC-003 |
 | Rests on | The implementation as released; this use case is reversed from it |
-| Realised by | PAT-001 Ontology-driven GraphRAG (logical) and REF-001 Knowledge Store on AWS (physical) |
+| Realised by | AP-001 Ontology-driven GraphRAG (logical) and RA-001 Knowledge Store on AWS (physical) |
 | Fulfilled by | FE-012, FE-013, FE-024 |
 | Date | 2026-10-16 |
 
@@ -97,9 +97,9 @@ What each local participant stands for in the catalogue: an actor or an external
 |---|---|---|
 | 01 | gap | gap |
 | 02 | ABB-018 Chat page | realises |
-| 03 | gap | gap |
+| 03 | ABB-020 Identity | partial |
 | 04 | ABB-019 Chat API | partial |
-| 05 | ABB-020 Identity and scope | partial |
+| 05 | ABB-027 Call interceptor | partial |
 
 ## Scenarios
 

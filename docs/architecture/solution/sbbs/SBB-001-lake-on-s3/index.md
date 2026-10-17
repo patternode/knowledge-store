@@ -3,10 +3,10 @@ kind: sbb
 id: SBB-001
 title: "SBB-001 Lake on S3"
 description: "One versioned, encrypted, TLS-only S3 bucket as the record, with EventBridge notifications so uploads start the sweep."
-version: 0.1.0
+version: 0.2.0
 status: active
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-002]
@@ -33,7 +33,7 @@ provenance:
 | Realised by services | pipeline, portal-api, tools-graph, tools-passages |
 | Products | Amazon S3 |
 | Cloud | aws, managed |
-| Status | active, as deployed at 0.3.0 |
+| Status | active, as deployed at 0.3.0, recalibrated to container grain |
 
 One versioned, encrypted, TLS-only S3 bucket as the record, with EventBridge notifications so uploads start the sweep.
 
@@ -59,4 +59,11 @@ Storage and requests; cents for a small collection.
 
 ## 5  ABB traceability
 
-ABB-002. The decisions behind the choice are in [../../decisions](../../../decisions/README.md); the physical pattern that composes this block with the others is REF-001.
+ABB-002. The decisions behind the choice are in [../../decisions](../../../decisions/README.md); the reference architecture that composes this block with the others is RA-001.
+
+## 6  Revision history
+
+| Version | Date | Change |
+|---|---|---|
+| 0.1.0 | 2026-10-16 | Reversed from the implementation |
+| 0.2.0 | 2026-10-17 | Recalibrated to container grain |

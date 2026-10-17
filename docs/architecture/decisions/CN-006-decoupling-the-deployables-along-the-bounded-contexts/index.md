@@ -20,7 +20,7 @@ criteria:
   - "No change to the lake layout or the contracts"
   - "Cost in images and roles"
   - "The two import cycles cut"
-affects: [BC-001, BC-004, BC-005, BC-006, SV-001, SV-003, SV-004]
+affects: [BC-001, BC-002, BC-003, BC-004, BC-005, BC-006, ABB-024, ABB-019, SV-001, SV-003, SV-004]
 provenance:
   origin: ai-generated
   review_state: ai-raw
@@ -39,6 +39,8 @@ The pipeline image composes four contexts and the portal Lambda composes three. 
 
 Criteria: A service serves one context (the continuum's rule); No change to the lake layout or the contracts; Cost in images and roles; The two import cycles cut.
 
-Status: open. Affects BC-001, BC-004, BC-005, BC-006, SV-001, SV-003, SV-004.
+Status: open. Affects BC-001, BC-002, BC-003, BC-004, BC-005, BC-006, ABB-024, ABB-019, SV-001, SV-003, SV-004.
 
 The architecture is expressed first; the decoupling follows it rather than gates it. The seams are already visible: the lake layout and the pointers between sweep stages, and the index module between the tools and the portal. The third option is the smallest step that satisfies the rule for answering.
+
+Under the [building block calibration standard](https://github.com/dermot-obrien/architecture-continuum/blob/main/standards/building-blocks/standard-building-block-calibration.md) the pipeline is one container, ABB-024, and its stages are components: the contexts BC-002 and BC-003 have no container of their own until this consideration is resolved by the second or fourth option. The Chat API, ABB-019, carries the fallback loop and the index views for the same reason.

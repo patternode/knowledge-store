@@ -10,7 +10,7 @@ last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 part_of: PL-001
-contains: [ABB-009, ABB-010]
+contains: [ABB-024]
 realises_capabilities: [CAP-004, CAP-007]
 subdomain_kind: core
 c4_levels: [container, component]
@@ -41,7 +41,7 @@ provenance:
 | Owner team | Patternode (Dermot O'Brien) |
 | Subdomain | core |
 | Realises | CAP-004, CAP-007 |
-| Contains | ABB-009, ABB-010 |
+| Contains | ABB-024 |
 
 Extraction runs, assertions, grounding of facts, SHACL validation, table snapshots and cells: turning passages and rows into typed facts that cite where they came from, and refusing those that do not.
 
@@ -77,4 +77,4 @@ One named graph per document per version; two repairs then salvage; pySHACL with
 
 ## Building blocks
 
-ABB-009, ABB-010; each is a page under [../abbs](../../abbs/README.md).
+This context has no container of its own: ontology-guided extraction and table binding run as components of ABB-024 Ingestion and extraction pipeline, which BC-001 owns (CN-006). The first pass's ABB-009 and ABB-010 are rows in its document, retired under the [calibration standard](https://github.com/dermot-obrien/architecture-continuum/blob/main/standards/building-blocks/standard-building-block-calibration.md).

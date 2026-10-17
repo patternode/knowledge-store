@@ -1,9 +1,9 @@
 id,name,subdomain_kind,realises_capabilities,contains,owner,stores_owned,path
-BC-001,Ingestion,supporting,CAP-002,ABB-001 ABB-002 ABB-003 ABB-004,Patternode (Dermot O'Brien),ST-001 ST-002 ST-003 ST-010 ST-013,contexts/BC-001-ingestion/index.md
-BC-002,Ontology,core,CAP-003 CAP-007,ABB-005 ABB-006 ABB-007 ABB-008,Patternode (Dermot O'Brien),ST-005,contexts/BC-002-ontology/index.md
-BC-003,Extraction,core,CAP-004 CAP-007,ABB-009 ABB-010,Patternode (Dermot O'Brien),ST-004,contexts/BC-003-extraction/index.md
-BC-004,Knowledge graph,core,CAP-005 CAP-006 CAP-007,ABB-011 ABB-012 ABB-013,Patternode (Dermot O'Brien),ST-006 ST-007 ST-008 ST-009 ST-015,contexts/BC-004-knowledge-graph/index.md
-BC-005,Answering,core,CAP-008 CAP-010 CAP-012,ABB-014 ABB-015 ABB-016 ABB-017,Patternode (Dermot O'Brien),ST-011 (agent# keys),contexts/BC-005-answering/index.md
-BC-006,Portal and identity,supporting,CAP-009 CAP-010,ABB-018 ABB-019 ABB-020,Patternode (Dermot O'Brien),ST-011 ST-012 ST-014,contexts/BC-006-portal-and-identity/index.md
+BC-001,Ingestion,supporting,CAP-002,ABB-002 ABB-024,Patternode (Dermot O'Brien),ST-001 ST-002 ST-003 ST-010 ST-013,contexts/BC-001-ingestion/index.md
+BC-002,Ontology,core,CAP-003 CAP-007,ABB-024,Patternode (Dermot O'Brien),ST-005,contexts/BC-002-ontology/index.md
+BC-003,Extraction,core,CAP-004 CAP-007,ABB-024,Patternode (Dermot O'Brien),ST-004,contexts/BC-003-extraction/index.md
+BC-004,Knowledge graph,core,CAP-005 CAP-006 CAP-007,ABB-011 ABB-013 ABB-012 ABB-025 ABB-026,Patternode (Dermot O'Brien),ST-006 ST-007 ST-008 ST-009 ST-015,contexts/BC-004-knowledge-graph/index.md
+BC-005,Answering,core,CAP-008 CAP-010 CAP-012,ABB-014,Patternode (Dermot O'Brien),ST-011 (agent# keys),contexts/BC-005-answering/index.md
+BC-006,Portal and identity,supporting,CAP-009 CAP-010,ABB-018 ABB-019 ABB-020 ABB-027,Patternode (Dermot O'Brien),ST-011 ST-012 ST-014,contexts/BC-006-portal-and-identity/index.md
 BC-007,Evaluation,supporting,CAP-011,ABB-021,Patternode (Dermot O'Brien),,contexts/BC-007-evaluation/index.md
-BC-008,Platform services,generic,CAP-010 CAP-013,ABB-022 ABB-023,Patternode (Dermot O'Brien),ST-016 ST-017 ST-018,contexts/BC-008-platform-services/index.md
+BC-008,Platform services,generic,CAP-010 CAP-013,ABB-028,Patternode (Dermot O'Brien),ST-016 ST-017 ST-018,contexts/BC-008-platform-services/index.md

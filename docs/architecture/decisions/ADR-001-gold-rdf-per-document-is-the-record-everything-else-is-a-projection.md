@@ -24,7 +24,7 @@ consequences:
     - "A projection lags by one sweep"
     - "Three loaders to keep correct"
 change_type: introduce
-affects_artefacts: [BC-003, BC-004, ABB-011, ABB-002]
+affects_artefacts: [BC-003, BC-004, ABB-011, ABB-002, ABB-024]
 resolves: []
 provenance:
   origin: ai-generated
@@ -57,4 +57,4 @@ Negative: A projection lags by one sweep; Three loaders to keep correct.
 
 ## Affects
 
-BC-003, BC-004, ABB-011, ABB-002.
+BC-003, BC-004, ABB-011, ABB-002, ABB-024.

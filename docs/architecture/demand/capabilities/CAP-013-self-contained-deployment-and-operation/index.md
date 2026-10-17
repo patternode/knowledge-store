@@ -28,7 +28,7 @@ maturity:
   assessor: "Patternode (Dermot O'Brien), reversed from the implementation"
 subdomain_kind: generic
 provided_by_platform: PL-001
-realised_by_abbs: [ABB-023]
+realised_by_abbs: [ABB-028]
 gaps:
   - "The launch stack's deploy project runs as administrator, by design, and must be restricted in the account"
   - "Two log groups are outside Terraform and have no retention"
@@ -47,7 +47,7 @@ provenance:
 | Status | Draft, reversed from the implementation at 0.3.0 |
 | Subdomain | generic |
 | Maturity | 4, target 4 |
-| Realised by | ABB-023 |
+| Realised by | ABB-028, for operation; the deployment itself is the Terraform module and the launch stack (CT-010), which are provisioning rather than blocks under the [calibration standard](https://github.com/dermot-obrien/architecture-continuum/blob/main/standards/building-blocks/standard-building-block-calibration.md), on nodes DN-003 and DN-013 |
 
 Deploying the whole store into one account from one Terraform module, with the images built inside that account from the deployed source, a launch stack for those without Terraform, and the branding and network of the deploying organisation.
 

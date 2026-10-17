@@ -28,7 +28,7 @@ maturity:
   assessor: "Patternode (Dermot O'Brien), reversed from the implementation"
 subdomain_kind: supporting
 provided_by_platform: PL-001
-realised_by_abbs: [ABB-016, ABB-022]
+realised_by_abbs: [ABB-014, ABB-019]
 gaps:
   - "Guardrail and tool calls are not priced"
   - "The budget is an alert, not a stop"
@@ -47,7 +47,7 @@ provenance:
 | Status | Draft, reversed from the implementation at 0.3.0 |
 | Subdomain | supporting |
 | Maturity | 4, target 4 |
-| Realised by | ABB-016, ABB-022 |
+| Realised by | ABB-014, ABB-019 |
 
 Bounding what a question, a person, a day and a month can cost, pricing every model call, and keeping the idle cost of a deployment close to nothing.
 

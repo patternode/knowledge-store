@@ -1,6 +1,6 @@
 # Use cases
 
-What an actor gets from the store, written in the use-case skill's form: participants, interactions and scenarios in the same model form a pattern uses, so the pattern that realises each can be checked against it. Every one is realised by PAT-001 (logical) and REF-001 (physical) and fulfilled by the features in [../features.csv](../features.csv). The register is [../use-cases.csv](../use-cases.csv).
+What an actor gets from the store, written in the use-case skill's form: participants, interactions and scenarios in the same model form a pattern uses, so the pattern that realises each can be checked against it. Every one is realised by AP-001 (logical) and RA-001 (physical) and fulfilled by the features in [../features.csv](../features.csv). The register is [../use-cases.csv](../use-cases.csv).
 
 | Use case | Actor | Outcome |
 |---|---|---|

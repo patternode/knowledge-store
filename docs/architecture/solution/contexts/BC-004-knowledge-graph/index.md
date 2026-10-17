@@ -10,7 +10,7 @@ last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 part_of: PL-001
-contains: [ABB-011, ABB-012, ABB-013]
+contains: [ABB-011, ABB-013, ABB-012, ABB-025, ABB-026]
 realises_capabilities: [CAP-005, CAP-006, CAP-007]
 subdomain_kind: core
 c4_levels: [container, component]
@@ -42,7 +42,7 @@ provenance:
 | Owner team | Patternode (Dermot O'Brien) |
 | Subdomain | core |
 | Realises | CAP-005, CAP-006, CAP-007 |
-| Contains | ABB-011, ABB-012, ABB-013 |
+| Contains | ABB-011, ABB-013, ABB-012, ABB-025, ABB-026 |
 
 The record per document, its projections and the fixed queries over them: keeping gold as the record, rebuilding the index, the SPARQL store, the optional backends and the passage index from it, and answering read-only questions filtered by scope.
 
@@ -80,4 +80,4 @@ The index is loaded into one process from JSON and cached a minute; the SPARQL i
 
 ## Building blocks
 
-ABB-011, ABB-012, ABB-013; each is a page under [../abbs](../../abbs/README.md).
+ABB-011 Knowledge graph, ABB-013 Passage index, ABB-012 Graph tools, ABB-025 Passage tools and ABB-026 Tool gateway, each a page under [../abbs](../../abbs/README.md). The projection and loading code runs as components of ABB-024 in the pipeline container (CN-006).

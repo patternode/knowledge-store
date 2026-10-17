@@ -27,7 +27,7 @@ maturity:
   assessor: "Patternode (Dermot O'Brien), reversed from the implementation"
 subdomain_kind: supporting
 provided_by_platform: PL-001
-realised_by_abbs: [ABB-020, ABB-012]
+realised_by_abbs: [ABB-020, ABB-027, ABB-026, ABB-012, ABB-025, ABB-019, ABB-018]
 gaps:
   - "Scope is one boolean per source; the controls a document carries of its own are designed, not built (CN-002)"
   - "The portal page sends the ID token where the chat page sends the access token"
@@ -46,7 +46,7 @@ provenance:
 | Status | Draft, reversed from the implementation at 0.3.0 |
 | Subdomain | supporting |
 | Maturity | 4, target 4 |
-| Realised by | ABB-020, ABB-012 |
+| Realised by | ABB-020, ABB-027, ABB-026, ABB-012, ABB-025, ABB-019, ABB-018 |
 
 Deciding who may ask and who may read private content, with the person's verified identity carried through every hop and the scope rule applied at each one.
 

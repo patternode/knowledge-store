@@ -21,8 +21,8 @@ success_criteria:
   - "A mapped table is bound, not refined"
 frequency: medium
 supports_outcome: OC-003
-realised_by_abbs: [ABB-001, ABB-002, ABB-003, ABB-004, ABB-009]
-realised_by: [PAT-001, REF-001]
+realised_by_abbs: [ABB-024, ABB-002]
+realised_by: [AP-001, RA-001]
 fulfilled_by_features: [FE-022, FE-017]
 model:
   diagram: components.drawio
@@ -42,7 +42,7 @@ provenance:
 | Owner | Patternode (Dermot O'Brien) |
 | Outcome | OC-003 |
 | Rests on | The implementation as released; this use case is reversed from it |
-| Realised by | PAT-001 Ontology-driven GraphRAG (logical) and REF-001 Knowledge Store on AWS (physical) |
+| Realised by | AP-001 Ontology-driven GraphRAG (logical) and RA-001 Knowledge Store on AWS (physical) |
 | Fulfilled by | FE-022, FE-017 |
 | Date | 2026-10-16 |
 
@@ -98,10 +98,10 @@ What each local participant stands for in the catalogue: an actor or an external
 | Local ID | Maps To | Relationship |
 |---|---|---|
 | 01 | gap | gap |
-| 02 | ABB-002 Lake and layering | partial |
-| 03 | ABB-004 Sweep orchestration | partial |
-| 04 | ABB-004 Sweep orchestration | realises |
-| 05 | ABB-002 Lake and layering | realises |
+| 02 | ABB-002 Lake | partial |
+| 03 | gap | gap |
+| 04 | ABB-024 Ingestion and extraction pipeline | realises |
+| 05 | ABB-002 Lake | realises |
 
 ## Scenarios
 

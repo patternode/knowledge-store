@@ -24,7 +24,7 @@ consequences:
     - "The portal's fallback loop does not meet this rule (CN-006)"
     - "Abstentions where a looser system would answer"
 change_type: introduce
-affects_artefacts: [BC-005, ABB-015, ABB-014]
+affects_artefacts: [BC-005, ABB-014]
 resolves: []
 provenance:
   origin: ai-generated
@@ -57,4 +57,4 @@ Negative: The portal's fallback loop does not meet this rule (CN-006); Abstentio
 
 ## Affects
 
-BC-005, ABB-015, ABB-014.
+BC-005, ABB-014.

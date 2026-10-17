@@ -22,7 +22,7 @@ consequences:
   negative:
     - "Model change rebuilds the index"
 change_type: introduce
-affects_artefacts: [BC-004, ABB-013]
+affects_artefacts: [BC-004, ABB-013, ABB-025]
 resolves: [CN-004]
 provenance:
   origin: ai-generated
@@ -55,4 +55,4 @@ Negative: Model change rebuilds the index.
 
 ## Affects
 
-BC-004, ABB-013. Resolves CN-004.
+BC-004, ABB-013, ABB-025. Resolves CN-004.

@@ -10,7 +10,7 @@ last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 part_of: PL-001
-contains: [ABB-022, ABB-023]
+contains: [ABB-028]
 realises_capabilities: [CAP-010, CAP-013]
 subdomain_kind: generic
 c4_levels: [container, component]
@@ -38,7 +38,7 @@ provenance:
 | Owner team | Patternode (Dermot O'Brien) |
 | Subdomain | generic |
 | Realises | CAP-010, CAP-013 |
-| Contains | ABB-022, ABB-023 |
+| Contains | ABB-028 |
 
 Model access, the cost ledger, the command line and deployment: the generic services every other context uses and none owns.
 
@@ -70,4 +70,4 @@ The shared kernel in all but name: llm.py and ledger.py are imported by ingestio
 
 ## Building blocks
 
-ABB-022, ABB-023; each is a page under [../abbs](../../abbs/README.md).
+ABB-028 Command line, a page under [../abbs](../../abbs/README.md). The model client is a component of the containers that call models; the Terraform module and the image build are not blocks under the calibration standard (CT-010, DN-003, DN-013).

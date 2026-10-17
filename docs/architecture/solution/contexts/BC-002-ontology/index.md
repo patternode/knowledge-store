@@ -10,7 +10,7 @@ last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 part_of: PL-001
-contains: [ABB-005, ABB-006, ABB-007, ABB-008]
+contains: [ABB-024]
 realises_capabilities: [CAP-003, CAP-007]
 subdomain_kind: core
 c4_levels: [container, component]
@@ -43,7 +43,7 @@ provenance:
 | Owner team | Patternode (Dermot O'Brien) |
 | Subdomain | core |
 | Realises | CAP-003, CAP-007 |
-| Contains | ABB-005, ABB-006, ABB-007, ABB-008 |
+| Contains | ABB-024 |
 
 Terms, versions, renditions, drafts, candidates and mappings: what a collection's documents are about, owned by a person and released in classified versions.
 
@@ -83,4 +83,4 @@ Discovery and review are LLM calls whose edits are applied in code. Publish refu
 
 ## Building blocks
 
-ABB-005, ABB-006, ABB-007, ABB-008; each is a page under [../abbs](../../abbs/README.md).
+This context has no container of its own: its model (discovery and review, versioning and renditions, the candidate register and the revision proposal, the table mapping) runs as components of ABB-024 Ingestion and extraction pipeline, which BC-001 owns, and its release commands run in ABB-028 Command line. The versions themselves are a zone of ABB-002 Lake. That is the finding of CN-006, recorded rather than hidden; the first pass's ABB-005 to ABB-008 are rows in those documents, retired under the [calibration standard](https://github.com/dermot-obrien/architecture-continuum/blob/main/standards/building-blocks/standard-building-block-calibration.md).
