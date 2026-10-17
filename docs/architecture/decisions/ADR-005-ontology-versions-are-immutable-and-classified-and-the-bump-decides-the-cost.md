@@ -23,7 +23,7 @@ consequences:
     - "Delta selection can miss a document (extract --all-delta exists)"
     - "The bind module carries a copy of the chain walk"
 change_type: introduce
-affects_artefacts: [BC-002, ABB-006, ABB-009, ABB-007]
+affects_artefacts: [BC-002, ABB-006, ABB-004]
 resolves: []
 provenance:
   origin: ai-generated
@@ -56,4 +56,4 @@ Negative: Delta selection can miss a document (extract --all-delta exists); The 
 
 ## Affects
 
-BC-002, ABB-006, ABB-009, ABB-007.
+BC-002, ABB-006, ABB-004.

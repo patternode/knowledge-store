@@ -6,11 +6,11 @@ description: "Extraction runs, assertions, grounding of facts, SHACL validation,
 version: 0.1.0
 status: draft
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 part_of: PL-001
-contains: [ABB-009, ABB-010]
+contains: [ABB-004]
 realises_capabilities: [CAP-004, CAP-007]
 subdomain_kind: core
 c4_levels: [container, component]
@@ -41,7 +41,7 @@ provenance:
 | Owner team | Patternode (Dermot O'Brien) |
 | Subdomain | core |
 | Realises | CAP-004, CAP-007 |
-| Contains | ABB-009, ABB-010 |
+| Contains | ABB-004 |
 
 Extraction runs, assertions, grounding of facts, SHACL validation, table snapshots and cells: turning passages and rows into typed facts that cite where they came from, and refusing those that do not.
 
@@ -77,4 +77,4 @@ One named graph per document per version; two repairs then salvage; pySHACL with
 
 ## Building blocks
 
-ABB-009, ABB-010; each is a page under [../abbs](../../abbs/README.md).
+ABB-004; a page under [../abbs](../../abbs/README.md). The sweep is one container whose purpose is extraction with provenance; the ingestion, ontology and projection stages it also runs are components inside it, the models of BC-001, BC-002 and BC-004 sharing one deployable, which is the seam CN-006 names.

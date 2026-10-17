@@ -21,7 +21,7 @@ success_criteria:
   - "Discovery never runs for this collection"
 frequency: low
 supports_outcome: OC-002
-realised_by_abbs: [ABB-006, ABB-008, ABB-004]
+realised_by_abbs: [ABB-004, ABB-002, ABB-006]
 realised_by: [PAT-001, REF-001]
 fulfilled_by_features: [FE-003, FE-005]
 model:
@@ -96,9 +96,9 @@ What each local participant stands for in the catalogue: an actor or an external
 | Local ID | Maps To | Relationship |
 |---|---|---|
 | 01 | gap | gap |
-| 02 | ABB-023 Deployment automation | partial |
-| 03 | ABB-006 Ontology versioning and renditions | realises |
-| 04 | ABB-006 Ontology versioning and renditions | partial |
+| 02 | ABB-002 Lake and layering | partial |
+| 03 | ABB-004 Pipeline sweep | realises |
+| 04 | ABB-002 Lake and layering | partial |
 
 ## Scenarios
 

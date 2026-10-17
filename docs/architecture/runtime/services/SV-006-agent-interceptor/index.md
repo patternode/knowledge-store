@@ -11,8 +11,8 @@ last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [SBB-005]
-part_of: BC-006
-composes_contexts: [BC-006]
+part_of: BC-004
+composes_contexts: [BC-004, BC-006]
 runtime_type: serverless
 repo: { url: "https://github.com/patternode/knowledge-store", path: "." }
 module_path: "src/knowledge_store/tools/interceptor.py"
@@ -32,7 +32,7 @@ The REQUEST interceptor that decodes the verified bearer token and overwrites ca
 |---|---|
 | Identifier | SV-006, slug `agent-interceptor` |
 | Kind | Service, serverless |
-| Context | BC-006; composes BC-006 as built |
+| Context | BC-004; composes BC-004, BC-006 as built: the gateway it belongs to is ABB-012, the rule it applies is BC-006's |
 | Realises | SBB-005 |
 | Node | DN-007 |
 | Code | `src/knowledge_store/tools/interceptor.py (lambda_handler)` |

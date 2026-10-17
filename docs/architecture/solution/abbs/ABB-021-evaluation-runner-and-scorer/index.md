@@ -4,16 +4,16 @@ id: ABB-021
 title: "ABB-021 Evaluation runner and scorer"
 short_name: "EVAL"
 description: "Runs a set of questions against a lake or the deployed chat, scores each answer deterministically against the facts it must and must not state and the sources it should cite, and reports the four outcomes."
-version: 0.1.0
+version: 0.2.0
 status: draft
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 category: "Evaluation"
 part_of: BC-007
 realises_capabilities: [CAP-011]
-realised_by: [SBB-013, SBB-007]
+realised_by: [SBB-015]
 requires:
   - { abb: ABB-014, cardinality: "1", rationale: "Asks the agent" }
   - { abb: ABB-019, cardinality: "0..1", rationale: "Through the API, as a person" }
@@ -38,12 +38,12 @@ provenance:
 | ABB ID | ABB-021 |
 | ABB Name | Evaluation runner and scorer |
 | Short Name | EVAL |
-| Version | 0.1.0 |
+| Version | 0.2.0 |
 | Status | draft, reversed from the implementation at 0.3.0 |
 | Category | Evaluation |
 | Bounded context | BC-007 |
 | Realises | CAP-011 |
-| Realised by | SBB-013, SBB-007 |
+| Realised by | SBB-015 |
 
 Runs a set of questions against a lake or the deployed chat, scores each answer deterministically against the facts it must and must not state and the sources it should cite, and reports the four outcomes.
 
@@ -55,7 +55,7 @@ Right is not grounded. A set and a scorer make a release comparable with the las
 
 ### 2.1  Component Diagram
 
-The components below are the diagram's boxes; the draw.io is not yet drawn. The outside view of this block is its row in [REF-001](../../patterns/REF-001-knowledge-store-on-aws/index.md).
+The components below are what runs inside this one container, listed per the building block calibration standard: none of them is a building block of its own. The outside view of this block is its row in [REF-001](../../patterns/REF-001-knowledge-store-on-aws/index.md).
 
 ### 2.2  Fundamental functionality
 
@@ -71,7 +71,7 @@ The components below are the diagram's boxes; the draw.io is not yet drawn. The 
 
 ### 2.4  Semantic
 
-Inside: running and scoring. Outside: writing good sets.
+Inside: running a set and scoring it. Outside: the agent and the API it targets.
 
 ### 2.5  Identity & Access Management
 
@@ -108,10 +108,11 @@ Sets ship as examples; a deployment keeps its own.
 
 ## 5  Solution Building Block guidance
 
-Realised as a command (SBB-013) that targets the portal (SBB-007).
+Realised as a command on an operator's machine (SBB-015), in process against a lake or through the chat API (ABB-019) as a person.
 
 ## 6  Revision history
 
 | Version | Date | Change |
 |---|---|---|
+| 0.2.0 | 2026-10-17 | Recalibrated to container grain: SBB-013 retired; realised by the command line SBB-015 |
 | 0.1.0 | 2026-10-16 | Reversed from the implementation |

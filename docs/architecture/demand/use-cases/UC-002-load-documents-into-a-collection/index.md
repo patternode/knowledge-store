@@ -21,7 +21,7 @@ success_criteria:
   - "A mapped table is bound, not refined"
 frequency: medium
 supports_outcome: OC-003
-realised_by_abbs: [ABB-001, ABB-002, ABB-003, ABB-004, ABB-009]
+realised_by_abbs: [ABB-002, ABB-004]
 realised_by: [PAT-001, REF-001]
 fulfilled_by_features: [FE-022, FE-017]
 model:
@@ -99,8 +99,8 @@ What each local participant stands for in the catalogue: an actor or an external
 |---|---|---|
 | 01 | gap | gap |
 | 02 | ABB-002 Lake and layering | partial |
-| 03 | ABB-004 Sweep orchestration | partial |
-| 04 | ABB-004 Sweep orchestration | realises |
+| 03 | ABB-004 Pipeline sweep | partial |
+| 04 | ABB-004 Pipeline sweep | realises |
 | 05 | ABB-002 Lake and layering | realises |
 
 ## Scenarios

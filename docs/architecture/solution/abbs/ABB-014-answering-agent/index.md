@@ -3,23 +3,20 @@ kind: abb
 id: ABB-014
 title: "ABB-014 Answering agent"
 short_name: "AGENT"
-description: "The agent that plans in the ontology's terms, calls the fixed tools as the person asking, proposes claims with citations as structured output, and hands them to the checks; also the analyst that says what it would take."
-version: 0.1.0
+description: "The agent as one deployable unit: plans in the ontology's terms, calls the fixed tools as the person asking, proposes claims with citations as structured output, checks every citation by code and every claim by the guardrail before anything is shown, runs under its valves, records its steps and cost for the workbench, and in its analyst mode says what it would take to answer."
+version: 0.2.0
 status: draft
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 category: "Answering"
 part_of: BC-005
 realises_capabilities: [CAP-008]
-realised_by: [SBB-006, SBB-007, SBB-013]
+realised_by: [SBB-006]
 requires:
-  - { abb: ABB-012, cardinality: "1", rationale: "The tools" }
-  - { abb: ABB-013, cardinality: "1", rationale: "Passage search" }
-  - { abb: ABB-015, cardinality: "1", rationale: "Nothing is shown unchecked" }
-  - { abb: ABB-016, cardinality: "1", rationale: "Runs under the valves" }
-  - { abb: ABB-022, cardinality: "1", rationale: "The model" }
+  - { abb: ABB-012, cardinality: "1", rationale: "The tools, called as the caller" }
+  - { abb: ABB-013, cardinality: "0..1", rationale: "Passage search, through the tools" }
 domains: [application]
 interfaces:
   - { id: "I1", direction: "in", type: "request", description: "question, collection, history, mode, as the caller (CT-004)" }
@@ -41,14 +38,14 @@ provenance:
 | ABB ID | ABB-014 |
 | ABB Name | Answering agent |
 | Short Name | AGENT |
-| Version | 0.1.0 |
+| Version | 0.2.0 |
 | Status | draft, reversed from the implementation at 0.3.0 |
 | Category | Answering |
 | Bounded context | BC-005 |
 | Realises | CAP-008 |
-| Realised by | SBB-006, SBB-007, SBB-013 |
+| Realised by | SBB-006 |
 
-The agent that plans in the ontology's terms, calls the fixed tools as the person asking, proposes claims with citations as structured output, and hands them to the checks; also the analyst that says what it would take.
+The agent as one deployable unit: plans in the ontology's terms, calls the fixed tools as the person asking, proposes claims with citations as structured output, checks every citation by code and every claim by the guardrail before anything is shown, runs under its valves, records its steps and cost for the workbench, and in its analyst mode says what it would take to answer.
 
 ## 1  Purpose
 
@@ -58,16 +55,19 @@ The model is a proposer. Giving it the ontology, fixed tools and a claim schema 
 
 ### 2.1  Component Diagram
 
-The components below are the diagram's boxes; the draw.io is not yet drawn. The outside view of this block is its row in [REF-001](../../patterns/REF-001-knowledge-store-on-aws/index.md).
+The components below are what runs inside this one container, listed per the building block calibration standard: none of them is a building block of its own. The outside view of this block is its row in [REF-001](../../patterns/REF-001-knowledge-store-on-aws/index.md).
 
 ### 2.2  Fundamental functionality
 
-- **Admission.** Token required; daily count
+- **Admission.** Token required; the daily count at the agent as well as the portal
 - **Prompt.** The agent rendition, the collection and version, the applicable table questions
 - **Tool loop.** Strands with hooks for limits and steps; structured output GroundedAnswer
-- **Re-read.** Cited passages, cells and figures fetched again as the caller
-- **Repair.** Failures sent back once
-- **Analyst.** A second mode with the GapReport schema
+- **Checks.** Passage check (exists, readable, quote found after normalising, at least twelve characters); cell check (exists, value equal by type); figure check (recomputed per citation); the guardrail's contextual grounding on each kept claim
+- **Repair and render.** Failures sent back once; distinct sources numbered; claims as text with references; abstain when none survive
+- **Valves.** Per-question hooks that cancel a tool call or a model call past the budget, so the agent answers from what it has; question length and history caps
+- **Recorder.** Steps with readable titles per tool, streamed; usage per model step priced from the ledger's table; term usage queried, read and cited per kind
+- **Analyst.** A second mode with the GapReport schema: answerable, data missing, ontology missing, extraction missed, out of scope; proposed terms kept as requests the candidate register reads
+- **Model client.** The same Converse-shaped client as the sweep, over Bedrock or the Anthropic API, every call priced into the ledger
 - **Streaming.** Steps then the result over server-sent events
 
 ### 2.3  Attributes
@@ -77,7 +77,7 @@ The components below are the diagram's boxes; the draw.io is not yet drawn. The 
 
 ### 2.4  Semantic
 
-Inside: planning, proposing, repairing. Outside: the checks themselves (ABB-015) and the page (ABB-018).
+Inside: proposing, checking, limiting and recording, all in one process. Outside: the page that shows the answer (ABB-018), the API that admits the question and counts the quota (ABB-019), and the tools (ABB-012).
 
 ### 2.5  Identity & Access Management
 
@@ -101,26 +101,24 @@ Prompt attack and content filters on the question; the structured output schema 
 
 ### 3.4  Capability dependencies (requires)
 
-- ABB-012 (1): The tools
-- ABB-013 (1): Passage search
-- ABB-015 (1): Nothing is shown unchecked
-- ABB-016 (1): Runs under the valves
-- ABB-022 (1): The model
+- ABB-012 (1): The tools, called as the caller
+- ABB-013 (0..1): Passage search, through the tools
 
 ## 4  Mapping
 
 | Where | What |
 |---|---|
-| Code | `src/knowledge_store/agent/app.py; portal_api/chat.py (the fallback loop)` |
+| Code | `src/knowledge_store/agent/app.py, grounding.py, valves.py, quota.py; workbench.py; llm.py, ledger.py; portal_api/chat.py (the fallback loop)` |
 | Capabilities | CAP-008 |
 | Context | BC-005 |
 
 ## 5  Solution Building Block guidance
 
-Realised on AgentCore Runtime with Strands (SBB-006); the portal's loop (SBB-007) is the transitional realisation; local in process (SBB-013).
+Realised on AgentCore Runtime with Strands, Bedrock models and Guardrails (SBB-006). The chat API's fallback loop (ABB-019) and the in-process local agent (SBB-015) are transitional and local forms of the same components, not blocks of their own.
 
 ## 6  Revision history
 
 | Version | Date | Change |
 |---|---|---|
+| 0.2.0 | 2026-10-17 | Recalibrated to container grain: ABB-015, ABB-016 (the per-question valves), ABB-017 (the recorder and the analyst) and the agent's model client (ABB-022) folded in |
 | 0.1.0 | 2026-10-16 | Reversed from the implementation |

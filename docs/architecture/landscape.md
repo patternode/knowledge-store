@@ -27,7 +27,7 @@ A platform landscape is the layers of platforms, which exist and which depends o
 | Consumed by | Any deployment | The same module, from `examples/deployment` |
 | Consumed by | A person's assistant | The MCP tools, where a consumer puts a front on them (`pna:PAT-005`, `pna:PAT-006` do this for the earnings lab) |
 | Consumes | AWS managed services | Terraform resources in `infra/modules/*`; each is a deployment node in [runtime/nodes.csv](runtime/nodes.csv) |
-| Consumes | Claude, through Bedrock or the Anthropic API | ABB-021 model access, one client for every call |
-| Consumes | Optional backends | ABB-010's projection port, filled by the sweep's load stage |
+| Consumes | Claude, through Bedrock or the Anthropic API | The model client inside ABB-004 and ABB-014, one client for every call, priced into the lake's ledger |
+| Consumes | Optional backends | ABB-011's projection port, filled by the sweep's load stage |
 
 The store depends on nothing above it. A consumer that wants a feature raises it here; the module never reaches into a consumer's repository.

@@ -27,7 +27,7 @@ maturity:
   assessor: "Patternode (Dermot O'Brien), reversed from the implementation"
 subdomain_kind: core
 provided_by_platform: PL-001
-realised_by_abbs: [ABB-008, ABB-010, ABB-012]
+realised_by_abbs: [ABB-004, ABB-006, ABB-012]
 gaps:
   - "Only files in the landing tree are bound; a live source through Context Ontology Accelerator is designed, not wired (CN-003)"
   - "The SQL of a metric is parsed and recomputed, never executed"
@@ -46,7 +46,7 @@ provenance:
 | Status | Draft, reversed from the implementation at 0.3.0 |
 | Subdomain | core |
 | Maturity | 3, target 4 |
-| Realised by | ABB-008, ABB-010, ABB-012 |
+| Realised by | ABB-004, ABB-006, ABB-012 |
 
 Keeping a mapped table beside the documents in the ontology's own terms, so a question can filter, total or match a cell and the answer cites the cell or the recomputed figure.
 

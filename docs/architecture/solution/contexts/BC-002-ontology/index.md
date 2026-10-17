@@ -6,11 +6,11 @@ description: "Terms, versions, renditions, drafts, candidates and mappings: what
 version: 0.1.0
 status: draft
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 part_of: PL-001
-contains: [ABB-005, ABB-006, ABB-007, ABB-008]
+contains: [ABB-006]
 realises_capabilities: [CAP-003, CAP-007]
 subdomain_kind: core
 c4_levels: [container, component]
@@ -43,7 +43,7 @@ provenance:
 | Owner team | Patternode (Dermot O'Brien) |
 | Subdomain | core |
 | Realises | CAP-003, CAP-007 |
-| Contains | ABB-005, ABB-006, ABB-007, ABB-008 |
+| Contains | ABB-006 |
 
 Terms, versions, renditions, drafts, candidates and mappings: what a collection's documents are about, owned by a person and released in classified versions.
 
@@ -83,4 +83,4 @@ Discovery and review are LLM calls whose edits are applied in code. Publish refu
 
 ## Building blocks
 
-ABB-005, ABB-006, ABB-007, ABB-008; each is a page under [../abbs](../../abbs/README.md).
+ABB-006; each is a page under [../abbs](../../abbs/README.md). Each is one C4 container; what runs inside it is listed on its page.

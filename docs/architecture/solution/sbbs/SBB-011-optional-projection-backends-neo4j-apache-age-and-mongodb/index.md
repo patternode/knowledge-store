@@ -3,10 +3,10 @@ kind: sbb
 id: SBB-011
 title: "SBB-011 Optional projection backends: Neo4j, Apache AGE and MongoDB"
 description: "Backends for a collection that has outgrown one process's memory, each behind the same port and filled by the sweep, none required."
-version: 0.1.0
+version: 0.2.0
 status: active
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-011]

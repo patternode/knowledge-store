@@ -1,226 +1,153 @@
 <mxfile host="model-skill" type="device" compressed="false">
   <diagram id="p-pat-001-ontology-driven-graphrag-with-grounded-answers" name="PAT-001 Ontology-driven GraphRAG with grounded answers">
-    <mxGraphModel dx="1422" dy="798" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" math="0" shadow="0">
+    <mxGraphModel dx="1422" dy="798" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2800" pageHeight="1150" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" value="Structure" parent="0" />
-        <mxCell id="frame" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="0" y="0" width="3077" height="1656" as="geometry" /></mxCell>
-        <object id="ABB-001" label="Source adapters" abb_id="ABB-001" role_in_the_pattern="Items and bytes from each configured source">
+        <mxCell id="deco-1" value="PAT-001 Ontology-driven GraphRAG with grounded answers: eleven containers, one block each" style="text;html=1;align=left;fontSize=18;fontStyle=1;fontColor=#1B2A4A;" vertex="1" parent="1"><mxGeometry x="40" y="30" width="1800" height="40" as="geometry" /></mxCell>
+        <object id="ABB-002" label="ABB-002 Lake and layering" abb_id="ABB-002" role_in_the_pattern="The record and its layers, the pointers, the lock and the ledger; the contract every block reads">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="40" y="1496" width="220" height="80" as="geometry"/>
+            <mxGeometry x="360" y="420" width="230" height="150" as="geometry" />
           </mxCell>
         </object>
-        <object id="ABB-002" label="Lake and layering" abb_id="ABB-002" role_in_the_pattern="The record and its layers; the contract every block reads">
+        <object id="ABB-004" label="ABB-004 Pipeline sweep" abb_id="ABB-004" role_in_the_pattern="The idempotent pass that converges the store: items and bytes in, passages, drafts, typed facts, snapshots and candidates out, projections loaded">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="320" y="1496" width="220" height="80" as="geometry"/>
+            <mxGeometry x="760" y="420" width="230" height="150" as="geometry" />
           </mxCell>
         </object>
-        <object id="ABB-003" label="Document refinement" abb_id="ABB-003" role_in_the_pattern="Passages, the unit of citation">
+        <object id="ABB-006" label="ABB-006 Ontology publisher" abb_id="ABB-006" role_in_the_pattern="Immutable classified versions with their renditions and mapping, published and activated by a person">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="2359" y="1496" width="220" height="80" as="geometry"/>
+            <mxGeometry x="360" y="900" width="230" height="70" as="geometry" />
           </mxCell>
         </object>
-        <object id="ABB-004" label="Sweep orchestration" abb_id="ABB-004" role_in_the_pattern="The idempotent pass that converges the store">
+        <object id="ABB-011" label="ABB-011 Knowledge graph store" abb_id="ABB-011" role_in_the_pattern="Gold as named graphs the tools query; the optional backends behind the same port">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="180" y="1288" width="220" height="80" as="geometry"/>
+            <mxGeometry x="1160" y="300" width="230" height="70" as="geometry" />
           </mxCell>
         </object>
-        <object id="ABB-005" label="Ontology discovery and review" abb_id="ABB-005" role_in_the_pattern="A first draft from the documents">
+        <object id="ABB-013" label="ABB-013 Passage index" abb_id="ABB-013" role_in_the_pattern="One vector per passage; the hit is a passage id">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="1144" y="248" width="220" height="80" as="geometry"/>
+            <mxGeometry x="1160" y="560" width="230" height="70" as="geometry" />
           </mxCell>
         </object>
-        <object id="ABB-006" label="Ontology versioning and renditions" abb_id="ABB-006" role_in_the_pattern="Immutable classified versions; renditions for every consumer">
+        <object id="ABB-012" label="ABB-012 Tool gateway and fixed query tools" abb_id="ABB-012" role_in_the_pattern="Read-only tools in the ontology's terms, offered through a gateway that sets the caller's scope on every call">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="2359" y="40" width="220" height="80" as="geometry"/>
+            <mxGeometry x="1560" y="420" width="230" height="100" as="geometry" />
           </mxCell>
         </object>
-        <object id="ABB-007" label="Candidate register and revision proposal" abb_id="ABB-007" role_in_the_pattern="Growth from demand, through a person">
+        <object id="ABB-014" label="ABB-014 Answering agent" abb_id="ABB-014" role_in_the_pattern="Plans in the ontology's terms, proposes claims, checks every citation and claim, runs under its valves, records its steps">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="2444" y="248" width="220" height="80" as="geometry"/>
+            <mxGeometry x="1960" y="420" width="230" height="100" as="geometry" />
           </mxCell>
         </object>
-        <object id="ABB-008" label="Table mapping definition" abb_id="ABB-008" role_in_the_pattern="Tables in the ontology's terms, published with the version">
+        <object id="ABB-019" label="ABB-019 Chat API" abb_id="ABB-019" role_in_the_pattern="The narrow door: admission, the quota, dispatch, state and signed links">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="495" y="1288" width="220" height="80" as="geometry"/>
+            <mxGeometry x="2360" y="420" width="230" height="70" as="geometry" />
           </mxCell>
         </object>
-        <object id="ABB-009" label="Ontology-guided extraction" abb_id="ABB-009" role_in_the_pattern="Typed facts that cite their passages, validated by shapes">
+        <object id="ABB-018" label="ABB-018 Chat page" abb_id="ABB-018" role_in_the_pattern="Where grounding is visible">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="2444" y="1288" width="220" height="80" as="geometry"/>
+            <mxGeometry x="2360" y="140" width="230" height="70" as="geometry" />
           </mxCell>
         </object>
-        <object id="ABB-010" label="Table binding" abb_id="ABB-010" role_in_the_pattern="Snapshots with citable cells">
+        <object id="ABB-020" label="ABB-020 Identity" abb_id="ABB-020" role_in_the_pattern="The person all the way down: sign-in, tokens, the scope rule">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="495" y="1080" width="220" height="80" as="geometry"/>
+            <mxGeometry x="2360" y="760" width="230" height="70" as="geometry" />
           </mxCell>
         </object>
-        <object id="ABB-011" label="Graph record and projection" abb_id="ABB-011" role_in_the_pattern="Gold as the record; projections with pointers">
+        <object id="ABB-021" label="ABB-021 Evaluation runner and scorer" abb_id="ABB-021" role_in_the_pattern="Right, not only grounded">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="2697" y="1080" width="220" height="80" as="geometry"/>
+            <mxGeometry x="1960" y="1000" width="230" height="70" as="geometry" />
           </mxCell>
         </object>
-        <object id="ABB-012" label="Fixed query tools" abb_id="ABB-012" role_in_the_pattern="Read-only tools in the ontology's terms, scope-filtered">
-          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="1864" y="872" width="220" height="80" as="geometry"/>
+        <object id="IF-01" label="the lake port and layout: landing, bronze, silver, gold, the active version" iface_id="IF-01">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.3;exitDx=0;exitDy=0;entryX=0;entryY=0.3;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-002" target="ABB-004">
+            <mxGeometry relative="1" as="geometry"><mxPoint x="0" y="-14" as="offset" /></mxGeometry>
           </mxCell>
         </object>
-        <object id="ABB-013" label="Passage search by meaning" abb_id="ABB-013" role_in_the_pattern="One vector per passage; the hit is a passage id">
-          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="2144" y="872" width="220" height="80" as="geometry"/>
+        <object id="IF-02" label="bronze, silver, gold, drafts, candidates, the index, status and the ledger" iface_id="IF-02">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.7;exitDx=0;exitDy=0;entryX=1;entryY=0.7;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-004" target="ABB-002">
+            <mxGeometry relative="1" as="geometry"><mxPoint x="0" y="14" as="offset" /></mxGeometry>
           </mxCell>
         </object>
-        <object id="ABB-014" label="Answering agent" abb_id="ABB-014" role_in_the_pattern="Plans in the ontology's terms; proposes claims">
-          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="1574" y="664" width="220" height="80" as="geometry"/>
+        <object id="IF-03" label="an immutable version, its renditions and manifest, the active pointer" iface_id="IF-03">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=0.3;exitY=0;exitDx=0;exitDy=0;entryX=0.3;entryY=1;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-006" target="ABB-002">
+            <mxGeometry relative="1" as="geometry"><mxPoint x="0" y="-90" as="offset" /></mxGeometry>
           </mxCell>
         </object>
-        <object id="ABB-015" label="Claim grounding and checks" abb_id="ABB-015" role_in_the_pattern="Nothing shown unchecked">
-          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="2144" y="456" width="220" height="80" as="geometry"/>
+        <object id="IF-04" label="the active version, the drafts and the candidate register to diff and propose from" iface_id="IF-04">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=0.7;exitY=1;exitDx=0;exitDy=0;entryX=0.7;entryY=0;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-002" target="ABB-006">
+            <mxGeometry relative="1" as="geometry"><mxPoint x="0" y="90" as="offset" /></mxGeometry>
           </mxCell>
         </object>
-        <object id="ABB-016" label="Valves and quotas" abb_id="ABB-016" role_in_the_pattern="Every limit, where it bites">
-          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="1154" y="872" width="220" height="80" as="geometry"/>
+        <object id="IF-05" label="named graphs loaded per document per version; pointers moved when counts check" iface_id="IF-05">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.2;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-004" target="ABB-011">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1075" y="450" /><mxPoint x="1075" y="335" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="ABB-017" label="Workbench" abb_id="ABB-017" role_in_the_pattern="Steps, cost, term usage, requests">
-          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="1864" y="456" width="220" height="80" as="geometry"/>
+        <object id="IF-06" label="passages synced, one vector each; an ingestion job per change" iface_id="IF-06">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.8;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-004" target="ABB-013">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1075" y="540" /><mxPoint x="1075" y="595" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="ABB-018" label="Chat page" abb_id="ABB-018" role_in_the_pattern="Where grounding is visible">
-          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="1444" y="248" width="220" height="80" as="geometry"/>
+        <object id="IF-07" label="fixed read-only queries in the ontology's terms" iface_id="IF-07">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.3;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-011" target="ABB-012">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1475" y="335" /><mxPoint x="1475" y="450" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="ABB-019" label="Chat API" abb_id="ABB-019" role_in_the_pattern="The narrow door">
-          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="1444" y="456" width="220" height="80" as="geometry"/>
+        <object id="IF-08" label="passages by meaning, filtered to the collection and the caller's scope" iface_id="IF-08">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.7;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-013" target="ABB-012">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1475" y="595" /><mxPoint x="1475" y="490" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="ABB-020" label="Identity and scope" abb_id="ABB-020" role_in_the_pattern="The person all the way down">
-          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="939" y="1080" width="220" height="80" as="geometry"/>
+        <object id="IF-09" label="silver, the index, snapshots and cells" iface_id="IF-09">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-002" target="ABB-012">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="475" y="220" /><mxPoint x="1675" y="220" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="ABB-021" label="Evaluation runner and scorer" abb_id="ABB-021" role_in_the_pattern="Right, not only grounded">
-          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="1574" y="872" width="220" height="80" as="geometry"/>
+        <object id="IF-10" label="fixed tools as the caller, the scope set by the interceptor" iface_id="IF-10">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-012" target="ABB-014">
+            <mxGeometry relative="1" as="geometry"><mxPoint x="0" y="-14" as="offset" /></mxGeometry>
           </mxCell>
         </object>
-        <object id="ABB-022" label="Model access and ledger" abb_id="ABB-022" role_in_the_pattern="One client, every call priced">
-          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="745" y="1496" width="220" height="80" as="geometry"/>
+        <object id="IF-11" label="the answer as checked claims, steps streamed" iface_id="IF-11">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-014" target="ABB-019">
+            <mxGeometry relative="1" as="geometry"><mxPoint x="0" y="-14" as="offset" /></mxGeometry>
           </mxCell>
         </object>
-        <object id="IF-01" label="the lake port and layout" iface_id="IF-01">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-002" target="ABB-004"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="430" y="1432"/></Array></mxGeometry>
+        <object id="IF-12" label="the HTTP API" iface_id="IF-12">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-019" target="ABB-018">
+            <mxGeometry relative="1" as="geometry" />
           </mxCell>
         </object>
-        <object id="IF-02" label="items and bytes from each source" iface_id="IF-02">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-001" target="ABB-004"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="150" y="1432"/></Array></mxGeometry>
+        <object id="IF-13" label="sign-in and tokens" iface_id="IF-13">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.3;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-020" target="ABB-018">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="2650" y="781" /><mxPoint x="2650" y="175" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="IF-03" label="silver passages" iface_id="IF-03">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-003" target="ABB-009"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="2554" y="1432"/></Array></mxGeometry>
+        <object id="IF-14" label="who is asking, from the verified token" iface_id="IF-14">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-020" target="ABB-019">
+            <mxGeometry relative="1" as="geometry" />
           </mxCell>
         </object>
-        <object id="IF-04" label="a draft to publish" iface_id="IF-04">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-005" target="ABB-006"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="1254" y="184"/></Array></mxGeometry>
+        <object id="IF-15" label="the token the gateway verifies and reads scope from" iface_id="IF-15">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-020" target="ABB-012">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1675" y="795" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="IF-05" label="the tool schema and shapes of the active version" iface_id="IF-05">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-006" target="ABB-009"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="2404" y="184"/><mxPoint x="2404" y="288"/><mxPoint x="2404" y="392"/><mxPoint x="2404" y="496"/><mxPoint x="2404" y="600"/><mxPoint x="2404" y="704"/><mxPoint x="2404" y="808"/><mxPoint x="2404" y="912"/><mxPoint x="2404" y="1016"/><mxPoint x="2404" y="1120"/><mxPoint x="2404" y="1224"/></Array></mxGeometry>
+        <object id="IF-16" label="the caller's token, presented onward to the tools" iface_id="IF-16">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.7;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-020" target="ABB-014">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="2075" y="809" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="IF-06" label="the agent rendition" iface_id="IF-06">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-006" target="ABB-014"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="1404" y="184"/><mxPoint x="1404" y="288"/><mxPoint x="1404" y="392"/><mxPoint x="1404" y="496"/><mxPoint x="1404" y="600"/></Array></mxGeometry>
+        <object id="IF-17" label="evaluation questions, in process or as a person through the API" iface_id="IF-17">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.3;entryY=1;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-021" target="ABB-014">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="2075" y="900" /><mxPoint x="2029" y="900" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="IF-07" label="the store renditions and the T-Box" iface_id="IF-07">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-006" target="ABB-011"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="2704" y="184"/><mxPoint x="2704" y="288"/><mxPoint x="2704" y="392"/><mxPoint x="2704" y="496"/><mxPoint x="2704" y="600"/><mxPoint x="2704" y="704"/><mxPoint x="2704" y="808"/><mxPoint x="2704" y="912"/><mxPoint x="2704" y="1016"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-08" label="the structured mapping rendition" iface_id="IF-08">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-008" target="ABB-010"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="605" y="1224"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-09" label="gold per document per version" iface_id="IF-09">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-009" target="ABB-011"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="2807" y="1224"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-10" label="snapshots, cells and figures" iface_id="IF-10">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-010" target="ABB-012"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="605" y="1016"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-11" label="the projections to query" iface_id="IF-11">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-011" target="ABB-012"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="2807" y="1016"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-12" label="passages to index and read" iface_id="IF-12">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-003" target="ABB-013"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="2254" y="1432"/><mxPoint x="2254" y="1328"/><mxPoint x="2254" y="1224"/><mxPoint x="2254" y="1120"/><mxPoint x="2254" y="1016"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-13" label="fixed tools as the caller" iface_id="IF-13">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-012" target="ABB-014"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="1974" y="808"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-14" label="passage search and read" iface_id="IF-14">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-013" target="ABB-014"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="2254" y="808"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-15" label="proposed claims; repairs back" iface_id="IF-15">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-014" target="ABB-015"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="2254" y="600"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-16" label="limits on every call" iface_id="IF-16">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-016" target="ABB-014"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="1264" y="808"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-17" label="steps, usage, gap reports" iface_id="IF-17">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-014" target="ABB-017"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="1974" y="600"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-18" label="ontology requests" iface_id="IF-18">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-017" target="ABB-007"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="1974" y="392"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-19" label="candidates" iface_id="IF-19">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-009" target="ABB-007"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="2554" y="1224"/><mxPoint x="2554" y="1120"/><mxPoint x="2554" y="1016"/><mxPoint x="2554" y="912"/><mxPoint x="2554" y="808"/><mxPoint x="2554" y="704"/><mxPoint x="2554" y="600"/><mxPoint x="2554" y="496"/><mxPoint x="2554" y="392"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-20" label="a revision draft" iface_id="IF-20">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-007" target="ABB-006"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="2554" y="184"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-21" label="the answer, steps streamed" iface_id="IF-21">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-014" target="ABB-019"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="1554" y="600"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-22" label="the HTTP API" iface_id="IF-22">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-019" target="ABB-018"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="1554" y="392"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-23" label="who is asking" iface_id="IF-23">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-020" target="ABB-019"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="1114" y="1016"/><mxPoint x="1114" y="912"/><mxPoint x="1114" y="808"/><mxPoint x="1114" y="704"/><mxPoint x="1114" y="600"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-24" label="the caller's scope on every call" iface_id="IF-24">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-020" target="ABB-012"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="985" y="1016"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-25" label="the model, priced" iface_id="IF-25">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-022" target="ABB-009"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="1490" y="1432"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-26" label="the model, priced" iface_id="IF-26">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-022" target="ABB-014"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="815" y="1432"/><mxPoint x="815" y="1328"/><mxPoint x="815" y="1224"/><mxPoint x="815" y="1120"/><mxPoint x="815" y="1016"/><mxPoint x="815" y="912"/><mxPoint x="815" y="808"/></Array></mxGeometry>
-          </mxCell>
-        </object>
-        <object id="IF-27" label="evaluation questions" iface_id="IF-27">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-021" target="ABB-014"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="1684" y="808"/></Array></mxGeometry>
+        <object id="IF-18" label="documents and tables to link after the scope check; requests written" iface_id="IF-18">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=0.8;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ABB-002" target="ABB-019">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="544" y="660" /><mxPoint x="2320" y="660" /><mxPoint x="2320" y="455" /></Array></mxGeometry>
           </mxCell>
         </object>
       </root>

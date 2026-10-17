@@ -27,7 +27,7 @@ maturity:
   assessor: "Patternode (Dermot O'Brien), reversed from the implementation"
 subdomain_kind: supporting
 provided_by_platform: PL-001
-realised_by_abbs: [ABB-001, ABB-002, ABB-003, ABB-004]
+realised_by_abbs: [ABB-002, ABB-004]
 gaps:
   - "Only text-bearing formats are parsed (text, markdown, HTML, JSON, PDF); images and scans are skipped"
   - "The HTTP adapter fetches every run and relies on content addressing to deduplicate"
@@ -46,7 +46,7 @@ provenance:
 | Status | Draft, reversed from the implementation at 0.3.0 |
 | Subdomain | supporting |
 | Maturity | 4, target 4 |
-| Realised by | ABB-001, ABB-002, ABB-003, ABB-004 |
+| Realised by | ABB-002, ABB-004 |
 
 Getting content in from configured sources, keeping one immutable content-addressed copy of each distinct file, and cutting it into deterministic passages, the unit a citation points at.
 

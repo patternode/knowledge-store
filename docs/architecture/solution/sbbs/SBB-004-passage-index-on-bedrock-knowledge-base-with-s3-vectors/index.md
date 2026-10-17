@@ -3,10 +3,10 @@ kind: sbb
 id: SBB-004
 title: "SBB-004 Passage index on Bedrock Knowledge Base with S3 Vectors"
 description: "Search of passages by meaning at cents a month at rest, with the passage as the unit so a hit is a passage id."
-version: 0.1.0
+version: 0.2.0
 status: active
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-013]

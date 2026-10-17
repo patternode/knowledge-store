@@ -30,7 +30,7 @@ The design notes that predate the catalogue stay in place and carry the reasonin
 
 ## Reading it end to end
 
-From the top: PL-001 owns three outcomes (OC-001 answers a reader can check, OC-002 an ontology the organisation owns, OC-003 a store run at a visible cost). Nine use cases realise them, each written before any design in the use-case skill's form, each fulfilled by features of PRD-001 and realised by the pattern. Thirteen capabilities say what must be possible; eight bounded contexts say where each model lives; twenty-three architecture building blocks are the logical parts, each inside one context; fourteen solution building blocks name the technologies; PAT-001 is the logical pattern and REF-001 its physical form on AWS; nine services are the deployables, on sixteen nodes, with eighteen stores each owned by one context; ten decisions and six considerations say why, and what is still open.
+From the top: PL-001 owns three outcomes (OC-001 answers a reader can check, OC-002 an ontology the organisation owns, OC-003 a store run at a visible cost). Nine use cases realise them, each written before any design in the use-case skill's form, each fulfilled by features of PRD-001 and realised by the pattern. Thirteen capabilities say what must be possible; eight bounded contexts say where each model lives; twelve architecture building blocks are the logical parts, one C4 container each, inside one context; twelve solution building blocks name the technologies of the same containers; PAT-001 is the logical pattern and REF-001 its physical form on AWS; nine services are the deployables, on sixteen nodes, with eighteen stores each owned by one context; ten decisions and six considerations say why, and what is still open.
 
 From the bottom: pick a service in [runtime/services.csv](runtime/services.csv), follow `realises` to its SBB, `part_of` to its context, the context's `realises_capabilities` to the capabilities, and the capability's `required_by_outcomes` to the outcome. Every link is a field in front matter the skills validate.
 
@@ -47,6 +47,7 @@ From the bottom: pick a service in [runtime/services.csv](runtime/services.csv),
 
 ## Conventions
 
+- Building blocks are calibrated against C4: an ABB or SBB is one container, a separately deployed unit or a store, never a component inside one and never the whole system ([building block calibration standard](https://github.com/dermot-obrien/architecture-continuum/blob/main/standards/building-blocks/standard-building-block-calibration.md)). The recalibration of 2026-10-17 folded eleven ABBs and four SBBs; the retired identifiers are listed on the ABB and SBB READMEs and are never reused.
 - Front matter follows the continuum's [front matter standard](https://github.com/dermot-obrien/architecture-continuum/blob/main/standards/standard-frontmatter.md) and validates against its schemas; `.agents/skill-bindings.toml` binds each kind's folder for the skills.
 - Prose: no em dashes inside sentences, no bold inside sentences, British spelling, one paragraph per line (the repository's CONTRIBUTING.md).
 - Dates are the date the page was reversed, not the date the decision was made; `provenance.review_state` is `ai-raw` until a person reviews a page.

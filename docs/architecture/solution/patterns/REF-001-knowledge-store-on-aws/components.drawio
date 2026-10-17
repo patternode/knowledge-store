@@ -1,145 +1,158 @@
 <mxfile host="model-skill" type="device" compressed="false">
   <diagram id="p-ref-001-knowledge-store-on-aws" name="REF-001 Knowledge Store on AWS">
-    <mxGraphModel dx="1422" dy="798" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" math="0" shadow="0">
+    <mxGraphModel dx="1422" dy="798" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2800" pageHeight="1300" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" value="Structure" parent="0" />
-        <mxCell id="frame" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="0" y="0" width="2895" height="1736" as="geometry" /></mxCell>
-        <object id="SBB-001" label="Lake on S3" sbb_id="SBB-001" realises="ABB-002" role="The record">
+        <mxCell id="deco-1" value="REF-001 Knowledge Store on AWS: twelve containers, one block each" style="text;html=1;align=left;fontSize=18;fontStyle=1;fontColor=#1B2A4A;" vertex="1" parent="1"><mxGeometry x="40" y="30" width="1800" height="40" as="geometry" /></mxCell>
+        <object id="SBB-001" label="SBB-001 Lake on S3" sbb_id="SBB-001" realises="ABB-002" role="The record">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="208" y="1348" width="300" height="90" as="geometry"/>
+            <mxGeometry x="360" y="420" width="230" height="150" as="geometry" />
           </mxCell>
         </object>
-        <object id="SBB-002" label="Sweep on ECS Fargate with EventBridge, SQS, Pipes and Scheduler" sbb_id="SBB-002" realises="ABB-004" role="The sweep and its triggers">
+        <object id="SBB-002" label="SBB-002 Sweep on ECS Fargate: the pipeline image with its triggers" sbb_id="SBB-002" realises="ABB-004" role="The sweep, its image and its triggers">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="2119" y="1130" width="300" height="90" as="geometry"/>
+            <mxGeometry x="760" y="420" width="230" height="150" as="geometry" />
           </mxCell>
         </object>
-        <object id="SBB-014" label="The pipeline image" sbb_id="SBB-014" realises="ABB-001, ABB-003, ABB-005 to ABB-011" role="Every pipeline-side block">
+        <object id="SBB-003" label="SBB-003 Knowledge graph on Amazon Neptune" sbb_id="SBB-003" realises="ABB-011" role="The SPARQL projection">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="1181" y="912" width="300" height="90" as="geometry"/>
+            <mxGeometry x="1160" y="260" width="230" height="70" as="geometry" />
           </mxCell>
         </object>
-        <object id="SBB-003" label="Knowledge graph on Amazon Neptune" sbb_id="SBB-003" realises="ABB-011" role="The SPARQL projection">
+        <object id="SBB-004" label="SBB-004 Passage index on Bedrock Knowledge Base with S3 Vectors" sbb_id="SBB-004" realises="ABB-013" role="Search by meaning">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="490" y="694" width="300" height="90" as="geometry"/>
+            <mxGeometry x="1160" y="520" width="230" height="70" as="geometry" />
           </mxCell>
         </object>
-        <object id="SBB-004" label="Passage index on Bedrock Knowledge Base with S3 Vectors" sbb_id="SBB-004" realises="ABB-013" role="Search by meaning">
+        <object id="SBB-005" label="SBB-005 Tools on AgentCore Gateway with Lambda targets and the interceptor" sbb_id="SBB-005" realises="ABB-012" role="The fixed tools, scoped at the gateway">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="1242" y="694" width="300" height="90" as="geometry"/>
+            <mxGeometry x="1560" y="420" width="230" height="100" as="geometry" />
           </mxCell>
         </object>
-        <object id="SBB-005" label="Tools on AgentCore Gateway with Lambda targets and the interceptor" sbb_id="SBB-005" realises="ABB-012, ABB-013, ABB-020" role="The fixed tools, scoped">
+        <object id="SBB-006" label="SBB-006 Chat agent on AgentCore Runtime with Strands, Bedrock and Guardrails" sbb_id="SBB-006" realises="ABB-014" role="Answering, with the checks and the guardrail in the same process">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="1151" y="476" width="300" height="90" as="geometry"/>
+            <mxGeometry x="1960" y="420" width="230" height="100" as="geometry" />
           </mxCell>
         </object>
-        <object id="SBB-006" label="Chat agent on AgentCore Runtime with Strands, Bedrock and Guardrails" sbb_id="SBB-006" realises="ABB-014 to ABB-017" role="Answering">
+        <object id="SBB-007" label="SBB-007 Portal API on API Gateway, Lambda and DynamoDB" sbb_id="SBB-007" realises="ABB-019" role="The API">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="1808" y="258" width="300" height="90" as="geometry"/>
+            <mxGeometry x="2360" y="420" width="230" height="70" as="geometry" />
           </mxCell>
         </object>
-        <object id="SBB-007" label="Portal on CloudFront, API Gateway, Lambda and DynamoDB" sbb_id="SBB-007" realises="ABB-018, ABB-019" role="The page and the API">
+        <object id="SBB-016" label="SBB-016 Chat page on CloudFront and S3" sbb_id="SBB-016" realises="ABB-018" role="The page">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="623" y="40" width="300" height="90" as="geometry"/>
+            <mxGeometry x="2360" y="140" width="230" height="70" as="geometry" />
           </mxCell>
         </object>
-        <object id="SBB-008" label="Identity on Cognito" sbb_id="SBB-008" realises="ABB-020" role="People and tokens">
+        <object id="SBB-008" label="SBB-008 Identity on Cognito" sbb_id="SBB-008" realises="ABB-020" role="People and tokens">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="850" y="694" width="300" height="90" as="geometry"/>
+            <mxGeometry x="2360" y="760" width="230" height="70" as="geometry" />
           </mxCell>
         </object>
-        <object id="SBB-009" label="Image build on CodeBuild and ECR" sbb_id="SBB-009" realises="ABB-023" role="Images in the account">
+        <object id="SBB-009" label="SBB-009 Image build on CodeBuild and ECR" sbb_id="SBB-009" realises="ABB-023" role="Images in the account">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="2435" y="1348" width="300" height="90" as="geometry"/>
+            <mxGeometry x="360" y="1140" width="230" height="70" as="geometry" />
           </mxCell>
         </object>
-        <object id="SBB-010" label="Terraform module with the CloudFormation launch stack" sbb_id="SBB-010" realises="ABB-023" role="The deployment">
+        <object id="SBB-011" label="SBB-011 Optional projection backends" sbb_id="SBB-011" realises="ABB-011" role="When memory is outgrown">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="208" y="1566" width="300" height="90" as="geometry"/>
+            <mxGeometry x="1160" y="780" width="230" height="70" as="geometry" />
           </mxCell>
         </object>
-        <object id="SBB-012" label="Model access through Bedrock or the Anthropic API" sbb_id="SBB-012" realises="ABB-022" role="The model, priced">
+        <object id="SBB-015" label="SBB-015 Command line on an operator's machine" sbb_id="SBB-015" realises="ABB-006, ABB-021" role="The curator's and the evaluator's tool">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="1477" y="1130" width="300" height="90" as="geometry"/>
-          </mxCell>
-        </object>
-        <object id="SBB-011" label="Optional projection backends" sbb_id="SBB-011" realises="ABB-011" role="When memory is outgrown">
-          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
-            <mxGeometry x="1602" y="694" width="300" height="90" as="geometry"/>
+            <mxGeometry x="360" y="900" width="230" height="70" as="geometry" />
           </mxCell>
         </object>
         <object id="IF-01" label="upload events; the lake read and written" iface_id="IF-01">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-001" target="SBB-002"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="170" y="1284"/></Array></mxGeometry>
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.3;exitDx=0;exitDy=0;entryX=0;entryY=0.3;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-001" target="SBB-002">
+            <mxGeometry relative="1" as="geometry"><mxPoint x="0" y="-14" as="offset" /></mxGeometry>
           </mxCell>
         </object>
         <object id="IF-02" label="the pipeline image" iface_id="IF-02">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-009" target="SBB-002"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="2543" y="1284"/></Array></mxGeometry>
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-009" target="SBB-002">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="875" y="1175" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="IF-03" label="runs the sweep" iface_id="IF-03">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-002" target="SBB-014"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="2269" y="1066"/></Array></mxGeometry>
+        <object id="IF-03" label="named graphs loaded" iface_id="IF-03">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.2;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-002" target="SBB-003">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1075" y="450" /><mxPoint x="1075" y="295" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="IF-04" label="discovery and extraction calls" iface_id="IF-04">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-012" target="SBB-014"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="1331" y="1066"/></Array></mxGeometry>
+        <object id="IF-04" label="passages synced; an ingestion job" iface_id="IF-04">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-002" target="SBB-004">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1075" y="495" /><mxPoint x="1075" y="555" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="IF-05" label="named graphs loaded" iface_id="IF-05">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-014" target="SBB-003"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="640" y="848"/></Array></mxGeometry>
+        <object id="IF-05" label="the optional loads" iface_id="IF-05">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.8;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-002" target="SBB-011">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1075" y="540" /><mxPoint x="1075" y="815" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="IF-06" label="passages synced; an ingestion job" iface_id="IF-06">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-014" target="SBB-004"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="1392" y="848"/></Array></mxGeometry>
+        <object id="IF-06" label="read-only SPARQL" iface_id="IF-06">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.2;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-003" target="SBB-005">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1475" y="295" /><mxPoint x="1475" y="440" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="IF-07" label="the optional loads" iface_id="IF-07">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-014" target="SBB-011"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="1752" y="848"/></Array></mxGeometry>
+        <object id="IF-07" label="Retrieve" iface_id="IF-07">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-004" target="SBB-005">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1475" y="555" /><mxPoint x="1475" y="470" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="IF-08" label="read-only SPARQL" iface_id="IF-08">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-003" target="SBB-005"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="640" y="630"/></Array></mxGeometry>
+        <object id="IF-08" label="MCP tools as the caller (CT-002, CT-003)" iface_id="IF-08">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-005" target="SBB-006">
+            <mxGeometry relative="1" as="geometry"><mxPoint x="0" y="-14" as="offset" /></mxGeometry>
           </mxCell>
         </object>
-        <object id="IF-09" label="Retrieve" iface_id="IF-09">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-004" target="SBB-005"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="1392" y="630"/></Array></mxGeometry>
+        <object id="IF-09" label="invocation as the person; steps streamed (CT-004)" iface_id="IF-09">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-006" target="SBB-007">
+            <mxGeometry relative="1" as="geometry"><mxPoint x="0" y="-14" as="offset" /></mxGeometry>
           </mxCell>
         </object>
-        <object id="IF-10" label="MCP tools as the caller (CT-002, CT-003)" iface_id="IF-10">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-005" target="SBB-006"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="1301" y="412"/></Array></mxGeometry>
+        <object id="IF-10" label="sign-in and tokens (CT-012)" iface_id="IF-10">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.3;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-008" target="SBB-016">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="2650" y="781" /><mxPoint x="2650" y="175" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="IF-11" label="the agent model and the guardrail" iface_id="IF-11">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-012" target="SBB-006"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="2054" y="1066"/><mxPoint x="2054" y="957"/><mxPoint x="2054" y="848"/><mxPoint x="2054" y="739"/><mxPoint x="2054" y="630"/><mxPoint x="2054" y="521"/><mxPoint x="2054" y="412"/></Array></mxGeometry>
+        <object id="IF-11" label="the JWT authoriser" iface_id="IF-11">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-008" target="SBB-007">
+            <mxGeometry relative="1" as="geometry" />
           </mxCell>
         </object>
-        <object id="IF-12" label="invocation as the person; steps streamed (CT-004)" iface_id="IF-12">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-006" target="SBB-007"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="1958" y="194"/></Array></mxGeometry>
+        <object id="IF-12" label="the JWT authoriser; the scope written by the interceptor" iface_id="IF-12">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-008" target="SBB-005">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1675" y="795" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="IF-13" label="sign-in and tokens (CT-012)" iface_id="IF-13">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-008" target="SBB-007"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="859" y="630"/><mxPoint x="859" y="521"/><mxPoint x="859" y="412"/><mxPoint x="859" y="303"/><mxPoint x="859" y="194"/></Array></mxGeometry>
+        <object id="IF-13" label="served layers read; requests written; signed links" iface_id="IF-13">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.3;entryY=0;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-001" target="SBB-007">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="475" y="220" /><mxPoint x="2429" y="220" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="IF-14" label="the JWT authoriser; the scope written by the interceptor" iface_id="IF-14">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-008" target="SBB-005"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="1121" y="630"/></Array></mxGeometry>
+        <object id="IF-14" label="gold, silver, ontology and config read" iface_id="IF-14">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=0.8;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-001" target="SBB-005">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="544" y="380" /><mxPoint x="1675" y="380" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="IF-15" label="served layers read; requests written; signed links" iface_id="IF-15">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-001" target="SBB-007"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="320" y="1284"/><mxPoint x="320" y="1175"/><mxPoint x="320" y="1066"/><mxPoint x="320" y="957"/><mxPoint x="320" y="848"/><mxPoint x="320" y="739"/><mxPoint x="320" y="630"/><mxPoint x="320" y="521"/><mxPoint x="320" y="412"/><mxPoint x="320" y="303"/><mxPoint x="320" y="194"/></Array></mxGeometry>
+        <object id="IF-15" label="the agent image" iface_id="IF-15">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.7;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-009" target="SBB-006">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="2075" y="1189" /></Array></mxGeometry>
           </mxCell>
         </object>
-        <object id="IF-16" label="gold, silver, ontology and config read" iface_id="IF-16">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-001" target="SBB-005"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="2459" y="1284"/><mxPoint x="2459" y="1175"/><mxPoint x="2459" y="1066"/><mxPoint x="2459" y="957"/><mxPoint x="2459" y="848"/><mxPoint x="2459" y="739"/><mxPoint x="2459" y="630"/></Array></mxGeometry>
+        <object id="IF-16" label="the HTTP API on one URL (CT-001)" iface_id="IF-16">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-007" target="SBB-016">
+            <mxGeometry relative="1" as="geometry" />
           </mxCell>
         </object>
-        <object id="IF-17" label="the agent image" iface_id="IF-17">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-009" target="SBB-006"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="2626" y="1284"/><mxPoint x="2626" y="1175"/><mxPoint x="2626" y="1066"/><mxPoint x="2626" y="957"/><mxPoint x="2626" y="848"/><mxPoint x="2626" y="739"/><mxPoint x="2626" y="630"/><mxPoint x="2626" y="521"/><mxPoint x="2626" y="412"/></Array></mxGeometry>
+        <object id="IF-17" label="versions published and activated; drafts pulled; evaluation runs read the lake" iface_id="IF-17">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-015" target="SBB-001">
+            <mxGeometry relative="1" as="geometry" />
           </mxCell>
         </object>
-        <object id="IF-18" label="provisions; writes configuration and tool schemas (CT-010)" iface_id="IF-18">
-          <mxCell style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-010" target="SBB-001"><mxGeometry x="-0.5" relative="1" as="geometry"><Array as="points"><mxPoint x="358" y="1502"/></Array></mxGeometry>
+        <object id="IF-18" label="evaluation questions as a person" iface_id="IF-18">
+          <mxCell style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;rounded=1;html=1;fontSize=12;strokeColor=#3A4A66;fontColor=#3A4A66;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="SBB-015" target="SBB-007">
+            <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="2680" y="935" /><mxPoint x="2680" y="455" /></Array></mxGeometry>
           </mxCell>
         </object>
       </root>

@@ -6,11 +6,11 @@ description: "Sources, documents, passages and the lake's layers: getting conten
 version: 0.1.0
 status: draft
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 part_of: PL-001
-contains: [ABB-001, ABB-002, ABB-003, ABB-004]
+contains: [ABB-002]
 realises_capabilities: [CAP-002]
 subdomain_kind: supporting
 c4_levels: [container, component]
@@ -41,7 +41,7 @@ provenance:
 | Owner team | Patternode (Dermot O'Brien) |
 | Subdomain | supporting |
 | Realises | CAP-002 |
-| Contains | ABB-001, ABB-002, ABB-003, ABB-004 |
+| Contains | ABB-002 |
 
 Sources, documents, passages and the lake's layers: getting content in, keeping one immutable copy, cutting it into citable units, and running the sweep that drives every other context.
 
@@ -77,4 +77,4 @@ The sweep composes every stage in one process and calls into BC-002, BC-003 and 
 
 ## Building blocks
 
-ABB-001, ABB-002, ABB-003, ABB-004; each is a page under [../abbs](../../abbs/README.md).
+ABB-002; a page under [../abbs](../../abbs/README.md). The ingestion stages (adapters, refinement) run as components of ABB-004 Pipeline sweep, which BC-003 owns, and that shared deployable is the seam CN-006 names.

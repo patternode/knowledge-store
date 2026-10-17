@@ -6,7 +6,7 @@ description: "The record per document, its projections and the fixed queries ove
 version: 0.1.0
 status: draft
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 part_of: PL-001
@@ -80,4 +80,4 @@ The index is loaded into one process from JSON and cached a minute; the SPARQL i
 
 ## Building blocks
 
-ABB-011, ABB-012, ABB-013; each is a page under [../abbs](../../abbs/README.md).
+ABB-011, ABB-012, ABB-013; each is a page under [../abbs](../../abbs/README.md). Each is one C4 container; what runs inside it is listed on its page.

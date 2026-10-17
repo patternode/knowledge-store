@@ -3,10 +3,10 @@ kind: sbb
 id: SBB-001
 title: "SBB-001 Lake on S3"
 description: "One versioned, encrypted, TLS-only S3 bucket as the record, with EventBridge notifications so uploads start the sweep."
-version: 0.1.0
+version: 0.2.0
 status: active
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-002]

@@ -6,7 +6,7 @@ description: "Evaluation sets, runs and scores: knowing whether the answers are 
 version: 0.1.0
 status: draft
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 part_of: PL-001
@@ -69,4 +69,4 @@ Runs are started by hand and cost a model call per question; the two shipped set
 
 ## Building blocks
 
-ABB-021; each is a page under [../abbs](../../abbs/README.md).
+ABB-021; each is a page under [../abbs](../../abbs/README.md). Each is one C4 container; what runs inside it is listed on its page.

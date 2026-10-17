@@ -4,16 +4,16 @@ id: ABB-002
 title: "ABB-002 Lake and layering"
 short_name: "LAKE"
 description: "The record of everything: one object store behind one port, with a stated key layout of layers and a collection prefix, so that every other store is a projection that can be rebuilt from it."
-version: 0.1.0
+version: 0.2.0
 status: draft
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 category: "Data"
 part_of: BC-001
 realises_capabilities: [CAP-002]
-realised_by: [SBB-001, SBB-013]
+realised_by: [SBB-001]
 requires: []
 domains: [data]
 interfaces:
@@ -35,12 +35,12 @@ provenance:
 | ABB ID | ABB-002 |
 | ABB Name | Lake and layering |
 | Short Name | LAKE |
-| Version | 0.1.0 |
+| Version | 0.2.0 |
 | Status | draft, reversed from the implementation at 0.3.0 |
 | Category | Data |
 | Bounded context | BC-001 |
 | Realises | CAP-002 |
-| Realised by | SBB-001, SBB-013 |
+| Realised by | SBB-001 |
 
 The record of everything: one object store behind one port, with a stated key layout of layers and a collection prefix, so that every other store is a projection that can be rebuilt from it.
 
@@ -52,7 +52,7 @@ The design is a system of record plus projections. The lake is the record; its l
 
 ### 2.1  Component Diagram
 
-The components below are the diagram's boxes; the draw.io is not yet drawn. The outside view of this block is its row in [REF-001](../../patterns/REF-001-knowledge-store-on-aws/index.md).
+The components below are what runs inside this one container, listed per the building block calibration standard: none of them is a building block of its own. The outside view of this block is its row in [REF-001](../../patterns/REF-001-knowledge-store-on-aws/index.md).
 
 ### 2.2  Fundamental functionality
 
@@ -60,6 +60,8 @@ The components below are the diagram's boxes; the draw.io is not yet drawn. The 
 - **Layout.** One module of key builders: bronze by content hash, silver by document id, gold by version and document, ontology by version, pointers, locks
 - **Conditional write.** put_if_absent, used for the sweep's lock
 - **Collections.** config/collections.json and a prefix per collection
+- **Ledger.** usage/ledger/dt=<day>/ rows, one per model call, written by the callers' ledger client and read by the ledger report and the workbench's prices
+- **Index.** The projection JSON per version under gold, loaded into one process by the tools when no graph store is configured
 
 ### 2.3  Attributes
 
@@ -69,7 +71,7 @@ The components below are the diagram's boxes; the draw.io is not yet drawn. The 
 
 ### 2.4  Semantic
 
-Inside: the port, the layout and the layers. Outside: what the layers contain, which each writing context owns (ingestion writes bronze and silver, extraction writes gold, the ontology context writes versions).
+Inside: the bucket, its layout, the pointers, the lock and the ledger. Outside: everything that reads or writes it, and every store that is a projection of it.
 
 ### 2.5  Identity & Access Management
 
@@ -98,16 +100,17 @@ None beyond the cross-cutting trio.
 
 | Where | What |
 |---|---|
-| Code | `src/knowledge_store/store.py, layout.py, collections.py; infra/modules/lake` |
+| Code | `src/knowledge_store/store.py, layout.py, collections.py, ledger.py; infra/modules/lake` |
 | Capabilities | CAP-002 |
 | Context | BC-001 |
 
 ## 5  Solution Building Block guidance
 
-Realised as one S3 bucket (SBB-001) or a folder (SBB-013). Terraform writes configuration into it; nothing else external does.
+Realised as one S3 bucket (SBB-001). The folder form behind the same port is the command line's (SBB-015) and the test suite's, not a block of its own.
 
 ## 6  Revision history
 
 | Version | Date | Change |
 |---|---|---|
+| 0.2.0 | 2026-10-17 | Recalibrated to container grain: the ledger prefix and the projection index folded in as layout; SBB-013 retired |
 | 0.1.0 | 2026-10-16 | Reversed from the implementation |

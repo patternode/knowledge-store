@@ -29,7 +29,7 @@ maturity:
   assessor: "Patternode (Dermot O'Brien), reversed from the implementation"
 subdomain_kind: core
 provided_by_platform: PL-001
-realised_by_abbs: [ABB-005, ABB-006, ABB-007, ABB-008]
+realised_by_abbs: [ABB-004, ABB-006]
 gaps:
   - "Only Turtle is a master format (the MASTERS registry holds one reader)"
   - "No user interface for curation: pull and publish are CLI steps"
@@ -49,7 +49,7 @@ provenance:
 | Status | Draft, reversed from the implementation at 0.3.0 |
 | Subdomain | core |
 | Maturity | 4, target 5 |
-| Realised by | ABB-005, ABB-006, ABB-007, ABB-008 |
+| Realised by | ABB-004, ABB-006 |
 
 Bringing or discovering an ontology for a collection, reviewing and curating it, publishing immutable classified versions with their renditions, and growing it from what extraction could not place.
 

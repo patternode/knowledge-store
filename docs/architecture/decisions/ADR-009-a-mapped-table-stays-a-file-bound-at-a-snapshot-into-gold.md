@@ -22,7 +22,7 @@ consequences:
   negative:
     - "Live sources are a separate design (CN-003)"
 change_type: introduce
-affects_artefacts: [BC-003, ABB-008, ABB-010, ABB-012]
+affects_artefacts: [BC-003, ABB-006, ABB-004, ABB-012]
 resolves: [CN-003]
 provenance:
   origin: ai-generated
@@ -55,4 +55,4 @@ Negative: Live sources are a separate design (CN-003).
 
 ## Affects
 
-BC-003, ABB-008, ABB-010, ABB-012. Resolves CN-003.
+BC-003, ABB-006, ABB-004, ABB-012.

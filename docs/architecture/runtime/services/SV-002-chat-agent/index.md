@@ -49,5 +49,5 @@ From this running unit to the reason it exists: the SBB it realises names the te
 
 | Finding | Rule | Where it is addressed |
 |---|---|---|
-| The agent image also carries the tools in process for local runs | Context integrity | By design for SBB-013; in the deployment the tools are behind the Gateway |
+| The agent image also carries the tools in process for local runs | Context integrity | By design for SBB-015; in the deployment the tools are behind the Gateway |
 

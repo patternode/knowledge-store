@@ -3,10 +3,10 @@ kind: sbb
 id: SBB-009
 title: "SBB-009 Image build on CodeBuild and ECR"
 description: "Both images built inside the account from the deployed source, so nothing runs that was not built from what was applied."
-version: 0.1.0
+version: 0.2.0
 status: active
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-023]

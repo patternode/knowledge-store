@@ -6,11 +6,11 @@ description: "Questions, claims, citations, checks, valves and steps: taking a p
 version: 0.1.0
 status: draft
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 part_of: PL-001
-contains: [ABB-014, ABB-015, ABB-016, ABB-017]
+contains: [ABB-014]
 realises_capabilities: [CAP-008, CAP-010, CAP-012]
 subdomain_kind: core
 c4_levels: [container, component]
@@ -43,7 +43,7 @@ provenance:
 | Owner team | Patternode (Dermot O'Brien) |
 | Subdomain | core |
 | Realises | CAP-008, CAP-010, CAP-012 |
-| Contains | ABB-014, ABB-015, ABB-016, ABB-017 |
+| Contains | ABB-014 |
 
 Questions, claims, citations, checks, valves and steps: taking a person's question to an answer made only of what passed, within limits, with the steps visible.
 
@@ -81,4 +81,4 @@ Two answering paths exist: the agent on the Runtime with structured output and f
 
 ## Building blocks
 
-ABB-014, ABB-015, ABB-016, ABB-017; each is a page under [../abbs](../../abbs/README.md).
+ABB-014; each is a page under [../abbs](../../abbs/README.md). Each is one C4 container; what runs inside it is listed on its page.

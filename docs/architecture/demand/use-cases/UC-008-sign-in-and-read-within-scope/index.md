@@ -20,7 +20,7 @@ success_criteria:
   - "A link to a document or a table is signed only after the scope check, for ten minutes"
 frequency: high
 supports_outcome: OC-003
-realised_by_abbs: [ABB-020, ABB-019, ABB-012]
+realised_by_abbs: [ABB-020, ABB-019, ABB-012, ABB-018]
 realised_by: [PAT-001, REF-001]
 fulfilled_by_features: [FE-012, FE-013, FE-024]
 model:
@@ -99,7 +99,7 @@ What each local participant stands for in the catalogue: an actor or an external
 | 02 | ABB-018 Chat page | realises |
 | 03 | gap | gap |
 | 04 | ABB-019 Chat API | partial |
-| 05 | ABB-020 Identity and scope | partial |
+| 05 | ABB-012 Tool gateway and fixed query tools | partial |
 
 ## Scenarios
 

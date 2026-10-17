@@ -4,16 +4,16 @@ id: ABB-018
 title: "ABB-018 Chat page"
 short_name: "PAGE"
 description: "A static page with no build step and no external scripts: the chat with claims, sources, highlighted quotes and cells, the workbench, demonstrate mode, and the ontology page with its question overlay."
-version: 0.1.0
+version: 0.2.0
 status: draft
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 category: "Portal"
 part_of: BC-006
 realises_capabilities: [CAP-009, CAP-012]
-realised_by: [SBB-007]
+realised_by: [SBB-016]
 requires:
   - { abb: ABB-019, cardinality: "1", rationale: "The API it calls" }
   - { abb: ABB-020, cardinality: "1", rationale: "Sign-in" }
@@ -38,12 +38,12 @@ provenance:
 | ABB ID | ABB-018 |
 | ABB Name | Chat page |
 | Short Name | PAGE |
-| Version | 0.1.0 |
+| Version | 0.2.0 |
 | Status | draft, reversed from the implementation at 0.3.0 |
 | Category | Portal |
 | Bounded context | BC-006 |
 | Realises | CAP-009, CAP-012 |
-| Realised by | SBB-007 |
+| Realised by | SBB-016 |
 
 A static page with no build step and no external scripts: the chat with claims, sources, highlighted quotes and cells, the workbench, demonstrate mode, and the ontology page with its question overlay.
 
@@ -55,12 +55,12 @@ The page is where grounding becomes visible: a citation opens the passage with t
 
 ### 2.1  Component Diagram
 
-The components below are the diagram's boxes; the draw.io is not yet drawn. The outside view of this block is its row in [REF-001](../../patterns/REF-001-knowledge-store-on-aws/index.md).
+The components below are what runs inside this one container, listed per the building block calibration standard: none of them is a building block of its own. The outside view of this block is its row in [REF-001](../../patterns/REF-001-knowledge-store-on-aws/index.md).
 
 ### 2.2  Fundamental functionality
 
 - **Chat.** Ask and what-would-it-take modes; answers from claims; sources panel; document and table links
-- **Workbench panel.** Steps, cost, ontology used, this session
+- **Workbench panel.** Steps, cost, ontology used, this session, as the agent streams them
 - **Ontology page.** D3 force graph with tiers, counts, declared and observed relations, overlay
 - **Common.** DOM builder without innerHTML, config, sign-in modes, API client, brand under brand/ only
 
@@ -71,7 +71,7 @@ The components below are the diagram's boxes; the draw.io is not yet drawn. The 
 
 ### 2.4  Semantic
 
-Inside: the pages. Outside: the API and sign-in.
+Inside: the files the browser runs. Outside: the API (ABB-019), sign-in (ABB-020) and the agent whose steps it shows (ABB-014).
 
 ### 2.5  Identity & Access Management
 
@@ -108,10 +108,11 @@ CloudFront security headers; no-cache so a page never runs an old script.
 
 ## 5  Solution Building Block guidance
 
-Realised as S3 objects behind CloudFront (SBB-007); served locally by the local server (SBB-013).
+Realised as S3 objects behind CloudFront (SBB-016); the local server (SBB-015) serves the same files on loopback.
 
 ## 6  Revision history
 
 | Version | Date | Change |
 |---|---|---|
+| 0.2.0 | 2026-10-17 | Recalibrated to container grain: its own SBB (SBB-016), split from the portal SBB; the workbench panel (ABB-017) folded in |
 | 0.1.0 | 2026-10-16 | Reversed from the implementation |

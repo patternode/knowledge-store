@@ -1,11 +1,11 @@
 id,title,status,affects,resolves,path
 ADR-001,Gold RDF per document is the record; everything else is a projection,active,BC-003 BC-004 ABB-011 ABB-002,,ADR-001-gold-rdf-per-document-is-the-record-everything-else-is-a-projection.md
-ADR-002,"Nothing is shown unchecked: claims with citations, verified by code",active,BC-005 ABB-015 ABB-014,,ADR-002-nothing-is-shown-unchecked-claims-with-citations-verified-by-code.md
+ADR-002,"Nothing is shown unchecked: claims with citations, verified by code",active,BC-005 ABB-014,,ADR-002-nothing-is-shown-unchecked-claims-with-citations-verified-by-code.md
 ADR-003,The person's identity goes all the way down,active,BC-006 ABB-020 ABB-012,,ADR-003-the-person-s-identity-goes-all-the-way-down.md
 ADR-004,"Fixed tools, never free SPARQL or Cypher",active,BC-004 ABB-012,,ADR-004-fixed-tools-never-free-sparql-or-cypher.md
-ADR-005,"Ontology versions are immutable and classified, and the bump decides the cost",active,BC-002 ABB-006 ABB-009 ABB-007,,ADR-005-ontology-versions-are-immutable-and-classified-and-the-bump-decides-the-cost.md
+ADR-005,"Ontology versions are immutable and classified, and the bump decides the cost",active,BC-002 ABB-006 ABB-004,,ADR-005-ontology-versions-are-immutable-and-classified-and-the-bump-decides-the-cost.md
 ADR-006,"One Terraform module, images built inside the account",active,BC-008 ABB-023,,ADR-006-one-terraform-module-images-built-inside-the-account.md
 ADR-007,A passage index on S3 Vectors beside the graph,active,BC-004 ABB-013,CN-004,ADR-007-a-passage-index-on-s3-vectors-beside-the-graph.md
 ADR-008,Memory is the default projection; graph and document backends are optional,active,BC-004 ABB-011,CN-005,ADR-008-memory-is-the-default-projection-graph-and-document-backends-are-optional.md
-ADR-009,"A mapped table stays a file, bound at a snapshot into gold",active,BC-003 ABB-008 ABB-010 ABB-012,CN-003,ADR-009-a-mapped-table-stays-a-file-bound-at-a-snapshot-into-gold.md
+ADR-009,"A mapped table stays a file, bound at a snapshot into gold",active,BC-003 ABB-006 ABB-004 ABB-012,CN-003,ADR-009-a-mapped-table-stays-a-file-bound-at-a-snapshot-into-gold.md
 ADR-010,"Scope is the one access control today, stated per source",active,BC-006 ABB-020,CN-002,ADR-010-scope-is-the-one-access-control-today-stated-per-source.md

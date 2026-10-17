@@ -6,7 +6,7 @@ description: "People, sessions, scope, quotas and the chat page: who may ask, wh
 version: 0.1.0
 status: draft
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 part_of: PL-001
@@ -76,4 +76,4 @@ The handler routes everything behind one Lambda, dispatching answers to itself a
 
 ## Building blocks
 
-ABB-018, ABB-019, ABB-020; each is a page under [../abbs](../../abbs/README.md).
+ABB-018, ABB-019, ABB-020; each is a page under [../abbs](../../abbs/README.md). Each is one C4 container; what runs inside it is listed on its page.

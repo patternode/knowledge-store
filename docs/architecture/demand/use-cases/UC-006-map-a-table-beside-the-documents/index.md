@@ -21,7 +21,7 @@ success_criteria:
   - "A private table is invisible to a public caller"
 frequency: low
 supports_outcome: OC-001
-realised_by_abbs: [ABB-008, ABB-010, ABB-012, ABB-015]
+realised_by_abbs: [ABB-006, ABB-004, ABB-012, ABB-014]
 realised_by: [PAT-001, REF-001]
 fulfilled_by_features: [FE-007]
 model:
@@ -98,9 +98,9 @@ What each local participant stands for in the catalogue: an actor or an external
 | Local ID | Maps To | Relationship |
 |---|---|---|
 | 01 | gap | gap |
-| 02 | ABB-008 Table mapping definition | realises |
-| 03 | ABB-010 Table binding | realises |
-| 04 | ABB-012 Fixed query tools | partial |
+| 02 | ABB-006 Ontology publisher | partial |
+| 03 | ABB-004 Pipeline sweep | realises |
+| 04 | ABB-012 Tool gateway and fixed query tools | partial |
 | 05 | gap | gap |
 
 ## Scenarios

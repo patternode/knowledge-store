@@ -21,7 +21,7 @@ success_criteria:
   - "Destroying removes it, keeping the lake unless told otherwise"
 frequency: low
 supports_outcome: OC-003
-realised_by_abbs: [ABB-023, ABB-022, ABB-002]
+realised_by_abbs: [ABB-023, ABB-002]
 realised_by: [PAT-001, REF-001]
 fulfilled_by_features: [FE-017, FE-018, FE-019, FE-021]
 model:
@@ -98,9 +98,9 @@ What each local participant stands for in the catalogue: an actor or an external
 | Local ID | Maps To | Relationship |
 |---|---|---|
 | 01 | gap | gap |
-| 02 | ABB-023 Deployment automation | realises |
-| 03 | ABB-023 Deployment automation | partial |
-| 04 | ABB-023 Deployment automation | partial |
+| 02 | gap | gap |
+| 03 | ABB-023 Image build | realises |
+| 04 | gap | gap |
 | 05 | gap | gap |
 
 ## Scenarios

@@ -1,10 +1,10 @@
 id,slug,name,kind,runtime_type,context,composes,realises,nodes,code,run_by,path
-SV-001,pipeline,Pipeline (the sweep),service,container,BC-001,BC-001 BC-002 BC-003 BC-004,SBB-014 SBB-002,DN-004,src/knowledge_store/pipeline/run.py,PRD-001; started by uploads and a schedule,services/SV-001-pipeline/index.md
+SV-001,pipeline,Pipeline (the sweep),service,container,BC-003,BC-001 BC-002 BC-003 BC-004,SBB-002,DN-004,src/knowledge_store/pipeline/run.py,PRD-001; started by uploads and a schedule,services/SV-001-pipeline/index.md
 SV-002,chat-agent,Chat agent,service,container,BC-005,BC-005 BC-004,SBB-006,DN-005,src/knowledge_store/agent/app.py,PRD-001; invoked by the portal as the person,services/SV-002-chat-agent/index.md
 SV-003,portal-api,Portal API,service,serverless,BC-006,BC-006 BC-004 BC-005,SBB-007,DN-007 DN-008,src/knowledge_store/portal_api/handler.py,PRD-001,services/SV-003-portal-api/index.md
 SV-004,tools-graph,Graph tools,service,serverless,BC-004,BC-004,SBB-005,DN-007 DN-006,src/knowledge_store/tools/gateway.py,PRD-001; called by the Gateway,services/SV-004-tools-graph/index.md
 SV-005,tools-passages,Passage tools,service,serverless,BC-004,BC-004,SBB-005,DN-007,src/knowledge_store/tools/gateway.py,PRD-001; called by the Gateway,services/SV-005-tools-passages/index.md
-SV-006,agent-interceptor,Gateway interceptor,service,serverless,BC-006,BC-006,SBB-005,DN-007,src/knowledge_store/tools/interceptor.py,PRD-001; run by the Gateway on every call,services/SV-006-agent-interceptor/index.md
-SV-007,chat-page,Chat page,service,managed-service,BC-006,BC-006,SBB-007,DN-009,chat/,PRD-001,services/SV-007-chat-page/index.md
-SV-008,knowledge-store-cli,Command line,command,native,BC-008,BC-001 BC-002 BC-003 BC-004 BC-008,SBB-013 SBB-014,DN-004 DN-014,src/knowledge_store/cli.py,operators and curators,services/SV-008-knowledge-store-cli/index.md
-SV-009,evaluation-runner,Evaluation runner,command,native,BC-007,BC-007,SBB-013,DN-014,src/knowledge_store/evals/run.py,evaluators,services/SV-009-evaluation-runner/index.md
+SV-006,agent-interceptor,Gateway interceptor,service,serverless,BC-004,BC-004 BC-006,SBB-005,DN-007,src/knowledge_store/tools/interceptor.py,PRD-001; run by the Gateway on every call,services/SV-006-agent-interceptor/index.md
+SV-007,chat-page,Chat page,service,managed-service,BC-006,BC-006,SBB-016,DN-009,chat/,PRD-001,services/SV-007-chat-page/index.md
+SV-008,knowledge-store-cli,Command line,command,native,BC-008,BC-001 BC-002 BC-003 BC-004 BC-008,SBB-015,DN-004 DN-014,src/knowledge_store/cli.py,operators and curators,services/SV-008-knowledge-store-cli/index.md
+SV-009,evaluation-runner,Evaluation runner,command,native,BC-007,BC-007,SBB-015,DN-014,src/knowledge_store/evals/run.py,evaluators,services/SV-009-evaluation-runner/index.md

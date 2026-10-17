@@ -3,10 +3,10 @@ kind: sbb
 id: SBB-003
 title: "SBB-003 Knowledge graph on Amazon Neptune"
 description: "The gold RDF as it is, in a SPARQL store the graph tools query read-only, in private subnets."
-version: 0.1.0
+version: 0.2.0
 status: active
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-011]

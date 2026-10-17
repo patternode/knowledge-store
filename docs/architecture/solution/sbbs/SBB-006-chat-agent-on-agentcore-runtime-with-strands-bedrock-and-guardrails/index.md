@@ -3,13 +3,13 @@ kind: sbb
 id: SBB-006
 title: "SBB-006 Chat agent on AgentCore Runtime with Strands, Bedrock and Guardrails"
 description: "The answering agent as a container on AgentCore Runtime, acting only as its caller, with the checks and the guardrail in the same process."
-version: 0.1.0
+version: 0.2.0
 status: active
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
-realises: [ABB-014, ABB-015, ABB-016, ABB-017]
+realises: [ABB-014]
 realised_by_services: [chat-agent]
 products:
   - { name: "Amazon Bedrock AgentCore Runtime", vendor: "AWS", licensing: "pay per use" }
@@ -21,6 +21,7 @@ product_mapping:
   - { abb_component: "Agent", sbb_product: "Strands with BedrockModel, hooks for the valves and the recorder, structured output for claims" }
   - { abb_component: "Checks", sbb_product: "grounding.py in the image; the guardrail applied by ApplyGuardrail with contextual grounding" }
   - { abb_component: "Streaming", sbb_product: "Server-sent events of steps then the result" }
+  - { abb_component: "Model client", sbb_product: "Bedrock in the account's region by default, or the Anthropic API when chosen; every call wrapped by the ledger" }
 cloud_provider: aws
 deployment_model: managed
 provenance:
@@ -33,7 +34,7 @@ provenance:
 | Property | Value |
 |---|---|
 | SBB ID | SBB-006 |
-| Realises | ABB-014, ABB-015, ABB-016, ABB-017 |
+| Realises | ABB-014 |
 | Realised by services | chat-agent |
 | Products | Amazon Bedrock AgentCore Runtime; Strands Agents; Amazon Bedrock models (Claude); Amazon Bedrock Guardrails |
 | Cloud | aws, managed |
@@ -53,6 +54,7 @@ The Runtime gives per-session isolation, a JWT authoriser and streaming without 
 | Agent | Strands with BedrockModel, hooks for the valves and the recorder, structured output for claims |
 | Checks | grounding.py in the image; the guardrail applied by ApplyGuardrail with contextual grounding |
 | Streaming | Server-sent events of steps then the result |
+| Model client | Bedrock in the account's region by default, or the Anthropic API when chosen; every call wrapped by the ledger |
 
 ## 3  Operation
 
@@ -64,4 +66,11 @@ Per invocation second plus model tokens; the model is the cost that matters.
 
 ## 5  ABB traceability
 
-ABB-014, ABB-015, ABB-016, ABB-017. The decisions behind the choice are in [../../decisions](../../../decisions/README.md); the physical pattern that composes this block with the others is REF-001.
+ABB-014. The decisions behind the choice are in [../../decisions](../../../decisions/README.md); the physical pattern that composes this block with the others is REF-001.
+
+## 6  Revision history
+
+| Version | Date | Change |
+|---|---|---|
+| 0.2.0 | 2026-10-17 | Recalibrated: realises the one block the agent is (ABB-014); the model client folded in from SBB-012 |
+| 0.1.0 | 2026-10-16 | Reversed from the implementation |

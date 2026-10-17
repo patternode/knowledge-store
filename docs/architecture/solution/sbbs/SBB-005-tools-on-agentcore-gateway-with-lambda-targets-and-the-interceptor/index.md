@@ -3,13 +3,13 @@ kind: sbb
 id: SBB-005
 title: "SBB-005 Tools on AgentCore Gateway with Lambda targets and the interceptor"
 description: "The twelve fixed tools as an MCP server the agent calls as the caller, with the scope written into every call by the Gateway's interceptor."
-version: 0.1.0
+version: 0.2.0
 status: active
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
-realises: [ABB-012, ABB-013, ABB-020]
+realises: [ABB-012]
 realised_by_services: [tools-graph, tools-passages, agent-interceptor]
 products:
   - { name: "Amazon Bedrock AgentCore Gateway", vendor: "AWS", licensing: "pay per use" }
@@ -31,7 +31,7 @@ provenance:
 | Property | Value |
 |---|---|
 | SBB ID | SBB-005 |
-| Realises | ABB-012, ABB-013, ABB-020 |
+| Realises | ABB-012 |
 | Realised by services | tools-graph, tools-passages, agent-interceptor |
 | Products | Amazon Bedrock AgentCore Gateway; AWS Lambda |
 | Cloud | aws, managed |
@@ -62,4 +62,11 @@ Per call; nothing idle.
 
 ## 5  ABB traceability
 
-ABB-012, ABB-013, ABB-020. The decisions behind the choice are in [../../decisions](../../../decisions/README.md); the physical pattern that composes this block with the others is REF-001.
+ABB-012. The decisions behind the choice are in [../../decisions](../../../decisions/README.md); the physical pattern that composes this block with the others is REF-001.
+
+## 6  Revision history
+
+| Version | Date | Change |
+|---|---|---|
+| 0.2.0 | 2026-10-17 | Recalibrated: realises the one block the gateway, its interceptor and its targets are (ABB-012) |
+| 0.1.0 | 2026-10-16 | Reversed from the implementation |

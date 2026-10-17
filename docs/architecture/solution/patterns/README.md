@@ -1,6 +1,6 @@
 # Patterns
 
-One construct at two abstractions: PAT-001 is the logical pattern in ABBs, REF-001 is its physical form in SBBs on AWS. Every use case names both in `realised_by`, and REF-001 carries the cost model, the evidence and the runbook references the definition ladder reads.
+One construct at two abstractions: PAT-001 is the logical pattern in ABBs, REF-001 is its physical form in SBBs on AWS. Both are C4 container views: every box is one container, per the building block calibration standard, and what runs inside a container is on its block's page. Every use case names both in `realised_by`, and REF-001 carries the cost model, the evidence and the runbook references the definition ladder reads.
 
 | Pattern | Abstraction | Realises | Implements |
 |---|---|---|---|
