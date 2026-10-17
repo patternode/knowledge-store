@@ -10,7 +10,7 @@ The diagram is C4 level 2, the container view. Every blue box is one deployable 
 |---|---|---|
 | 1 System context | The platform and the landscape: the system as one box, with the people and the systems around it | [platform.md](../platform.md) and [landscape.md](../landscape.md) |
 | 2 Container | The service, the deployable unit, with the stores it reads and writes and the nodes it runs on; its SBB says what it is built from | This page, [services.csv](services.csv), [nodes.csv](nodes.csv) |
-| 3 Component | The building blocks inside a service: the ABBs a service composes and the SBB's parts | The ABB and SBB pages, and the patterns PAT-001 and REF-001 |
+| 3 Component | The building blocks inside a service: the ABBs a service composes and the SBB's parts | The ABB and SBB pages, and the patterns AP-001 and RA-001 |
 | 4 Code | The modules in the repository | `module_path` and `packages` on each service page |
 
 ## Reading the diagram

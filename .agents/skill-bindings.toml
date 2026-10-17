@@ -120,20 +120,21 @@ theme = "default"
 pdf   = false
 
 [suite.pattern]
-# Two kinds of pattern: the architecture pattern (logical, ABBs only) and the reference
-# architecture (physical, mostly SBBs), each with its own series.
+# The two kinds of pattern document the continuum names, never a bare pattern: the architecture
+# pattern (conceptual or logical, technology-agnostic, AP-NNN) and the reference architecture
+# (physical, technology-specific, RA-NNN), so the kind is read from the identifier.
 outputDir = "../docs/architecture/solution/patterns"
-idSeries  = "PAT"
+idSeries  = "AP"
 deckTheme = "default"
 
 [suite.pattern.types.architecture-pattern]
 label    = "Architecture pattern"
-idSeries = "PAT"
+idSeries = "AP"
 physical = "none"
 
 [suite.pattern.types.reference-architecture]
 label    = "Reference architecture"
-idSeries = "REF"
+idSeries = "RA"
 physical = "most"
 
 [suite.use-case]

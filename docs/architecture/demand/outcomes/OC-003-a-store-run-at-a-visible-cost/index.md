@@ -10,7 +10,7 @@ last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 kpi: "Monthly cost while idle, and the accounts and stacks a deployment needs"
-kpi_target: { value: "close to nothing idle apart from the graph instance; one account, one stack", unit: "USD per month; count", measurement: "the cost table in REF-001; the module's inputs" }
+kpi_target: { value: "close to nothing idle apart from the graph instance; one account, one stack", unit: "USD per month; count", measurement: "the cost table in RA-001; the module's inputs" }
 business_rationale: "A knowledge store that needs a platform team to run, or that sends documents to a vendor, is not one an organisation adopts for its own material. Self-contained deployment and visible, valved spend are what make the store adoptable."
 time_horizon: short
 measures:

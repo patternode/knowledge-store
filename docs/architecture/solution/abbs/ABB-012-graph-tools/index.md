@@ -58,7 +58,7 @@ A model given free SPARQL or Cypher reads what it should not and asks what no on
 
 ### 2.1  Component Diagram
 
-The components below are the boxes of this container's component diagram, which is not yet drawn. The outside view of this block is its box in [PAT-001](../../patterns/PAT-001-ontology-driven-graphrag/index.md) and the row of its SBB in [REF-001](../../patterns/REF-001-knowledge-store-on-aws/index.md).
+The components below are the boxes of this container's component diagram, which is not yet drawn. The outside view of this block is its box in [AP-001](../../patterns/AP-001-ontology-driven-graphrag/index.md) and the row of its SBB in [RA-001](../../patterns/RA-001-knowledge-store-on-aws/index.md).
 
 ### 2.2  Components
 

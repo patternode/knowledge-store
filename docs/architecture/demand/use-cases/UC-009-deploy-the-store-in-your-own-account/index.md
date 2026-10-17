@@ -22,7 +22,7 @@ success_criteria:
 frequency: low
 supports_outcome: OC-003
 realised_by_abbs: [ABB-014, ABB-002]
-realised_by: [PAT-001, REF-001]
+realised_by: [AP-001, RA-001]
 fulfilled_by_features: [FE-017, FE-018, FE-019, FE-021]
 model:
   diagram: components.drawio
@@ -42,7 +42,7 @@ provenance:
 | Owner | Patternode (Dermot O'Brien) |
 | Outcome | OC-003 |
 | Rests on | The implementation as released; this use case is reversed from it |
-| Realised by | PAT-001 Ontology-driven GraphRAG (logical) and REF-001 Knowledge Store on AWS (physical) |
+| Realised by | AP-001 Ontology-driven GraphRAG (logical) and RA-001 Knowledge Store on AWS (physical) |
 | Fulfilled by | FE-017, FE-018, FE-019, FE-021 |
 | Date | 2026-10-16 |
 

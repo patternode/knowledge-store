@@ -1,7 +1,7 @@
 ---
 kind: pattern
-id: PAT-001
-title: "PAT-001 Ontology-driven GraphRAG with grounded answers"
+id: AP-001
+title: "AP-001 Ontology-driven GraphRAG with grounded answers"
 pattern_type: architecture-pattern
 pattern_scope: platform
 status: draft
@@ -12,7 +12,7 @@ owner: "Patternode (Dermot O'Brien)"
 author: "Patternode (Dermot O'Brien)"
 realises: [CAP-003, CAP-004, CAP-005, CAP-006, CAP-007, CAP-008, CAP-009]
 serves: [UC-001, UC-002, UC-003, UC-004, UC-005, UC-006, UC-007, UC-008]
-implemented_by: [REF-001]
+implemented_by: [RA-001]
 model:
   diagram: components.drawio
 provenance:
@@ -20,11 +20,11 @@ provenance:
   review_state: ai-raw
 ---
 
-# PAT-001 Ontology-driven GraphRAG with grounded answers
+# AP-001 Ontology-driven GraphRAG with grounded answers
 
 <!-- deck:cover subtitle="The architecture pattern: ontology, extraction with provenance, the graph as record, grounded answering" footnote="Reversed from the implementation at 0.3.0. Draft." -->
 
-The architecture pattern: technology-agnostic, in architecture building blocks at logical abstraction. REF-001 is the reference architecture that applies it on AWS. Every use case in [../../demand/use-cases](../../../demand/use-cases/README.md) is realised by this architecture pattern, and its scenarios walk theirs across the blocks named here; in UML terms this document is the use-case realization and the pattern it applies, in one.
+The architecture pattern: technology-agnostic, in architecture building blocks at logical abstraction. RA-001 is the reference architecture that applies it on AWS. Every use case in [../../demand/use-cases](../../../demand/use-cases/README.md) is realised by this architecture pattern, and its scenarios walk theirs across the blocks named here; in UML terms this document is the use-case realization and the pattern it applies, in one.
 
 <!-- deck:slide label="Context" -->
 
@@ -59,9 +59,9 @@ The audience is a team building a knowledge store over its own documents, in any
 
 ## Diagram
 
-![PAT-001 building blocks and interfaces](./components.svg)
+![AP-001 building blocks and interfaces](./components.svg)
 
-Generated from the Required Building Blocks and Interfaces tables with the model skill (`components.drawio` is the source); the as-built picture is REF-001's.
+Generated from the Required Building Blocks and Interfaces tables with the model skill (`components.drawio` is the source); the as-built picture is RA-001's.
 
 <!-- deck:slide label="Building blocks" -->
 
@@ -138,4 +138,4 @@ The scenarios are the use cases': UC-001 S1 to S3 for answering, UC-002 for the 
 
 ## Decisions
 
-ADR-001 to ADR-005 and ADR-010 are this architecture pattern's; ADR-006 to ADR-009 belong to the reference architecture, REF-001.
+ADR-001 to ADR-005 and ADR-010 are this architecture pattern's; ADR-006 to ADR-009 belong to the reference architecture, RA-001.

@@ -1,76 +1,76 @@
 <mxfile host="model-skill" type="device" compressed="false">
-  <diagram id="p-pat-001-ontology-driven-graphrag-with-grounded-answers" name="PAT-001 Ontology-driven GraphRAG with grounded answers">
+  <diagram id="p-ap-001-ontology-driven-graphrag-with-grounded-answers" name="AP-001 Ontology-driven GraphRAG with grounded answers">
     <mxGraphModel dx="1422" dy="798" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" value="Structure" parent="0" />
         <mxCell id="frame" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="0" y="0" width="2687" height="1656" as="geometry" /></mxCell>
-        <object id="ABB-002" label="Lake" abb_id="ABB-002" role_in_the_pattern="The record and its layers; the contract every container reads">
+        <object id="ABB-002" label="Lake" abb_id="ABB-002" role_in_the_architecture_pattern="The record and its layers; the contract every container reads">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
             <mxGeometry x="744" y="1496" width="240" height="80" as="geometry"/>
           </mxCell>
         </object>
-        <object id="ABB-024" label="Ingestion and extraction pipeline" abb_id="ABB-024" role_in_the_pattern="Bytes to published facts in one idempotent sweep; composes four contexts today">
+        <object id="ABB-024" label="Ingestion and extraction pipeline" abb_id="ABB-024" role_in_the_architecture_pattern="Bytes to published facts in one idempotent sweep; composes four contexts today">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
             <mxGeometry x="768" y="1288" width="240" height="80" as="geometry"/>
           </mxCell>
         </object>
-        <object id="ABB-011" label="Knowledge graph" abb_id="ABB-011" role_in_the_pattern="The graph projection, rebuilt from the record">
+        <object id="ABB-011" label="Knowledge graph" abb_id="ABB-011" role_in_the_architecture_pattern="The graph projection, rebuilt from the record">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
             <mxGeometry x="618" y="1080" width="240" height="80" as="geometry"/>
           </mxCell>
         </object>
-        <object id="ABB-013" label="Passage index" abb_id="ABB-013" role_in_the_pattern="Passages by meaning; the hit is a passage id">
+        <object id="ABB-013" label="Passage index" abb_id="ABB-013" role_in_the_architecture_pattern="Passages by meaning; the hit is a passage id">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
             <mxGeometry x="918" y="1080" width="240" height="80" as="geometry"/>
           </mxCell>
         </object>
-        <object id="ABB-012" label="Graph tools" abb_id="ABB-012" role_in_the_pattern="Fixed, read-only tools in the ontology's terms, scope-filtered">
+        <object id="ABB-012" label="Graph tools" abb_id="ABB-012" role_in_the_architecture_pattern="Fixed, read-only tools in the ontology's terms, scope-filtered">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
             <mxGeometry x="221" y="872" width="240" height="80" as="geometry"/>
           </mxCell>
         </object>
-        <object id="ABB-025" label="Passage tools" abb_id="ABB-025" role_in_the_pattern="Search and read of passages, scope-filtered">
+        <object id="ABB-025" label="Passage tools" abb_id="ABB-025" role_in_the_architecture_pattern="Search and read of passages, scope-filtered">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
             <mxGeometry x="1017" y="872" width="240" height="80" as="geometry"/>
           </mxCell>
         </object>
-        <object id="ABB-026" label="Tool gateway" abb_id="ABB-026" role_in_the_pattern="One MCP surface and one token over the tools">
+        <object id="ABB-026" label="Tool gateway" abb_id="ABB-026" role_in_the_architecture_pattern="One MCP surface and one token over the tools">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
             <mxGeometry x="1432" y="664" width="240" height="80" as="geometry"/>
           </mxCell>
         </object>
-        <object id="ABB-027" label="Call interceptor" abb_id="ABB-027" role_in_the_pattern="The one scope decision, before any tool runs">
+        <object id="ABB-027" label="Call interceptor" abb_id="ABB-027" role_in_the_architecture_pattern="The one scope decision, before any tool runs">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
             <mxGeometry x="1909" y="872" width="240" height="80" as="geometry"/>
           </mxCell>
         </object>
-        <object id="ABB-014" label="Answering agent" abb_id="ABB-014" role_in_the_pattern="Plans, proposes, checks, repairs; nothing shown unchecked">
+        <object id="ABB-014" label="Answering agent" abb_id="ABB-014" role_in_the_architecture_pattern="Plans, proposes, checks, repairs; nothing shown unchecked">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
             <mxGeometry x="2024" y="456" width="240" height="80" as="geometry"/>
           </mxCell>
         </object>
-        <object id="ABB-019" label="Chat API" abb_id="ABB-019" role_in_the_pattern="The narrow door; quota, state, signed links">
+        <object id="ABB-019" label="Chat API" abb_id="ABB-019" role_in_the_architecture_pattern="The narrow door; quota, state, signed links">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
             <mxGeometry x="2287" y="248" width="240" height="80" as="geometry"/>
           </mxCell>
         </object>
-        <object id="ABB-018" label="Chat page" abb_id="ABB-018" role_in_the_pattern="Where grounding is visible">
+        <object id="ABB-018" label="Chat page" abb_id="ABB-018" role_in_the_architecture_pattern="Where grounding is visible">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
             <mxGeometry x="1814" y="40" width="240" height="80" as="geometry"/>
           </mxCell>
         </object>
-        <object id="ABB-020" label="Identity" abb_id="ABB-020" role_in_the_pattern="The person all the way down">
+        <object id="ABB-020" label="Identity" abb_id="ABB-020" role_in_the_architecture_pattern="The person all the way down">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
             <mxGeometry x="1424" y="872" width="240" height="80" as="geometry"/>
           </mxCell>
         </object>
-        <object id="ABB-028" label="Command line" abb_id="ABB-028" role_in_the_pattern="The whole store on one machine; the release commands">
+        <object id="ABB-028" label="Command line" abb_id="ABB-028" role_in_the_architecture_pattern="The whole store on one machine; the release commands">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
             <mxGeometry x="340" y="1288" width="240" height="80" as="geometry"/>
           </mxCell>
         </object>
-        <object id="ABB-021" label="Evaluation runner" abb_id="ABB-021" role_in_the_pattern="Right, not only grounded">
+        <object id="ABB-021" label="Evaluation runner" abb_id="ABB-021" role_in_the_architecture_pattern="Right, not only grounded">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontColor=#1B2A4A;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
             <mxGeometry x="2281" y="664" width="240" height="80" as="geometry"/>
           </mxCell>

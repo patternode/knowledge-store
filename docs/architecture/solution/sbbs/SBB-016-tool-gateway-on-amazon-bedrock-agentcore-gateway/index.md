@@ -59,7 +59,7 @@ Per call.
 
 ## 5  ABB traceability
 
-ABB-026. The decisions behind the choice are in [../../decisions](../../../decisions/README.md); the reference architecture that composes this block with the others is REF-001.
+ABB-026. The decisions behind the choice are in [../../decisions](../../../decisions/README.md); the reference architecture that composes this block with the others is RA-001.
 
 ## 6  Revision history
 
