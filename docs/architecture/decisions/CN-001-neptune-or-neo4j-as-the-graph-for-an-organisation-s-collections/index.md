@@ -38,4 +38,4 @@ Criteria: Monthly floor; Traversal latency at the organisation's size; One model
 
 Status: open. Affects CAP-005, ABB-011, SBB-003, SBB-011.
 
-The analysis with the managed services' limits and sources is docs/architecture/aws/scalability.md, whose recommendation is to stay on Neptune for the record and turn a backend on per collection; a decision record is owed when a deployment first needs it.
+The analysis with the managed services' limits and sources is docs/design/aws/scalability.md, whose recommendation is to stay on Neptune for the record and turn a backend on per collection; a decision record is owed when a deployment first needs it.

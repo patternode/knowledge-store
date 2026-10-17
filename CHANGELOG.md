@@ -13,7 +13,7 @@ From 0.2.0 on, releases are made by Release Please from the pull requests merged
 
 ## [0.2.0] - 2026-10-16
 
-Cut by hand from everything merged since 0.1.2, before Release Please took over. AWS is the one supported deployment. The Azure and Google Cloud deployments built and withdrawn between 0.1.2 and 0.2.0 were never released, and the graph and document backends they brought stay, in `docs/architecture/aws/backends.md`.
+Cut by hand from everything merged since 0.1.2, before Release Please took over. AWS is the one supported deployment. The Azure and Google Cloud deployments built and withdrawn between 0.1.2 and 0.2.0 were never released, and the graph and document backends they brought stay, in `docs/design/aws/backends.md`.
 
 ### Added
 
@@ -67,8 +67,8 @@ Cut by hand from everything merged since 0.1.2, before Release Please took over.
 
 ### Documentation
 
-- `docs/architecture/aws/structured.md` explains how to add tables to a collection whose ontology came from discovery (the attributes to add, a mapping in that ontology's terms, `ontology_dir` and the CSV upload) and the symptom when the mapping is missing.
-- [Scalability](docs/architecture/aws/scalability.md): what limits each part of the stack as a collection grows, what an organisation's curated data needs, and Neptune compared with Neo4j as the graph, with the managed services' limits and sources.
+- `docs/design/aws/structured.md` explains how to add tables to a collection whose ontology came from discovery (the attributes to add, a mapping in that ontology's terms, `ontology_dir` and the CSV upload) and the symptom when the mapping is missing.
+- [Scalability](docs/design/aws/scalability.md): what limits each part of the stack as a collection grows, what an organisation's curated data needs, and Neptune compared with Neo4j as the graph, with the managed services' limits and sources.
 
 ## [0.1.2] - 2026-10-03
 

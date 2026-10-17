@@ -13,7 +13,7 @@ resolved_by: ADR-010
 question: "How do a source document's permissions, protection and classification travel with its passages and decide what an answer may show, beyond the public or private scope?"
 options:
   - { name: "Keep scope only", summary: "Two values per source; simple, applied everywhere" }
-  - { name: "Entitlements and classification from the source", summary: "An envelope per item, a control record, enforcement replacing the boolean, as designed in source-controls.md" }
+  - { name: "Entitlements and classification from the source", summary: "An envelope per item, a control record, enforcement replacing the boolean, as designed in docs/design/source-controls.md" }
   - { name: "A policy engine at the tools", summary: "Evaluate a policy per call" }
 criteria:
   - "No gap in enforcement"
@@ -32,11 +32,11 @@ How do a source document's permissions, protection and classification travel wit
 | Option | Summary |
 |---|---|
 | Keep scope only | Two values per source; simple, applied everywhere |
-| Entitlements and classification from the source | An envelope per item, a control record, enforcement replacing the boolean, as designed in source-controls.md |
+| Entitlements and classification from the source | An envelope per item, a control record, enforcement replacing the boolean, as designed in docs/design/source-controls.md |
 | A policy engine at the tools | Evaluate a policy per call |
 
 Criteria: No gap in enforcement; Steward effort per source; Cost per call.
 
 Status: resolved by ADR-010. Affects CAP-009, ABB-027, ABB-024.
 
-The design, its open decisions and its implementation order are in docs/architecture/source-controls.md; ADR-010 records the current choice.
+The design, its open decisions and its implementation order are in docs/design/source-controls.md; ADR-010 records the current choice.

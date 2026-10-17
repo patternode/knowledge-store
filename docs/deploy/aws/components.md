@@ -6,7 +6,7 @@ Knowledge Store on AWS has two use cases:
 - **Chat:** a person asks a question, and an agent answers from the graph. Every statement in the
   answer links to the passage it comes from.
 
-![Knowledge Store on AWS](../../architecture/aws/architecture.png)
+![Knowledge Store on AWS](../../design/aws/architecture.png)
 
 All of it is one Terraform module, [`infra/modules/knowledge-store`](../../../infra/modules/knowledge-store).
 It is made of submodules, one per component. A root calls the module with its own provider and
@@ -147,7 +147,7 @@ holds two client-credentials clients, `<name>-site-public` (scopes `agent.invoke
 ## Security model
 
 The design, with its reasons and its known limitations, is
-[Security design](../../architecture/security.md). In short:
+[Security design](../../design/security.md). In short:
 
 - **People:** every API route needs a valid Cognito token, which API Gateway checks before the
   Lambda runs. The agent's Runtime and Gateway accept only tokens from the portal's client. The

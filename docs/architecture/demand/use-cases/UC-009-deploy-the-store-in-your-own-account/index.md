@@ -29,6 +29,8 @@ model:
 provenance:
   origin: ai-generated
   review_state: ai-raw
+deck_publish: true
+deck_id: uc-009-deploy-the-store-in-your-own-account
 ---
 
 # UC-009 Deploy the store in your own account

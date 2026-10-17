@@ -7,6 +7,7 @@
 // by being written. The exclusion list in site/src/remark-repo-links.cjs names what is not a
 // page, and the same plugin turns links to code and other files into links to GitHub.
 
+import fs from 'node:fs';
 import {themes} from 'prism-react-renderer';
 import {createRequire} from 'node:module';
 
@@ -57,6 +58,35 @@ const config = {
   },
 
   staticDirectories: ['site/static'],
+
+  // The decks published under site/static/decks (npm run publish:decks), by deck_id, for the banner
+  // each catalogue page carries: a page whose deck is not there shows no link.
+  customFields: {
+    publishedDecks: Object.fromEntries(
+      (fs.existsSync(`${siteDir}/site/static/decks`) ? fs.readdirSync(`${siteDir}/site/static/decks`) : [])
+        .filter((id) => fs.existsSync(`${siteDir}/site/static/decks/${id}/index.html`))
+        .map((id) => [id, {pdf: fs.readdirSync(`${siteDir}/site/static/decks/${id}`).find((f) => f.endsWith('.pdf')) ?? null}]),
+    ),
+  },
+
+  plugins: [
+    // site/src/theme wraps the classic theme's components (the page banner).
+    './site/plugins/theme.cjs',
+    [
+      '@docusaurus/plugin-client-redirects',
+      {
+        // The design notes moved out of docs/architecture, which now holds only the catalogue.
+        redirects: [
+          {from: '/docs/architecture/aws/', to: '/docs/design/aws/'},
+          {from: '/docs/architecture/aws/backends/', to: '/docs/design/aws/backends/'},
+          {from: '/docs/architecture/aws/structured/', to: '/docs/design/aws/structured/'},
+          {from: '/docs/architecture/aws/scalability/', to: '/docs/design/aws/scalability/'},
+          {from: '/docs/architecture/security/', to: '/docs/design/security/'},
+          {from: '/docs/architecture/source-controls/', to: '/docs/design/source-controls/'},
+        ],
+      },
+    ],
+  ],
 
   presets: [
     [

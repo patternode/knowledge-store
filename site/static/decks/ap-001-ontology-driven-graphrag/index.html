@@ -1,0 +1,1302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AP-001 Ontology-driven GraphRAG with grounded answers</title>
+<style>
+/* SPDX-License-Identifier: Apache-2.0
+   Neutral theme. Brand-free, so a published deck carries no organisation's identity
+   unless the author chooses one. Copy this file and change the tokens to make a theme. */
+
+:root {
+  --font-body: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+
+  --deck-bg: #1b2430;
+  --slide-bg: #ffffff;
+  --slide-fg: #1a1a1a;
+  --body: #3a3a3a;
+  --heading: #14507a;
+  --on-heading: #ffffff;
+  --rule: #d4dae1;
+  --row-alt: #f2f5f8;
+
+  --accent: #7aa7c7;
+  --accent-deep: #4a6c85;
+  --accent-wash: #eef3f7;
+
+  --code-bg: #14212b;
+  --code-fg: #d6e6ec;
+  --code-inline-bg: #e8edf2;
+
+  --cover-bg: #14212b;
+  --cover-fg: #ffffff;
+  --cover-accent: #7aa7c7;
+  --cover-muted: rgba(255, 255, 255, .65);
+  --cover-faint: rgba(255, 255, 255, .45);
+
+  --chrome-fg: #ffffff;
+}
+
+/* SPDX-License-Identifier: Apache-2.0
+   Layout for markdown-deck. Themes supply the tokens; this file never names a colour.
+   Chrome tokens (--index-*, --toolbar-*) are optional and fall back to cover tokens, and
+   so are divider tokens (--divider-bg, -fg, -accent, -muted).
+   Slides are a fixed 1920x1080 canvas scaled to fit, which is what makes the output
+   look like a deck rather than a web page, and what makes the PDF deterministic. */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  background: var(--deck-bg);
+  color: var(--slide-fg);
+  font-family: var(--font-body);
+  overflow: hidden;
+  display: flex;
+}
+
+/* ---- Slide index, PowerPoint style: numbered thumbnails down the left ---- */
+.index {
+  display: none;
+  flex: 0 0 var(--index-width, 264px);
+  width: var(--index-width, 264px);
+  height: 100%;
+  flex-direction: column;
+  background: var(--index-bg, var(--cover-bg));
+  color: var(--index-fg, var(--cover-fg));
+  border-right: 1px solid var(--index-rule, rgba(255, 255, 255, .12));
+}
+body.index-open .index { display: flex; }
+body.presenting .index { display: none; }
+.index-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 16px 12px 10px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--index-fg, var(--cover-fg));
+}
+.index-title { flex: 1; }
+.index-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px 12px 18px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--index-rule, rgba(255, 255, 255, .12));
+}
+.index-count { opacity: .7; }
+.index button {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  color: inherit;
+  background: var(--toolbar-button, rgba(255, 255, 255, .1));
+  border: 1px solid var(--toolbar-rule, rgba(255, 255, 255, .25));
+  border-radius: 5px;
+  padding: 3px 9px;
+  cursor: pointer;
+}
+.index .thumb { font-size: inherit; background: none; border: 0; padding: 6px 6px 6px 2px; }
+.index button:hover { background: var(--toolbar-hover, rgba(255, 255, 255, .2)); }
+.index button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+#index-collapse { font-size: 16px; line-height: 1; padding: 2px 8px 4px; }
+.index-list { list-style: none; overflow-y: auto; flex: 1; padding: 12px 10px 24px; }
+.index-list li { margin: 0 0 2px; }
+body.index-thumbs .index-list li { margin: 0 0 10px; }
+.thumb {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: 6px;
+  width: 100%;
+  padding: 6px 6px 6px 2px;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.thumb:hover { background: var(--index-hover, rgba(255, 255, 255, .08)); }
+.thumb:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.thumb .num { grid-row: 1; font-size: 12px; opacity: .75; text-align: right; padding-top: 2px; }
+.thumb .mini {
+  grid-row: 1;
+  grid-column: 2;
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--slide-bg);
+  border: 2px solid transparent;
+  border-radius: 3px;
+}
+.thumb.current .mini { border-color: var(--index-active, var(--accent)); }
+.thumb.current .num { opacity: 1; font-weight: 700; }
+/* Titles only, the default: number and title on one line, the title allowed to wrap. */
+.thumb .mini { display: none; }
+.thumb .cap { grid-row: 1; grid-column: 2; font-size: 13px; line-height: 1.35; opacity: .85; }
+.thumb .num { padding-top: 1px; }
+.index .thumb.current { background: var(--index-hover, rgba(255, 255, 255, .08)); box-shadow: inset 3px 0 0 var(--index-active, var(--accent)); }
+.thumb.current .cap { opacity: 1; font-weight: 700; }
+
+/* Thumbnails, on request: the title moves beneath a live copy of the slide. */
+body.index-thumbs .thumb .mini { display: block; }
+body.index-thumbs .thumb .cap {
+  grid-row: 2;
+  font-size: 12px;
+  line-height: 1.3;
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.index-thumbs .index .thumb.current { background: none; box-shadow: none; }
+.thumb-slide {
+  display: flex !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  box-shadow: none !important;
+  pointer-events: none;
+}
+
+/* Comment count beside a slide in the index. */
+.thumb .badge {
+  grid-row: 1;
+  grid-column: 3;
+  align-self: start;
+  min-width: 20px;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  background: var(--index-active, var(--accent));
+  color: var(--index-bg, var(--cover-bg));
+}
+.thumb .badge[hidden] { display: none; }
+
+/* ---- Comments: a panel on the right, per slide ---- */
+.comments {
+  display: none;
+  flex: 0 0 var(--comments-width, 340px);
+  width: var(--comments-width, 340px);
+  height: 100%;
+  flex-direction: column;
+  background: var(--slide-bg);
+  color: var(--slide-fg);
+  border-left: 1px solid var(--rule);
+  font-size: 14px;
+}
+body.comments-open .comments { display: flex; }
+body.presenting .comments { display: none; }
+.comments button {
+  font: inherit;
+  font-size: 13px;
+  color: var(--heading);
+  background: var(--slide-bg);
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.comments button:hover:not(:disabled) { background: var(--row-alt); }
+.comments button:disabled { opacity: .45; cursor: default; }
+.comments button:focus-visible, .comments textarea:focus-visible, .comments input:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 1px;
+}
+.comments-head { display: flex; align-items: center; padding: 16px 14px 10px 18px; }
+.comments-title { flex: 1; font-weight: 700; font-size: 16px; color: var(--heading); }
+#comments-close { font-size: 16px; line-height: 1; padding: 2px 8px 4px; }
+.review-name input, .comment-form textarea, .comment-edit-box {
+  font: inherit;
+  font-size: 14px;
+  color: var(--slide-fg);
+  background: var(--input-bg, var(--slide-bg));
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  padding: 6px 8px;
+  width: 100%;
+  resize: vertical;
+}
+.comments-slide {
+  padding: 10px 18px;
+  font-weight: 700;
+  color: var(--accent-deep);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  background: var(--row-alt);
+}
+.comment-list { list-style: none; flex: 1; overflow-y: auto; padding: 10px 18px; }
+.comment { padding: 10px 0; border-bottom: 1px solid var(--rule); }
+.comment-text { white-space: pre-wrap; line-height: 1.45; color: var(--slide-fg); }
+.comment-meta { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 12px; color: var(--body); }
+.comment-meta button { padding: 1px 8px; font-size: 12px; }
+.comment-meta button:first-of-type { margin-left: auto; }
+.comment .comment-edit-box { margin-bottom: 6px; }
+.comment > button { margin-right: 6px; }
+.comment-empty { padding: 12px 0; color: var(--body); font-style: italic; }
+.comment-form { display: flex; flex-direction: column; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--rule); }
+.comment-form button { align-self: flex-end; }
+.comments-foot { padding: 12px 18px 16px; border-top: 1px solid var(--rule); background: var(--row-alt); }
+.review-total { font-size: 12px; line-height: 1.4; color: var(--body); margin: 0 0 10px; }
+/* One primary action, sized to be found; everything else is secondary. */
+.comments button.primary, .review-dialog button.primary {
+  background: var(--heading); color: var(--on-heading); border-color: var(--heading); font-weight: 700;
+}
+.comments button.primary:hover:not(:disabled), .review-dialog button.primary:hover { background: var(--accent-deep); border-color: var(--accent-deep); }
+#send-review { display: block; width: 100%; padding: 9px 12px; font-size: 14px; }
+#send-review[hidden], #clear-review[hidden] { display: none; }
+.comments button.link, .review-dialog button.link {
+  background: none; border: 0; padding: 0; color: var(--accent-deep); text-decoration: underline; font-size: 12px;
+}
+#clear-review { margin-top: 8px; }
+.comments-note { min-height: 1em; margin: 8px 0 0; font-size: 12px; color: var(--accent-deep); }
+
+/* The send dialog: name, one send action, fallbacks, then a chance to clear. */
+.review-dialog {
+  width: min(440px, calc(100vw - 32px));
+  padding: 22px 24px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--slide-bg);
+  color: var(--slide-fg);
+  font-family: var(--font-body);
+  font-size: 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .35);
+}
+.review-dialog::backdrop { background: rgba(0, 0, 0, .45); }
+.review-dialog h2 { font-size: 18px; color: var(--heading); margin: 0 0 12px; }
+.review-dialog p { line-height: 1.45; margin: 0 0 12px; }
+.review-summary { color: var(--body); }
+.review-name { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; font-size: 12px; color: var(--body); }
+.review-buttons { display: flex; gap: 8px; margin-bottom: 12px; }
+.review-dialog button {
+  font: inherit; font-size: 13px; color: var(--heading); background: var(--slide-bg);
+  border: 1px solid var(--rule); border-radius: 5px; padding: 6px 12px; cursor: pointer;
+}
+.review-alternatives { font-size: 12px; color: var(--body); margin: 0; }
+#toggle-comments .count:not(:empty) {
+  display: inline-block;
+  min-width: 18px;
+  margin-left: 4px;
+  padding: 0 5px;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--index-active, var(--accent));
+  color: var(--index-bg, var(--cover-bg));
+}
+
+/* ---- Stage: one fixed 1920x1080 canvas, scaled to fit, controls beneath ---- */
+.stage {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 20px 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+body.presenting .stage { padding: 0; }
+.viewport { position: relative; flex: 0 0 auto; overflow: hidden; box-shadow: 0 4px 32px rgba(0, 0, 0, .45); }
+.deck { position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+
+.slide {
+  display: none;
+  width: 1920px;
+  height: 1080px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  flex-direction: column;
+  overflow: hidden;
+  /* The slide's ground colour, then an optional background image over it, then a wash of
+     the ground colour over the image to keep text legible. A theme or a build sets the
+     image with --slide-bg-image (a url(), or none) and --slide-bg-size, -repeat,
+     -position and -wash (0 to 1); cover and divider slides keep their own ground. */
+  --slide-ground: var(--slide-bg);
+  background:
+    linear-gradient(
+      color-mix(in srgb, var(--slide-ground) calc(var(--slide-bg-wash, 0) * 100%), transparent),
+      color-mix(in srgb, var(--slide-ground) calc(var(--slide-bg-wash, 0) * 100%), transparent)),
+    var(--slide-bg-image, none) var(--slide-bg-position, center) / var(--slide-bg-size, cover) var(--slide-bg-repeat, no-repeat),
+    var(--slide-ground);
+}
+.slide.active { display: flex; }
+/* Laid out but invisible while a hidden slide is measured for fitting. */
+.slide.measuring, .slide.diagram-measuring { display: flex; visibility: hidden; }
+.deck.single { position: static; }
+.deck.single .slide { display: flex; position: relative; }
+
+.slide-header {
+  padding: 52px 88px 26px;
+  border-bottom: 3px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.eyebrow {
+  font-size: 18px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+  font-weight: 700;
+}
+.slide-header h1 { font-size: 46px; color: var(--heading); line-height: 1.15; font-weight: 700; }
+
+/* Page number, bottom right of every slide but the first. Tokens: --slide-number-fg, and
+   on dividers --divider-muted. It sits above an HTML slide's frame. */
+.slide-number {
+  position: absolute; right: 44px; bottom: 26px; z-index: 2;
+  font-size: 20px; font-variant-numeric: tabular-nums; line-height: 1;
+  color: var(--slide-number-fg, var(--accent-deep)); pointer-events: none;
+}
+.slide.divider .slide-number, .slide.cover .slide-number { color: var(--divider-muted, var(--cover-muted)); }
+
+.slide-body { flex: 1; padding: 30px 88px 52px; overflow: hidden; display: flex; flex-direction: column; }
+.fit { transform-origin: top center; width: 100%; }
+.fit > *:first-child { margin-top: 0; }
+
+.fit p { font-size: 26px; line-height: 1.5; color: var(--body); margin: 0 0 18px; }
+.fit h2 { font-size: 30px; color: var(--heading); margin: 26px 0 12px; font-weight: 700; }
+.fit h3 { font-size: 24px; color: var(--accent-deep); margin: 20px 0 10px; font-weight: 700; }
+.fit ul, .fit ol { margin: 0 0 18px 30px; }
+.fit li { font-size: 24px; line-height: 1.5; color: var(--body); margin: 0 0 8px; }
+.fit img { display: block; max-width: 100%; max-height: 720px; margin: 0 auto; object-fit: contain; }
+/* A slide that is only a diagram gives it the whole body: 1080 less header and padding. */
+.fit > p:only-child > img:only-child { max-height: 820px; }
+.fit strong { color: var(--slide-fg); }
+.fit a { color: var(--heading); text-decoration: underline; }
+
+.fit blockquote {
+  border-left: 6px solid var(--accent);
+  background: var(--accent-wash);
+  padding: 18px 26px;
+  margin: 0 0 20px;
+  font-size: 24px;
+  border-radius: 0 6px 6px 0;
+}
+.fit blockquote p { font-size: 24px; margin: 0 0 8px; }
+.fit blockquote p:last-child { margin: 0; }
+
+.fit table { border-collapse: collapse; width: 100%; margin: 0 0 22px; font-size: 21px; }
+.fit th {
+  background: var(--heading);
+  color: var(--on-heading);
+  text-align: left;
+  padding: 12px 16px;
+  font-weight: 700;
+  border: 1px solid var(--heading);
+}
+.fit td { padding: 11px 16px; border: 1px solid var(--rule); color: var(--body); vertical-align: top; background: var(--slide-bg); }
+.fit tr:nth-child(even) td { background: var(--row-alt); }
+
+.fit code {
+  font-family: var(--font-mono);
+  background: var(--code-inline-bg);
+  color: var(--heading);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: .9em;
+}
+.fit pre.code { background: var(--code-bg); color: var(--code-fg); padding: 20px 26px; border-radius: 8px; margin: 0 0 20px; overflow: hidden; }
+.fit pre.code code { background: none; color: inherit; font-size: 22px; line-height: 1.5; padding: 0; }
+.fit pre.mermaid { background: var(--slide-bg); border: 1px solid var(--rule); border-radius: 8px; padding: 22px; margin: 0 0 20px; text-align: center; }
+/* Light notes with dark text. Mermaid sometimes sizes a note narrower than its text, and
+   white text past a dark box vanishes; dark text past a light box still reads. Mermaid
+   scopes its own styles by id, so these need !important to win. */
+.fit pre.mermaid rect.note { fill: var(--accent-wash) !important; stroke: var(--rule) !important; }
+.fit pre.mermaid .noteText, .fit pre.mermaid .noteText > tspan { fill: var(--slide-fg) !important; }
+
+/* Image slide: a finished 16:9 image fills the canvas; any other shape is letterboxed. */
+.slide-image { display: block; width: 100%; height: 100%; object-fit: contain; }
+.slide-frame { display: block; flex: 1; width: 100%; height: 100%; border: 0; background: transparent; }
+.html-slide .frame-body { flex: 1; min-height: 0; display: flex; padding: 0 88px 52px; }
+.image-caption {
+  position: absolute;
+  right: 20px;
+  bottom: 14px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 15px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+  background: var(--slide-bg);
+  opacity: .9;
+}
+
+/* Cover */
+.slide.cover { --slide-ground: var(--cover-bg); }
+.cover-wrap { padding: 96px; display: flex; flex-direction: column; height: 100%; width: 100%; }
+.cover-logo { width: 170px; opacity: .9; }
+.grow { flex: 1; }
+.cover-title { font-size: 104px; font-weight: 700; color: var(--cover-fg); letter-spacing: -.025em; line-height: 1.05; margin: 0 0 10px; }
+.cover-sub { font-size: 56px; font-weight: 300; color: var(--cover-accent); line-height: 1.1; margin: 0 0 40px; }
+.cover-date { font-size: 26px; color: var(--cover-muted); margin: 0 0 8px; }
+.cover-foot { font-size: 20px; color: var(--cover-faint); max-width: 1200px; }
+
+/* Section divider: the cover's ground unless the theme gives dividers their own. */
+.slide.divider { --slide-ground: var(--divider-bg, var(--cover-bg)); }
+.divider-wrap { padding: 96px; display: flex; flex-direction: column; height: 100%; width: 100%; }
+.divider-eyebrow { font-size: 24px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--divider-accent, var(--cover-accent)); margin: 0 0 20px; }
+.divider-title { font-size: 88px; font-weight: 700; color: var(--divider-fg, var(--cover-fg)); letter-spacing: -.02em; line-height: 1.05; margin: 0 0 18px; max-width: 1600px; }
+.divider-sub { font-size: 40px; font-weight: 300; color: var(--divider-muted, var(--cover-muted)); line-height: 1.25; max-width: 1500px; }
+
+/* Presenter notes never render on screen or in the PDF. */
+.notes { display: none; }
+
+.toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 56px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--chrome-fg);
+}
+.toolbar .spacer { flex: 1; }
+.toolbar button {
+  font: inherit;
+  color: inherit;
+  background: var(--toolbar-button, rgba(255, 255, 255, .1));
+  border: 1px solid var(--toolbar-rule, rgba(255, 255, 255, .25));
+  border-radius: 6px;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+.toolbar button:hover:not(:disabled) { background: var(--toolbar-hover, rgba(255, 255, 255, .2)); }
+.toolbar button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.toolbar button:disabled { opacity: .35; cursor: default; }
+#counter { min-width: 72px; text-align: center; opacity: .85; font-variant-numeric: tabular-nums; }
+body.presenting .toolbar { display: none; }
+
+@media (max-width: 700px) {
+  body.index-open .index { position: fixed; z-index: 2; left: 0; top: 0; box-shadow: 0 0 24px rgba(0, 0, 0, .5); }
+  body.comments-open .comments { position: fixed; z-index: 3; right: 0; top: 0; width: min(340px, 100%); box-shadow: 0 0 24px rgba(0, 0, 0, .5); }
+  .toolbar button { padding: 7px 10px; }
+}
+
+/* Print: no chrome, every slide on its own 16:9 page at exact canvas size. */
+@page { size: 1920px 1080px; margin: 0; }
+@media print {
+  html, body { height: auto; }
+  body { display: block; overflow: visible; background: var(--slide-bg); }
+  .index, .toolbar, .comments { display: none !important; }
+  .stage, .viewport { display: block; position: static; width: auto !important; height: auto !important;
+    padding: 0; overflow: visible; box-shadow: none; }
+  .deck { position: static; width: auto; height: auto; transform: none !important; }
+  .slide { display: flex !important; position: relative; break-after: page; visibility: visible !important; }
+  .slide:last-child { break-after: auto; }
+}
+
+</style>
+</head>
+<body>
+<aside class="index" aria-label="Slide index">
+  <div class="index-head">
+    <span class="index-title">AP-001 Ontology-driven GraphRAG with grounded answers</span>
+    <button id="index-collapse" type="button" title="Collapse the slide index (I)" aria-label="Collapse slide index"><span aria-hidden="true">&#171;</span></button>
+  </div>
+  <div class="index-tools">
+    <span class="index-count">11 slides</span>
+    <button id="index-view" type="button" aria-pressed="false" title="Show slide thumbnails (T)">Thumbnails</button>
+  </div>
+  <ol class="index-list">
+    <li><button class="thumb" type="button" data-i="0" aria-label="Slide 1: AP-001 Ontology-driven GraphRAG with grounded answers">
+      <span class="num">1</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">AP-001 Ontology-driven GraphRAG with grounded answers</span>
+      <span class="badge" hidden></span>
+    </button></li>
+    <li><button class="thumb" type="button" data-i="1" aria-label="Slide 2: Context">
+      <span class="num">2</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">Context</span>
+      <span class="badge" hidden></span>
+    </button></li>
+    <li><button class="thumb" type="button" data-i="2" aria-label="Slide 3: Non-goals">
+      <span class="num">3</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">Non-goals</span>
+      <span class="badge" hidden></span>
+    </button></li>
+    <li><button class="thumb" type="button" data-i="3" aria-label="Slide 4: Quality attributes">
+      <span class="num">4</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">Quality attributes</span>
+      <span class="badge" hidden></span>
+    </button></li>
+    <li><button class="thumb" type="button" data-i="4" aria-label="Slide 5: Diagram">
+      <span class="num">5</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">Diagram</span>
+      <span class="badge" hidden></span>
+    </button></li>
+    <li><button class="thumb" type="button" data-i="5" aria-label="Slide 6: Required Building Blocks (1 of 2)">
+      <span class="num">6</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">Required Building Blocks (1 of 2)</span>
+      <span class="badge" hidden></span>
+    </button></li>
+    <li><button class="thumb" type="button" data-i="6" aria-label="Slide 7: Required Building Blocks (2 of 2)">
+      <span class="num">7</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">Required Building Blocks (2 of 2)</span>
+      <span class="badge" hidden></span>
+    </button></li>
+    <li><button class="thumb" type="button" data-i="7" aria-label="Slide 8: Interfaces (1 of 2)">
+      <span class="num">8</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">Interfaces (1 of 2)</span>
+      <span class="badge" hidden></span>
+    </button></li>
+    <li><button class="thumb" type="button" data-i="8" aria-label="Slide 9: Interfaces (2 of 2)">
+      <span class="num">9</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">Interfaces (2 of 2)</span>
+      <span class="badge" hidden></span>
+    </button></li>
+    <li><button class="thumb" type="button" data-i="9" aria-label="Slide 10: Controls">
+      <span class="num">10</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">Controls</span>
+      <span class="badge" hidden></span>
+    </button></li>
+    <li><button class="thumb" type="button" data-i="10" aria-label="Slide 11: Decisions">
+      <span class="num">11</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">Decisions</span>
+      <span class="badge" hidden></span>
+    </button></li>
+  </ol>
+</aside>
+<main class="stage">
+  <div class="viewport">
+<div class="deck">
+<section class="slide cover" data-slide="cover">
+  <div class="cover-wrap">
+    
+    <div class="grow"></div>
+    <h1 class="cover-title">AP-001 Ontology-driven GraphRAG with grounded answers</h1>
+    <p class="cover-sub">The architecture pattern: ontology, extraction with provenance, the graph as record, grounded answering</p>
+    
+    <p class="cover-foot">Reversed from the implementation at 0.3.0. Draft.</p>
+    <div class="grow"></div>
+  </div>
+</section>
+<section class="slide" data-slide="context">
+  <header class="slide-header">
+    
+    <h1>Context</h1>
+  </header>
+  <div class="slide-body"><div class="fit"><p>An organisation has documents and wants to answer questions from them with every statement checkable. Retrieval over chunks answers fluently and unverifiably; a graph answers precisely but only in the terms someone defined. The pattern joins the two under an ontology a person owns: documents become passages, passages become typed facts that cite them, the facts are the record, projections serve queries, and an agent answers through fixed tools with claims that code checks before anything is shown.</p>
+<p>The audience is a team building a knowledge store over its own documents, in any domain, who will own the ontology.</p>
+<h3>Non-goals</h3>
+<ul>
+<li>A general chat assistant: the agent answers from the collection or abstains.</li>
+<li>A model as judge of truth: every check is code, with the guardrail as a second, bounded opinion.</li>
+<li>Free querying by the model: the tools are fixed.</li>
+<li>A document management system: sources are read, never managed.</li>
+</ul>
+<h3>Quality attributes</h3>
+<table>
+<thead>
+<tr>
+<th>Quality attribute</th>
+<th>Scenario</th>
+<th>Response measure</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Groundedness</td>
+<td>A model proposes a claim whose quote is not in the passage</td>
+<td>The claim is repaired once or removed; it never reaches the page</td>
+</tr>
+<tr>
+<td>Scope safety</td>
+<td>A public caller&#39;s model asks a tool for private content</td>
+<td>The interceptor sets the scope; the tool returns public content only</td>
+</tr>
+<tr>
+<td>Cost</td>
+<td>A question runs away in tool calls</td>
+<td>The hook cancels the seventeenth call; the agent answers from what it has</td>
+</tr>
+<tr>
+<td>Rebuildability</td>
+<td>A projection is lost</td>
+<td>The next sweep rebuilds it from gold; the pointer moves when counts check</td>
+</tr>
+<tr>
+<td>Governance</td>
+<td>A term is proposed from a document</td>
+<td>It stays a candidate until a person publishes a version containing it</td>
+</tr>
+</tbody></table>
+</div></div>
+  
+  <div class="slide-number" aria-hidden="true">2</div>
+</section>
+<section class="slide" data-slide="non-goals">
+  <header class="slide-header">
+    
+    <h1>Non-goals</h1>
+  </header>
+  <div class="slide-body"><div class="fit"><ul>
+<li>A general chat assistant: the agent answers from the collection or abstains.</li>
+<li>A model as judge of truth: every check is code, with the guardrail as a second, bounded opinion.</li>
+<li>Free querying by the model: the tools are fixed.</li>
+<li>A document management system: sources are read, never managed.</li>
+</ul>
+</div></div>
+  
+  <div class="slide-number" aria-hidden="true">3</div>
+</section>
+<section class="slide" data-slide="quality-attributes">
+  <header class="slide-header">
+    
+    <h1>Quality attributes</h1>
+  </header>
+  <div class="slide-body"><div class="fit"><table>
+<thead>
+<tr>
+<th>Quality attribute</th>
+<th>Scenario</th>
+<th>Response measure</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Groundedness</td>
+<td>A model proposes a claim whose quote is not in the passage</td>
+<td>The claim is repaired once or removed; it never reaches the page</td>
+</tr>
+<tr>
+<td>Scope safety</td>
+<td>A public caller&#39;s model asks a tool for private content</td>
+<td>The interceptor sets the scope; the tool returns public content only</td>
+</tr>
+<tr>
+<td>Cost</td>
+<td>A question runs away in tool calls</td>
+<td>The hook cancels the seventeenth call; the agent answers from what it has</td>
+</tr>
+<tr>
+<td>Rebuildability</td>
+<td>A projection is lost</td>
+<td>The next sweep rebuilds it from gold; the pointer moves when counts check</td>
+</tr>
+<tr>
+<td>Governance</td>
+<td>A term is proposed from a document</td>
+<td>It stays a candidate until a person publishes a version containing it</td>
+</tr>
+</tbody></table>
+</div></div>
+  
+  <div class="slide-number" aria-hidden="true">4</div>
+</section>
+<section class="slide" data-slide="component-view">
+  <header class="slide-header">
+    
+    <h1>Diagram</h1>
+  </header>
+  <div class="slide-body"><div class="fit"><p><img src="assets/components.svg" alt="AP-001 building blocks and interfaces"></p>
+<p>Generated from the Required Building Blocks and Interfaces tables with the model skill (<code>components.drawio</code> is the source); the as-built picture is RA-001&#39;s.</p>
+</div></div>
+  
+  <div class="slide-number" aria-hidden="true">5</div>
+</section>
+<section class="slide" data-slide="building-blocks">
+  <header class="slide-header">
+    
+    <h1>Required Building Blocks (1 of 2)</h1>
+  </header>
+  <div class="slide-body"><div class="fit"><table>
+<thead>
+<tr>
+<th>Building Block</th>
+<th>Role in the architecture pattern</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ABB-002 Lake</td>
+<td>The record and its layers; the contract every container reads</td>
+</tr>
+<tr>
+<td>ABB-024 Ingestion and extraction pipeline</td>
+<td>Bytes to published facts in one idempotent sweep; composes four contexts today</td>
+</tr>
+<tr>
+<td>ABB-011 Knowledge graph</td>
+<td>The graph projection, rebuilt from the record</td>
+</tr>
+<tr>
+<td>ABB-013 Passage index</td>
+<td>Passages by meaning; the hit is a passage id</td>
+</tr>
+<tr>
+<td>ABB-012 Graph tools</td>
+<td>Fixed, read-only tools in the ontology&#39;s terms, scope-filtered</td>
+</tr>
+<tr>
+<td>ABB-025 Passage tools</td>
+<td>Search and read of passages, scope-filtered</td>
+</tr>
+<tr>
+<td>ABB-026 Tool gateway</td>
+<td>One MCP surface and one token over the tools</td>
+</tr>
+</tbody></table>
+</div></div>
+  
+  <div class="slide-number" aria-hidden="true">6</div>
+</section>
+<section class="slide" data-slide="building-blocks-2">
+  <header class="slide-header">
+    
+    <h1>Required Building Blocks (2 of 2)</h1>
+  </header>
+  <div class="slide-body"><div class="fit"><table>
+<thead>
+<tr>
+<th>Building Block</th>
+<th>Role in the architecture pattern</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ABB-027 Call interceptor</td>
+<td>The one scope decision, before any tool runs</td>
+</tr>
+<tr>
+<td>ABB-014 Answering agent</td>
+<td>Plans, proposes, checks, repairs; nothing shown unchecked</td>
+</tr>
+<tr>
+<td>ABB-019 Chat API</td>
+<td>The narrow door; quota, state, signed links</td>
+</tr>
+<tr>
+<td>ABB-018 Chat page</td>
+<td>Where grounding is visible</td>
+</tr>
+<tr>
+<td>ABB-020 Identity</td>
+<td>The person all the way down</td>
+</tr>
+<tr>
+<td>ABB-028 Command line</td>
+<td>The whole store on one machine; the release commands</td>
+</tr>
+<tr>
+<td>ABB-021 Evaluation runner</td>
+<td>Right, not only grounded</td>
+</tr>
+</tbody></table>
+<p>Every box is one C4 container under the <a href="https://github.com/dermot-obrien/architecture-continuum/blob/main/standards/building-blocks/standard-building-block-calibration.md">calibration standard</a>: the first pass&#39;s components (adapters, refinement, discovery, versioning, candidates, mapping, extraction, binding, projection, the checks, the valves, the workbench, the model client) are rows inside these blocks, and the deployment&#39;s infrastructure (triggers, build, module) is kept off the pattern.</p>
+</div></div>
+  
+  <div class="slide-number" aria-hidden="true">7</div>
+</section>
+<section class="slide" data-slide="interfaces">
+  <header class="slide-header">
+    
+    <h1>Interfaces (1 of 2)</h1>
+  </header>
+  <div class="slide-body"><div class="fit"><table>
+<thead>
+<tr>
+<th>Interface</th>
+<th>Provider</th>
+<th>Consumer</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>IF-01</td>
+<td>ABB-002 Lake</td>
+<td>ABB-024 Ingestion and extraction pipeline</td>
+<td>the lake port, the layout and the upload events</td>
+</tr>
+<tr>
+<td>IF-02</td>
+<td>ABB-024 Ingestion and extraction pipeline</td>
+<td>ABB-011 Knowledge graph</td>
+<td>named graphs loaded per document per version</td>
+</tr>
+<tr>
+<td>IF-03</td>
+<td>ABB-024 Ingestion and extraction pipeline</td>
+<td>ABB-013 Passage index</td>
+<td>passages synced; an ingestion job</td>
+</tr>
+<tr>
+<td>IF-04</td>
+<td>ABB-002 Lake</td>
+<td>ABB-012 Graph tools</td>
+<td>the gold index, the snapshots and the active version</td>
+</tr>
+<tr>
+<td>IF-05</td>
+<td>ABB-011 Knowledge graph</td>
+<td>ABB-012 Graph tools</td>
+<td>read-only SPARQL</td>
+</tr>
+<tr>
+<td>IF-06</td>
+<td>ABB-013 Passage index</td>
+<td>ABB-025 Passage tools</td>
+<td>Retrieve</td>
+</tr>
+<tr>
+<td>IF-07</td>
+<td>ABB-002 Lake</td>
+<td>ABB-025 Passage tools</td>
+<td>passages read by id</td>
+</tr>
+<tr>
+<td>IF-08</td>
+<td>ABB-012 Graph tools</td>
+<td>ABB-026 Tool gateway</td>
+<td>the graph toolset as a target</td>
+</tr>
+<tr>
+<td>IF-09</td>
+<td>ABB-025 Passage tools</td>
+<td>ABB-026 Tool gateway</td>
+<td>the passages toolset as a target</td>
+</tr>
+<tr>
+<td>IF-10</td>
+<td>ABB-027 Call interceptor</td>
+<td>ABB-026 Tool gateway</td>
+<td>the caller&#39;s scope on every call</td>
+</tr>
+<tr>
+<td>IF-11</td>
+<td>ABB-026 Tool gateway</td>
+<td>ABB-014 Answering agent</td>
+<td>fixed tools over MCP as the caller</td>
+</tr>
+<tr>
+<td>IF-12</td>
+<td>ABB-020 Identity</td>
+<td>ABB-026 Tool gateway</td>
+<td>token verification</td>
+</tr>
+</tbody></table>
+</div></div>
+  
+  <div class="slide-number" aria-hidden="true">8</div>
+</section>
+<section class="slide" data-slide="interfaces-2">
+  <header class="slide-header">
+    
+    <h1>Interfaces (2 of 2)</h1>
+  </header>
+  <div class="slide-body"><div class="fit"><table>
+<thead>
+<tr>
+<th>Interface</th>
+<th>Provider</th>
+<th>Consumer</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>IF-13</td>
+<td>ABB-020 Identity</td>
+<td>ABB-019 Chat API</td>
+<td>who is asking</td>
+</tr>
+<tr>
+<td>IF-14</td>
+<td>ABB-020 Identity</td>
+<td>ABB-018 Chat page</td>
+<td>sign-in and tokens</td>
+</tr>
+<tr>
+<td>IF-15</td>
+<td>ABB-020 Identity</td>
+<td>ABB-014 Answering agent</td>
+<td>tokens accepted</td>
+</tr>
+<tr>
+<td>IF-16</td>
+<td>ABB-014 Answering agent</td>
+<td>ABB-019 Chat API</td>
+<td>the answer, steps streamed</td>
+</tr>
+<tr>
+<td>IF-17</td>
+<td>ABB-019 Chat API</td>
+<td>ABB-018 Chat page</td>
+<td>the HTTP API</td>
+</tr>
+<tr>
+<td>IF-18</td>
+<td>ABB-002 Lake</td>
+<td>ABB-019 Chat API</td>
+<td>served layers read; requests written; signed links</td>
+</tr>
+<tr>
+<td>IF-19</td>
+<td>ABB-002 Lake</td>
+<td>ABB-014 Answering agent</td>
+<td>the agent rendition of the active version</td>
+</tr>
+<tr>
+<td>IF-20</td>
+<td>ABB-002 Lake</td>
+<td>ABB-028 Command line</td>
+<td>the lake, over a folder or the bucket</td>
+</tr>
+<tr>
+<td>IF-21</td>
+<td>ABB-028 Command line</td>
+<td>ABB-002 Lake</td>
+<td>a version published, activated or proposed</td>
+</tr>
+<tr>
+<td>IF-22</td>
+<td>ABB-021 Evaluation runner</td>
+<td>ABB-014 Answering agent</td>
+<td>evaluation questions</td>
+</tr>
+<tr>
+<td>IF-23</td>
+<td>ABB-021 Evaluation runner</td>
+<td>ABB-019 Chat API</td>
+<td>questions through the API as a person</td>
+</tr>
+</tbody></table>
+</div></div>
+  
+  <div class="slide-number" aria-hidden="true">9</div>
+</section>
+<section class="slide" data-slide="controls">
+  <header class="slide-header">
+    
+    <h1>Controls</h1>
+  </header>
+  <div class="slide-body"><div class="fit"><table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Where</th>
+<th>What it stops</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>The scope rule at every hop</td>
+<td>ABB-020</td>
+<td>A public caller reading private content</td>
+</tr>
+<tr>
+<td>Claims checked by code</td>
+<td>ABB-014</td>
+<td>An invented quote, value or figure</td>
+</tr>
+<tr>
+<td>Fixed tools</td>
+<td>ABB-012</td>
+<td>Writes, free queries, escape from scope</td>
+</tr>
+<tr>
+<td>Valves</td>
+<td>ABB-014</td>
+<td>Runaway cost per question, per person, per deployment</td>
+</tr>
+<tr>
+<td>Publish refuses an understated bump</td>
+<td>ABB-024</td>
+<td>A silent semantic change</td>
+</tr>
+<tr>
+<td>Candidates stay out of the graph</td>
+<td>ABB-024</td>
+<td>Document text changing the ontology</td>
+</tr>
+<tr>
+<td>Documents as data</td>
+<td>ABB-024</td>
+<td>Document text being executed or trusted</td>
+</tr>
+</tbody></table>
+</div></div>
+  
+  <div class="slide-number" aria-hidden="true">10</div>
+</section>
+<section class="slide" data-slide="decisions">
+  <header class="slide-header">
+    
+    <h1>Decisions</h1>
+  </header>
+  <div class="slide-body"><div class="fit"><p>ADR-001 to ADR-005 and ADR-010 are this architecture pattern&#39;s; ADR-006 to ADR-009 belong to the reference architecture, RA-001.</p>
+</div></div>
+  
+  <div class="slide-number" aria-hidden="true">11</div>
+</section>
+</div>
+  </div>
+  <nav class="toolbar" aria-label="Slide navigation">
+    <button id="toggle-index" type="button" title="Slide index (I)" aria-label="Toggle slide index" aria-expanded="true"><span aria-hidden="true">&#9776;</span></button>
+    <span class="spacer"></span>
+    <button id="prev" type="button" title="Previous (Left arrow)" aria-label="Previous slide"><span aria-hidden="true">&#8249;</span> Previous</button>
+    <span id="counter" aria-live="polite"></span>
+    <button id="next" type="button" title="Next (Right arrow)" aria-label="Next slide">Next <span aria-hidden="true">&#8250;</span></button>
+    <span class="spacer"></span>
+    
+    <button id="fullscreen" type="button" title="Present full screen (F)" aria-label="Present full screen"><span aria-hidden="true">&#x26F6;</span></button>
+  </nav>
+</main>
+
+
+<script>
+(function () {
+  var W = 1920, H = 1080;
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.deck > .slide'));
+  var deck = document.querySelector('.deck');
+  var viewport = document.querySelector('.viewport');
+  var stage = document.querySelector('.stage');
+  var thumbs = [];
+  var i = 0;
+
+  function px(v) { return parseFloat(v) || 0; }
+
+  // Shrink a slide's body to its content box, and when it must shrink, widen it first so
+  // the scaled result still spans the slide. A uniform shrink alone turns a long table
+  // into a narrow column in the middle of a wide slide.
+  function fitSlide(s) {
+    var box = s.querySelector('.fit');
+    if (!box) return 1;
+    var body = box.parentElement;
+    var cs = getComputedStyle(body);
+    var availH = body.clientHeight - px(cs.paddingTop) - px(cs.paddingBottom);
+    var availW = body.clientWidth - px(cs.paddingLeft) - px(cs.paddingRight);
+    box.style.transform = 'none';
+    box.style.width = '';
+    if (availH <= 0 || availW <= 0) return 1;
+    var k = 1;
+    if (box.scrollHeight > availH + 1) {
+      // Widening reflows the content shorter, so the fitting scale is not availH/height.
+      // Search for the largest scale at which the widened content still fits.
+      var lo = 0.2, hi = 1;
+      for (var n = 0; n < 10; n++) {
+        var mid = (lo + hi) / 2;
+        box.style.width = (availW / mid) + 'px';
+        if (box.scrollHeight * mid <= availH) lo = mid; else hi = mid;
+      }
+      k = lo;
+      box.style.width = (availW / k) + 'px';
+    }
+    if (k < 1) {
+      box.style.transform = 'scale(' + k + ')';
+      box.style.transformOrigin = 'top left';
+    } else {
+      box.style.width = '';
+    }
+    s.setAttribute('data-fit', k.toFixed(3));
+    return k;
+  }
+
+  // Every slide, not just the visible one. A hidden slide measures as zero height, which
+  // is how slides used to reach the PDF unfitted and run off the page.
+  function fitAll() {
+    slides.forEach(function (s) {
+      var hidden = getComputedStyle(s).display === 'none';
+      if (hidden) s.classList.add('measuring');
+      fitSlide(s);
+      if (hidden) s.classList.remove('measuring');
+    });
+    buildThumbs();
+    place();
+  }
+
+  // Scale the fixed canvas into whatever the stage leaves, keeping 16:9 exactly.
+  function place() {
+    if (!viewport || !stage) return;
+    var cs = getComputedStyle(stage);
+    var bar = document.querySelector('.toolbar');
+    var barH = bar && getComputedStyle(bar).display !== 'none' ? bar.offsetHeight : 0;
+    var aw = stage.clientWidth - px(cs.paddingLeft) - px(cs.paddingRight);
+    var ah = stage.clientHeight - px(cs.paddingTop) - px(cs.paddingBottom) - barH;
+    var k = Math.max(0.05, Math.min(aw / W, ah / H));
+    viewport.style.width = Math.floor(W * k) + 'px';
+    viewport.style.height = Math.floor(H * k) + 'px';
+    deck.style.transform = 'scale(' + k + ')';
+  }
+
+  // PowerPoint-style thumbnails: a scaled live copy of each fitted slide.
+  function buildThumbs() {
+    thumbs = Array.prototype.slice.call(document.querySelectorAll('.thumb'));
+    var on = document.body.classList.contains('index-thumbs');
+    thumbs.forEach(function (t, k) {
+      var mini = t.querySelector('.mini');
+      if (!on) { if (mini) mini.innerHTML = ''; return; }
+      if (!mini || !slides[k] || !mini.clientWidth) return;
+      var scale = mini.clientWidth / W;
+      var copy = slides[k].cloneNode(true);
+      copy.classList.remove('active');
+      copy.classList.add('thumb-slide');
+      copy.removeAttribute('id');
+      copy.style.transform = 'scale(' + scale + ')';
+      mini.innerHTML = '';
+      mini.appendChild(copy);
+    });
+    mark();
+  }
+
+  function mark() {
+    thumbs.forEach(function (t, k) {
+      var on = k === i;
+      t.classList.toggle('current', on);
+      t.setAttribute('aria-current', on ? 'true' : 'false');
+      if (on && document.body.classList.contains('index-open')) {
+        var list = t.closest('.index-list');
+        if (list) {
+          var top = t.offsetTop, bottom = top + t.offsetHeight;
+          if (top < list.scrollTop || bottom > list.scrollTop + list.clientHeight) {
+            list.scrollTop = top - list.clientHeight / 2 + t.offsetHeight / 2;
+          }
+        }
+      }
+    });
+  }
+
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function (s, k) { s.classList.toggle('active', k === i); });
+    var c = document.getElementById('counter');
+    if (c) c.textContent = (i + 1) + ' / ' + slides.length;
+    var prev = document.getElementById('prev'), next = document.getElementById('next');
+    if (prev) prev.disabled = i === 0;
+    if (next) next.disabled = i === slides.length - 1;
+    var h = '#' + (slides[i].getAttribute('data-slide') || (i + 1));
+    if (location.hash !== h) history.replaceState(null, '', h);
+    mark();
+    window.dispatchEvent(new CustomEvent('deck:slide', { detail: { index: i } }));
+  }
+
+  // A slide's address is its id, so a link survives slides being added or reordered.
+  // A plain number is still honoured, for links made before ids existed.
+  function fromHash() {
+    var h = decodeURIComponent((location.hash || '').slice(1));
+    if (!h) return 0;
+    for (var k = 0; k < slides.length; k++) if (slides[k].getAttribute('data-slide') === h) return k;
+    var n = parseInt(h, 10);
+    return isNaN(n) ? 0 : n - 1;
+  }
+
+  function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function recall(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+  function setIndex(open) {
+    document.body.classList.toggle('index-open', open);
+    var b = document.getElementById('toggle-index');
+    if (b) b.setAttribute('aria-expanded', open ? 'true' : 'false');
+    store('markdown-deck:index', open ? '1' : '0');
+    // The stage width changes with the panel, so the canvas must be re-placed. Thumbnails
+    // built while the panel was hidden measured zero wide, so rebuild them on opening.
+    // Synchronous on purpose: reading sizes forces layout, and animation frames are
+    // throttled in background tabs, which left the panel empty when deferred.
+    place();
+    if (open) buildThumbs(); else mark();
+  }
+
+  // Titles only, or thumbnails too. The build sets the default; a viewer's choice sticks.
+  function setThumbs(on) {
+    document.body.classList.toggle('index-thumbs', on);
+    var b = document.getElementById('index-view');
+    if (b) {
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.textContent = on ? 'Titles' : 'Thumbnails';
+      b.title = on ? 'Show slide titles only' : 'Show slide thumbnails';
+    }
+    store('markdown-deck:thumbs', on ? '1' : '0');
+    buildThumbs();
+  }
+
+  function fullscreen() {
+    if (document.fullscreenElement) { document.exitFullscreen(); return; }
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+  }
+
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest && e.target.closest('.thumb');
+    if (t) { show(parseInt(t.getAttribute('data-i'), 10)); return; }
+    var id = e.target.closest && e.target.closest('button') && e.target.closest('button').id;
+    if (id === 'prev') show(i - 1);
+    if (id === 'next') show(i + 1);
+    if (id === 'toggle-index') setIndex(!document.body.classList.contains('index-open'));
+    if (id === 'index-collapse') setIndex(false);
+    if (id === 'index-view') setThumbs(!document.body.classList.contains('index-thumbs'));
+    if (id === 'fullscreen') fullscreen();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); show(i + 1); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); show(i - 1); }
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End') show(slides.length - 1);
+    if (e.key === 'i' || e.key === 'I') setIndex(!document.body.classList.contains('index-open'));
+    if (e.key === 't' || e.key === 'T') setThumbs(!document.body.classList.contains('index-thumbs'));
+    if (e.key === 'f' || e.key === 'F') fullscreen();
+  });
+
+  document.addEventListener('fullscreenchange', function () {
+    document.body.classList.toggle('presenting', !!document.fullscreenElement);
+    place();
+  });
+  window.addEventListener('resize', place);
+  window.addEventListener('hashchange', function () { show(fromHash()); });
+
+  // Content that loads late changes the height to fit: images, web fonts, mermaid.
+  Array.prototype.forEach.call(document.querySelectorAll('.deck img'), function (img) {
+    if (!img.complete) img.addEventListener('load', fitAll);
+  });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
+  window.addEventListener('load', fitAll);
+  window.addEventListener('deck:refit', fitAll);
+
+  var saved = recall('markdown-deck:index');
+  setIndex(saved === null ? window.innerWidth >= 900 : saved === '1');
+  var savedThumbs = recall('markdown-deck:thumbs');
+  setThumbs(savedThumbs === null ? document.body.classList.contains('index-thumbs') : savedThumbs === '1');
+  window.__deck = {
+    show: show,
+    fitAll: fitAll,
+    place: place,
+    current: function () { return i; },
+    fits: function () {
+      return slides.map(function (s, k) {
+        var h = s.querySelector('.slide-header h1, .cover-title');
+        var t = h ? h.textContent : (s.getAttribute('aria-label') || '');
+        return { slide: k + 1, title: t, fit: parseFloat(s.getAttribute('data-fit') || '1') };
+      });
+    },
+  };
+  window.__deckShow = show;
+  fitAll();
+  show(fromHash());
+})();</script>
+
+</body>
+</html>

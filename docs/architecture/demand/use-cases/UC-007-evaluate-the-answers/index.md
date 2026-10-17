@@ -29,6 +29,8 @@ model:
 provenance:
   origin: ai-generated
   review_state: ai-raw
+deck_publish: true
+deck_id: uc-007-evaluate-the-answers
 ---
 
 # UC-007 Evaluate the answers

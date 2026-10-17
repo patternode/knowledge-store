@@ -29,6 +29,8 @@ model:
 provenance:
   origin: ai-generated
   review_state: ai-raw
+deck_publish: true
+deck_id: uc-005-grow-the-ontology-from-candidates-and-requests
 ---
 
 # UC-005 Grow the ontology from candidates and requests

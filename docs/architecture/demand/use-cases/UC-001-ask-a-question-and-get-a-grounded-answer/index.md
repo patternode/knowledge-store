@@ -29,6 +29,8 @@ model:
 provenance:
   origin: ai-generated
   review_state: ai-raw
+deck_publish: true
+deck_id: uc-001-ask-a-question-and-get-a-grounded-answer
 ---
 
 # UC-001 Ask a question and get a grounded answer

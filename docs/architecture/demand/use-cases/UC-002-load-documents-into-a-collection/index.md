@@ -29,6 +29,8 @@ model:
 provenance:
   origin: ai-generated
   review_state: ai-raw
+deck_publish: true
+deck_id: uc-002-load-documents-into-a-collection
 ---
 
 # UC-002 Load documents into a collection

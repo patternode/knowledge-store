@@ -1,0 +1,67 @@
+{
+  "generator": "markdown-deck",
+  "id": "uc-007-evaluate-the-answers",
+  "html": "index.html",
+  "source": "../../../../docs/architecture/demand/use-cases/UC-007-evaluate-the-answers/index.md",
+  "title": "UC-007 Evaluate the answers",
+  "version": "0.1.0",
+  "status": "draft",
+  "cover": true,
+  "slides": [
+    {
+      "file": "in-one-sentence",
+      "kind": "content",
+      "label": "In one sentence",
+      "title": "The solution in one sentence"
+    },
+    {
+      "file": "on-one-page",
+      "kind": "content",
+      "label": "On one page",
+      "title": "The solution on one page"
+    },
+    {
+      "file": "participants",
+      "kind": "content",
+      "label": "Participants",
+      "title": "Participants"
+    },
+    {
+      "file": "interactions",
+      "kind": "content",
+      "label": "Interactions",
+      "title": "Interactions"
+    },
+    {
+      "file": "catalogue-mapping",
+      "kind": "content",
+      "label": "Catalogue mapping",
+      "title": "Catalogue Mapping"
+    },
+    {
+      "file": "the-flow",
+      "kind": "html",
+      "label": "The flow",
+      "title": "The flow"
+    },
+    {
+      "file": "data-and-measures",
+      "kind": "content",
+      "label": "Data and measures",
+      "title": "Data and measures"
+    }
+  ],
+  "dependencies": {
+    "documents": [
+      "demand/use-cases/UC-007-evaluate-the-answers/index.md",
+      "demand/use-cases/UC-007-evaluate-the-answers/scenarios.html"
+    ],
+    "images": [
+      {
+        "path": "demand/use-cases/UC-007-evaluate-the-answers/components.svg",
+        "source": "demand/use-cases/UC-007-evaluate-the-answers/components.drawio",
+        "stale": false
+      }
+    ]
+  }
+}
