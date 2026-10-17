@@ -10,7 +10,7 @@
     "serve": "docusaurus serve",
     "clear": "docusaurus clear",
     "skills": "node scripts/skills.mjs sync --locked --copy",
-    "check:architecture": "node .agents/skills/aaa-continuum/bin/continuum.mjs check --strict"
+    "check:architecture": "node scripts/check-architecture.mjs"
   },
   "dependencies": {
     "@docusaurus/core": "^3.10.2",
