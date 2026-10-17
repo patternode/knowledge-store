@@ -9,7 +9,7 @@ A platform landscape is the layers of platforms, which exist and which depends o
 ```
   consumers     Patternode's Knowledge Store lab (patternode-platform, deployments/knowledge-store, a pinned release)
                 Any organisation's deployment from examples/deployment, pinned to a release
-                A person's own AI assistant, over MCP, where the consumer exposes the tools (pna:PAT-005)
+                A person's own AI assistant, over MCP, where the consumer exposes the tools (pna:AP-002)
                       │ the module (CT-010), the chat page and API (CT-001), the tools (CT-002, CT-003), the CLI (CT-014)
                       ▼
   this platform  PL-001 Knowledge Store: BC-001 to BC-008
@@ -25,7 +25,7 @@ A platform landscape is the layers of platforms, which exist and which depends o
 |---|---|---|
 | Consumed by | The Patternode lab | The Terraform module pinned by tag, moved by patternode-platform's master session; the lab's product is `pna:PRD-003` |
 | Consumed by | Any deployment | The same module, from `examples/deployment` |
-| Consumed by | A person's assistant | The MCP tools, where a consumer puts a front on them (`pna:PAT-005`, `pna:PAT-006` do this for the earnings lab) |
+| Consumed by | A person's assistant | The MCP tools, where a consumer puts a front on them (`pna:AP-002`, `pna:RA-006` do this for the earnings lab) |
 | Consumes | AWS managed services | Terraform resources in `infra/modules/*`; each is a deployment node in [runtime/nodes.csv](runtime/nodes.csv) |
 | Consumes | Claude, through Bedrock or the Anthropic API | the model client, a component of ABB-024 and ABB-014; every call priced into the ledger |
 | Consumes | Optional backends | ABB-024's projection port, filled by the sweep's load stage |

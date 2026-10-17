@@ -8,8 +8,8 @@ feature,FE,FE-[0-9]{3},Product feature,,,off,"A row of demand/features.csv, with
 bounded-context,BC,BC-[0-9]{3},Bounded context,solution/contexts/{id}-*/index.md,,linked,Registered in solution/contexts.csv
 abb,ABB,ABB-[0-9]{3},Architecture building block,solution/abbs/{id}-*/index.md,,linked,Registered in solution/abbs.csv
 sbb,SBB,SBB-[0-9]{3},Solution building block,solution/sbbs/{id}-*/index.md,,linked,Registered in solution/sbbs.csv
-architecture-pattern,AP,AP-[0-9]{3},Architecture pattern (conceptual or logical; technology-agnostic),solution/patterns/{id}-*/index.md,pattern-logical,linked,"The continuum's series for the kind; PAT-NNN until 2026-10-17"
-reference-architecture,RA,RA-[0-9]{3},Reference architecture (physical; technology-specific; applies architecture patterns),solution/patterns/{id}-*/index.md,pattern-physical,linked,"The continuum's series for the kind; REF-NNN until 2026-10-17"
+architecture-pattern,AP,AP-[0-9]{3},Architecture pattern (conceptual or logical; technology-agnostic),solution/patterns/{id}-*/index.md,pattern-logical,linked,The continuum's series for the kind
+reference-architecture,RA,RA-[0-9]{3},Reference architecture (physical; technology-specific; applies architecture patterns),solution/patterns/{id}-*/index.md,pattern-physical,linked,The continuum's series for the kind
 contract,CT,CT-[0-9]{3},Contract: an interface API or event or published artefact,,,off,"A row of solution/contracts.csv, with no page of its own"
 service,SV,SV-[0-9]{3},Service (a deployable unit),runtime/services/{id}-*/index.md,,linked,Registered in runtime/services.csv
 deployment-node,DN,DN-[0-9]{3},Deployment node,,,off,A row of runtime/nodes.csv
