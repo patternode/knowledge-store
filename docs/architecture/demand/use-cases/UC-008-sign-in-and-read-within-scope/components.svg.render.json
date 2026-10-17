@@ -1,0 +1,8 @@
+{
+  "source": "components.drawio",
+  "sha256": "71ac6926e2f7a6925b2cd145c1b3a60abfe3cb5af7fb0d8539e849dc1d15e563",
+  "layers": [
+    "Structure"
+  ],
+  "note": "Written by model stamp. A consumer compares sha256 with the source to detect a stale render. Commit it with the image."
+}

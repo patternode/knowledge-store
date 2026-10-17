@@ -19,3 +19,11 @@ People run pinned releases of this repository, so every change is versioned. The
 2. Pull requests go into `main` and are squash merged with the title as the subject. `develop` is not a staging branch any more: the release pull request batches what has merged, so open nothing into `develop`.
 3. Never edit the version by hand: not `version` in `pyproject.toml`, not `__version__` in `src/knowledge_store/__init__.py`, not `.release-please-manifest.json`, and not `CHANGELOG.md`. Release Please writes all four in the release pull request (`chore(main): release X.Y.Z`), which it keeps open against `main` and updates on every merge. Merging it is the release: the tag `vX.Y.Z` and the GitHub Release follow from the `Release Please` workflow, and nothing else tags.
 4. A deployment pins a tag, never a commit: `ref=vX.Y.Z` in the module source, in `examples/deployment/main.tf` here and in patternode-platform `deployments/knowledge-store/main.tf`. Moving the platform pin is the step in the first section of this file, and it moves to a release, so a change reaches the lab only after the release pull request that carries it is merged.
+
+## Architecture
+
+The architecture lives in this repository, under [docs/architecture](docs/architecture/README.md), expressed with the architecture continuum: outcomes, use cases, capabilities, the product and its features, bounded contexts, building blocks, patterns, contracts, services, nodes, stores, decisions and considerations, each with an identifier (`PL`, `OC`, `UC`, `CAP`, `PRD`, `FE`, `BC`, `ABB`, `SBB`, `PAT`, `REF`, `CT`, `SV`, `DN`, `ST`, `ADR`, `CN`) and a register. `.agents/skills.json` declares the skills that write and check it and `.agents/skill-bindings.toml` says where each kind lives.
+
+1. A change that adds or changes a deployable, a store, a contract or a context updates the matching register and page in the same pull request. The services register is what a reconcile check will read.
+2. A design question with more than one credible answer is a consideration (`CN-NNN`); settling it is a decision record (`ADR-NNN`). Write the note where the reasoning is long and the record where the register points.
+3. Keep the prose rules: no em dashes or bold inside sentences, one paragraph per line, British spelling.

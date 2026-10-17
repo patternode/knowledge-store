@@ -1,0 +1,4 @@
+id,name,kpi,target,owned_by,required_capabilities,status
+OC-001,Answers a reader can check,Share of shown statements that passed the citation and grounding checks,100 percent by construction; false positives in evaluation at zero,PL-001,"CAP-004, CAP-005, CAP-008, CAP-011",draft
+OC-002,An ontology the organisation owns,Ontology versions published by a person and the cost of a change bounded by its class,Every version curated; a patch re-extracts nothing and a minor only its delta,PL-001,"CAP-003, CAP-004, CAP-012",draft
+OC-003,A store the organisation runs itself at a cost it can see,Monthly cost while idle and the number of accounts and stacks a deployment needs,Idle close to nothing apart from the graph instance; one account and one stack,PL-001,"CAP-009, CAP-010, CAP-013",draft

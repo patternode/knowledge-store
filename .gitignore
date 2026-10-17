@@ -15,3 +15,11 @@ examples/sherlock-holmes/stories/
 # The documentation site (Docusaurus): dependencies, cache and output.
 node_modules/
 .docusaurus/
+
+# Installed skills (node scripts/… or skills.mjs sync writes them; the lock is committed)
+.agents/skills/
+.agents/.skill-sources/
+.claude/skills/
+
+# Deck bundles the pattern skill builds beside each use case and pattern (publish.py); rebuilt from the document, never committed
+docs/architecture/**/dist/
