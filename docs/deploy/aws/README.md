@@ -14,12 +14,12 @@ together, including the diagram, is in [Architecture](../../architecture/README.
 | [README.md](README.md) (this file) | Step-by-step configuration and installation, then operation and removal |
 | [parameters.md](parameters.md) | Every parameter: what you must bring, what you may decide, the defaults |
 | [components.md](components.md) | The components, and how each one is expressed in the Terraform |
-| [architecture.png](../../architecture/aws/architecture.png) / [architecture.svg](../../architecture/aws/architecture.svg) | The reference architecture diagram, with the notes in [docs/architecture](../../architecture/README.md) |
-| [architecture.drawio](../../architecture/aws/architecture.drawio) | The same diagram as an editable draw.io file: open it in [diagrams.net](https://app.diagrams.net), the draw.io desktop app or its VS Code extension. [architecture.py](../../architecture/aws/architecture.py) generates the SVG |
+| [architecture.png](../../design/aws/architecture.png) / [architecture.svg](../../design/aws/architecture.svg) | The reference architecture diagram, with the notes in [docs/architecture](../../architecture/README.md) |
+| [architecture.drawio](../../design/aws/architecture.drawio) | The same diagram as an editable draw.io file: open it in [diagrams.net](https://app.diagrams.net), the draw.io desktop app or its VS Code extension. [architecture.py](../../design/aws/architecture.py) generates the SVG |
 | [`infra/stack`](../../../infra/stack) | The Terraform root you apply, with [`terraform.tfvars.example`](../../../infra/stack/terraform.tfvars.example) |
 | [`infra/modules/knowledge-store`](../../../infra/modules/knowledge-store) | The module it calls, which holds everything |
 
-![Knowledge Store on AWS](../../architecture/aws/architecture.png)
+![Knowledge Store on AWS](../../design/aws/architecture.png)
 
 Allow about an hour for a first installation, most of it waiting: Neptune and CloudFront take a
 while to create, and the image builds take a few minutes each.
@@ -511,7 +511,7 @@ master of the collection's ontology.
       take to answer this?" returns a report ([docs/workbench.md](../../workbench.md)).
 
 To measure answer quality, write an evaluation set (format in
-[docs/architecture/aws/aws.md](../../architecture/aws/aws.md#evaluation)) and run the `evaluate` output's
+[docs/design/aws/aws.md](../../design/aws/aws.md#evaluation)) and run the `evaluate` output's
 command as a signed-in user. Every question is a model run and costs money; without `--yes` the
 command prints its estimate and stops.
 

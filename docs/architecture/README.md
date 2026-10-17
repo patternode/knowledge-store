@@ -14,19 +14,9 @@ The folders follow the continuum's three spaces, plus decisions. A register (CSV
 | [solution/](solution/) | The solution space: [bounded contexts](solution/contexts/README.md), [architecture building blocks](solution/abbs/README.md), [solution building blocks](solution/sbbs/README.md), [architecture patterns and reference architectures](solution/patterns/README.md) and [contracts](solution/contracts.csv) | BC, ABB, SBB, AP, RA, CT |
 | [runtime/](runtime/README.md) | What runs where: [services](runtime/services.csv), [nodes](runtime/nodes.csv) and [stores](runtime/stores.csv) | SV, DN, ST |
 | [decisions/](decisions/README.md) | Decision records and open considerations | ADR, CN |
-| [registers/](registers/) | The identifier series and the namespaces, for the cross-reference skill | |
+| [registers/](registers/) | The identifier series and the namespaces this catalogue cites | |
 
-The design notes that predate the catalogue stay in place and carry the reasoning the registers point at:
-
-| Note | What it covers |
-|---|---|
-| [Knowledge Store on AWS](aws/aws.md) | The reference architecture's narrative: ingestion, chat, grounding, valves, evaluation, costs, the two applies. RA-001 is its register form |
-| [Graph and document backends](aws/backends.md) | Optional Neo4j, Apache AGE and MongoDB projections behind the same API (ADR-008, SBB-011) |
-| [Structured lookup](aws/structured.md) | A mapped table beside the documents, so an answer can cite a cell (ADR-009, CN-003) |
-| [Security design](security.md) | How the design keeps people, data and spend safe (ADR-002, ADR-003, the controls of RA-001) |
-| [Source controls](source-controls.md) | How a document's permissions, protection and classification travel with its passages (CN-002, ADR-010) |
-| [Scalability](aws/scalability.md) | What limits each part as a collection grows; Neptune against Neo4j (CN-001) |
-| [Diagram](aws/architecture.png) | The reference architecture, also as [SVG](aws/architecture.svg), [draw.io](aws/architecture.drawio) and its generator [architecture.py](aws/architecture.py) |
+The reasoning behind the catalogue, written as the design was worked out, is in [docs/design](../design/README.md): the AWS narrative RA-001 is the register form of, the backends, structured lookup, scalability, the security design and the source controls. A page here names the note it came from, and a note names the entries that came out of it.
 
 ## Checking it
 
@@ -38,7 +28,7 @@ From the top: PL-001 owns three outcomes (OC-001 answers a reader can check, OC-
 
 From the bottom: pick a service in [runtime/services.csv](runtime/services.csv), follow `realises` to its SBB, `part_of` to its context, the context's `realises_capabilities` to the capabilities, and the capability's `required_by_outcomes` to the outcome. Every link is a field in front matter the skills validate.
 
-## What the continuum exposed
+## Findings
 
 | Finding | Where it is recorded |
 |---|---|
@@ -59,11 +49,6 @@ From the bottom: pick a service in [runtime/services.csv](runtime/services.csv),
 
 ## Diagrams and decks
 
-Each use case and pattern is also a model: the `model` skill reads its Participants, Interactions, Interfaces and Scenarios tables, emits `components.drawio` beside it, validates the diagram against the document, stamps the exported `components.svg` (the `.render.json` is its record) and, for a use case, animates `scenarios.html`. The `pattern` skill's `publish.py` runs the same steps for a folder and builds a deck under `dist/`, which is ignored. After editing a table, run from the repository root:
+Each use case and pattern document is also a model and a deck. The `model` skill reads its Participants, Interactions, Interfaces and Scenarios tables, emits `components.drawio` beside it, validates the diagram against the document, stamps the exported `components.svg` (the `.render.json` is its record) and, for a use case, animates `scenarios.html`. The first layout of a diagram is by rank and is meant to be refined by hand in draw.io, then re-exported and stamped (`model.py stamp components.svg --diagram components.drawio --layer Structure`).
 
-```bash
-python3 .agents/skills/pattern/scripts/publish.py docs/architecture/demand/use-cases --recursive --render never --no-pdf
-python3 .agents/skills/pattern/scripts/publish.py docs/architecture/solution/patterns --recursive --render never --no-pdf
-```
-
-The skills are installed by `node <ai-assisted-work>/bin/skills.mjs sync` from `.agents/skills.json`; `markdown-deck` needs `npm install` in its folder once. The first layout of a diagram is by rank and is meant to be refined by hand in draw.io, then re-exported and stamped (`model.py stamp components.svg --diagram components.drawio --layer Structure`).
+`npm run publish:decks` publishes every document marked `deck_publish: true` as slides and a PDF into `site/static/decks/<deck_id>/`, which is committed, and the site puts a "Slides · PDF" line under the title of each such page (`site/src/remark-deck-links.cjs`). The page is the source; the deck is regenerated from it at a checkpoint, never edited. Both scripts skip in one line when the skills are not installed (`npm run skills`, then `npm install` once in `.agents/skills/markdown-deck`); PDF export uses Edge or Chrome where installed, else `MARKDOWN_DECK_BROWSER` names a Chromium.

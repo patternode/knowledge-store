@@ -29,6 +29,8 @@ model:
 provenance:
   origin: ai-generated
   review_state: ai-raw
+deck_publish: true
+deck_id: uc-003-bring-an-ontology-to-a-collection
 ---
 
 # UC-003 Bring an ontology to a collection

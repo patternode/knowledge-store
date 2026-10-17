@@ -16,24 +16,26 @@ model:
 realises: [CAP-002, CAP-003, CAP-004, CAP-005, CAP-006, CAP-007, CAP-008, CAP-009, CAP-010, CAP-011, CAP-012, CAP-013]
 serves: [UC-001, UC-002, UC-003, UC-004, UC-005, UC-006, UC-007, UC-008, UC-009]
 references:
-  - { type: cost-model, path: "docs/architecture/aws/aws.md#costs" }
+  - { type: cost-model, path: "docs/design/aws/aws.md#costs" }
   - { type: evidence, path: "examples/evals" }
   - { type: runbook, path: "docs/deploy/aws/README.md" }
-  - { type: doc, path: "docs/architecture/aws/aws.md" }
+  - { type: doc, path: "docs/design/aws/aws.md" }
 provenance:
   origin: ai-generated
   review_state: ai-raw
+deck_publish: true
+deck_id: ra-001-knowledge-store-on-aws
 ---
 
 # RA-001 Knowledge Store on AWS
 
 <!-- deck:cover subtitle="The reference architecture: Knowledge Store as one Terraform module on AWS" footnote="Reversed from the implementation at 0.3.0. Draft." -->
 
-The reference architecture: the architecture pattern AP-001 made concrete in solution building blocks on AWS, as the module deploys it. The narrative, the request flow, the grounding table, the valves and the cost table are in [aws/aws.md](../../../aws/aws.md), which this page does not repeat; the components and their Terraform are in [the deployment components guide](../../../../deploy/aws/components.md). This page is the pattern's register form: what blocks, what interfaces, what controls, what decisions, so the catalogue can be walked from a use case to a running unit.
+The reference architecture: the architecture pattern AP-001 made concrete in solution building blocks on AWS, as the module deploys it. The narrative, the request flow, the grounding table, the valves and the cost table are in [aws/aws.md](../../../../design/aws/aws.md), which this page does not repeat; the components and their Terraform are in [the deployment components guide](../../../../deploy/aws/components.md). This page is the pattern's register form: what blocks, what interfaces, what controls, what decisions, so the catalogue can be walked from a use case to a running unit.
 
 ![RA-001 solution building blocks and interfaces](./components.svg)
 
-Generated from the Required Building Blocks and Interfaces tables with the model skill (`components.drawio` is the source). The illustrated reference architecture is [aws/architecture.svg](../../../aws/architecture.svg), from [aws/architecture.drawio](../../../aws/architecture.drawio) and its generator [architecture.py](../../../aws/architecture.py).
+Generated from the Required Building Blocks and Interfaces tables with the model skill (`components.drawio` is the source). The illustrated reference architecture is [aws/architecture.svg](../../../../design/aws/architecture.svg), from [aws/architecture.drawio](../../../../design/aws/architecture.drawio) and its generator [architecture.py](../../../../design/aws/architecture.py).
 
 <!-- deck:slide label="Context" -->
 
@@ -121,13 +123,13 @@ The contracts register, [../../contracts.csv](../../contracts.csv), gives each i
 
 ## Controls
 
-Those of AP-001, plus: the origin secret between CloudFront and the API; reserved concurrency and the API throttle; the web ACL input; IAM authentication and private subnets for Neptune; a role per unit with a permissions boundary; the budget alert; images pinned by digest. The full table is [security.md](../../../security.md).
+Those of AP-001, plus: the origin secret between CloudFront and the API; reserved concurrency and the API throttle; the web ACL input; IAM authentication and private subnets for Neptune; a role per unit with a permissions boundary; the budget alert; images pinned by digest. The full table is [security.md](../../../../design/security.md).
 
 <!-- deck:slide label="Cost" -->
 
 ## Cost
 
-The cost table in [aws/aws.md](../../../aws/aws.md#costs) is the cost model: the Neptune instance is the fixed cost; everything else is per use; model calls are the cost that matters.
+The cost table in [aws/aws.md](../../../../design/aws/aws.md#costs) is the cost model: the Neptune instance is the fixed cost; everything else is per use; model calls are the cost that matters.
 
 <!-- deck:slide label="Decisions" -->
 

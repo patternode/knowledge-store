@@ -29,6 +29,8 @@ model:
 provenance:
   origin: ai-generated
   review_state: ai-raw
+deck_publish: true
+deck_id: uc-004-discover-and-curate-an-ontology-from-the-documents
 ---
 
 # UC-004 Discover and curate an ontology from the documents

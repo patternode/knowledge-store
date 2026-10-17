@@ -39,4 +39,4 @@ Criteria: Freshness; Citation stability; Scope enforcement.
 
 Status: resolved by ADR-009. Affects CAP-007, ABB-024, ABB-012.
 
-The mapping already renders R2RML for this; nothing reads it yet. docs/architecture/aws/structured.md says where the accelerator fits.
+The mapping already renders R2RML for this; nothing reads it yet. docs/design/aws/structured.md says where the accelerator fits.

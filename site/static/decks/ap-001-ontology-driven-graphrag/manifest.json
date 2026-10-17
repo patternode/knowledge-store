@@ -1,0 +1,84 @@
+{
+  "generator": "markdown-deck",
+  "id": "ap-001-ontology-driven-graphrag",
+  "html": "index.html",
+  "source": "../../../../docs/architecture/solution/patterns/AP-001-ontology-driven-graphrag/index.md",
+  "title": "AP-001 Ontology-driven GraphRAG with grounded answers",
+  "version": "0.1.0",
+  "status": "draft",
+  "cover": true,
+  "slides": [
+    {
+      "file": "context",
+      "kind": "content",
+      "label": "Context",
+      "title": "Context"
+    },
+    {
+      "file": "non-goals",
+      "kind": "content",
+      "label": "Non-goals",
+      "title": "Non-goals"
+    },
+    {
+      "file": "quality-attributes",
+      "kind": "content",
+      "label": "Quality attributes",
+      "title": "Quality attributes"
+    },
+    {
+      "file": "component-view",
+      "kind": "content",
+      "label": "Component view",
+      "title": "Diagram"
+    },
+    {
+      "file": "building-blocks",
+      "kind": "content",
+      "label": "Building blocks (1 of 2)",
+      "title": "Required Building Blocks (1 of 2)"
+    },
+    {
+      "file": "building-blocks-2",
+      "kind": "content",
+      "label": "Building blocks (2 of 2)",
+      "title": "Required Building Blocks (2 of 2)"
+    },
+    {
+      "file": "interfaces",
+      "kind": "content",
+      "label": "Interfaces (1 of 2)",
+      "title": "Interfaces (1 of 2)"
+    },
+    {
+      "file": "interfaces-2",
+      "kind": "content",
+      "label": "Interfaces (2 of 2)",
+      "title": "Interfaces (2 of 2)"
+    },
+    {
+      "file": "controls",
+      "kind": "content",
+      "label": "Controls",
+      "title": "Controls"
+    },
+    {
+      "file": "decisions",
+      "kind": "content",
+      "label": "Decisions",
+      "title": "Decisions"
+    }
+  ],
+  "dependencies": {
+    "documents": [
+      "solution/patterns/AP-001-ontology-driven-graphrag/index.md"
+    ],
+    "images": [
+      {
+        "path": "solution/patterns/AP-001-ontology-driven-graphrag/components.svg",
+        "source": "solution/patterns/AP-001-ontology-driven-graphrag/components.drawio",
+        "stale": false
+      }
+    ]
+  }
+}

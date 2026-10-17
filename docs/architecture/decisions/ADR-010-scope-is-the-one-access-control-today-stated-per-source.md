@@ -8,7 +8,7 @@ created: 2026-10-16
 last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
-y_statement: "In the context of what access control a document carries, facing the choice between one scope flag per source, per-document entitlements from the source, and a policy engine, we decided for scope (public or private) stated on the source and carried on every document, passage, entity, cell and link, enforced at every hop by one rule, and against entitlements for now, to achieve a control that is simple enough to be applied everywhere without a gap, accepting that classification and per-document entitlements are a designed extension (source-controls.md) not yet built."
+y_statement: "In the context of what access control a document carries, facing the choice between one scope flag per source, per-document entitlements from the source, and a policy engine, we decided for scope (public or private) stated on the source and carried on every document, passage, entity, cell and link, enforced at every hop by one rule, and against entitlements for now, to achieve a control that is simple enough to be applied everywhere without a gap, accepting that classification and per-document entitlements are a designed extension (docs/design/source-controls.md) not yet built."
 decision_drivers: ["No gap in enforcement", "Simplicity"]
 considered_options:
   - "One scope flag"
@@ -38,7 +38,7 @@ Documents carry permissions, classifications and handling rules of their own; th
 
 ## Decision
 
-In the context of what access control a document carries, facing the choice between one scope flag per source, per-document entitlements from the source, and a policy engine, we decided for scope (public or private) stated on the source and carried on every document, passage, entity, cell and link, enforced at every hop by one rule, and against entitlements for now, to achieve a control that is simple enough to be applied everywhere without a gap, accepting that classification and per-document entitlements are a designed extension (source-controls.md) not yet built.
+In the context of what access control a document carries, facing the choice between one scope flag per source, per-document entitlements from the source, and a policy engine, we decided for scope (public or private) stated on the source and carried on every document, passage, entity, cell and link, enforced at every hop by one rule, and against entitlements for now, to achieve a control that is simple enough to be applied everywhere without a gap, accepting that classification and per-document entitlements are a designed extension (docs/design/source-controls.md) not yet built.
 
 ## Options considered
 

@@ -18,6 +18,8 @@ model:
 provenance:
   origin: ai-generated
   review_state: ai-raw
+deck_publish: true
+deck_id: ap-001-ontology-driven-graphrag
 ---
 
 # AP-001 Ontology-driven GraphRAG with grounded answers

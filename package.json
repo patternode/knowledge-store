@@ -10,10 +10,14 @@
     "serve": "docusaurus serve",
     "clear": "docusaurus clear",
     "skills": "node scripts/skills.mjs sync --locked --copy",
-    "check:architecture": "node scripts/check-architecture.mjs"
+    "check:architecture": "node scripts/check-architecture.mjs",
+    "publish:decks": "node scripts/publish-decks.mjs",
+    "prebuild": "node scripts/regenerate.mjs",
+    "regenerate": "node scripts/regenerate.mjs"
   },
   "dependencies": {
     "@docusaurus/core": "^3.10.2",
+    "@docusaurus/plugin-client-redirects": "^3.10.2",
     "@docusaurus/preset-classic": "^3.10.2",
     "@fontsource/ibm-plex-mono": "^5.2.0",
     "@fontsource/ibm-plex-sans": "^5.2.0",

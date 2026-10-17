@@ -28,6 +28,8 @@ model:
 provenance:
   origin: ai-generated
   review_state: ai-raw
+deck_publish: true
+deck_id: uc-008-sign-in-and-read-within-scope
 ---
 
 # UC-008 Sign in and read within scope

@@ -98,3 +98,37 @@
   background: var(--pn-neutral-50);
   border-color: var(--ifm-color-emphasis-400);
 }
+
+/* The banner under a catalogue page's title, from its front matter (site/src/components/ArchitectureBanner). */
+.arch-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.6rem;
+  margin: -0.5rem 0 1.25rem;
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-700);
+}
+.arch-banner__chip {
+  display: inline-block;
+  padding: 0.1rem 0.55rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  background: var(--ifm-color-emphasis-100);
+}
+.arch-banner__kind {
+  background: var(--ifm-color-primary-lightest, var(--ifm-color-emphasis-100));
+}
+.arch-banner__status--active, .arch-banner__status--accepted {
+  border-color: var(--ifm-color-success-dark);
+  color: var(--ifm-color-success-darkest);
+}
+.arch-banner__status--draft, .arch-banner__status--proposed {
+  border-color: var(--ifm-color-warning-dark);
+  color: var(--ifm-color-warning-darkest);
+}
+.arch-banner__decks {
+  margin-left: auto;
+  font-weight: 600;
+}

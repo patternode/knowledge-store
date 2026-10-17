@@ -29,6 +29,8 @@ model:
 provenance:
   origin: ai-generated
   review_state: ai-raw
+deck_publish: true
+deck_id: uc-006-map-a-table-beside-the-documents
 ---
 
 # UC-006 Map a table beside the documents

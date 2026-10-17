@@ -1,0 +1,78 @@
+{
+  "generator": "markdown-deck",
+  "id": "ra-001-knowledge-store-on-aws",
+  "html": "index.html",
+  "source": "../../../../docs/architecture/solution/patterns/RA-001-knowledge-store-on-aws/index.md",
+  "title": "RA-001 Knowledge Store on AWS",
+  "version": "0.3.0",
+  "status": "active",
+  "cover": true,
+  "slides": [
+    {
+      "file": "context",
+      "kind": "content",
+      "label": "Context",
+      "title": "Context"
+    },
+    {
+      "file": "non-goals",
+      "kind": "content",
+      "label": "Non-goals",
+      "title": "Non-goals"
+    },
+    {
+      "file": "building-blocks",
+      "kind": "content",
+      "label": "Building blocks (1 of 2)",
+      "title": "Required Building Blocks (1 of 2)"
+    },
+    {
+      "file": "building-blocks-2",
+      "kind": "content",
+      "label": "Building blocks (2 of 2)",
+      "title": "Required Building Blocks (2 of 2)"
+    },
+    {
+      "file": "interfaces",
+      "kind": "content",
+      "label": "Interfaces (1 of 2)",
+      "title": "Interfaces (1 of 2)"
+    },
+    {
+      "file": "interfaces-2",
+      "kind": "content",
+      "label": "Interfaces (2 of 2)",
+      "title": "Interfaces (2 of 2)"
+    },
+    {
+      "file": "deployment-view",
+      "kind": "content",
+      "label": "Deployment view",
+      "title": "Deployment view"
+    },
+    {
+      "file": "controls",
+      "kind": "content",
+      "label": "Controls",
+      "title": "Controls"
+    },
+    {
+      "file": "cost",
+      "kind": "content",
+      "label": "Cost",
+      "title": "Cost"
+    },
+    {
+      "file": "decisions",
+      "kind": "content",
+      "label": "Decisions",
+      "title": "Decisions"
+    }
+  ],
+  "dependencies": {
+    "documents": [
+      "solution/patterns/RA-001-knowledge-store-on-aws/index.md"
+    ],
+    "images": []
+  }
+}

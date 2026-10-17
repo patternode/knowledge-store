@@ -150,7 +150,7 @@ repository of your own ([`examples/deployment`](examples/deployment)). Read
 [QUICKSTART.md](QUICKSTART.md) to try it, and [docs/deploy/aws](docs/deploy/aws/README.md) to
 install it in your own AWS estate. The pipeline image is built inside your account from this
 repository's source. How the design keeps people, data and spend safe is
-[docs/architecture/security.md](docs/architecture/security.md), and how to deploy it under your
+[docs/design/security.md](docs/design/security.md), and how to deploy it under your
 own name, mark and colours is [docs/branding.md](docs/branding.md).
 
 ## Install
@@ -236,7 +236,7 @@ content: the `private-readers` Cognito group, or the private roles of `site_sign
 A table is not this path yet. CSV and JSON in the lake are parsed as text and extracted like
 prose, so a filter or a total has no cell to cite. The draft for keeping a mapped CSV as a table
 beside the documents, and for how AWS Context Ontology Accelerator fits a later live source, is
-[docs/architecture/aws/structured.md](docs/architecture/aws/structured.md). The worked catalog is the
+[docs/design/aws/structured.md](docs/design/aws/structured.md). The worked catalog is the
 invented tables in the space-missions corpus
 ([examples/space-missions](examples/space-missions/README.md)).
 
@@ -254,7 +254,7 @@ collection that [examples/sherlock-holmes/fetch.py](examples/sherlock-holmes/fet
 
 The scoring needs no model as judge: facts stated, near misses avoided, the share of claims that
 passed the citation checks, expected sources cited, and declines. See
-[docs/architecture/aws/aws.md](docs/architecture/aws/aws.md#evaluation).
+[docs/design/aws/aws.md](docs/design/aws/aws.md#evaluation).
 
 ## Run it locally
 
@@ -285,11 +285,11 @@ version. Chat is limited by `daily_questions` per user.
 - The portal's projection is held in memory by one function by default. That is right for tens of
   thousands of entities and wrong beyond it. For more, the pipeline can load the same projection
   into a document store and a graph database (`PROJECTION_STORE`, `GRAPH_BACKEND`; see
-  [docs/architecture/aws/backends.md](docs/architecture/aws/backends.md)), behind
+  [docs/design/aws/backends.md](docs/design/aws/backends.md)), behind
   the same API. On AWS the agent's graph tools query Neptune; the portal API's own routes still read memory.
 - The pipeline is one task under one lock on the whole lake, and rebuilds the projection in memory.
   What limits each part at an organisation's scale, and Neptune against Neo4j, is
-  [docs/architecture/aws/scalability.md](docs/architecture/aws/scalability.md).
+  [docs/design/aws/scalability.md](docs/design/aws/scalability.md).
 - Delta selection is a heuristic (see above).
 - Scanned PDFs need OCR, which is not built in.
 - Extraction is synchronous (one model call per document). Batch inference (50% cheaper, for

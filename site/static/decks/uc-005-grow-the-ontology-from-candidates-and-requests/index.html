@@ -1,0 +1,1206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UC-005 Grow the ontology from candidates and requests</title>
+<style>
+/* SPDX-License-Identifier: Apache-2.0
+   Neutral theme. Brand-free, so a published deck carries no organisation's identity
+   unless the author chooses one. Copy this file and change the tokens to make a theme. */
+
+:root {
+  --font-body: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+
+  --deck-bg: #1b2430;
+  --slide-bg: #ffffff;
+  --slide-fg: #1a1a1a;
+  --body: #3a3a3a;
+  --heading: #14507a;
+  --on-heading: #ffffff;
+  --rule: #d4dae1;
+  --row-alt: #f2f5f8;
+
+  --accent: #7aa7c7;
+  --accent-deep: #4a6c85;
+  --accent-wash: #eef3f7;
+
+  --code-bg: #14212b;
+  --code-fg: #d6e6ec;
+  --code-inline-bg: #e8edf2;
+
+  --cover-bg: #14212b;
+  --cover-fg: #ffffff;
+  --cover-accent: #7aa7c7;
+  --cover-muted: rgba(255, 255, 255, .65);
+  --cover-faint: rgba(255, 255, 255, .45);
+
+  --chrome-fg: #ffffff;
+}
+
+/* SPDX-License-Identifier: Apache-2.0
+   Layout for markdown-deck. Themes supply the tokens; this file never names a colour.
+   Chrome tokens (--index-*, --toolbar-*) are optional and fall back to cover tokens, and
+   so are divider tokens (--divider-bg, -fg, -accent, -muted).
+   Slides are a fixed 1920x1080 canvas scaled to fit, which is what makes the output
+   look like a deck rather than a web page, and what makes the PDF deterministic. */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  background: var(--deck-bg);
+  color: var(--slide-fg);
+  font-family: var(--font-body);
+  overflow: hidden;
+  display: flex;
+}
+
+/* ---- Slide index, PowerPoint style: numbered thumbnails down the left ---- */
+.index {
+  display: none;
+  flex: 0 0 var(--index-width, 264px);
+  width: var(--index-width, 264px);
+  height: 100%;
+  flex-direction: column;
+  background: var(--index-bg, var(--cover-bg));
+  color: var(--index-fg, var(--cover-fg));
+  border-right: 1px solid var(--index-rule, rgba(255, 255, 255, .12));
+}
+body.index-open .index { display: flex; }
+body.presenting .index { display: none; }
+.index-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 16px 12px 10px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--index-fg, var(--cover-fg));
+}
+.index-title { flex: 1; }
+.index-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px 12px 18px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--index-rule, rgba(255, 255, 255, .12));
+}
+.index-count { opacity: .7; }
+.index button {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  color: inherit;
+  background: var(--toolbar-button, rgba(255, 255, 255, .1));
+  border: 1px solid var(--toolbar-rule, rgba(255, 255, 255, .25));
+  border-radius: 5px;
+  padding: 3px 9px;
+  cursor: pointer;
+}
+.index .thumb { font-size: inherit; background: none; border: 0; padding: 6px 6px 6px 2px; }
+.index button:hover { background: var(--toolbar-hover, rgba(255, 255, 255, .2)); }
+.index button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+#index-collapse { font-size: 16px; line-height: 1; padding: 2px 8px 4px; }
+.index-list { list-style: none; overflow-y: auto; flex: 1; padding: 12px 10px 24px; }
+.index-list li { margin: 0 0 2px; }
+body.index-thumbs .index-list li { margin: 0 0 10px; }
+.thumb {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: 6px;
+  width: 100%;
+  padding: 6px 6px 6px 2px;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.thumb:hover { background: var(--index-hover, rgba(255, 255, 255, .08)); }
+.thumb:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.thumb .num { grid-row: 1; font-size: 12px; opacity: .75; text-align: right; padding-top: 2px; }
+.thumb .mini {
+  grid-row: 1;
+  grid-column: 2;
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--slide-bg);
+  border: 2px solid transparent;
+  border-radius: 3px;
+}
+.thumb.current .mini { border-color: var(--index-active, var(--accent)); }
+.thumb.current .num { opacity: 1; font-weight: 700; }
+/* Titles only, the default: number and title on one line, the title allowed to wrap. */
+.thumb .mini { display: none; }
+.thumb .cap { grid-row: 1; grid-column: 2; font-size: 13px; line-height: 1.35; opacity: .85; }
+.thumb .num { padding-top: 1px; }
+.index .thumb.current { background: var(--index-hover, rgba(255, 255, 255, .08)); box-shadow: inset 3px 0 0 var(--index-active, var(--accent)); }
+.thumb.current .cap { opacity: 1; font-weight: 700; }
+
+/* Thumbnails, on request: the title moves beneath a live copy of the slide. */
+body.index-thumbs .thumb .mini { display: block; }
+body.index-thumbs .thumb .cap {
+  grid-row: 2;
+  font-size: 12px;
+  line-height: 1.3;
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.index-thumbs .index .thumb.current { background: none; box-shadow: none; }
+.thumb-slide {
+  display: flex !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  box-shadow: none !important;
+  pointer-events: none;
+}
+
+/* Comment count beside a slide in the index. */
+.thumb .badge {
+  grid-row: 1;
+  grid-column: 3;
+  align-self: start;
+  min-width: 20px;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  background: var(--index-active, var(--accent));
+  color: var(--index-bg, var(--cover-bg));
+}
+.thumb .badge[hidden] { display: none; }
+
+/* ---- Comments: a panel on the right, per slide ---- */
+.comments {
+  display: none;
+  flex: 0 0 var(--comments-width, 340px);
+  width: var(--comments-width, 340px);
+  height: 100%;
+  flex-direction: column;
+  background: var(--slide-bg);
+  color: var(--slide-fg);
+  border-left: 1px solid var(--rule);
+  font-size: 14px;
+}
+body.comments-open .comments { display: flex; }
+body.presenting .comments { display: none; }
+.comments button {
+  font: inherit;
+  font-size: 13px;
+  color: var(--heading);
+  background: var(--slide-bg);
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.comments button:hover:not(:disabled) { background: var(--row-alt); }
+.comments button:disabled { opacity: .45; cursor: default; }
+.comments button:focus-visible, .comments textarea:focus-visible, .comments input:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 1px;
+}
+.comments-head { display: flex; align-items: center; padding: 16px 14px 10px 18px; }
+.comments-title { flex: 1; font-weight: 700; font-size: 16px; color: var(--heading); }
+#comments-close { font-size: 16px; line-height: 1; padding: 2px 8px 4px; }
+.review-name input, .comment-form textarea, .comment-edit-box {
+  font: inherit;
+  font-size: 14px;
+  color: var(--slide-fg);
+  background: var(--input-bg, var(--slide-bg));
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  padding: 6px 8px;
+  width: 100%;
+  resize: vertical;
+}
+.comments-slide {
+  padding: 10px 18px;
+  font-weight: 700;
+  color: var(--accent-deep);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  background: var(--row-alt);
+}
+.comment-list { list-style: none; flex: 1; overflow-y: auto; padding: 10px 18px; }
+.comment { padding: 10px 0; border-bottom: 1px solid var(--rule); }
+.comment-text { white-space: pre-wrap; line-height: 1.45; color: var(--slide-fg); }
+.comment-meta { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 12px; color: var(--body); }
+.comment-meta button { padding: 1px 8px; font-size: 12px; }
+.comment-meta button:first-of-type { margin-left: auto; }
+.comment .comment-edit-box { margin-bottom: 6px; }
+.comment > button { margin-right: 6px; }
+.comment-empty { padding: 12px 0; color: var(--body); font-style: italic; }
+.comment-form { display: flex; flex-direction: column; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--rule); }
+.comment-form button { align-self: flex-end; }
+.comments-foot { padding: 12px 18px 16px; border-top: 1px solid var(--rule); background: var(--row-alt); }
+.review-total { font-size: 12px; line-height: 1.4; color: var(--body); margin: 0 0 10px; }
+/* One primary action, sized to be found; everything else is secondary. */
+.comments button.primary, .review-dialog button.primary {
+  background: var(--heading); color: var(--on-heading); border-color: var(--heading); font-weight: 700;
+}
+.comments button.primary:hover:not(:disabled), .review-dialog button.primary:hover { background: var(--accent-deep); border-color: var(--accent-deep); }
+#send-review { display: block; width: 100%; padding: 9px 12px; font-size: 14px; }
+#send-review[hidden], #clear-review[hidden] { display: none; }
+.comments button.link, .review-dialog button.link {
+  background: none; border: 0; padding: 0; color: var(--accent-deep); text-decoration: underline; font-size: 12px;
+}
+#clear-review { margin-top: 8px; }
+.comments-note { min-height: 1em; margin: 8px 0 0; font-size: 12px; color: var(--accent-deep); }
+
+/* The send dialog: name, one send action, fallbacks, then a chance to clear. */
+.review-dialog {
+  width: min(440px, calc(100vw - 32px));
+  padding: 22px 24px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--slide-bg);
+  color: var(--slide-fg);
+  font-family: var(--font-body);
+  font-size: 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .35);
+}
+.review-dialog::backdrop { background: rgba(0, 0, 0, .45); }
+.review-dialog h2 { font-size: 18px; color: var(--heading); margin: 0 0 12px; }
+.review-dialog p { line-height: 1.45; margin: 0 0 12px; }
+.review-summary { color: var(--body); }
+.review-name { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; font-size: 12px; color: var(--body); }
+.review-buttons { display: flex; gap: 8px; margin-bottom: 12px; }
+.review-dialog button {
+  font: inherit; font-size: 13px; color: var(--heading); background: var(--slide-bg);
+  border: 1px solid var(--rule); border-radius: 5px; padding: 6px 12px; cursor: pointer;
+}
+.review-alternatives { font-size: 12px; color: var(--body); margin: 0; }
+#toggle-comments .count:not(:empty) {
+  display: inline-block;
+  min-width: 18px;
+  margin-left: 4px;
+  padding: 0 5px;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--index-active, var(--accent));
+  color: var(--index-bg, var(--cover-bg));
+}
+
+/* ---- Stage: one fixed 1920x1080 canvas, scaled to fit, controls beneath ---- */
+.stage {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 20px 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+body.presenting .stage { padding: 0; }
+.viewport { position: relative; flex: 0 0 auto; overflow: hidden; box-shadow: 0 4px 32px rgba(0, 0, 0, .45); }
+.deck { position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+
+.slide {
+  display: none;
+  width: 1920px;
+  height: 1080px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  flex-direction: column;
+  overflow: hidden;
+  /* The slide's ground colour, then an optional background image over it, then a wash of
+     the ground colour over the image to keep text legible. A theme or a build sets the
+     image with --slide-bg-image (a url(), or none) and --slide-bg-size, -repeat,
+     -position and -wash (0 to 1); cover and divider slides keep their own ground. */
+  --slide-ground: var(--slide-bg);
+  background:
+    linear-gradient(
+      color-mix(in srgb, var(--slide-ground) calc(var(--slide-bg-wash, 0) * 100%), transparent),
+      color-mix(in srgb, var(--slide-ground) calc(var(--slide-bg-wash, 0) * 100%), transparent)),
+    var(--slide-bg-image, none) var(--slide-bg-position, center) / var(--slide-bg-size, cover) var(--slide-bg-repeat, no-repeat),
+    var(--slide-ground);
+}
+.slide.active { display: flex; }
+/* Laid out but invisible while a hidden slide is measured for fitting. */
+.slide.measuring, .slide.diagram-measuring { display: flex; visibility: hidden; }
+.deck.single { position: static; }
+.deck.single .slide { display: flex; position: relative; }
+
+.slide-header {
+  padding: 52px 88px 26px;
+  border-bottom: 3px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.eyebrow {
+  font-size: 18px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+  font-weight: 700;
+}
+.slide-header h1 { font-size: 46px; color: var(--heading); line-height: 1.15; font-weight: 700; }
+
+/* Page number, bottom right of every slide but the first. Tokens: --slide-number-fg, and
+   on dividers --divider-muted. It sits above an HTML slide's frame. */
+.slide-number {
+  position: absolute; right: 44px; bottom: 26px; z-index: 2;
+  font-size: 20px; font-variant-numeric: tabular-nums; line-height: 1;
+  color: var(--slide-number-fg, var(--accent-deep)); pointer-events: none;
+}
+.slide.divider .slide-number, .slide.cover .slide-number { color: var(--divider-muted, var(--cover-muted)); }
+
+.slide-body { flex: 1; padding: 30px 88px 52px; overflow: hidden; display: flex; flex-direction: column; }
+.fit { transform-origin: top center; width: 100%; }
+.fit > *:first-child { margin-top: 0; }
+
+.fit p { font-size: 26px; line-height: 1.5; color: var(--body); margin: 0 0 18px; }
+.fit h2 { font-size: 30px; color: var(--heading); margin: 26px 0 12px; font-weight: 700; }
+.fit h3 { font-size: 24px; color: var(--accent-deep); margin: 20px 0 10px; font-weight: 700; }
+.fit ul, .fit ol { margin: 0 0 18px 30px; }
+.fit li { font-size: 24px; line-height: 1.5; color: var(--body); margin: 0 0 8px; }
+.fit img { display: block; max-width: 100%; max-height: 720px; margin: 0 auto; object-fit: contain; }
+/* A slide that is only a diagram gives it the whole body: 1080 less header and padding. */
+.fit > p:only-child > img:only-child { max-height: 820px; }
+.fit strong { color: var(--slide-fg); }
+.fit a { color: var(--heading); text-decoration: underline; }
+
+.fit blockquote {
+  border-left: 6px solid var(--accent);
+  background: var(--accent-wash);
+  padding: 18px 26px;
+  margin: 0 0 20px;
+  font-size: 24px;
+  border-radius: 0 6px 6px 0;
+}
+.fit blockquote p { font-size: 24px; margin: 0 0 8px; }
+.fit blockquote p:last-child { margin: 0; }
+
+.fit table { border-collapse: collapse; width: 100%; margin: 0 0 22px; font-size: 21px; }
+.fit th {
+  background: var(--heading);
+  color: var(--on-heading);
+  text-align: left;
+  padding: 12px 16px;
+  font-weight: 700;
+  border: 1px solid var(--heading);
+}
+.fit td { padding: 11px 16px; border: 1px solid var(--rule); color: var(--body); vertical-align: top; background: var(--slide-bg); }
+.fit tr:nth-child(even) td { background: var(--row-alt); }
+
+.fit code {
+  font-family: var(--font-mono);
+  background: var(--code-inline-bg);
+  color: var(--heading);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: .9em;
+}
+.fit pre.code { background: var(--code-bg); color: var(--code-fg); padding: 20px 26px; border-radius: 8px; margin: 0 0 20px; overflow: hidden; }
+.fit pre.code code { background: none; color: inherit; font-size: 22px; line-height: 1.5; padding: 0; }
+.fit pre.mermaid { background: var(--slide-bg); border: 1px solid var(--rule); border-radius: 8px; padding: 22px; margin: 0 0 20px; text-align: center; }
+/* Light notes with dark text. Mermaid sometimes sizes a note narrower than its text, and
+   white text past a dark box vanishes; dark text past a light box still reads. Mermaid
+   scopes its own styles by id, so these need !important to win. */
+.fit pre.mermaid rect.note { fill: var(--accent-wash) !important; stroke: var(--rule) !important; }
+.fit pre.mermaid .noteText, .fit pre.mermaid .noteText > tspan { fill: var(--slide-fg) !important; }
+
+/* Image slide: a finished 16:9 image fills the canvas; any other shape is letterboxed. */
+.slide-image { display: block; width: 100%; height: 100%; object-fit: contain; }
+.slide-frame { display: block; flex: 1; width: 100%; height: 100%; border: 0; background: transparent; }
+.html-slide .frame-body { flex: 1; min-height: 0; display: flex; padding: 0 88px 52px; }
+.image-caption {
+  position: absolute;
+  right: 20px;
+  bottom: 14px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 15px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+  background: var(--slide-bg);
+  opacity: .9;
+}
+
+/* Cover */
+.slide.cover { --slide-ground: var(--cover-bg); }
+.cover-wrap { padding: 96px; display: flex; flex-direction: column; height: 100%; width: 100%; }
+.cover-logo { width: 170px; opacity: .9; }
+.grow { flex: 1; }
+.cover-title { font-size: 104px; font-weight: 700; color: var(--cover-fg); letter-spacing: -.025em; line-height: 1.05; margin: 0 0 10px; }
+.cover-sub { font-size: 56px; font-weight: 300; color: var(--cover-accent); line-height: 1.1; margin: 0 0 40px; }
+.cover-date { font-size: 26px; color: var(--cover-muted); margin: 0 0 8px; }
+.cover-foot { font-size: 20px; color: var(--cover-faint); max-width: 1200px; }
+
+/* Section divider: the cover's ground unless the theme gives dividers their own. */
+.slide.divider { --slide-ground: var(--divider-bg, var(--cover-bg)); }
+.divider-wrap { padding: 96px; display: flex; flex-direction: column; height: 100%; width: 100%; }
+.divider-eyebrow { font-size: 24px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--divider-accent, var(--cover-accent)); margin: 0 0 20px; }
+.divider-title { font-size: 88px; font-weight: 700; color: var(--divider-fg, var(--cover-fg)); letter-spacing: -.02em; line-height: 1.05; margin: 0 0 18px; max-width: 1600px; }
+.divider-sub { font-size: 40px; font-weight: 300; color: var(--divider-muted, var(--cover-muted)); line-height: 1.25; max-width: 1500px; }
+
+/* Presenter notes never render on screen or in the PDF. */
+.notes { display: none; }
+
+.toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 56px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--chrome-fg);
+}
+.toolbar .spacer { flex: 1; }
+.toolbar button {
+  font: inherit;
+  color: inherit;
+  background: var(--toolbar-button, rgba(255, 255, 255, .1));
+  border: 1px solid var(--toolbar-rule, rgba(255, 255, 255, .25));
+  border-radius: 6px;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+.toolbar button:hover:not(:disabled) { background: var(--toolbar-hover, rgba(255, 255, 255, .2)); }
+.toolbar button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.toolbar button:disabled { opacity: .35; cursor: default; }
+#counter { min-width: 72px; text-align: center; opacity: .85; font-variant-numeric: tabular-nums; }
+body.presenting .toolbar { display: none; }
+
+@media (max-width: 700px) {
+  body.index-open .index { position: fixed; z-index: 2; left: 0; top: 0; box-shadow: 0 0 24px rgba(0, 0, 0, .5); }
+  body.comments-open .comments { position: fixed; z-index: 3; right: 0; top: 0; width: min(340px, 100%); box-shadow: 0 0 24px rgba(0, 0, 0, .5); }
+  .toolbar button { padding: 7px 10px; }
+}
+
+/* Print: no chrome, every slide on its own 16:9 page at exact canvas size. */
+@page { size: 1920px 1080px; margin: 0; }
+@media print {
+  html, body { height: auto; }
+  body { display: block; overflow: visible; background: var(--slide-bg); }
+  .index, .toolbar, .comments { display: none !important; }
+  .stage, .viewport { display: block; position: static; width: auto !important; height: auto !important;
+    padding: 0; overflow: visible; box-shadow: none; }
+  .deck { position: static; width: auto; height: auto; transform: none !important; }
+  .slide { display: flex !important; position: relative; break-after: page; visibility: visible !important; }
+  .slide:last-child { break-after: auto; }
+}
+
+</style>
+</head>
+<body>
+<aside class="index" aria-label="Slide index">
+  <div class="index-head">
+    <span class="index-title">UC-005 Grow the ontology from candidates and requests</span>
+    <button id="index-collapse" type="button" title="Collapse the slide index (I)" aria-label="Collapse slide index"><span aria-hidden="true">&#171;</span></button>
+  </div>
+  <div class="index-tools">
+    <span class="index-count">8 slides</span>
+    <button id="index-view" type="button" aria-pressed="false" title="Show slide thumbnails (T)">Thumbnails</button>
+  </div>
+  <ol class="index-list">
+    <li><button class="thumb" type="button" data-i="0" aria-label="Slide 1: UC-005 Grow the ontology from candidates and requests">
+      <span class="num">1</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">UC-005 Grow the ontology from candidates and requests</span>
+      <span class="badge" hidden></span>
+    </button></li>
+    <li><button class="thumb" type="button" data-i="1" aria-label="Slide 2: The solution in one sentence">
+      <span class="num">2</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">The solution in one sentence</span>
+      <span class="badge" hidden></span>
+    </button></li>
+    <li><button class="thumb" type="button" data-i="2" aria-label="Slide 3: The solution on one page">
+      <span class="num">3</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">The solution on one page</span>
+      <span class="badge" hidden></span>
+    </button></li>
+    <li><button class="thumb" type="button" data-i="3" aria-label="Slide 4: Participants">
+      <span class="num">4</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">Participants</span>
+      <span class="badge" hidden></span>
+    </button></li>
+    <li><button class="thumb" type="button" data-i="4" aria-label="Slide 5: Interactions">
+      <span class="num">5</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">Interactions</span>
+      <span class="badge" hidden></span>
+    </button></li>
+    <li><button class="thumb" type="button" data-i="5" aria-label="Slide 6: Catalogue Mapping">
+      <span class="num">6</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">Catalogue Mapping</span>
+      <span class="badge" hidden></span>
+    </button></li>
+    <li><button class="thumb" type="button" data-i="6" aria-label="Slide 7: The flow">
+      <span class="num">7</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">The flow</span>
+      <span class="badge" hidden></span>
+    </button></li>
+    <li><button class="thumb" type="button" data-i="7" aria-label="Slide 8: Data and measures">
+      <span class="num">8</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">Data and measures</span>
+      <span class="badge" hidden></span>
+    </button></li>
+  </ol>
+</aside>
+<main class="stage">
+  <div class="viewport">
+<div class="deck">
+<section class="slide cover" data-slide="cover">
+  <div class="cover-wrap">
+    
+    <div class="grow"></div>
+    <h1 class="cover-title">UC-005 Grow the ontology from candidates and requests</h1>
+    <p class="cover-sub">Grow the ontology from candidates and requests</p>
+    
+    <p class="cover-foot">Use case, reversed from the implementation at 0.3.0. Draft.</p>
+    <div class="grow"></div>
+  </div>
+</section>
+<section class="slide" data-slide="in-one-sentence">
+  <header class="slide-header">
+    
+    <h1>The solution in one sentence</h1>
+  </header>
+  <div class="slide-body"><div class="fit"><p>A curator takes the terms extraction could not place and the ontology requests kept from the workbench, and publishes them as the next minor version, so that the ontology grows from demand without a term entering it unread.</p>
+<p>An ontology that cannot grow is abandoned; one that grows by itself drifts. Growth has to come from evidence (documents that named a term, questions that needed one) and pass through a person.</p>
+<h3>What is different afterwards</h3>
+<p>candidates --propose writes a revision draft one minor version up; the curator reviews and publishes; the next sweep runs a delta extraction of the new terms only.</p>
+</div></div>
+  
+  <div class="slide-number" aria-hidden="true">2</div>
+</section>
+<section class="slide" data-slide="on-one-page">
+  <header class="slide-header">
+    
+    <h1>The solution on one page</h1>
+  </header>
+  <div class="slide-body"><div class="fit"><p><img src="assets/components.svg" alt="UC-005 participants and interactions"></p>
+<p>Generated from the Participants and Interactions tables with the model skill; <code>components.drawio</code> is the source.</p>
+</div></div>
+  
+  <div class="slide-number" aria-hidden="true">3</div>
+</section>
+<section class="slide" data-slide="participants">
+  <header class="slide-header">
+    
+    <h1>Participants</h1>
+  </header>
+  <div class="slide-body"><div class="fit"><table>
+<thead>
+<tr>
+<th>Participant</th>
+<th>Role in this use case</th>
+<th>Kind</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>01 Curator</td>
+<td>Decides what the next version holds</td>
+<td>actor</td>
+</tr>
+<tr>
+<td>02 Candidate register</td>
+<td>Terms with their documents, evidence and nearest existing term</td>
+<td>solution</td>
+</tr>
+<tr>
+<td>03 Workbench</td>
+<td>Gap reports kept as ontology requests</td>
+<td>solution</td>
+</tr>
+<tr>
+<td>04 CLI</td>
+<td>candidates --propose; publish</td>
+<td>solution</td>
+</tr>
+<tr>
+<td>05 Ontology store</td>
+<td>Drafts and versions</td>
+<td>solution</td>
+</tr>
+</tbody></table>
+</div></div>
+  
+  <div class="slide-number" aria-hidden="true">4</div>
+</section>
+<section class="slide" data-slide="interactions">
+  <header class="slide-header">
+    
+    <h1>Interactions</h1>
+  </header>
+  <div class="slide-body"><div class="fit"><table>
+<thead>
+<tr>
+<th>Interface</th>
+<th>Provider</th>
+<th>Consumer</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>IF-01</td>
+<td>02 Candidate register</td>
+<td>01 Curator</td>
+<td>candidates to read</td>
+</tr>
+<tr>
+<td>IF-02</td>
+<td>03 Workbench</td>
+<td>02 Candidate register</td>
+<td>requests as asked terms</td>
+</tr>
+<tr>
+<td>IF-03</td>
+<td>04 CLI</td>
+<td>01 Curator</td>
+<td>propose, publish</td>
+</tr>
+<tr>
+<td>IF-04</td>
+<td>05 Ontology store</td>
+<td>04 CLI</td>
+<td>draft, publish</td>
+</tr>
+</tbody></table>
+</div></div>
+  
+  <div class="slide-number" aria-hidden="true">5</div>
+</section>
+<section class="slide" data-slide="catalogue-mapping">
+  <header class="slide-header">
+    
+    <h1>Catalogue Mapping</h1>
+  </header>
+  <div class="slide-body"><div class="fit"><p>What each local participant stands for in the catalogue: an actor or an external system is a gap by design (no artefact of this catalogue realises a person or a vendor); a solution participant realises or partly realises a building block.</p>
+<table>
+<thead>
+<tr>
+<th>Local ID</th>
+<th>Maps To</th>
+<th>Relationship</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>01</td>
+<td>gap</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>02</td>
+<td>ABB-002 Lake</td>
+<td>partial</td>
+</tr>
+<tr>
+<td>03</td>
+<td>ABB-014 Answering agent</td>
+<td>partial</td>
+</tr>
+<tr>
+<td>04</td>
+<td>ABB-028 Command line</td>
+<td>realises</td>
+</tr>
+<tr>
+<td>05</td>
+<td>ABB-002 Lake</td>
+<td>partial</td>
+</tr>
+</tbody></table>
+</div></div>
+  
+  <div class="slide-number" aria-hidden="true">6</div>
+</section>
+<section class="slide html-slide with-header" data-slide="the-flow" aria-label="The flow">
+  <header class="slide-header">
+    
+    <h1>The flow</h1>
+  </header>
+  <div class="frame-body"><iframe class="slide-frame" title="The flow" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;title&gt;UC-005 Grow the ontology from candidates and requests: scenarios&lt;/title&gt;
+&lt;style&gt;
+:root{--bg:#F5F6F8;--panel:#FFFFFF;--ink:#1C2430;--muted:#5B6474;--line:#D6DAE1;--accent:#D6453D;--pick:#2F4A6D;--shade:rgba(18,24,34,.55)}
+@media (prefers-color-scheme: dark){:root:not([data-theme=&quot;light&quot;]){--bg:#12161D;--panel:#1B212B;--ink:#E6EAF0;--muted:#A2ABBA;--line:#2F3846;--pick:#5C7FAD;--shade:rgba(0,0,0,.6)}}
+:root[data-theme=&quot;dark&quot;]{--bg:#12161D;--panel:#1B212B;--ink:#E6EAF0;--muted:#A2ABBA;--line:#2F3846;--pick:#5C7FAD;--shade:rgba(0,0,0,.6)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,&quot;Segoe UI&quot;,Roboto,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+h1{font-size:17px;margin:0}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+button{font:inherit;color:var(--ink)}
+.tabs button,.ctl button{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:6px 10px;cursor:pointer}
+.tabs button[aria-pressed=&quot;true&quot;]{background:var(--pick);color:#fff;border-color:var(--pick)}
+main{display:grid;grid-template-columns:minmax(0,1fr) 320px;min-height:calc(100vh - 58px)}
+@media (max-width:900px){main{grid-template-columns:1fr}}
+.stage{padding:12px}
+.canvas{position:relative;width:100%;margin:0 auto;aspect-ratio:701.0/617.0;background:#fff;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.world{position:absolute;inset:0;transform-origin:0 0;transition:transform .7s ease}
+.world img,.world svg{position:absolute;inset:0;width:100%;height:100%}
+.pop{position:absolute;max-width:340px;background:var(--panel);color:var(--ink);border:2px solid var(--accent);border-radius:8px;padding:10px 12px;box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:13px;pointer-events:none;opacity:0;transform:translateY(6px);transition:opacity .25s,transform .25s}
+.pop.on{opacity:1;transform:none}
+.pop .n{display:inline-block;background:var(--accent);color:#fff;border-radius:50%;width:22px;height:22px;text-align:center;font-weight:700;line-height:22px;margin-right:6px}
+.pop .a{font-weight:600}
+.pop .m{color:var(--muted);font-size:12px;margin-top:6px}
+aside{border-left:1px solid var(--line);background:var(--panel);padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+@media (max-width:900px){aside{border-left:0;border-top:1px solid var(--line)}}
+aside h2{font-size:15px;margin:0}
+ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+ol li button{display:flex;gap:8px;width:100%;text-align:left;border:1px solid transparent;background:none;border-radius:6px;padding:6px;cursor:pointer}
+ol li button:hover{border-color:var(--line)}
+ol li button[aria-current=&quot;step&quot;]{border-color:var(--accent)}
+ol li .k{flex:0 0 22px;height:22px;border-radius:50%;background:var(--line);text-align:center;font-weight:700;font-size:12px;line-height:22px}
+ol li button[aria-current=&quot;step&quot;] .k,ol li.done .k{background:var(--accent);color:#fff}
+.ctl{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.hint{color:var(--muted);font-size:12px}
+.back{color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:6px;padding:6px 10px;margin-right:8px}
+.back:hover,.drill a:hover{border-color:var(--accent)}
+.drill{border:1px dashed var(--accent);border-radius:6px;padding:8px 10px}
+.drill a{color:var(--ink);font-weight:600;text-decoration:none;border:1px solid var(--line);border-radius:6px;padding:4px 8px;display:inline-block;margin-top:6px}
+.chip{color:var(--muted);font-size:12px;margin-left:4px}
+.sub{cursor:pointer}
+/* Links to a box's own page: hotspots on the view, and names in the steps and the pop-up */
+.hot{cursor:pointer}.hot rect{fill-opacity:0}.hot:hover rect,.hot:focus rect{fill-opacity:.12}
+.who{font-size:12px;color:var(--muted);margin:0 0 4px 36px}
+.who a,.pop .m a,.drill a.page-link{color:var(--pick);text-decoration:underline}
+.pop .m a{pointer-events:auto}
+.drill a.page-link{border:0;padding:0;margin-left:10px;font-weight:400}
+/* BPMN's call-activity marker: a small boxed plus, drawn rather than a glyph so it always renders */
+.cam{display:inline-block;position:relative;width:11px;height:11px;border:1.5px solid currentColor;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.cam::before,.cam::after{content:&quot;&quot;;position:absolute;left:50%;top:50%;background:currentColor;transform:translate(-50%,-50%)}
+.cam::before{width:7px;height:1.5px}.cam::after{width:1.5px;height:7px}
+.cam.open{color:#8A93A3}
+.draw{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:draw .7s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.pulse{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{stroke-opacity:.35}}
+@media (prefers-reduced-motion: reduce){.draw{animation:none;stroke-dashoffset:0}.pulse{animation:none}.pop,.world{transition:none}}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;header&gt;
+  &lt;h1&gt;&lt;a class=&quot;back&quot; id=&quot;back&quot; hidden&gt;&amp;#9664; Back to the composite pattern&lt;/a&gt;UC-005 Grow the ontology from candidates and requests: scenarios&lt;/h1&gt;
+  &lt;div class=&quot;tabs&quot; role=&quot;group&quot; aria-label=&quot;Scenario&quot; id=&quot;tabs&quot;&gt;&lt;/div&gt;
+&lt;/header&gt;
+&lt;main&gt;
+  &lt;section class=&quot;stage&quot;&gt;
+    &lt;div class=&quot;canvas&quot; id=&quot;canvas&quot;&gt;
+      &lt;div class=&quot;world&quot; id=&quot;world&quot;&gt;
+        &lt;img alt=&quot;Structure view&quot; src=&quot;data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCFET0NUWVBFIHN2ZyBQVUJMSUMgIi0vL1czQy8vRFREIFNWRyAxLjEvL0VOIiAiaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkIj4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJiYWNrZ3JvdW5kOiB0cmFuc3BhcmVudDsgYmFja2dyb3VuZC1jb2xvcjogdHJhbnNwYXJlbnQ7IGNvbG9yLXNjaGVtZTogbGlnaHQgZGFyazsiIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIHdpZHRoPSI3MDFweCIgaGVpZ2h0PSI2MTdweCIgdmlld0JveD0iMCAwIDcwMSA2MTciPjxkZWZzLz48Zz48ZyBkYXRhLWNlbGwtaWQ9IjAiPjxnIGRhdGEtY2VsbC1pZD0iMSI+PGcgZGF0YS1jZWxsLWlkPSJmcmFtZSI+PGc+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjcwMCIgaGVpZ2h0PSI2MTYiIGZpbGw9Im5vbmUiIHN0cm9rZT0ibm9uZSIgcG9pbnRlci1ldmVudHM9ImFsbCIvPjwvZz48L2c+PGcgZGF0YS1jZWxsLWlkPSJsb2NhbC0wMSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC41LDAuNSkiPjxyZWN0IHg9IjE4MCIgeT0iNDAiIHdpZHRoPSIyMjAiIGhlaWdodD0iODAiIHJ4PSIxMiIgcnk9IjEyIiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9IiMxYjJhNGEiIHBvaW50ZXItZXZlbnRzPSJhbGwiIHN0eWxlPSJmaWxsOiBsaWdodC1kYXJrKHJnYigyNTUsIDI1NSwgMjU1KSwgcmdiKDE4LCAxOCwgMTgpKTsgc3Ryb2tlOiBsaWdodC1kYXJrKHJnYigyNywgNDIsIDc0KSwgcmdiKDE5MCwgMjAzLCAyMzApKTsiLz48L2c+PGc+PGc+PHN3aXRjaD48Zm9yZWlnbk9iamVjdCBzdHlsZT0ib3ZlcmZsb3c6IHZpc2libGU7IHRleHQtYWxpZ246IGxlZnQ7IiBwb2ludGVyLWV2ZW50cz0ibm9uZSIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgcmVxdWlyZWRGZWF0dXJlcz0iaHR0cDovL3d3dy53My5vcmcvVFIvU1ZHMTEvZmVhdHVyZSNFeHRlbnNpYmlsaXR5Ij48ZGl2IHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hodG1sIiBzdHlsZT0iZGlzcGxheTogZmxleDsgYWxpZ24taXRlbXM6IHVuc2FmZSBjZW50ZXI7IGp1c3RpZnktY29udGVudDogdW5zYWZlIGNlbnRlcjsgd2lkdGg6IDIxOHB4OyBoZWlnaHQ6IDFweDsgcGFkZGluZy10b3A6IDgwcHg7IG1hcmdpbi1sZWZ0OiAxODFweDsiPjxkaXYgc3R5bGU9ImJveC1zaXppbmc6IGJvcmRlci1ib3g7IGZvbnQtc2l6ZTogMDsgdGV4dC1hbGlnbjogY2VudGVyOyBjb2xvcjogIzFCMkE0QTsgIj48ZGl2IHN0eWxlPSJkaXNwbGF5OiBpbmxpbmUtYmxvY2s7IGZvbnQtc2l6ZTogMTRweDsgZm9udC1mYW1pbHk6IEhlbHZldGljYTsgY29sb3I6IGxpZ2h0LWRhcmsoIzFCMkE0QSwgI2JlY2JlNik7IGxpbmUtaGVpZ2h0OiAxLjI7IHBvaW50ZXItZXZlbnRzOiBhbGw7IHdoaXRlLXNwYWNlOiBub3JtYWw7IHdvcmQtd3JhcDogbm9ybWFsOyAiPkN1cmF0b3I8L2Rpdj48L2Rpdj48L2Rpdj48L2ZvcmVpZ25PYmplY3Q+PHRleHQgeD0iMjkwIiB5PSI4NCIgZmlsbD0iIzFCMkE0QSIgZm9udC1mYW1pbHk9IkhlbHZldGljYSIgZm9udC1zaXplPSIxNHB4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBzdHlsZT0iZmlsbDogbGlnaHQtZGFyayhyZ2IoMjcsIDQyLCA3NCksIHJnYigxOTAsIDIwMywgMjMwKSk7Ij5DdXJhdG9yPC90ZXh0Pjwvc3dpdGNoPjwvZz48L2c+PC9nPjxnIGRhdGEtY2VsbC1pZD0ibG9jYWwtMDIiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuNSwwLjUpIj48cmVjdCB4PSI0MCIgeT0iMjQ4IiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjgwIiByeD0iMTIiIHJ5PSIxMiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMWIyYTRhIiBwb2ludGVyLWV2ZW50cz0iYWxsIiBzdHlsZT0iZmlsbDogbGlnaHQtZGFyayhyZ2IoMjU1LCAyNTUsIDI1NSksIHJnYigxOCwgMTgsIDE4KSk7IHN0cm9rZTogbGlnaHQtZGFyayhyZ2IoMjcsIDQyLCA3NCksIHJnYigxOTAsIDIwMywgMjMwKSk7Ii8+PC9nPjxnPjxnPjxzd2l0Y2g+PGZvcmVpZ25PYmplY3Qgc3R5bGU9Im92ZXJmbG93OiB2aXNpYmxlOyB0ZXh0LWFsaWduOiBsZWZ0OyIgcG9pbnRlci1ldmVudHM9Im5vbmUiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHJlcXVpcmVkRmVhdHVyZXM9Imh0dHA6Ly93d3cudzMub3JnL1RSL1NWRzExL2ZlYXR1cmUjRXh0ZW5zaWJpbGl0eSI+PGRpdiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94aHRtbCIgc3R5bGU9ImRpc3BsYXk6IGZsZXg7IGFsaWduLWl0ZW1zOiB1bnNhZmUgY2VudGVyOyBqdXN0aWZ5LWNvbnRlbnQ6IHVuc2FmZSBjZW50ZXI7IHdpZHRoOiAyMThweDsgaGVpZ2h0OiAxcHg7IHBhZGRpbmctdG9wOiAyODhweDsgbWFyZ2luLWxlZnQ6IDQxcHg7Ij48ZGl2IHN0eWxlPSJib3gtc2l6aW5nOiBib3JkZXItYm94OyBmb250LXNpemU6IDA7IHRleHQtYWxpZ246IGNlbnRlcjsgY29sb3I6ICMxQjJBNEE7ICI+PGRpdiBzdHlsZT0iZGlzcGxheTogaW5saW5lLWJsb2NrOyBmb250LXNpemU6IDE0cHg7IGZvbnQtZmFtaWx5OiBIZWx2ZXRpY2E7IGNvbG9yOiBsaWdodC1kYXJrKCMxQjJBNEEsICNiZWNiZTYpOyBsaW5lLWhlaWdodDogMS4yOyBwb2ludGVyLWV2ZW50czogYWxsOyB3aGl0ZS1zcGFjZTogbm9ybWFsOyB3b3JkLXdyYXA6IG5vcm1hbDsgIj5DYW5kaWRhdGUgcmVnaXN0ZXI8L2Rpdj48L2Rpdj48L2Rpdj48L2ZvcmVpZ25PYmplY3Q+PHRleHQgeD0iMTUwIiB5PSIyOTIiIGZpbGw9IiMxQjJBNEEiIGZvbnQtZmFtaWx5PSJIZWx2ZXRpY2EiIGZvbnQtc2l6ZT0iMTRweCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgc3R5bGU9ImZpbGw6IGxpZ2h0LWRhcmsocmdiKDI3LCA0MiwgNzQpLCByZ2IoMTkwLCAyMDMsIDIzMCkpOyI+Q2FuZGlkYXRlIHJlZ2lzdGVyPC90ZXh0Pjwvc3dpdGNoPjwvZz48L2c+PC9nPjxnIGRhdGEtY2VsbC1pZD0ibG9jYWwtMDMiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuNSwwLjUpIj48cmVjdCB4PSI0MCIgeT0iNDU2IiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjgwIiByeD0iMTIiIHJ5PSIxMiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMWIyYTRhIiBwb2ludGVyLWV2ZW50cz0iYWxsIiBzdHlsZT0iZmlsbDogbGlnaHQtZGFyayhyZ2IoMjU1LCAyNTUsIDI1NSksIHJnYigxOCwgMTgsIDE4KSk7IHN0cm9rZTogbGlnaHQtZGFyayhyZ2IoMjcsIDQyLCA3NCksIHJnYigxOTAsIDIwMywgMjMwKSk7Ii8+PC9nPjxnPjxnPjxzd2l0Y2g+PGZvcmVpZ25PYmplY3Qgc3R5bGU9Im92ZXJmbG93OiB2aXNpYmxlOyB0ZXh0LWFsaWduOiBsZWZ0OyIgcG9pbnRlci1ldmVudHM9Im5vbmUiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHJlcXVpcmVkRmVhdHVyZXM9Imh0dHA6Ly93d3cudzMub3JnL1RSL1NWRzExL2ZlYXR1cmUjRXh0ZW5zaWJpbGl0eSI+PGRpdiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94aHRtbCIgc3R5bGU9ImRpc3BsYXk6IGZsZXg7IGFsaWduLWl0ZW1zOiB1bnNhZmUgY2VudGVyOyBqdXN0aWZ5LWNvbnRlbnQ6IHVuc2FmZSBjZW50ZXI7IHdpZHRoOiAyMThweDsgaGVpZ2h0OiAxcHg7IHBhZGRpbmctdG9wOiA0OTZweDsgbWFyZ2luLWxlZnQ6IDQxcHg7Ij48ZGl2IHN0eWxlPSJib3gtc2l6aW5nOiBib3JkZXItYm94OyBmb250LXNpemU6IDA7IHRleHQtYWxpZ246IGNlbnRlcjsgY29sb3I6ICMxQjJBNEE7ICI+PGRpdiBzdHlsZT0iZGlzcGxheTogaW5saW5lLWJsb2NrOyBmb250LXNpemU6IDE0cHg7IGZvbnQtZmFtaWx5OiBIZWx2ZXRpY2E7IGNvbG9yOiBsaWdodC1kYXJrKCMxQjJBNEEsICNiZWNiZTYpOyBsaW5lLWhlaWdodDogMS4yOyBwb2ludGVyLWV2ZW50czogYWxsOyB3aGl0ZS1zcGFjZTogbm9ybWFsOyB3b3JkLXdyYXA6IG5vcm1hbDsgIj5Xb3JrYmVuY2g8L2Rpdj48L2Rpdj48L2Rpdj48L2ZvcmVpZ25PYmplY3Q+PHRleHQgeD0iMTUwIiB5PSI1MDAiIGZpbGw9IiMxQjJBNEEiIGZvbnQtZmFtaWx5PSJIZWx2ZXRpY2EiIGZvbnQtc2l6ZT0iMTRweCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgc3R5bGU9ImZpbGw6IGxpZ2h0LWRhcmsocmdiKDI3LCA0MiwgNzQpLCByZ2IoMTkwLCAyMDMsIDIzMCkpOyI+V29ya2JlbmNoPC90ZXh0Pjwvc3dpdGNoPjwvZz48L2c+PC9nPjxnIGRhdGEtY2VsbC1pZD0ibG9jYWwtMDQiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuNSwwLjUpIj48cmVjdCB4PSIzMjAiIHk9IjI0OCIgd2lkdGg9IjIyMCIgaGVpZ2h0PSI4MCIgcng9IjEyIiByeT0iMTIiIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0iIzFiMmE0YSIgcG9pbnRlci1ldmVudHM9ImFsbCIgc3R5bGU9ImZpbGw6IGxpZ2h0LWRhcmsocmdiKDI1NSwgMjU1LCAyNTUpLCByZ2IoMTgsIDE4LCAxOCkpOyBzdHJva2U6IGxpZ2h0LWRhcmsocmdiKDI3LCA0MiwgNzQpLCByZ2IoMTkwLCAyMDMsIDIzMCkpOyIvPjwvZz48Zz48Zz48c3dpdGNoPjxmb3JlaWduT2JqZWN0IHN0eWxlPSJvdmVyZmxvdzogdmlzaWJsZTsgdGV4dC1hbGlnbjogbGVmdDsiIHBvaW50ZXItZXZlbnRzPSJub25lIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiByZXF1aXJlZEZlYXR1cmVzPSJodHRwOi8vd3d3LnczLm9yZy9UUi9TVkcxMS9mZWF0dXJlI0V4dGVuc2liaWxpdHkiPjxkaXYgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGh0bWwiIHN0eWxlPSJkaXNwbGF5OiBmbGV4OyBhbGlnbi1pdGVtczogdW5zYWZlIGNlbnRlcjsganVzdGlmeS1jb250ZW50OiB1bnNhZmUgY2VudGVyOyB3aWR0aDogMjE4cHg7IGhlaWdodDogMXB4OyBwYWRkaW5nLXRvcDogMjg4cHg7IG1hcmdpbi1sZWZ0OiAzMjFweDsiPjxkaXYgc3R5bGU9ImJveC1zaXppbmc6IGJvcmRlci1ib3g7IGZvbnQtc2l6ZTogMDsgdGV4dC1hbGlnbjogY2VudGVyOyBjb2xvcjogIzFCMkE0QTsgIj48ZGl2IHN0eWxlPSJkaXNwbGF5OiBpbmxpbmUtYmxvY2s7IGZvbnQtc2l6ZTogMTRweDsgZm9udC1mYW1pbHk6IEhlbHZldGljYTsgY29sb3I6IGxpZ2h0LWRhcmsoIzFCMkE0QSwgI2JlY2JlNik7IGxpbmUtaGVpZ2h0OiAxLjI7IHBvaW50ZXItZXZlbnRzOiBhbGw7IHdoaXRlLXNwYWNlOiBub3JtYWw7IHdvcmQtd3JhcDogbm9ybWFsOyAiPkNMSTwvZGl2PjwvZGl2PjwvZGl2PjwvZm9yZWlnbk9iamVjdD48dGV4dCB4PSI0MzAiIHk9IjI5MiIgZmlsbD0iIzFCMkE0QSIgZm9udC1mYW1pbHk9IkhlbHZldGljYSIgZm9udC1zaXplPSIxNHB4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBzdHlsZT0iZmlsbDogbGlnaHQtZGFyayhyZ2IoMjcsIDQyLCA3NCksIHJnYigxOTAsIDIwMywgMjMwKSk7Ij5DTEk8L3RleHQ+PC9zd2l0Y2g+PC9nPjwvZz48L2c+PGcgZGF0YS1jZWxsLWlkPSJsb2NhbC0wNSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC41LDAuNSkiPjxyZWN0IHg9IjMyMCIgeT0iNDU2IiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjgwIiByeD0iMTIiIHJ5PSIxMiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMWIyYTRhIiBwb2ludGVyLWV2ZW50cz0iYWxsIiBzdHlsZT0iZmlsbDogbGlnaHQtZGFyayhyZ2IoMjU1LCAyNTUsIDI1NSksIHJnYigxOCwgMTgsIDE4KSk7IHN0cm9rZTogbGlnaHQtZGFyayhyZ2IoMjcsIDQyLCA3NCksIHJnYigxOTAsIDIwMywgMjMwKSk7Ii8+PC9nPjxnPjxnPjxzd2l0Y2g+PGZvcmVpZ25PYmplY3Qgc3R5bGU9Im92ZXJmbG93OiB2aXNpYmxlOyB0ZXh0LWFsaWduOiBsZWZ0OyIgcG9pbnRlci1ldmVudHM9Im5vbmUiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHJlcXVpcmVkRmVhdHVyZXM9Imh0dHA6Ly93d3cudzMub3JnL1RSL1NWRzExL2ZlYXR1cmUjRXh0ZW5zaWJpbGl0eSI+PGRpdiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94aHRtbCIgc3R5bGU9ImRpc3BsYXk6IGZsZXg7IGFsaWduLWl0ZW1zOiB1bnNhZmUgY2VudGVyOyBqdXN0aWZ5LWNvbnRlbnQ6IHVuc2FmZSBjZW50ZXI7IHdpZHRoOiAyMThweDsgaGVpZ2h0OiAxcHg7IHBhZGRpbmctdG9wOiA0OTZweDsgbWFyZ2luLWxlZnQ6IDMyMXB4OyI+PGRpdiBzdHlsZT0iYm94LXNpemluZzogYm9yZGVyLWJveDsgZm9udC1zaXplOiAwOyB0ZXh0LWFsaWduOiBjZW50ZXI7IGNvbG9yOiAjMUIyQTRBOyAiPjxkaXYgc3R5bGU9ImRpc3BsYXk6IGlubGluZS1ibG9jazsgZm9udC1zaXplOiAxNHB4OyBmb250LWZhbWlseTogSGVsdmV0aWNhOyBjb2xvcjogbGlnaHQtZGFyaygjMUIyQTRBLCAjYmVjYmU2KTsgbGluZS1oZWlnaHQ6IDEuMjsgcG9pbnRlci1ldmVudHM6IGFsbDsgd2hpdGUtc3BhY2U6IG5vcm1hbDsgd29yZC13cmFwOiBub3JtYWw7ICI+T250b2xvZ3kgc3RvcmU8L2Rpdj48L2Rpdj48L2Rpdj48L2ZvcmVpZ25PYmplY3Q+PHRleHQgeD0iNDMwIiB5PSI1MDAiIGZpbGw9IiMxQjJBNEEiIGZvbnQtZmFtaWx5PSJIZWx2ZXRpY2EiIGZvbnQtc2l6ZT0iMTRweCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgc3R5bGU9ImZpbGw6IGxpZ2h0LWRhcmsocmdiKDI3LCA0MiwgNzQpLCByZ2IoMTkwLCAyMDMsIDIzMCkpOyI+T250b2xvZ3kgc3RvcmU8L3RleHQ+PC9zd2l0Y2g+PC9nPjwvZz48L2c+PGcgZGF0YS1jZWxsLWlkPSJJRi0wMSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC41LDAuNSkiPjxwYXRoIGQ9Ik0gMTUwIDI0OCBMIDE1MCAxOTQgUSAxNTAgMTg0IDE2MCAxODQgTCAyODAgMTg0IFEgMjkwIDE4NCAyOTAgMTc0IEwgMjkwIDEyNi4zNyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjM2E0YTY2IiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHBvaW50ZXItZXZlbnRzPSJzdHJva2UiIHN0eWxlPSJzdHJva2U6IGxpZ2h0LWRhcmsocmdiKDU4LCA3NCwgMTAyKSwgcmdiKDE2MywgMTc2LCAyMDEpKTsiLz48cGF0aCBkPSJNIDI5MCAxMjEuMTIgTCAyOTMuNSAxMjguMTIgTCAyOTAgMTI2LjM3IEwgMjg2LjUgMTI4LjEyIFoiIGZpbGw9IiMzYTRhNjYiIHN0cm9rZT0iIzNhNGE2NiIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBwb2ludGVyLWV2ZW50cz0iYWxsIiBzdHlsZT0iZmlsbDogbGlnaHQtZGFyayhyZ2IoNTgsIDc0LCAxMDIpLCByZ2IoMTYzLCAxNzYsIDIwMSkpOyBzdHJva2U6IGxpZ2h0LWRhcmsocmdiKDU4LCA3NCwgMTAyKSwgcmdiKDE2MywgMTc2LCAyMDEpKTsiLz48L2c+PGc+PGc+PHN3aXRjaD48Zm9yZWlnbk9iamVjdCBzdHlsZT0ib3ZlcmZsb3c6IHZpc2libGU7IHRleHQtYWxpZ246IGxlZnQ7IiBwb2ludGVyLWV2ZW50cz0ibm9uZSIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgcmVxdWlyZWRGZWF0dXJlcz0iaHR0cDovL3d3dy53My5vcmcvVFIvU1ZHMTEvZmVhdHVyZSNFeHRlbnNpYmlsaXR5Ij48ZGl2IHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hodG1sIiBzdHlsZT0iZGlzcGxheTogZmxleDsgYWxpZ24taXRlbXM6IHVuc2FmZSBjZW50ZXI7IGp1c3RpZnktY29udGVudDogdW5zYWZlIGNlbnRlcjsgd2lkdGg6IDFweDsgaGVpZ2h0OiAxcHg7IHBhZGRpbmctdG9wOiAxODRweDsgbWFyZ2luLWxlZnQ6IDE1M3B4OyI+PGRpdiBzdHlsZT0iYm94LXNpemluZzogYm9yZGVyLWJveDsgZm9udC1zaXplOiAwOyB0ZXh0LWFsaWduOiBjZW50ZXI7IGNvbG9yOiAjM0E0QTY2OyBiYWNrZ3JvdW5kLWNvbG9yOiAjRkZGRkZGOyAiPjxkaXYgc3R5bGU9ImRpc3BsYXk6IGlubGluZS1ibG9jazsgZm9udC1zaXplOiAxMnB4OyBmb250LWZhbWlseTogSGVsdmV0aWNhOyBjb2xvcjogbGlnaHQtZGFyaygjM0E0QTY2LCAjYTNiMGM5KTsgbGluZS1oZWlnaHQ6IDEuMjsgcG9pbnRlci1ldmVudHM6IGFsbDsgYmFja2dyb3VuZC1jb2xvcjogbGlnaHQtZGFyaygjRkZGRkZGLCAjMTIxMjEyKTsgd2hpdGUtc3BhY2U6IG5vd3JhcDsgIj5jYW5kaWRhdGVzIHRvIHJlYWQ8L2Rpdj48L2Rpdj48L2Rpdj48L2ZvcmVpZ25PYmplY3Q+PHRleHQgeD0iMTUzIiB5PSIxODgiIGZpbGw9IiMzQTRBNjYiIGZvbnQtZmFtaWx5PSJIZWx2ZXRpY2EiIGZvbnQtc2l6ZT0iMTJweCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgc3R5bGU9ImZpbGw6IGxpZ2h0LWRhcmsocmdiKDU4LCA3NCwgMTAyKSwgcmdiKDE2MywgMTc2LCAyMDEpKTsiPmNhbmRpZGF0ZXMgdG8gcmVhZDwvdGV4dD48L3N3aXRjaD48L2c+PC9nPjwvZz48ZyBkYXRhLWNlbGwtaWQ9IklGLTAyIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLjUsMC41KSI+PHBhdGggZD0iTSAxNTAgNDU2IEwgMTUwIDQwMiBRIDE1MCAzOTIgMTUwIDM4MiBMIDE1MCAzMzQuMzciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzNhNGE2NiIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBwb2ludGVyLWV2ZW50cz0ic3Ryb2tlIiBzdHlsZT0ic3Ryb2tlOiBsaWdodC1kYXJrKHJnYig1OCwgNzQsIDEwMiksIHJnYigxNjMsIDE3NiwgMjAxKSk7Ii8+PHBhdGggZD0iTSAxNTAgMzI5LjEyIEwgMTUzLjUgMzM2LjEyIEwgMTUwIDMzNC4zNyBMIDE0Ni41IDMzNi4xMiBaIiBmaWxsPSIjM2E0YTY2IiBzdHJva2U9IiMzYTRhNjYiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgcG9pbnRlci1ldmVudHM9ImFsbCIgc3R5bGU9ImZpbGw6IGxpZ2h0LWRhcmsocmdiKDU4LCA3NCwgMTAyKSwgcmdiKDE2MywgMTc2LCAyMDEpKTsgc3Ryb2tlOiBsaWdodC1kYXJrKHJnYig1OCwgNzQsIDEwMiksIHJnYigxNjMsIDE3NiwgMjAxKSk7Ii8+PC9nPjxnPjxnPjxzd2l0Y2g+PGZvcmVpZ25PYmplY3Qgc3R5bGU9Im92ZXJmbG93OiB2aXNpYmxlOyB0ZXh0LWFsaWduOiBsZWZ0OyIgcG9pbnRlci1ldmVudHM9Im5vbmUiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHJlcXVpcmVkRmVhdHVyZXM9Imh0dHA6Ly93d3cudzMub3JnL1RSL1NWRzExL2ZlYXR1cmUjRXh0ZW5zaWJpbGl0eSI+PGRpdiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94aHRtbCIgc3R5bGU9ImRpc3BsYXk6IGZsZXg7IGFsaWduLWl0ZW1zOiB1bnNhZmUgY2VudGVyOyBqdXN0aWZ5LWNvbnRlbnQ6IHVuc2FmZSBjZW50ZXI7IHdpZHRoOiAxcHg7IGhlaWdodDogMXB4OyBwYWRkaW5nLXRvcDogNDI0cHg7IG1hcmdpbi1sZWZ0OiAxNTBweDsiPjxkaXYgc3R5bGU9ImJveC1zaXppbmc6IGJvcmRlci1ib3g7IGZvbnQtc2l6ZTogMDsgdGV4dC1hbGlnbjogY2VudGVyOyBjb2xvcjogIzNBNEE2NjsgYmFja2dyb3VuZC1jb2xvcjogI0ZGRkZGRjsgIj48ZGl2IHN0eWxlPSJkaXNwbGF5OiBpbmxpbmUtYmxvY2s7IGZvbnQtc2l6ZTogMTJweDsgZm9udC1mYW1pbHk6IEhlbHZldGljYTsgY29sb3I6IGxpZ2h0LWRhcmsoIzNBNEE2NiwgI2EzYjBjOSk7IGxpbmUtaGVpZ2h0OiAxLjI7IHBvaW50ZXItZXZlbnRzOiBhbGw7IGJhY2tncm91bmQtY29sb3I6IGxpZ2h0LWRhcmsoI0ZGRkZGRiwgIzEyMTIxMik7IHdoaXRlLXNwYWNlOiBub3dyYXA7ICI+cmVxdWVzdHMgYXMgYXNrZWQgdGVybXM8L2Rpdj48L2Rpdj48L2Rpdj48L2ZvcmVpZ25PYmplY3Q+PHRleHQgeD0iMTUwIiB5PSI0MjgiIGZpbGw9IiMzQTRBNjYiIGZvbnQtZmFtaWx5PSJIZWx2ZXRpY2EiIGZvbnQtc2l6ZT0iMTJweCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgc3R5bGU9ImZpbGw6IGxpZ2h0LWRhcmsocmdiKDU4LCA3NCwgMTAyKSwgcmdiKDE2MywgMTc2LCAyMDEpKTsiPnJlcXVlc3RzIGFzIGFza2VkIHRlcm1zPC90ZXh0Pjwvc3dpdGNoPjwvZz48L2c+PC9nPjxnIGRhdGEtY2VsbC1pZD0iSUYtMDMiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuNSwwLjUpIj48cGF0aCBkPSJNIDQzMCAyNDggTCA0MzAgMTk0IFEgNDMwIDE4NCA0MjAgMTg0IEwgMzAwIDE4NCBRIDI5MCAxODQgMjkwIDE3NCBMIDI5MCAxMjYuMzciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzNhNGE2NiIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBwb2ludGVyLWV2ZW50cz0ic3Ryb2tlIiBzdHlsZT0ic3Ryb2tlOiBsaWdodC1kYXJrKHJnYig1OCwgNzQsIDEwMiksIHJnYigxNjMsIDE3NiwgMjAxKSk7Ii8+PHBhdGggZD0iTSAyOTAgMTIxLjEyIEwgMjkzLjUgMTI4LjEyIEwgMjkwIDEyNi4zNyBMIDI4Ni41IDEyOC4xMiBaIiBmaWxsPSIjM2E0YTY2IiBzdHJva2U9IiMzYTRhNjYiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgcG9pbnRlci1ldmVudHM9ImFsbCIgc3R5bGU9ImZpbGw6IGxpZ2h0LWRhcmsocmdiKDU4LCA3NCwgMTAyKSwgcmdiKDE2MywgMTc2LCAyMDEpKTsgc3Ryb2tlOiBsaWdodC1kYXJrKHJnYig1OCwgNzQsIDEwMiksIHJnYigxNjMsIDE3NiwgMjAxKSk7Ii8+PC9nPjxnPjxnPjxzd2l0Y2g+PGZvcmVpZ25PYmplY3Qgc3R5bGU9Im92ZXJmbG93OiB2aXNpYmxlOyB0ZXh0LWFsaWduOiBsZWZ0OyIgcG9pbnRlci1ldmVudHM9Im5vbmUiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHJlcXVpcmVkRmVhdHVyZXM9Imh0dHA6Ly93d3cudzMub3JnL1RSL1NWRzExL2ZlYXR1cmUjRXh0ZW5zaWJpbGl0eSI+PGRpdiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94aHRtbCIgc3R5bGU9ImRpc3BsYXk6IGZsZXg7IGFsaWduLWl0ZW1zOiB1bnNhZmUgY2VudGVyOyBqdXN0aWZ5LWNvbnRlbnQ6IHVuc2FmZSBjZW50ZXI7IHdpZHRoOiAxcHg7IGhlaWdodDogMXB4OyBwYWRkaW5nLXRvcDogMTg0cHg7IG1hcmdpbi1sZWZ0OiA0MjdweDsiPjxkaXYgc3R5bGU9ImJveC1zaXppbmc6IGJvcmRlci1ib3g7IGZvbnQtc2l6ZTogMDsgdGV4dC1hbGlnbjogY2VudGVyOyBjb2xvcjogIzNBNEE2NjsgYmFja2dyb3VuZC1jb2xvcjogI0ZGRkZGRjsgIj48ZGl2IHN0eWxlPSJkaXNwbGF5OiBpbmxpbmUtYmxvY2s7IGZvbnQtc2l6ZTogMTJweDsgZm9udC1mYW1pbHk6IEhlbHZldGljYTsgY29sb3I6IGxpZ2h0LWRhcmsoIzNBNEE2NiwgI2EzYjBjOSk7IGxpbmUtaGVpZ2h0OiAxLjI7IHBvaW50ZXItZXZlbnRzOiBhbGw7IGJhY2tncm91bmQtY29sb3I6IGxpZ2h0LWRhcmsoI0ZGRkZGRiwgIzEyMTIxMik7IHdoaXRlLXNwYWNlOiBub3dyYXA7ICI+cHJvcG9zZSwgcHVibGlzaDwvZGl2PjwvZGl2PjwvZGl2PjwvZm9yZWlnbk9iamVjdD48dGV4dCB4PSI0MjciIHk9IjE4OCIgZmlsbD0iIzNBNEE2NiIgZm9udC1mYW1pbHk9IkhlbHZldGljYSIgZm9udC1zaXplPSIxMnB4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBzdHlsZT0iZmlsbDogbGlnaHQtZGFyayhyZ2IoNTgsIDc0LCAxMDIpLCByZ2IoMTYzLCAxNzYsIDIwMSkpOyI+cHJvcG9zZSwgcHVibGlzaDwvdGV4dD48L3N3aXRjaD48L2c+PC9nPjwvZz48ZyBkYXRhLWNlbGwtaWQ9IklGLTA0Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLjUsMC41KSI+PHBhdGggZD0iTSA0MzAgNDU2IEwgNDMwIDQwMiBRIDQzMCAzOTIgNDMwIDM4MiBMIDQzMCAzMzQuMzciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzNhNGE2NiIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBwb2ludGVyLWV2ZW50cz0ic3Ryb2tlIiBzdHlsZT0ic3Ryb2tlOiBsaWdodC1kYXJrKHJnYig1OCwgNzQsIDEwMiksIHJnYigxNjMsIDE3NiwgMjAxKSk7Ii8+PHBhdGggZD0iTSA0MzAgMzI5LjEyIEwgNDMzLjUgMzM2LjEyIEwgNDMwIDMzNC4zNyBMIDQyNi41IDMzNi4xMiBaIiBmaWxsPSIjM2E0YTY2IiBzdHJva2U9IiMzYTRhNjYiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgcG9pbnRlci1ldmVudHM9ImFsbCIgc3R5bGU9ImZpbGw6IGxpZ2h0LWRhcmsocmdiKDU4LCA3NCwgMTAyKSwgcmdiKDE2MywgMTc2LCAyMDEpKTsgc3Ryb2tlOiBsaWdodC1kYXJrKHJnYig1OCwgNzQsIDEwMiksIHJnYigxNjMsIDE3NiwgMjAxKSk7Ii8+PC9nPjxnPjxnPjxzd2l0Y2g+PGZvcmVpZ25PYmplY3Qgc3R5bGU9Im92ZXJmbG93OiB2aXNpYmxlOyB0ZXh0LWFsaWduOiBsZWZ0OyIgcG9pbnRlci1ldmVudHM9Im5vbmUiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHJlcXVpcmVkRmVhdHVyZXM9Imh0dHA6Ly93d3cudzMub3JnL1RSL1NWRzExL2ZlYXR1cmUjRXh0ZW5zaWJpbGl0eSI+PGRpdiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94aHRtbCIgc3R5bGU9ImRpc3BsYXk6IGZsZXg7IGFsaWduLWl0ZW1zOiB1bnNhZmUgY2VudGVyOyBqdXN0aWZ5LWNvbnRlbnQ6IHVuc2FmZSBjZW50ZXI7IHdpZHRoOiAxcHg7IGhlaWdodDogMXB4OyBwYWRkaW5nLXRvcDogNDI0cHg7IG1hcmdpbi1sZWZ0OiA0MzBweDsiPjxkaXYgc3R5bGU9ImJveC1zaXppbmc6IGJvcmRlci1ib3g7IGZvbnQtc2l6ZTogMDsgdGV4dC1hbGlnbjogY2VudGVyOyBjb2xvcjogIzNBNEE2NjsgYmFja2dyb3VuZC1jb2xvcjogI0ZGRkZGRjsgIj48ZGl2IHN0eWxlPSJkaXNwbGF5OiBpbmxpbmUtYmxvY2s7IGZvbnQtc2l6ZTogMTJweDsgZm9udC1mYW1pbHk6IEhlbHZldGljYTsgY29sb3I6IGxpZ2h0LWRhcmsoIzNBNEE2NiwgI2EzYjBjOSk7IGxpbmUtaGVpZ2h0OiAxLjI7IHBvaW50ZXItZXZlbnRzOiBhbGw7IGJhY2tncm91bmQtY29sb3I6IGxpZ2h0LWRhcmsoI0ZGRkZGRiwgIzEyMTIxMik7IHdoaXRlLXNwYWNlOiBub3dyYXA7ICI+ZHJhZnQsIHB1Ymxpc2g8L2Rpdj48L2Rpdj48L2Rpdj48L2ZvcmVpZ25PYmplY3Q+PHRleHQgeD0iNDMwIiB5PSI0MjgiIGZpbGw9IiMzQTRBNjYiIGZvbnQtZmFtaWx5PSJIZWx2ZXRpY2EiIGZvbnQtc2l6ZT0iMTJweCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgc3R5bGU9ImZpbGw6IGxpZ2h0LWRhcmsocmdiKDU4LCA3NCwgMTAyKSwgcmdiKDE2MywgMTc2LCAyMDEpKTsiPmRyYWZ0LCBwdWJsaXNoPC90ZXh0Pjwvc3dpdGNoPjwvZz48L2c+PC9nPjwvZz48L2c+PC9nPjxzd2l0Y2g+PGcgcmVxdWlyZWRGZWF0dXJlcz0iaHR0cDovL3d3dy53My5vcmcvVFIvU1ZHMTEvZmVhdHVyZSNFeHRlbnNpYmlsaXR5Ii8+PGEgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwtNSkiIHhsaW5rOmhyZWY9Imh0dHBzOi8vd3d3LmRyYXdpby5jb20vZG9jL2ZhcS9zdmctZXhwb3J0LXRleHQtcHJvYmxlbXMiIHRhcmdldD0iX2JsYW5rIj48dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjEwcHgiIHg9IjUwJSIgeT0iMTAwJSI+VGV4dCBpcyBub3QgU1ZHIC0gY2Fubm90IGRpc3BsYXk8L3RleHQ+PC9hPjwvc3dpdGNoPjwvc3ZnPg==&quot;&gt;
+        &lt;svg id=&quot;ov&quot; viewBox=&quot;0 0 701.0 617.0&quot; aria-hidden=&quot;true&quot;&gt;
+          &lt;defs&gt;
+            &lt;marker id=&quot;ah&quot; viewBox=&quot;0 0 10 10&quot; refX=&quot;8&quot; refY=&quot;5&quot; markerWidth=&quot;7&quot; markerHeight=&quot;7&quot; orient=&quot;auto-start-reverse&quot;&gt;&lt;path d=&quot;M0,0L10,5L0,10z&quot; fill=&quot;#D6453D&quot;/&gt;&lt;/marker&gt;
+            &lt;mask id=&quot;m&quot;&gt;&lt;rect x=&quot;0&quot; y=&quot;0&quot; width=&quot;701.0&quot; height=&quot;617.0&quot; fill=&quot;#fff&quot;/&gt;&lt;g id=&quot;holes&quot;&gt;&lt;/g&gt;&lt;/mask&gt;
+          &lt;/defs&gt;
+          &lt;rect id=&quot;shade&quot; x=&quot;0&quot; y=&quot;0&quot; width=&quot;701.0&quot; height=&quot;617.0&quot; fill=&quot;var(--shade)&quot; mask=&quot;url(#m)&quot; opacity=&quot;0&quot;/&gt;
+          &lt;g id=&quot;hot&quot;&gt;&lt;/g&gt;&lt;g id=&quot;done&quot;&gt;&lt;/g&gt;&lt;g id=&quot;cur&quot;&gt;&lt;/g&gt;
+        &lt;/svg&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;pop&quot; id=&quot;pop&quot; role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+  &lt;aside&gt;
+    &lt;h2 id=&quot;sname&quot;&gt;&lt;/h2&gt;
+    &lt;div class=&quot;ctl&quot;&gt;
+      &lt;button id=&quot;prev&quot; aria-label=&quot;Previous step&quot;&gt;&amp;#9664; Prev&lt;/button&gt;
+      &lt;button id=&quot;next&quot; aria-label=&quot;Next step&quot;&gt;Next &amp;#9654;&lt;/button&gt;
+      &lt;button id=&quot;play&quot; aria-label=&quot;Play&quot;&gt;&amp;#9654; Play&lt;/button&gt;
+      &lt;button id=&quot;reset&quot;&gt;Restart&lt;/button&gt;
+      &lt;button id=&quot;follow&quot; aria-pressed=&quot;true&quot;&gt;Zoom to step: on&lt;/button&gt;
+      &lt;span class=&quot;hint&quot; id=&quot;hint&quot;&gt;Arrow keys step, space plays&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;drill&quot; id=&quot;drill&quot; hidden&gt;&lt;/div&gt;
+    &lt;ol id=&quot;steps&quot;&gt;&lt;/ol&gt;
+  &lt;/aside&gt;
+&lt;/main&gt;
+&lt;script&gt;
+const D={&quot;title&quot;: &quot;UC-005 Grow the ontology from candidates and requests&quot;, &quot;size&quot;: [701.0, 617.0], &quot;nodes&quot;: {&quot;01&quot;: {&quot;box&quot;: [180.8, 40.9, 219.6, 79.9], &quot;name&quot;: &quot;Curator&quot;}, &quot;02&quot;: {&quot;box&quot;: [41.0, 248.6, 219.6, 79.9], &quot;name&quot;: &quot;Candidate register&quot;}, &quot;03&quot;: {&quot;box&quot;: [41.0, 456.3, 219.6, 79.9], &quot;name&quot;: &quot;Workbench&quot;}, &quot;04&quot;: {&quot;box&quot;: [320.5, 248.6, 219.6, 79.9], &quot;name&quot;: &quot;CLI&quot;}, &quot;05&quot;: {&quot;box&quot;: [320.5, 456.3, 219.6, 79.9], &quot;name&quot;: &quot;Ontology store&quot;}}, &quot;edges&quot;: {&quot;IF-02&quot;: {&quot;label&quot;: &quot;requests as asked terms&quot;, &quot;details&quot;: []}, &quot;IF-03&quot;: {&quot;label&quot;: &quot;propose, publish&quot;, &quot;details&quot;: []}, &quot;IF-01&quot;: {&quot;label&quot;: &quot;candidates to read&quot;, &quot;details&quot;: []}, &quot;IF-04&quot;: {&quot;label&quot;: &quot;draft, publish&quot;, &quot;details&quot;: []}}, &quot;scenarios&quot;: [{&quot;key&quot;: &quot;S1&quot;, &quot;name&quot;: &quot;Main success scenario&quot;, &quot;steps&quot;: [{&quot;n&quot;: 1, &quot;from&quot;: &quot;01&quot;, &quot;to&quot;: &quot;03&quot;, &quot;edge&quot;: &quot;IF-02&quot;, &quot;action&quot;: &quot;keep a \&quot;what would it take\&quot; report as an ontology request&quot;}, {&quot;n&quot;: 2, &quot;from&quot;: &quot;01&quot;, &quot;to&quot;: &quot;04&quot;, &quot;edge&quot;: &quot;IF-03&quot;, &quot;action&quot;: &quot;run candidates --propose&quot;}, {&quot;n&quot;: 3, &quot;from&quot;: &quot;04&quot;, &quot;to&quot;: &quot;02&quot;, &quot;edge&quot;: &quot;IF-01&quot;, &quot;action&quot;: &quot;keep terms with enough documents or a request, not covered by a synonym&quot;}, {&quot;n&quot;: 4, &quot;from&quot;: &quot;04&quot;, &quot;to&quot;: &quot;05&quot;, &quot;edge&quot;: &quot;IF-04&quot;, &quot;action&quot;: &quot;consolidate with the current ontology held fixed; write the draft at the next minor version&quot;}, {&quot;n&quot;: 5, &quot;from&quot;: &quot;01&quot;, &quot;to&quot;: &quot;04&quot;, &quot;edge&quot;: &quot;IF-03&quot;, &quot;action&quot;: &quot;pull, edit, diff; publish and activate&quot;}, {&quot;n&quot;: 6, &quot;from&quot;: &quot;05&quot;, &quot;to&quot;: &quot;01&quot;, &quot;edge&quot;: &quot;IF-04&quot;, &quot;action&quot;: &quot;the next sweep extracts the delta for the selected documents&quot;}]}], &quot;hot&quot;: []}, W=D.size[0], H=D.size[1], K=W/2400, ACC=&quot;#D6453D&quot;, GREY=&quot;#8A93A3&quot;, NS=&quot;http://www.w3.org/2000/svg&quot;;
+const $=id=&gt;document.getElementById(id);
+let si=0, i=-1, timer=null, follow=true, Z={z:1,tx:0,ty:0};
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p&amp;&amp;p.appendChild(e);return e;}
+const B=id=&gt;{const n=D.nodes[id];return n?{x:n.box[0],y:n.box[1],w:n.box[2],h:n.box[3]}:null;};
+const nm=id=&gt;(D.nodes[id]||{}).name||id;
+function edgePt(b,tx,ty){const cx=b.x+b.w/2,cy=b.y+b.h/2,dx=tx-cx,dy=ty-cy;if(!dx&amp;&amp;!dy)return[cx,cy];const s=Math.min(dx?(b.w/2)/Math.abs(dx):1e9,dy?(b.h/2)/Math.abs(dy):1e9);return[cx+dx*s,cy+dy*s];}
+function arrow(a,b,g,cur,sub){const A=B(a),Bb=B(b);if(!A||!Bb)return[0,0,0,0];let d,cx,cy,mx,my;
+  if(a===b){const x0=A.x+A.w*.3,x1=A.x+A.w*.7,y=A.y,h=Math.max(90*K,A.h*.9);d=`M${x0},${y} C${x0},${y-h} ${x1},${y-h} ${x1},${y}`;cx=mx=(x0+x1)/2;cy=y-h*.5;my=y-h*.75;}
+  else{const p=edgePt(A,Bb.x+Bb.w/2,Bb.y+Bb.h/2),q=edgePt(Bb,A.x+A.w/2,A.y+A.h/2);
+  const dx=q[0]-p[0],dy=q[1]-p[1],len=Math.hypot(dx,dy)||1,bend=Math.min(120*K,len*.18);
+  cx=(p[0]+q[0])/2-dy/len*bend;cy=(p[1]+q[1])/2+dx/len*bend;mx=(p[0]+q[0])/4+cx/2;my=(p[1]+q[1])/4+cy/2;d=`M${p[0]},${p[1]} Q${cx},${cy} ${q[0]},${q[1]}`;}
+  const at={d,fill:&quot;none&quot;,stroke:ACC,&quot;stroke-width&quot;:(cur?6:3)*K*(sub?1.3:1),&quot;stroke-opacity&quot;:cur?1:.45,&quot;marker-end&quot;:&quot;url(#ah)&quot;,&quot;stroke-linecap&quot;:&quot;round&quot;};
+  if(sub)at[&quot;stroke-dasharray&quot;]=`${18*K} ${8*K} ${3*K} ${8*K}`;
+  const path=el(&quot;path&quot;,at,g);
+  if(cur&amp;&amp;!sub){path.style.setProperty(&quot;--len&quot;,path.getTotalLength());path.classList.add(&quot;draw&quot;);}
+  return[cx,cy,mx,my];}
+const BACK=(()=&gt;{try{const b=new URLSearchParams(location.search).get(&quot;back&quot;);if(!b)return null;const U=self.URL,u=new U(b,location.href);if(!/^(https?|file):$/.test(u.protocol)||u.protocol!==location.protocol||u.origin!==location.origin)return null;return u.href;}catch(e){return null;}})();
+function drillTarget(s){const u=s&amp;&amp;s.uses;if(!u||!u.href)return null;const S=D.scenarios[si];
+  const back=u.back+(BACK?&quot;?back=&quot;+encodeURIComponent(BACK):&quot;&quot;)+&quot;#&quot;+encodeURIComponent(S.key+&quot;-&quot;+s.n);
+  return u.href+&quot;?back=&quot;+encodeURIComponent(back)+&quot;#&quot;+encodeURIComponent(u.key);}
+function drill(s){const t=drillTarget(s);if(t){stop();location.assign(t);}}
+function marker(x,y,sz,col,g){el(&quot;rect&quot;,{x:x,y:y,width:sz,height:sz,rx:2*K,fill:&quot;none&quot;,stroke:col,&quot;stroke-width&quot;:1.8*K,class:&quot;cam&quot;},g);
+  el(&quot;line&quot;,{x1:x+sz*.25,y1:y+sz/2,x2:x+sz*.75,y2:y+sz/2,stroke:col,&quot;stroke-width&quot;:1.8*K},g);el(&quot;line&quot;,{x1:x+sz/2,y1:y+sz*.25,x2:x+sz/2,y2:y+sz*.75,stroke:col,&quot;stroke-width&quot;:1.8*K},g);}
+function subBadge(s,x0,y0,g){const u=s.uses,live=!!u.href,col=live?&quot;#fff&quot;:GREY,t=u.ref,sz=13*K,w=(t.length*8.6+22)*K+sz+6*K,h=28*K;
+  const G=el(&quot;g&quot;,{class:live?&quot;sub&quot;:&quot;sub-open&quot;},g);el(&quot;rect&quot;,{x:x0-w/2,y:y0-h/2,width:w,height:h,rx:14*K,fill:live?ACC:&quot;#fff&quot;,stroke:live?ACC:GREY,&quot;stroke-width&quot;:2*K,&quot;stroke-dasharray&quot;:live?&quot;none&quot;:`${5*K} ${4*K}`},G);
+  marker(x0-w/2+11*K,y0-sz/2,sz,col,G);
+  const t2=el(&quot;text&quot;,{x:x0+(sz+6*K)/2,y:y0+5*K,&quot;text-anchor&quot;:&quot;middle&quot;,&quot;font-size&quot;:14*K,&quot;font-weight&quot;:700,fill:col,&quot;font-family&quot;:&quot;system-ui,sans-serif&quot;},G);t2.textContent=t;
+  const tt=el(&quot;title&quot;,{},G);tt.textContent=live?&quot;Open the participating pattern &quot;+u.ref:(u.kind===&quot;tbd&quot;?&quot;Open participating pattern, not written yet: &quot;:&quot;No walkthrough to open: &quot;)+u.ref;
+  if(live)G.addEventListener(&quot;click&quot;,()=&gt;drill(s));}
+function cam(open){const c=document.createElement(&quot;span&quot;);c.className=open?&quot;cam open&quot;:&quot;cam&quot;;c.setAttribute(&quot;aria-hidden&quot;,&quot;true&quot;);return c;}
+function drillPanel(s){const dp=$(&quot;drill&quot;);dp.innerHTML=&quot;&quot;;dp.hidden=!(s&amp;&amp;s.uses);if(dp.hidden)return;const u=s.uses,p=document.createElement(&quot;div&quot;);
+  p.appendChild(cam(!u.href));p.appendChild(document.createTextNode(u.href?`Step ${s.n} runs the participating pattern ${u.ref}.`:u.kind===&quot;tbd&quot;?`Step ${s.n} runs an open participating pattern, ${u.ref}, not written yet.`:`Step ${s.n} runs ${u.ref}, which has no walkthrough to open.`));dp.appendChild(p);
+  if(u.href){const a=document.createElement(&quot;a&quot;);a.setAttribute(&quot;href&quot;,drillTarget(s));a.textContent=&quot;Open &quot;+u.ref+&quot; \u2934&quot;;dp.appendChild(a);}
+  if(u.page){const a=document.createElement(&quot;a&quot;);opens(a,u.page);a.className=&quot;page-link&quot;;a.textContent=u.page.id+&quot; page&quot;;a.setAttribute(&quot;title&quot;,tip(u.page.id+&quot; page&quot;,u.page));dp.appendChild(a);}}
+function opens(a,t){a.setAttribute(&quot;href&quot;,t.href);if(t.target!==&quot;same&quot;){a.setAttribute(&quot;target&quot;,&quot;_blank&quot;);a.setAttribute(&quot;rel&quot;,&quot;noopener&quot;);}}
+function tip(name,t){return name+(t.target===&quot;same&quot;?&quot;&quot;:&quot; (opens in a new tab)&quot;);}
+function who(id){const n=D.nodes[id]||{},t=id+&quot; &quot;+nm(id);if(!n.href)return document.createTextNode(t);
+  const a=document.createElement(&quot;a&quot;);opens(a,n);a.textContent=t;a.setAttribute(&quot;title&quot;,tip(nm(id),n));return a;}
+function hotspots(){const g=$(&quot;hot&quot;);(D.hot||[]).forEach(h=&gt;{const a=el(&quot;a&quot;,{class:&quot;hot&quot;,tabindex:&quot;-1&quot;},g);opens(a,h);
+  el(&quot;rect&quot;,{x:h.box[0],y:h.box[1],width:h.box[2],height:h.box[3],rx:8*K,fill:ACC},a);const t=el(&quot;title&quot;,{},a);t.textContent=tip(h.name,h);});}
+function ring(id,g,strong){const b=B(id);if(b)el(&quot;rect&quot;,{x:b.x-6*K,y:b.y-6*K,width:b.w+12*K,height:b.h+12*K,rx:10*K,fill:&quot;none&quot;,stroke:ACC,&quot;stroke-width&quot;:(strong?5:3)*K,class:strong?&quot;pulse&quot;:&quot;&quot;},g);}
+function hole(id){const b=B(id);if(b)el(&quot;rect&quot;,{x:b.x-8*K,y:b.y-8*K,width:b.w+16*K,height:b.h+16*K,rx:10*K,fill:&quot;#000&quot;},$(&quot;holes&quot;));}
+function badge(id,n,g,k){const b=B(id);if(!b)return;const x=b.x+14*K+k*30*K,y=b.y+2*K;el(&quot;circle&quot;,{cx:x,cy:y,r:15*K,fill:ACC,stroke:&quot;#fff&quot;,&quot;stroke-width&quot;:3*K},g);const t=el(&quot;text&quot;,{x,y:y+5.5*K,&quot;text-anchor&quot;:&quot;middle&quot;,&quot;font-size&quot;:16*K,&quot;font-weight&quot;:700,fill:&quot;#fff&quot;,&quot;font-family&quot;:&quot;system-ui,sans-serif&quot;},g);t.textContent=n;}
+function setZ(z,tx,ty){Z={z,tx,ty};$(&quot;world&quot;).style.transform=`translate(${tx}px,${ty}px) scale(${z})`;}
+function focus(s,mid){const c=$(&quot;canvas&quot;).getBoundingClientRect(),sc=c.width/W;if(!follow){setZ(1,0,0);return;}
+  const bs=[B(s.from),B(s.to)].filter(Boolean),pad=140*K;
+  const x0=Math.min(...bs.map(b=&gt;b.x),mid[0])-pad,y0=Math.min(...bs.map(b=&gt;b.y),mid[1])-pad,x1=Math.max(...bs.map(b=&gt;b.x+b.w),mid[0])+pad,y1=Math.max(...bs.map(b=&gt;b.y+b.h),mid[1])+pad+120*K;
+  const z=Math.max(1,Math.min(2.6,W/(x1-x0),H/(y1-y0)));
+  let tx=c.width/2-((x0+x1)/2)*sc*z,ty=c.height/2-((y0+y1)/2)*sc*z;
+  tx=Math.min(0,Math.max(c.width-c.width*z,tx));ty=Math.min(0,Math.max(c.height-c.height*z,ty));setZ(z,tx,ty);}
+function showPop(s){const p=$(&quot;pop&quot;),E=D.edges[s.edge]||{};
+  p.innerHTML='&lt;div&gt;&lt;span class=&quot;n&quot;&gt;&lt;/span&gt;&lt;span class=&quot;a&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;m&quot;&gt;&lt;/div&gt;';
+  p.querySelector(&quot;.n&quot;).textContent=s.n;p.querySelector(&quot;.a&quot;).textContent=s.action;
+  const det=(E.details||[]).map(d=&gt;d[0]+&quot;: &quot;+d[1]).join(&quot;  ·  &quot;);
+  const m=p.querySelector(&quot;.m&quot;);m.appendChild(who(s.from));m.appendChild(document.createTextNode(&quot; → &quot;));m.appendChild(who(s.to));
+  m.appendChild(document.createTextNode(`${s.edge?&quot;  ·  &quot;+s.edge:&quot;&quot;}${E.label?&quot; &quot;+E.label:&quot;&quot;}${det?&quot;  ·  &quot;+det:&quot;&quot;}${s.uses?&quot;  ·  runs &quot;+s.uses.ref:&quot;&quot;}`));
+  const c=$(&quot;canvas&quot;).getBoundingClientRect(),sc=c.width/W,T=(x,y)=&gt;[x*sc*Z.z+Z.tx,y*sc*Z.z+Z.ty];
+  const bs=[B(s.from),B(s.to)].filter(Boolean);
+  const[ux0,uy0]=T(Math.min(...bs.map(b=&gt;b.x)),Math.min(...bs.map(b=&gt;b.y))),[ux1,uy1]=T(Math.max(...bs.map(b=&gt;b.x+b.w)),Math.max(...bs.map(b=&gt;b.y+b.h)));
+  p.classList.remove(&quot;on&quot;);p.style.left=&quot;0px&quot;;p.style.top=&quot;0px&quot;;
+  requestAnimationFrame(()=&gt;{const w=p.offsetWidth,h=p.offsetHeight,g=16,cx=(ux0+ux1)/2-w/2,cy=(uy0+uy1)/2-h/2;
+    const fits=([x,y])=&gt;x&gt;=8&amp;&amp;y&gt;=8&amp;&amp;x+w&lt;=c.width-8&amp;&amp;y+h&lt;=c.height-8;
+    let[x,y]=[[cx,uy1+g],[cx,uy0-h-g],[ux1+g,cy],[ux0-w-g,cy]].find(fits)||[c.width-w-8,c.height-h-8];
+    p.style.left=Math.max(8,Math.min(x,c.width-w-8))+&quot;px&quot;;p.style.top=Math.max(8,Math.min(y,c.height-h-8))+&quot;px&quot;;p.classList.add(&quot;on&quot;);});}
+function render(){const S=D.scenarios[si];$(&quot;done&quot;).innerHTML=&quot;&quot;;$(&quot;cur&quot;).innerHTML=&quot;&quot;;$(&quot;holes&quot;).innerHTML=&quot;&quot;;const used={};
+  S.steps.forEach((s,j)=&gt;{if(j&gt;i)return;const g=j===i?$(&quot;cur&quot;):$(&quot;done&quot;),k=used[s.from]=(used[s.from]??-1)+1;const mid=arrow(s.from,s.to,g,j===i,!!s.uses);badge(s.from,s.n,g,k);if(s.uses)subBadge(s,mid[2],mid[3],g);
+    if(j===i){ring(s.from,g,false);ring(s.to,g,true);hole(s.from);hole(s.to);focus(s,mid);showPop(s);}});
+  drillPanel(S.steps[i]);$(&quot;shade&quot;).setAttribute(&quot;opacity&quot;,i&gt;=0?1:0);if(i&lt;0){$(&quot;pop&quot;).classList.remove(&quot;on&quot;);setZ(1,0,0);}
+  document.querySelectorAll(&quot;#steps li&quot;).forEach((li,j)=&gt;{li.classList.toggle(&quot;done&quot;,j&lt;i);const b=li.querySelector(&quot;button&quot;);b.removeAttribute(&quot;aria-current&quot;);if(j===i)b.setAttribute(&quot;aria-current&quot;,&quot;step&quot;);});}
+function go(n){i=Math.max(-1,Math.min(D.scenarios[si].steps.length-1,n));render();}
+function stop(){clearInterval(timer);timer=null;$(&quot;play&quot;).innerHTML=&quot;&amp;#9654; Play&quot;;$(&quot;play&quot;).setAttribute(&quot;aria-label&quot;,&quot;Play&quot;);}
+function play(){if(timer){stop();return;}const L=D.scenarios[si].steps.length;if(i&gt;=L-1)go(-1);$(&quot;play&quot;).innerHTML=&quot;&amp;#10074;&amp;#10074; Pause&quot;;$(&quot;play&quot;).setAttribute(&quot;aria-label&quot;,&quot;Pause&quot;);go(i+1);timer=setInterval(()=&gt;{if(i&gt;=D.scenarios[si].steps.length-1){stop();return;}go(i+1);},3200);}
+function pick(n){stop();si=n;i=-1;document.querySelectorAll(&quot;#tabs button&quot;).forEach((b,j)=&gt;b.setAttribute(&quot;aria-pressed&quot;,j===n));
+  const S=D.scenarios[n];$(&quot;sname&quot;).textContent=S.key+&quot; &quot;+S.name;const ol=$(&quot;steps&quot;);ol.innerHTML=&quot;&quot;;
+  S.steps.forEach((s,j)=&gt;{const li=document.createElement(&quot;li&quot;),b=document.createElement(&quot;button&quot;);b.innerHTML='&lt;span class=&quot;k&quot;&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;';b.firstChild.textContent=s.n;b.lastChild.textContent=s.action;if(s.uses){const c=document.createElement(&quot;span&quot;);c.className=&quot;chip&quot;;c.appendChild(cam(!s.uses.href));c.appendChild(document.createTextNode(s.uses.ref));b.lastChild.appendChild(c);}b.onclick=()=&gt;{stop();go(j);};li.appendChild(b);
+    if((D.nodes[s.from]||{}).href||(D.nodes[s.to]||{}).href){const w=document.createElement(&quot;div&quot;);w.className=&quot;who&quot;;w.appendChild(who(s.from));w.appendChild(document.createTextNode(&quot; → &quot;));w.appendChild(who(s.to));li.appendChild(w);}
+    ol.appendChild(li);});
+  render();try{localStorage.setItem(&quot;model-animate:uc-005-grow-the-ontology-from-candidates-and-requests&quot;,S.key);}catch(e){}}
+D.scenarios.forEach((S,n)=&gt;{const b=document.createElement(&quot;button&quot;);b.textContent=S.key+&quot; &quot;+S.name;b.onclick=()=&gt;pick(n);$(&quot;tabs&quot;).appendChild(b);});
+$(&quot;follow&quot;).onclick=()=&gt;{follow=!follow;$(&quot;follow&quot;).setAttribute(&quot;aria-pressed&quot;,follow);$(&quot;follow&quot;).textContent=&quot;Zoom to step: &quot;+(follow?&quot;on&quot;:&quot;off&quot;);render();};
+$(&quot;prev&quot;).onclick=()=&gt;{stop();go(i-1);};$(&quot;next&quot;).onclick=()=&gt;{stop();go(i+1);};$(&quot;play&quot;).onclick=play;$(&quot;reset&quot;).onclick=()=&gt;{stop();go(-1);};
+document.addEventListener(&quot;keydown&quot;,e=&gt;{if(e.ctrlKey||e.metaKey||e.altKey)return;if(e.key===&quot;ArrowRight&quot;){stop();go(i+1);}else if(e.key===&quot;ArrowLeft&quot;){stop();go(i-1);}else if(e.key===&quot; &quot;){e.preventDefault();play();}
+  else if(e.key===&quot;d&quot;||e.key===&quot;D&quot;){drill(D.scenarios[si].steps[i]);}else if((e.key===&quot;b&quot;||e.key===&quot;B&quot;)&amp;&amp;BACK){location.assign(BACK);}});
+window.addEventListener(&quot;resize&quot;,()=&gt;{if(i&gt;=0)render();});
+function fromHash(){let h=&quot;&quot;;try{h=decodeURIComponent(location.hash.slice(1));}catch(e){}if(!h)return null;
+  for(let n=0;n&lt;D.scenarios.length;n++){const S=D.scenarios[n],k=S.key;if(h===k)return[n,-1];
+    if(h.startsWith(k+&quot;-&quot;)){const m=Number(h.slice(k.length+1)),j=S.steps.findIndex(s=&gt;s.n===m);if(j&gt;=0)return[n,j];}}return null;}
+function openHash(){const h=fromHash();if(!h)return false;pick(h[0]);if(h[1]&gt;=0)go(h[1]);return true;}
+window.addEventListener(&quot;hashchange&quot;,openHash);
+hotspots();
+if(BACK){const a=$(&quot;back&quot;);a.setAttribute(&quot;href&quot;,BACK);a.hidden=false;}
+{const sub=D.scenarios.some(S=&gt;S.steps.some(s=&gt;s.uses&amp;&amp;s.uses.href));if(sub)$(&quot;hint&quot;).textContent+=&quot;, D opens a participating pattern&quot;;if(BACK)$(&quot;hint&quot;).textContent+=&quot;, B goes back&quot;;}
+let start=0;try{const k=localStorage.getItem(&quot;model-animate:uc-005-grow-the-ontology-from-candidates-and-requests&quot;);const n=D.scenarios.findIndex(s=&gt;s.key===k);if(n&gt;=0)start=n;}catch(e){}
+if(!openHash())pick(start);
+&lt;/script&gt;
+&lt;script&gt;document.addEventListener('keydown',function(e){try{parent.document.dispatchEvent(new KeyboardEvent('keydown',{key:e.key,bubbles:true}));}catch(x){}});&lt;/script&gt;&lt;/body&gt;
+&lt;/html&gt;
+"></iframe></div>
+  <div class="slide-number" aria-hidden="true">7</div>
+</section>
+<section class="slide" data-slide="data-and-measures">
+  <header class="slide-header">
+    
+    <h1>Data and measures</h1>
+  </header>
+  <div class="slide-body"><div class="fit"><ul>
+<li>The register: kind, term, documents, evidence, nearest, asked</li>
+<li>The revision draft and its warning when a change is semantic</li>
+</ul>
+</div></div>
+  
+  <div class="slide-number" aria-hidden="true">8</div>
+</section>
+</div>
+  </div>
+  <nav class="toolbar" aria-label="Slide navigation">
+    <button id="toggle-index" type="button" title="Slide index (I)" aria-label="Toggle slide index" aria-expanded="true"><span aria-hidden="true">&#9776;</span></button>
+    <span class="spacer"></span>
+    <button id="prev" type="button" title="Previous (Left arrow)" aria-label="Previous slide"><span aria-hidden="true">&#8249;</span> Previous</button>
+    <span id="counter" aria-live="polite"></span>
+    <button id="next" type="button" title="Next (Right arrow)" aria-label="Next slide">Next <span aria-hidden="true">&#8250;</span></button>
+    <span class="spacer"></span>
+    
+    <button id="fullscreen" type="button" title="Present full screen (F)" aria-label="Present full screen"><span aria-hidden="true">&#x26F6;</span></button>
+  </nav>
+</main>
+
+
+<script>
+(function () {
+  var W = 1920, H = 1080;
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.deck > .slide'));
+  var deck = document.querySelector('.deck');
+  var viewport = document.querySelector('.viewport');
+  var stage = document.querySelector('.stage');
+  var thumbs = [];
+  var i = 0;
+
+  function px(v) { return parseFloat(v) || 0; }
+
+  // Shrink a slide's body to its content box, and when it must shrink, widen it first so
+  // the scaled result still spans the slide. A uniform shrink alone turns a long table
+  // into a narrow column in the middle of a wide slide.
+  function fitSlide(s) {
+    var box = s.querySelector('.fit');
+    if (!box) return 1;
+    var body = box.parentElement;
+    var cs = getComputedStyle(body);
+    var availH = body.clientHeight - px(cs.paddingTop) - px(cs.paddingBottom);
+    var availW = body.clientWidth - px(cs.paddingLeft) - px(cs.paddingRight);
+    box.style.transform = 'none';
+    box.style.width = '';
+    if (availH <= 0 || availW <= 0) return 1;
+    var k = 1;
+    if (box.scrollHeight > availH + 1) {
+      // Widening reflows the content shorter, so the fitting scale is not availH/height.
+      // Search for the largest scale at which the widened content still fits.
+      var lo = 0.2, hi = 1;
+      for (var n = 0; n < 10; n++) {
+        var mid = (lo + hi) / 2;
+        box.style.width = (availW / mid) + 'px';
+        if (box.scrollHeight * mid <= availH) lo = mid; else hi = mid;
+      }
+      k = lo;
+      box.style.width = (availW / k) + 'px';
+    }
+    if (k < 1) {
+      box.style.transform = 'scale(' + k + ')';
+      box.style.transformOrigin = 'top left';
+    } else {
+      box.style.width = '';
+    }
+    s.setAttribute('data-fit', k.toFixed(3));
+    return k;
+  }
+
+  // Every slide, not just the visible one. A hidden slide measures as zero height, which
+  // is how slides used to reach the PDF unfitted and run off the page.
+  function fitAll() {
+    slides.forEach(function (s) {
+      var hidden = getComputedStyle(s).display === 'none';
+      if (hidden) s.classList.add('measuring');
+      fitSlide(s);
+      if (hidden) s.classList.remove('measuring');
+    });
+    buildThumbs();
+    place();
+  }
+
+  // Scale the fixed canvas into whatever the stage leaves, keeping 16:9 exactly.
+  function place() {
+    if (!viewport || !stage) return;
+    var cs = getComputedStyle(stage);
+    var bar = document.querySelector('.toolbar');
+    var barH = bar && getComputedStyle(bar).display !== 'none' ? bar.offsetHeight : 0;
+    var aw = stage.clientWidth - px(cs.paddingLeft) - px(cs.paddingRight);
+    var ah = stage.clientHeight - px(cs.paddingTop) - px(cs.paddingBottom) - barH;
+    var k = Math.max(0.05, Math.min(aw / W, ah / H));
+    viewport.style.width = Math.floor(W * k) + 'px';
+    viewport.style.height = Math.floor(H * k) + 'px';
+    deck.style.transform = 'scale(' + k + ')';
+  }
+
+  // PowerPoint-style thumbnails: a scaled live copy of each fitted slide.
+  function buildThumbs() {
+    thumbs = Array.prototype.slice.call(document.querySelectorAll('.thumb'));
+    var on = document.body.classList.contains('index-thumbs');
+    thumbs.forEach(function (t, k) {
+      var mini = t.querySelector('.mini');
+      if (!on) { if (mini) mini.innerHTML = ''; return; }
+      if (!mini || !slides[k] || !mini.clientWidth) return;
+      var scale = mini.clientWidth / W;
+      var copy = slides[k].cloneNode(true);
+      copy.classList.remove('active');
+      copy.classList.add('thumb-slide');
+      copy.removeAttribute('id');
+      copy.style.transform = 'scale(' + scale + ')';
+      mini.innerHTML = '';
+      mini.appendChild(copy);
+    });
+    mark();
+  }
+
+  function mark() {
+    thumbs.forEach(function (t, k) {
+      var on = k === i;
+      t.classList.toggle('current', on);
+      t.setAttribute('aria-current', on ? 'true' : 'false');
+      if (on && document.body.classList.contains('index-open')) {
+        var list = t.closest('.index-list');
+        if (list) {
+          var top = t.offsetTop, bottom = top + t.offsetHeight;
+          if (top < list.scrollTop || bottom > list.scrollTop + list.clientHeight) {
+            list.scrollTop = top - list.clientHeight / 2 + t.offsetHeight / 2;
+          }
+        }
+      }
+    });
+  }
+
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function (s, k) { s.classList.toggle('active', k === i); });
+    var c = document.getElementById('counter');
+    if (c) c.textContent = (i + 1) + ' / ' + slides.length;
+    var prev = document.getElementById('prev'), next = document.getElementById('next');
+    if (prev) prev.disabled = i === 0;
+    if (next) next.disabled = i === slides.length - 1;
+    var h = '#' + (slides[i].getAttribute('data-slide') || (i + 1));
+    if (location.hash !== h) history.replaceState(null, '', h);
+    mark();
+    window.dispatchEvent(new CustomEvent('deck:slide', { detail: { index: i } }));
+  }
+
+  // A slide's address is its id, so a link survives slides being added or reordered.
+  // A plain number is still honoured, for links made before ids existed.
+  function fromHash() {
+    var h = decodeURIComponent((location.hash || '').slice(1));
+    if (!h) return 0;
+    for (var k = 0; k < slides.length; k++) if (slides[k].getAttribute('data-slide') === h) return k;
+    var n = parseInt(h, 10);
+    return isNaN(n) ? 0 : n - 1;
+  }
+
+  function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function recall(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+  function setIndex(open) {
+    document.body.classList.toggle('index-open', open);
+    var b = document.getElementById('toggle-index');
+    if (b) b.setAttribute('aria-expanded', open ? 'true' : 'false');
+    store('markdown-deck:index', open ? '1' : '0');
+    // The stage width changes with the panel, so the canvas must be re-placed. Thumbnails
+    // built while the panel was hidden measured zero wide, so rebuild them on opening.
+    // Synchronous on purpose: reading sizes forces layout, and animation frames are
+    // throttled in background tabs, which left the panel empty when deferred.
+    place();
+    if (open) buildThumbs(); else mark();
+  }
+
+  // Titles only, or thumbnails too. The build sets the default; a viewer's choice sticks.
+  function setThumbs(on) {
+    document.body.classList.toggle('index-thumbs', on);
+    var b = document.getElementById('index-view');
+    if (b) {
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.textContent = on ? 'Titles' : 'Thumbnails';
+      b.title = on ? 'Show slide titles only' : 'Show slide thumbnails';
+    }
+    store('markdown-deck:thumbs', on ? '1' : '0');
+    buildThumbs();
+  }
+
+  function fullscreen() {
+    if (document.fullscreenElement) { document.exitFullscreen(); return; }
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+  }
+
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest && e.target.closest('.thumb');
+    if (t) { show(parseInt(t.getAttribute('data-i'), 10)); return; }
+    var id = e.target.closest && e.target.closest('button') && e.target.closest('button').id;
+    if (id === 'prev') show(i - 1);
+    if (id === 'next') show(i + 1);
+    if (id === 'toggle-index') setIndex(!document.body.classList.contains('index-open'));
+    if (id === 'index-collapse') setIndex(false);
+    if (id === 'index-view') setThumbs(!document.body.classList.contains('index-thumbs'));
+    if (id === 'fullscreen') fullscreen();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); show(i + 1); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); show(i - 1); }
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End') show(slides.length - 1);
+    if (e.key === 'i' || e.key === 'I') setIndex(!document.body.classList.contains('index-open'));
+    if (e.key === 't' || e.key === 'T') setThumbs(!document.body.classList.contains('index-thumbs'));
+    if (e.key === 'f' || e.key === 'F') fullscreen();
+  });
+
+  document.addEventListener('fullscreenchange', function () {
+    document.body.classList.toggle('presenting', !!document.fullscreenElement);
+    place();
+  });
+  window.addEventListener('resize', place);
+  window.addEventListener('hashchange', function () { show(fromHash()); });
+
+  // Content that loads late changes the height to fit: images, web fonts, mermaid.
+  Array.prototype.forEach.call(document.querySelectorAll('.deck img'), function (img) {
+    if (!img.complete) img.addEventListener('load', fitAll);
+  });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
+  window.addEventListener('load', fitAll);
+  window.addEventListener('deck:refit', fitAll);
+
+  var saved = recall('markdown-deck:index');
+  setIndex(saved === null ? window.innerWidth >= 900 : saved === '1');
+  var savedThumbs = recall('markdown-deck:thumbs');
+  setThumbs(savedThumbs === null ? document.body.classList.contains('index-thumbs') : savedThumbs === '1');
+  window.__deck = {
+    show: show,
+    fitAll: fitAll,
+    place: place,
+    current: function () { return i; },
+    fits: function () {
+      return slides.map(function (s, k) {
+        var h = s.querySelector('.slide-header h1, .cover-title');
+        var t = h ? h.textContent : (s.getAttribute('aria-label') || '');
+        return { slide: k + 1, title: t, fit: parseFloat(s.getAttribute('data-fit') || '1') };
+      });
+    },
+  };
+  window.__deckShow = show;
+  fitAll();
+  show(fromHash());
+})();</script>
+
+</body>
+</html>

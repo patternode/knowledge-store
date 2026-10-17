@@ -7,7 +7,7 @@ Please do not open a public issue for a security problem. Report it privately th
 ## Scope and responsibilities
 
 How the design itself keeps people, data and spend safe, boundary by boundary, is
-[docs/architecture/security.md](docs/architecture/security.md). This page is what you are
+[docs/design/security.md](docs/design/security.md). This page is what you are
 responsible for around it.
 
 This project is a kit you deploy into your own AWS account. You are responsible for the account, its IAM, the data you ingest and who you give access to.
