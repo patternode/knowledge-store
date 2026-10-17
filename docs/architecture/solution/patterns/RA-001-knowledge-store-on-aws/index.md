@@ -33,10 +33,6 @@ deck_id: ra-001-knowledge-store-on-aws
 
 The reference architecture: the architecture pattern AP-001 made concrete in solution building blocks on AWS, as the module deploys it. The narrative, the request flow, the grounding table, the valves and the cost table are in [aws/aws.md](../../../../design/aws/aws.md), which this page does not repeat; the components and their Terraform are in [the deployment components guide](../../../../deploy/aws/components.md). This page is the pattern's register form: what blocks, what interfaces, what controls, what decisions, so the catalogue can be walked from a use case to a running unit.
 
-![RA-001 solution building blocks and interfaces](./components.svg)
-
-Generated from the Required Building Blocks and Interfaces tables with the model skill (`components.drawio` is the source). The illustrated reference architecture is [aws/architecture.svg](../../../../design/aws/architecture.svg), from [aws/architecture.drawio](../../../../design/aws/architecture.drawio) and its generator [architecture.py](../../../../design/aws/architecture.py).
-
 <!-- deck:slide label="Context" -->
 
 ## Context
@@ -48,6 +44,14 @@ One AWS account, one Terraform module, two applies. Ingestion as a Fargate sweep
 ### Non-goals
 
 Multi-region, multi-account and a shared tenant model are out of scope: one deployment is one account and one stack.
+
+<!-- deck:slide label="Component view" -->
+
+## Diagram
+
+![RA-001 solution building blocks and interfaces](./components.svg)
+
+Generated from the Required Building Blocks and Interfaces tables with the model skill (`components.drawio` is the source). The illustrated reference architecture is [aws/architecture.svg](../../../../design/aws/architecture.svg), from [aws/architecture.drawio](../../../../design/aws/architecture.drawio) and its generator [architecture.py](../../../../design/aws/architecture.py).
 
 <!-- deck:slide label="Building blocks" -->
 

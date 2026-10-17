@@ -515,7 +515,7 @@ body.presenting .toolbar { display: none; }
     <button id="index-collapse" type="button" title="Collapse the slide index (I)" aria-label="Collapse slide index"><span aria-hidden="true">&#171;</span></button>
   </div>
   <div class="index-tools">
-    <span class="index-count">11 slides</span>
+    <span class="index-count">12 slides</span>
     <button id="index-view" type="button" aria-pressed="false" title="Show slide thumbnails (T)">Thumbnails</button>
   </div>
   <ol class="index-list">
@@ -537,50 +537,56 @@ body.presenting .toolbar { display: none; }
       <span class="cap">Non-goals</span>
       <span class="badge" hidden></span>
     </button></li>
-    <li><button class="thumb" type="button" data-i="3" aria-label="Slide 4: Required Building Blocks (1 of 2)">
+    <li><button class="thumb" type="button" data-i="3" aria-label="Slide 4: Diagram">
       <span class="num">4</span>
+      <span class="mini" aria-hidden="true"></span>
+      <span class="cap">Diagram</span>
+      <span class="badge" hidden></span>
+    </button></li>
+    <li><button class="thumb" type="button" data-i="4" aria-label="Slide 5: Required Building Blocks (1 of 2)">
+      <span class="num">5</span>
       <span class="mini" aria-hidden="true"></span>
       <span class="cap">Required Building Blocks (1 of 2)</span>
       <span class="badge" hidden></span>
     </button></li>
-    <li><button class="thumb" type="button" data-i="4" aria-label="Slide 5: Required Building Blocks (2 of 2)">
-      <span class="num">5</span>
+    <li><button class="thumb" type="button" data-i="5" aria-label="Slide 6: Required Building Blocks (2 of 2)">
+      <span class="num">6</span>
       <span class="mini" aria-hidden="true"></span>
       <span class="cap">Required Building Blocks (2 of 2)</span>
       <span class="badge" hidden></span>
     </button></li>
-    <li><button class="thumb" type="button" data-i="5" aria-label="Slide 6: Interfaces (1 of 2)">
-      <span class="num">6</span>
+    <li><button class="thumb" type="button" data-i="6" aria-label="Slide 7: Interfaces (1 of 2)">
+      <span class="num">7</span>
       <span class="mini" aria-hidden="true"></span>
       <span class="cap">Interfaces (1 of 2)</span>
       <span class="badge" hidden></span>
     </button></li>
-    <li><button class="thumb" type="button" data-i="6" aria-label="Slide 7: Interfaces (2 of 2)">
-      <span class="num">7</span>
+    <li><button class="thumb" type="button" data-i="7" aria-label="Slide 8: Interfaces (2 of 2)">
+      <span class="num">8</span>
       <span class="mini" aria-hidden="true"></span>
       <span class="cap">Interfaces (2 of 2)</span>
       <span class="badge" hidden></span>
     </button></li>
-    <li><button class="thumb" type="button" data-i="7" aria-label="Slide 8: Deployment view">
-      <span class="num">8</span>
+    <li><button class="thumb" type="button" data-i="8" aria-label="Slide 9: Deployment view">
+      <span class="num">9</span>
       <span class="mini" aria-hidden="true"></span>
       <span class="cap">Deployment view</span>
       <span class="badge" hidden></span>
     </button></li>
-    <li><button class="thumb" type="button" data-i="8" aria-label="Slide 9: Controls">
-      <span class="num">9</span>
+    <li><button class="thumb" type="button" data-i="9" aria-label="Slide 10: Controls">
+      <span class="num">10</span>
       <span class="mini" aria-hidden="true"></span>
       <span class="cap">Controls</span>
       <span class="badge" hidden></span>
     </button></li>
-    <li><button class="thumb" type="button" data-i="9" aria-label="Slide 10: Cost">
-      <span class="num">10</span>
+    <li><button class="thumb" type="button" data-i="10" aria-label="Slide 11: Cost">
+      <span class="num">11</span>
       <span class="mini" aria-hidden="true"></span>
       <span class="cap">Cost</span>
       <span class="badge" hidden></span>
     </button></li>
-    <li><button class="thumb" type="button" data-i="10" aria-label="Slide 11: Decisions">
-      <span class="num">11</span>
+    <li><button class="thumb" type="button" data-i="11" aria-label="Slide 12: Decisions">
+      <span class="num">12</span>
       <span class="mini" aria-hidden="true"></span>
       <span class="cap">Decisions</span>
       <span class="badge" hidden></span>
@@ -622,6 +628,17 @@ body.presenting .toolbar { display: none; }
 </div></div>
   
   <div class="slide-number" aria-hidden="true">3</div>
+</section>
+<section class="slide" data-slide="component-view">
+  <header class="slide-header">
+    
+    <h1>Diagram</h1>
+  </header>
+  <div class="slide-body"><div class="fit"><p><img src="assets/components.svg" alt="RA-001 solution building blocks and interfaces"></p>
+<p>Generated from the Required Building Blocks and Interfaces tables with the model skill (<code>components.drawio</code> is the source). The illustrated reference architecture is <a href="../../../../design/aws/architecture.svg">aws/architecture.svg</a>, from <a href="../../../../design/aws/architecture.drawio">aws/architecture.drawio</a> and its generator <a href="../../../../design/aws/architecture.py">architecture.py</a>.</p>
+</div></div>
+  
+  <div class="slide-number" aria-hidden="true">4</div>
 </section>
 <section class="slide" data-slide="building-blocks">
   <header class="slide-header">
@@ -679,7 +696,7 @@ body.presenting .toolbar { display: none; }
 </tbody></table>
 </div></div>
   
-  <div class="slide-number" aria-hidden="true">4</div>
+  <div class="slide-number" aria-hidden="true">5</div>
 </section>
 <section class="slide" data-slide="building-blocks-2">
   <header class="slide-header">
@@ -733,7 +750,7 @@ body.presenting .toolbar { display: none; }
 <p>Every box is one container, as the <a href="https://github.com/dermot-obrien/architecture-continuum/blob/main/standards/building-blocks/standard-building-block-calibration.md">calibration standard</a> requires of a reference architecture. The image build (DN-003, DN-013), the Terraform module and the launch stack (CT-010) and the models (DN-011) are nodes, contracts and external systems, not boxes; the deployment view below places the services on the nodes.</p>
 </div></div>
   
-  <div class="slide-number" aria-hidden="true">5</div>
+  <div class="slide-number" aria-hidden="true">6</div>
 </section>
 <section class="slide" data-slide="interfaces">
   <header class="slide-header">
@@ -824,7 +841,7 @@ body.presenting .toolbar { display: none; }
 </tbody></table>
 </div></div>
   
-  <div class="slide-number" aria-hidden="true">6</div>
+  <div class="slide-number" aria-hidden="true">7</div>
 </section>
 <section class="slide" data-slide="interfaces-2">
   <header class="slide-header">
@@ -910,7 +927,7 @@ body.presenting .toolbar { display: none; }
 <p>The contracts register, <a href="../../contracts.csv">../../contracts.csv</a>, gives each interface its definition and versioning.</p>
 </div></div>
   
-  <div class="slide-number" aria-hidden="true">7</div>
+  <div class="slide-number" aria-hidden="true">8</div>
 </section>
 <section class="slide" data-slide="deployment-view">
   <header class="slide-header">
@@ -963,7 +980,7 @@ body.presenting .toolbar { display: none; }
 </tbody></table>
 </div></div>
   
-  <div class="slide-number" aria-hidden="true">8</div>
+  <div class="slide-number" aria-hidden="true">9</div>
 </section>
 <section class="slide" data-slide="controls">
   <header class="slide-header">
@@ -973,7 +990,7 @@ body.presenting .toolbar { display: none; }
   <div class="slide-body"><div class="fit"><p>Those of AP-001, plus: the origin secret between CloudFront and the API; reserved concurrency and the API throttle; the web ACL input; IAM authentication and private subnets for Neptune; a role per unit with a permissions boundary; the budget alert; images pinned by digest. The full table is <a href="../../../../docs/design/security.md">security.md</a>.</p>
 </div></div>
   
-  <div class="slide-number" aria-hidden="true">9</div>
+  <div class="slide-number" aria-hidden="true">10</div>
 </section>
 <section class="slide" data-slide="cost">
   <header class="slide-header">
@@ -983,7 +1000,7 @@ body.presenting .toolbar { display: none; }
   <div class="slide-body"><div class="fit"><p>The cost table in <a href="../../../../docs/design/aws/aws.md#costs">aws/aws.md</a> is the cost model: the Neptune instance is the fixed cost; everything else is per use; model calls are the cost that matters.</p>
 </div></div>
   
-  <div class="slide-number" aria-hidden="true">10</div>
+  <div class="slide-number" aria-hidden="true">11</div>
 </section>
 <section class="slide" data-slide="decisions">
   <header class="slide-header">
@@ -993,7 +1010,7 @@ body.presenting .toolbar { display: none; }
   <div class="slide-body"><div class="fit"><p>ADR-006 one module built in-account; ADR-007 the passage index on S3 Vectors; ADR-008 memory by default with optional backends; ADR-009 tables bound as snapshots. Open: CN-001 the graph at scale, CN-006 the deployables along the contexts.</p>
 </div></div>
   
-  <div class="slide-number" aria-hidden="true">11</div>
+  <div class="slide-number" aria-hidden="true">12</div>
 </section>
 </div>
   </div>

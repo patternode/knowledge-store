@@ -21,6 +21,12 @@
       "title": "Non-goals"
     },
     {
+      "file": "component-view",
+      "kind": "content",
+      "label": "Component view",
+      "title": "Diagram"
+    },
+    {
       "file": "building-blocks",
       "kind": "content",
       "label": "Building blocks (1 of 2)",
@@ -73,6 +79,12 @@
     "documents": [
       "solution/patterns/RA-001-knowledge-store-on-aws/index.md"
     ],
-    "images": []
+    "images": [
+      {
+        "path": "solution/patterns/RA-001-knowledge-store-on-aws/components.svg",
+        "source": "solution/patterns/RA-001-knowledge-store-on-aws/components.drawio",
+        "stale": false
+      }
+    ]
   }
 }
