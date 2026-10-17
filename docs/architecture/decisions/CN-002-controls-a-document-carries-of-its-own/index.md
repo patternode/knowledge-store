@@ -8,7 +8,8 @@ created: 2026-10-16
 last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
-consideration_status: open
+consideration_status: resolved
+resolved_by: ADR-010
 question: "How do a source document's permissions, protection and classification travel with its passages and decide what an answer may show, beyond the public or private scope?"
 options:
   - { name: "Keep scope only", summary: "Two values per source; simple, applied everywhere" }
@@ -36,6 +37,6 @@ How do a source document's permissions, protection and classification travel wit
 
 Criteria: No gap in enforcement; Steward effort per source; Cost per call.
 
-Status: open. Affects CAP-009, ABB-027, ABB-024.
+Status: resolved by ADR-010. Affects CAP-009, ABB-027, ABB-024.
 
 The design, its open decisions and its implementation order are in docs/architecture/source-controls.md; ADR-010 records the current choice.

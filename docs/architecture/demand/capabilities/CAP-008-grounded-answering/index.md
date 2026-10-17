@@ -28,7 +28,7 @@ maturity:
   assessor: "Patternode (Dermot O'Brien), reversed from the implementation"
 subdomain_kind: core
 provided_by_platform: PL-001
-realised_by_abbs: [ABB-014]
+realised_by_abbs: [ABB-014, ABB-028]
 gaps:
   - "The portal's fallback loop resolves citation markers but runs no claim-level check (CN-006 notes it)"
   - "Sessions are stateless; history is six turns carried in the payload"
@@ -47,7 +47,7 @@ provenance:
 | Status | Draft, reversed from the implementation at 0.3.0 |
 | Subdomain | core |
 | Maturity | 4, target 5 |
-| Realised by | ABB-014 |
+| Realised by | ABB-014, ABB-028 |
 
 Taking a person's question to an answer made only of claims whose citations passed the checks, through an agent that plans in the ontology's terms, calls fixed tools as the caller, and abstains when the sources cannot answer.
 

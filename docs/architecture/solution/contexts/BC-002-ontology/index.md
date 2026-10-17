@@ -10,7 +10,6 @@ last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 part_of: PL-001
-contains: [ABB-024]
 realises_capabilities: [CAP-003, CAP-007]
 subdomain_kind: core
 c4_levels: [container, component]
@@ -43,7 +42,7 @@ provenance:
 | Owner team | Patternode (Dermot O'Brien) |
 | Subdomain | core |
 | Realises | CAP-003, CAP-007 |
-| Contains | ABB-024 |
+| Contains | No container of its own: its model runs inside ABB-024, which BC-001 contains (CN-006) |
 
 Terms, versions, renditions, drafts, candidates and mappings: what a collection's documents are about, owned by a person and released in classified versions.
 

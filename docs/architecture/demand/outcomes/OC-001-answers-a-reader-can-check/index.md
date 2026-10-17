@@ -19,7 +19,7 @@ measures:
   - { id: OC-001-M3, measure: "Grounded share of the agent's proposed claims in an evaluation run", target: "rising release on release", unit: "percent" }
 owned_by_platform: PL-001
 requires_capabilities: [CAP-004, CAP-005, CAP-008, CAP-011]
-realised_by_use_cases: [UC-001, UC-007]
+realised_by_use_cases: [UC-001, UC-006, UC-007]
 provenance:
   origin: ai-generated
   review_state: ai-raw

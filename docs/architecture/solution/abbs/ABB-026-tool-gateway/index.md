@@ -5,7 +5,7 @@ title: "ABB-026 Tool gateway"
 short_name: "GW"
 description: "The one MCP front over the tools: it verifies the caller's token, runs the interceptor on every call, and routes to the graph tools or the passage tools, so that the agent never addresses a function directly."
 version: 0.2.0
-status: draft
+status: active
 created: 2026-10-16
 last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"

@@ -10,7 +10,7 @@ last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-011]
-realised_by_services: [pipeline, tools-graph]
+realised_by_services: []
 products:
   - { name: "Amazon Neptune Database", vendor: "AWS", licensing: "instance hours, or Serverless NCUs" }
 product_mapping:
@@ -30,7 +30,7 @@ provenance:
 |---|---|
 | SBB ID | SBB-003 |
 | Realises | ABB-011 |
-| Realised by services | pipeline, tools-graph |
+| Realised by services | None: a managed store, created by the Terraform module. Used by pipeline, tools-graph |
 | Products | Amazon Neptune Database |
 | Cloud | aws, managed |
 | Status | active, as deployed at 0.3.0, recalibrated to container grain |

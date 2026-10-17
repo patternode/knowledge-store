@@ -5,7 +5,7 @@ title: "ABB-018 Chat page"
 short_name: "PAGE"
 description: "The static site a reader uses: the question, the answer with its claims, sources and steps, the ontology page, and the workbench panel for curators, embedded by a host website or served on its own."
 version: 0.2.0
-status: draft
+status: active
 created: 2026-10-16
 last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"

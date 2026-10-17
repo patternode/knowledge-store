@@ -5,7 +5,7 @@ title: "ABB-027 Call interceptor"
 short_name: "ICPT"
 description: "The function the gateway runs on every tool call, which turns the caller's identity into the one access decision the store makes today: whether private sources are visible (ADR-010)."
 version: 0.2.0
-status: draft
+status: active
 created: 2026-10-16
 last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"

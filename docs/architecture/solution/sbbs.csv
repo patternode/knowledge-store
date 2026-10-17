@@ -1,15 +1,15 @@
 id,name,status,realises,realised_by_services,products,cloud_provider,deployment_model,path
-SBB-001,Lake on S3,active,ABB-002,pipeline portal-api tools-graph tools-passages,Amazon S3,aws,managed,sbbs/SBB-001-lake-on-s3/index.md
+SBB-001,Lake on S3,active,ABB-002,,Amazon S3,aws,managed,sbbs/SBB-001-lake-on-s3/index.md
 SBB-002,"Pipeline image on ECS Fargate with EventBridge, SQS, Pipes and Scheduler",active,ABB-024,pipeline,"Amazon ECS on AWS Fargate; Amazon EventBridge, EventBridge Pipes and Scheduler; Amazon SQS; rdflib, pySHACL, pypdf, PyYAML, boto3; Claude through the model client",aws,managed,sbbs/SBB-002-pipeline-image-on-ecs-fargate-with-eventbridge-sqs-pipes-and-scheduler/index.md
-SBB-003,Knowledge graph on Amazon Neptune,active,ABB-011,pipeline tools-graph,Amazon Neptune Database,aws,managed,sbbs/SBB-003-knowledge-graph-on-amazon-neptune/index.md
-SBB-004,Passage index on Bedrock Knowledge Base with S3 Vectors,active,ABB-013,pipeline tools-passages,Amazon Bedrock Knowledge Bases; Amazon S3 Vectors; Amazon Titan Text Embeddings v2,aws,managed,sbbs/SBB-004-passage-index-on-bedrock-knowledge-base-with-s3-vectors/index.md
+SBB-003,Knowledge graph on Amazon Neptune,active,ABB-011,,Amazon Neptune Database,aws,managed,sbbs/SBB-003-knowledge-graph-on-amazon-neptune/index.md
+SBB-004,Passage index on Bedrock Knowledge Base with S3 Vectors,active,ABB-013,,Amazon Bedrock Knowledge Bases; Amazon S3 Vectors; Amazon Titan Text Embeddings v2,aws,managed,sbbs/SBB-004-passage-index-on-bedrock-knowledge-base-with-s3-vectors/index.md
 SBB-005,Graph tools on Lambda behind the AgentCore Gateway,active,ABB-012,tools-graph,AWS Lambda; Amazon Bedrock AgentCore Gateway (as the front),aws,managed,sbbs/SBB-005-graph-tools-on-lambda-behind-the-agentcore-gateway/index.md
 SBB-006,"Chat agent on AgentCore Runtime with Strands, Bedrock and Guardrails",active,ABB-014,chat-agent,Amazon Bedrock AgentCore Runtime; Strands Agents; Amazon Bedrock models (Claude); Amazon Bedrock Guardrails,aws,managed,sbbs/SBB-006-chat-agent-on-agentcore-runtime-with-strands-bedrock-and-guardrails/index.md
 SBB-007,"Portal API on API Gateway, Lambda and DynamoDB",active,ABB-019,portal-api,Amazon API Gateway (HTTP API); AWS Lambda; Amazon DynamoDB; AWS Secrets Manager,aws,managed,sbbs/SBB-007-portal-api-on-api-gateway-lambda-and-dynamodb/index.md
 SBB-008,Identity on Cognito,active,ABB-020,,Amazon Cognito user pools,aws,managed,sbbs/SBB-008-identity-on-cognito/index.md
 SBB-009,Image build on CodeBuild and ECR,retired,,,,,,
 SBB-010,Terraform module with the CloudFormation launch stack,retired,,,,,,
-SBB-011,"Optional projection backends: Neo4j, Apache AGE and MongoDB",active,ABB-011,pipeline portal-api,Neo4j or AuraDB; PostgreSQL with Apache AGE; MongoDB or a wire-compatible service,multi,hybrid,sbbs/SBB-011-optional-projection-backends-neo4j-apache-age-and-mongodb/index.md
+SBB-011,"Optional projection backends: Neo4j, Apache AGE and MongoDB",active,ABB-011,,Neo4j or AuraDB; PostgreSQL with Apache AGE; MongoDB or a wire-compatible service,multi,hybrid,sbbs/SBB-011-optional-projection-backends-neo4j-apache-age-and-mongodb/index.md
 SBB-012,Model access through Bedrock or the Anthropic API,retired,,,,,,
 SBB-013,"Command line on Python, the local profile",active,ABB-028,knowledge-store-cli,"Python 3.12; rdflib, pySHACL, pypdf, PyYAML; The Anthropic API or AWS credentials for Bedrock",none,self-hosted,sbbs/SBB-013-command-line-on-python-the-local-profile/index.md
 SBB-014,"The pipeline image: rdflib, pySHACL, pypdf and Claude",retired,,,,,,

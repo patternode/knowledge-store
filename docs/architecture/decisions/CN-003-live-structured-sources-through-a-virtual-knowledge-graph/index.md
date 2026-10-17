@@ -8,7 +8,8 @@ created: 2026-10-16
 last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
-consideration_status: open
+consideration_status: resolved
+resolved_by: ADR-009
 question: "How should a table that lives in a database, rather than a file in the landing tree, be read in the ontology's terms?"
 options:
   - { name: "Snapshots only", summary: "Export the table to a file and bind it; what exists" }
@@ -36,6 +37,6 @@ How should a table that lives in a database, rather than a file in the landing t
 
 Criteria: Freshness; Citation stability; Scope enforcement.
 
-Status: open. Affects CAP-007, ABB-024, ABB-012.
+Status: resolved by ADR-009. Affects CAP-007, ABB-024, ABB-012.
 
 The mapping already renders R2RML for this; nothing reads it yet. docs/architecture/aws/structured.md says where the accelerator fits.

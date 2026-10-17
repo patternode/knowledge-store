@@ -7,6 +7,10 @@ bindingsVersion = "1.0"
 # continuum's spaces, demand, solution and runtime, plus decisions. docs/architecture/README.md
 # is the map.
 
+[suite.aaa-continuum]
+# The whole architecture, checked against the continuum: node .agents/skills/aaa-continuum/bin/continuum.mjs check
+root = "../docs/architecture"
+
 [suite.aaa-create-strategy]
 outcomeDir = "../docs/architecture/demand/outcomes"
 useCaseDir = "../docs/architecture/demand/use-cases"

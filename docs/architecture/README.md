@@ -28,6 +28,10 @@ The design notes that predate the catalogue stay in place and carry the reasonin
 | [Scalability](aws/scalability.md) | What limits each part as a collection grows; Neptune against Neo4j (CN-001) |
 | [Diagram](aws/architecture.png) | The reference architecture, also as [SVG](aws/architecture.svg), [draw.io](aws/architecture.drawio) and its generator [architecture.py](aws/architecture.py) |
 
+## Checking it
+
+`npm run check:architecture` runs the `aaa-continuum` skill over this folder: every page against its schema, every identifier against [the schemes register](registers/identifier-schemes.csv) and the folder it names, every register against its pages, every relation against the page it names and its inverse, the two pattern documents against their type, and every exported diagram against its render record. CI runs it on every pull request, with warnings failing too. [AGENTS.md](../../AGENTS.md) says how the skills are installed.
+
 ## Reading it end to end
 
 From the top: PL-001 owns three outcomes (OC-001 answers a reader can check, OC-002 an ontology the organisation owns, OC-003 a store run at a visible cost). Nine use cases realise them, each written before any design in the use-case skill's form, each fulfilled by features of PRD-001 and realised by the architecture pattern and its reference architecture. Thirteen capabilities say what must be possible; eight bounded contexts say where each model lives; fourteen architecture building blocks, each one C4 container, are the logical parts, each inside one context; fifteen solution building blocks name the technologies; AP-001 is the architecture pattern and RA-001 the reference architecture that applies it on AWS; nine services are the deployables, on sixteen nodes, with eighteen stores each owned by one context; ten decisions and six considerations say why, and what is still open.

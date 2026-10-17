@@ -5,7 +5,7 @@ title: "ABB-011 Knowledge graph"
 short_name: "GRAPH"
 description: "The graph projection of the gold record: one named graph per document per ontology version plus the T-Box, in a SPARQL store the graph tools query read-only, rebuilt from the lake whenever needed."
 version: 0.2.0
-status: draft
+status: active
 created: 2026-10-16
 last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"

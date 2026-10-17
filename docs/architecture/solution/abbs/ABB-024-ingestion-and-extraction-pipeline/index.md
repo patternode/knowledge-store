@@ -5,7 +5,7 @@ title: "ABB-024 Ingestion and extraction pipeline"
 short_name: "PIPE"
 description: "One container that takes a collection from uploaded bytes to published, checkable facts: it acquires, refines, discovers and reviews an ontology, extracts with provenance, binds tables, projects and loads, in one idempotent sweep under a lock. It composes four bounded contexts today (CN-006)."
 version: 0.2.0
-status: draft
+status: active
 created: 2026-10-16
 last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"

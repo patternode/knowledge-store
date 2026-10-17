@@ -19,7 +19,7 @@ measures:
   - { id: OC-003-M3, measure: "Spend paths without a valve (per question, per person per day, per deployment per month)", target: 0, unit: "paths" }
 owned_by_platform: PL-001
 requires_capabilities: [CAP-009, CAP-010, CAP-013]
-realised_by_use_cases: [UC-008, UC-009]
+realised_by_use_cases: [UC-002, UC-008, UC-009]
 provenance:
   origin: ai-generated
   review_state: ai-raw

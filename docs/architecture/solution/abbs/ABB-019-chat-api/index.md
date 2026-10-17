@@ -5,7 +5,7 @@ title: "ABB-019 Chat API"
 short_name: "API"
 description: "The one HTTP door into the store: it verifies who is asking, takes the quota, dispatches the question to the agent as that person, keeps the answer and the steps, serves the index-backed views, and signs links into the lake."
 version: 0.2.0
-status: draft
+status: active
 created: 2026-10-16
 last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
