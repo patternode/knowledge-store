@@ -6,6 +6,8 @@ title: "The domain and its subdomains"
 
 The domain is knowledge from documents: taking what an organisation has written and making it answerable, with every answer traceable to what was written. The subdomains are the demand space the bounded contexts map to; a subdomain says what is needed, a context says where the model that meets it lives.
 
+![The domain knowledge from documents, with its core, supporting and generic subdomains, each mapped to one bounded context](./domains.svg)
+
 | Subdomain | What is needed | Kind | Maps to |
 |---|---|---|---|
 | Sources and documents | Getting content in, keeping an immutable copy, and cutting it into the units a citation points at | supporting | BC-001 Ingestion |
