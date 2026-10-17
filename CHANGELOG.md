@@ -4,6 +4,28 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 From 0.2.0 on, releases are made by Release Please from the pull requests merged to `main`: a pull request's title is its line here, and the release pull request adds the next section, bumps the version and, when merged, tags `vX.Y.Z` and publishes the GitHub Release. The rules are in [CONTRIBUTING.md](CONTRIBUTING.md#releases). Do not add lines here by hand.
 
+## [0.4.0](https://github.com/patternode/knowledge-store/compare/v0.3.0...v0.4.0) (2026-10-17)
+
+
+### Added
+
+* **site:** the architecture laid out by space, design notes in docs/design, and a page banner linking each deck's slides and PDF ([#95](https://github.com/patternode/knowledge-store/issues/95)) ([6773a9b](https://github.com/patternode/knowledge-store/commit/6773a9b75dbce557fdcf2cc4009f9b3e086ccbae))
+
+
+### Fixed
+
+* **launch:** the launch stack defaults to the v0.3.0 source archive, and each release moves it ([#87](https://github.com/patternode/knowledge-store/issues/87)) ([d33bf2f](https://github.com/patternode/knowledge-store/commit/d33bf2f2f43903e8296d42752b64b97418c384f9))
+* **site:** list each register page once in the sidebar, and put RA-001's diagram on a slide ([#96](https://github.com/patternode/knowledge-store/issues/96)) ([8e1ea9f](https://github.com/patternode/knowledge-store/commit/8e1ea9f7c98994396e9245e450f23bed7d7a9af0))
+
+
+### Documentation
+
+* **architecture:** building blocks at container grain, and the AP and RA series for the two kinds of pattern document ([#92](https://github.com/patternode/knowledge-store/issues/92)) ([9e89691](https://github.com/patternode/knowledge-store/commit/9e8969121d4af681b54324ff289a0ee804ec100d))
+* **architecture:** compliant with the continuum, checked in CI, skills pinned to releases ([#93](https://github.com/patternode/knowledge-store/issues/93)) ([e7acf30](https://github.com/patternode/knowledge-store/commit/e7acf301553f4947eff0203893e48a8a48dfa359))
+* **architecture:** draw the domain and its subdomains ([#97](https://github.com/patternode/knowledge-store/issues/97)) ([aa72631](https://github.com/patternode/knowledge-store/commit/aa72631efae6be4d454f02ca21729add217c6fd3))
+* **architecture:** the architecture of Knowledge Store, expressed with the continuum ([#90](https://github.com/patternode/knowledge-store/issues/90)) ([7465392](https://github.com/patternode/knowledge-store/commit/7465392308156b5af8bc82f198a0788f8b656956))
+* **site:** publish the documentation with Docusaurus on GitHub Pages ([#88](https://github.com/patternode/knowledge-store/issues/88)) ([ad92779](https://github.com/patternode/knowledge-store/commit/ad9277926a47d09074de021adc048c6d5027e98d))
+
 ## [0.3.0](https://github.com/patternode/knowledge-store/compare/v0.2.0...v0.3.0) (2026-10-16)
 
 
