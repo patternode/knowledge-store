@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="900" viewBox="0 0 840 900" role="img" aria-labelledby="title desc">
+<title id="title">Knowledge from documents: the domain and its subdomains</title>
+<desc id="desc">The domain knowledge from documents holds four core subdomains, Ontology (BC-002), Extraction (BC-003), Knowledge graph (BC-004) and Answering (BC-005); three supporting subdomains, Sources and documents (BC-001), People and access (BC-006) and Evaluation (BC-007); and one generic subdomain, Running it (BC-008). Each subdomain maps to one bounded context.</desc>
+<text x="0" y="24" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="22" font-weight="600">Knowledge from documents</text>
+<text x="0" y="48" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14">One domain. A subdomain says what is needed; the context in the box is where the model lives.</text>
+<rect x="0" y="68" width="840" height="816" rx="16" fill="#f5f7fb" stroke="#d5dbe9" stroke-width="1.25"/>
+<rect x="16" y="84" width="808" height="356" rx="12" fill="#e7f6fc"/>
+<rect x="32" y="100" width="58" height="24" rx="12" fill="#007fa0"/>
+<text x="61" y="116.3" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" text-anchor="middle">Core</text>
+<text x="102" y="117" fill="#004e64" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14">What a buyer would pay for, and no vendor sells as a unit</text>
+<rect x="32" y="140" width="380" height="132" rx="10" fill="#ffffff" stroke="#007fa0" stroke-width="1.25"/>
+<rect x="46" y="156" width="4" height="18" rx="2" fill="#0099c0"/>
+<text x="58" y="170" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="15" font-weight="600">Ontology</text>
+<text x="48" y="194" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13">Terms a person owns, versioned</text>
+<text x="48" y="212" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13">and grown without drift</text>
+<line x1="48" y1="236" x2="396" y2="236" stroke="#e4e9f2" stroke-width="1"/>
+<text x="48" y="256" fill="#004e64" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600">BC-002</text>
+<text x="110" y="256" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="500">Ontology</text>
+<rect x="428" y="140" width="380" height="132" rx="10" fill="#ffffff" stroke="#007fa0" stroke-width="1.25"/>
+<rect x="442" y="156" width="4" height="18" rx="2" fill="#0099c0"/>
+<text x="454" y="170" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="15" font-weight="600">Extraction</text>
+<text x="444" y="194" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13">Typed facts that cite a source,</text>
+<text x="444" y="212" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13">refusing any that do not</text>
+<line x1="444" y1="236" x2="792" y2="236" stroke="#e4e9f2" stroke-width="1"/>
+<text x="444" y="256" fill="#004e64" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600">BC-003</text>
+<text x="506" y="256" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="500">Extraction</text>
+<rect x="32" y="288" width="380" height="132" rx="10" fill="#ffffff" stroke="#007fa0" stroke-width="1.25"/>
+<rect x="46" y="304" width="4" height="18" rx="2" fill="#0099c0"/>
+<text x="58" y="318" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="15" font-weight="600">Knowledge graph</text>
+<text x="48" y="342" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13">The facts kept as the record and</text>
+<text x="48" y="360" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13">projected for query</text>
+<line x1="48" y1="384" x2="396" y2="384" stroke="#e4e9f2" stroke-width="1"/>
+<text x="48" y="404" fill="#004e64" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600">BC-004</text>
+<text x="110" y="404" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="500">Knowledge graph</text>
+<rect x="428" y="288" width="380" height="132" rx="10" fill="#ffffff" stroke="#007fa0" stroke-width="1.25"/>
+<rect x="442" y="304" width="4" height="18" rx="2" fill="#0099c0"/>
+<text x="454" y="318" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="15" font-weight="600">Answering</text>
+<text x="444" y="342" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13">Only claims that passed checks,</text>
+<text x="444" y="360" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13">and only within limits</text>
+<line x1="444" y1="384" x2="792" y2="384" stroke="#e4e9f2" stroke-width="1"/>
+<text x="444" y="404" fill="#004e64" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600">BC-005</text>
+<text x="506" y="404" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="500">Answering</text>
+<rect x="16" y="456" width="808" height="200" rx="12" fill="#eef0ff"/>
+<rect x="32" y="470" width="104" height="24" rx="12" fill="#4f46e5"/>
+<text x="84" y="486.3" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" text-anchor="middle">Supporting</text>
+<text x="148" y="487" fill="#352da5" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13">Necessary, and not what makes the store different</text>
+<rect x="32" y="506" width="252" height="136" rx="10" fill="#ffffff" stroke="#4f46e5" stroke-width="1.25"/>
+<rect x="46" y="522" width="4" height="18" rx="2" fill="#7077ff"/>
+<text x="58" y="536" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="15" font-weight="600">Sources and documents</text>
+<text x="48" y="560" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13">Content in, an immutable copy,</text>
+<text x="48" y="578" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13">units a citation can point at</text>
+<line x1="48" y1="606" x2="268" y2="606" stroke="#e4e9f2" stroke-width="1"/>
+<text x="48" y="626" fill="#352da5" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600">BC-001</text>
+<text x="110" y="626" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="500">Ingestion</text>
+<rect x="294" y="506" width="252" height="136" rx="10" fill="#ffffff" stroke="#4f46e5" stroke-width="1.25"/>
+<rect x="308" y="522" width="4" height="18" rx="2" fill="#7077ff"/>
+<text x="320" y="536" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="15" font-weight="600">People and access</text>
+<text x="310" y="560" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13">Who may ask, who may read what,</text>
+<text x="310" y="578" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13">and the page they do it on</text>
+<line x1="310" y1="606" x2="530" y2="606" stroke="#e4e9f2" stroke-width="1"/>
+<text x="310" y="626" fill="#352da5" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600">BC-006</text>
+<text x="372" y="626" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="500">Portal and identity</text>
+<rect x="556" y="506" width="252" height="136" rx="10" fill="#ffffff" stroke="#4f46e5" stroke-width="1.25"/>
+<rect x="570" y="522" width="4" height="18" rx="2" fill="#7077ff"/>
+<text x="582" y="536" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="15" font-weight="600">Evaluation</text>
+<text x="572" y="560" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13">Whether the answers are right,</text>
+<text x="572" y="578" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13">without a model as judge</text>
+<line x1="572" y1="606" x2="792" y2="606" stroke="#e4e9f2" stroke-width="1"/>
+<text x="572" y="626" fill="#352da5" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600">BC-007</text>
+<text x="634" y="626" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="500">Evaluation</text>
+<rect x="16" y="672" width="808" height="210" rx="12" fill="#eef1f6"/>
+<rect x="32" y="686" width="82" height="24" rx="12" fill="#525c74"/>
+<text x="73" y="702.3" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" text-anchor="middle">Generic</text>
+<text x="126" y="703" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13">Model access and deployment could be any organisation's</text>
+<rect x="32" y="722" width="380" height="136" rx="10" fill="#ffffff" stroke="#525c74" stroke-width="1.25"/>
+<rect x="46" y="738" width="4" height="18" rx="2" fill="#7e8aa7"/>
+<text x="58" y="752" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="15" font-weight="600">Running it</text>
+<text x="48" y="776" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13">Reaching models, counting cost,</text>
+<text x="48" y="794" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13">configuring and deploying</text>
+<line x1="48" y1="822" x2="396" y2="822" stroke="#e4e9f2" stroke-width="1"/>
+<text x="48" y="842" fill="#2c3342" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600">BC-008</text>
+<text x="110" y="842" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="500">Platform services</text>
+</svg>
