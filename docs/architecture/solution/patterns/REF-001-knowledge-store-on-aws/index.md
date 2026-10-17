@@ -69,7 +69,7 @@ Multi-region, multi-account and a shared tenant model are out of scope: one depl
 | SBB-013 Command line on Python, the local profile | ABB-028 | The store on one machine; the release commands |
 | SBB-019 Evaluation runner on Python | ABB-021 | Right, not only grounded |
 
-Every box is one container, as the [calibration standard](https://github.com/dermot-obrien/architecture-continuum/blob/main/standards/building-blocks/standard-building-block-calibration.md) requires of a physical pattern. The image build (DN-003, DN-013), the Terraform module and the launch stack (CT-010) and the models (DN-011) are nodes, contracts and external systems, not boxes; the deployment view below places the services on the nodes.
+Every box is one container, as the [calibration standard](https://github.com/dermot-obrien/architecture-continuum/blob/main/standards/building-blocks/standard-building-block-calibration.md) requires of a reference architecture. The image build (DN-003, DN-013), the Terraform module and the launch stack (CT-010) and the models (DN-011) are nodes, contracts and external systems, not boxes; the deployment view below places the services on the nodes.
 
 <!-- deck:slide label="Interfaces" -->
 

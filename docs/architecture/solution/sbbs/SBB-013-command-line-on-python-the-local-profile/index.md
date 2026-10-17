@@ -63,7 +63,7 @@ The operator's model calls.
 
 ## 5  ABB traceability
 
-ABB-028. The decisions behind the choice are in [../../decisions](../../../decisions/README.md); the physical pattern that composes this block with the others is REF-001.
+ABB-028. The decisions behind the choice are in [../../decisions](../../../decisions/README.md); the reference architecture that composes this block with the others is REF-001.
 
 ## 6  Revision history
 
