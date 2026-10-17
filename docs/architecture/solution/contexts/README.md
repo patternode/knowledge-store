@@ -17,13 +17,4 @@ The contexts are the ones the code suggests, not yet the ones it is deployed as:
 
 ## Context map
 
-```
- BC-001 Ingestion ──supplies silver──▶ BC-003 Extraction ──supplies gold──▶ BC-004 Knowledge graph ──open host (tools)──▶ BC-005 Answering
-      │ calls                               ▲ reads schema, shapes             ▲ reads renditions, T-Box          │ requests
-      ▼                                     │                                  │                                  ▼
- BC-002 Ontology ◀──published language──────┴──────────────────────────────────┘◀───────────────────────── (candidate register)
-
- BC-006 Portal and identity ──invokes as the person──▶ BC-005; shares the index module with BC-004 (shared kernel, to cut)
- BC-007 Evaluation ──asks──▶ BC-005
- BC-008 Platform services: the model client, the ledger and the lake port, used by every context (open host)
-```
+![The context map: Ingestion supplies Extraction, which supplies Knowledge graph, an open host to Answering; Ontology publishes its language to both and receives candidates from Answering; Portal and identity invokes Answering as the person and shares the index module with Knowledge graph; Evaluation asks Answering; Platform services is an open host every context uses](./context-map.svg)

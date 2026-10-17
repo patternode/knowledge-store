@@ -49,9 +49,13 @@ Multi-region, multi-account and a shared tenant model are out of scope: one depl
 
 ## Diagram
 
+![Knowledge Store on AWS: ingestion fills a knowledge graph and a passage index, chat answers from both, and every claim shown is checked against a cited passage](../../../../design/aws/architecture.svg)
+
+The illustrated reference architecture. Its editable source is [aws/architecture.drawio](../../../../design/aws/architecture.drawio), and [architecture.py](../../../../design/aws/architecture.py) generates the SVG.
+
 ![RA-001 solution building blocks and interfaces](./components.svg)
 
-Generated from the Required Building Blocks and Interfaces tables with the model skill (`components.drawio` is the source). The illustrated reference architecture is [aws/architecture.svg](../../../../design/aws/architecture.svg), from [aws/architecture.drawio](../../../../design/aws/architecture.drawio) and its generator [architecture.py](../../../../design/aws/architecture.py).
+The component view, generated from the Required Building Blocks and Interfaces tables with the model skill (`components.drawio` is the source).
 
 <!-- deck:slide label="Building blocks" -->
 

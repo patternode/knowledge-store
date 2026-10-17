@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 790" width="1400" height="790" font-family="IBM Plex Sans, Segoe UI, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
+<title id="t">Context map of Knowledge Store</title>
+<desc id="d">Eight bounded contexts inside PL-001. The pipeline runs left to right: Ingestion supplies silver to Extraction, which supplies gold to Knowledge graph, which is an open host of tools to Answering. Ontology publishes its language to Extraction and Knowledge graph, is called by Ingestion, and receives a candidate register from Answering. Portal and identity invokes Answering as the person and shares the index module with Knowledge graph, a shared kernel still to cut. Evaluation asks Answering. Platform services is an open host every context uses: the model client, the ledger and the lake port.</desc>
+<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#007fa0"/></marker><marker id="arri" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5a56f5"/></marker></defs>
+<rect width="1400" height="790" fill="#ffffff"/>
+<text x="30" y="36" font-size="20" font-weight="bold" fill="#1b202c" text-anchor="start">Context map of Knowledge Store</text>
+<text x="30" y="58" font-size="12" font-weight="normal" fill="#525c74" text-anchor="start">Eight bounded contexts inside PL-001 and their relationships in strategic DDD terms. An arrow points from the upstream context to the one that depends on it.</text>
+<path d="M340,338 H388" fill="none" stroke="#007fa0" stroke-width="1.8"  marker-end="url(#arr)"/>
+<rect x="309.75" y="264" width="110.5" height="20" rx="10" fill="#ffffff" stroke="#d5dbe9" stroke-width="1"/>
+<text x="365" y="278" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="middle">supplies silver</text>
+<path d="M670,338 H718" fill="none" stroke="#007fa0" stroke-width="1.8"  marker-end="url(#arr)"/>
+<rect x="646.05" y="264" width="97.89999999999999" height="20" rx="10" fill="#ffffff" stroke="#d5dbe9" stroke-width="1"/>
+<text x="695" y="278" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="middle">supplies gold</text>
+<path d="M1000,338 H1048" fill="none" stroke="#007fa0" stroke-width="1.8"  marker-end="url(#arr)"/>
+<rect x="954" y="392" width="142" height="20" rx="10" fill="#ffffff" stroke="#d5dbe9" stroke-width="1"/>
+<text x="1025" y="406" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="middle">open host: the tools</text>
+<path d="M240,386 V504 Q240,524 260,524 H388" fill="none" stroke="#007fa0" stroke-width="1.8"  marker-end="url(#arr)"/>
+<rect x="216.25" y="445" width="47.5" height="20" rx="10" fill="#ffffff" stroke="#d5dbe9" stroke-width="1"/>
+<text x="240" y="459" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="middle">calls</text>
+<path d="M530,476 V388" fill="none" stroke="#007fa0" stroke-width="1.8"  marker-end="url(#arr)"/>
+<rect x="424.9" y="421" width="230.2" height="20" rx="10" fill="#ffffff" stroke="#d5dbe9" stroke-width="1"/>
+<text x="540" y="435" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="middle">published language: schema, shapes</text>
+<path d="M670,514 H840 V388" fill="none" stroke="#007fa0" stroke-width="1.8"  marker-end="url(#arr)"/>
+<rect x="733.45" y="486" width="123.1" height="20" rx="10" fill="#ffffff" stroke="#d5dbe9" stroke-width="1"/>
+<text x="795" y="500" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="middle">renditions, T-Box</text>
+<path d="M1190,386 V552 H672" fill="none" stroke="#007fa0" stroke-width="1.8"  marker-end="url(#arr)"/>
+<rect x="865.3" y="560" width="129.39999999999998" height="20" rx="10" fill="#ffffff" stroke="#d5dbe9" stroke-width="1"/>
+<text x="930" y="574" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="middle">candidate register</text>
+<path d="M920,200 V256 H1110 V288" fill="none" stroke="#5a56f5" stroke-width="1.8"  marker-end="url(#arri)"/>
+<rect x="940.85" y="246" width="148.29999999999998" height="20" rx="10" fill="#ffffff" stroke="#d5dbe9" stroke-width="1"/>
+<text x="1015" y="260" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="middle">invokes as the person</text>
+<path d="M1190,200 V288" fill="none" stroke="#5a56f5" stroke-width="1.8"  marker-end="url(#arri)"/>
+<rect x="1169.4" y="235" width="41.2" height="20" rx="10" fill="#ffffff" stroke="#d5dbe9" stroke-width="1"/>
+<text x="1190" y="249" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="middle">asks</text>
+<path d="M820,200 V288" fill="none" stroke="#7e8aa7" stroke-width="1.6" stroke-dasharray="7 5"/>
+<rect x="745.85" y="235" width="148.29999999999998" height="20" rx="10" fill="#ffffff" stroke="#d5dbe9" stroke-width="1"/>
+<text x="820" y="249" font-size="10.5" font-weight="normal" fill="#525c74" text-anchor="middle">shared kernel, to cut</text>
+<rect x="60" y="650" width="1270" height="88" rx="10" fill="#e9edf5" stroke="#b9c2d8" stroke-width="1.4"/>
+<text x="78" y="676" font-size="11" font-weight="bold" fill="#525c74" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">BC-008</text>
+<text x="1312" y="676" font-size="9.5" font-weight="bold" fill="#7e8aa7" text-anchor="end">Generic</text>
+<text x="78" y="702" font-size="16" font-weight="bold" fill="#1b202c" text-anchor="start">Platform services</text>
+<text x="78" y="724" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="start">Open host used by every context: the model client, the ledger and the lake port. Realises CAP-010, CAP-013</text>
+<path d="M140,650 V624" fill="none" stroke="#b9c2d8" stroke-width="1.6" stroke-dasharray="4 4" marker-end="url(#arr)"/>
+<path d="M530,650 V624" fill="none" stroke="#b9c2d8" stroke-width="1.6" stroke-dasharray="4 4" marker-end="url(#arr)"/>
+<path d="M800,650 V624" fill="none" stroke="#b9c2d8" stroke-width="1.6" stroke-dasharray="4 4" marker-end="url(#arr)"/>
+<path d="M1250,650 V624" fill="none" stroke="#b9c2d8" stroke-width="1.6" stroke-dasharray="4 4" marker-end="url(#arr)"/>
+<text x="695" y="620" font-size="10" font-weight="normal" fill="#7e8aa7" text-anchor="middle">used by every context</text>
+<rect x="60" y="290" width="280" height="96" rx="10" fill="#f4f6ff" stroke="#d1d8ff" stroke-width="1.4"/>
+<text x="78" y="316" font-size="11" font-weight="bold" fill="#5a56f5" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">BC-001</text>
+<text x="322" y="316" font-size="9.5" font-weight="bold" fill="#7e8aa7" text-anchor="end">Supporting</text>
+<text x="78" y="342" font-size="16" font-weight="bold" fill="#1b202c" text-anchor="start">Ingestion</text>
+<text x="78" y="364" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="start">Realises CAP-002</text>
+<rect x="390" y="290" width="280" height="96" rx="10" fill="#ecf9ff" stroke="#79d0f1" stroke-width="1.4"/>
+<text x="408" y="316" font-size="11" font-weight="bold" fill="#007fa0" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">BC-003</text>
+<text x="652" y="316" font-size="9.5" font-weight="bold" fill="#7e8aa7" text-anchor="end">Core</text>
+<text x="408" y="342" font-size="16" font-weight="bold" fill="#1b202c" text-anchor="start">Extraction</text>
+<text x="408" y="364" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="start">Realises CAP-004, CAP-007</text>
+<rect x="720" y="290" width="280" height="96" rx="10" fill="#ecf9ff" stroke="#79d0f1" stroke-width="1.4"/>
+<text x="738" y="316" font-size="11" font-weight="bold" fill="#007fa0" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">BC-004</text>
+<text x="982" y="316" font-size="9.5" font-weight="bold" fill="#7e8aa7" text-anchor="end">Core</text>
+<text x="738" y="342" font-size="16" font-weight="bold" fill="#1b202c" text-anchor="start">Knowledge graph</text>
+<text x="738" y="364" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="start">Realises CAP-005, CAP-006, CAP-007</text>
+<rect x="1050" y="290" width="280" height="96" rx="10" fill="#ecf9ff" stroke="#79d0f1" stroke-width="1.4"/>
+<text x="1068" y="316" font-size="11" font-weight="bold" fill="#007fa0" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">BC-005</text>
+<text x="1312" y="316" font-size="9.5" font-weight="bold" fill="#7e8aa7" text-anchor="end">Core</text>
+<text x="1068" y="342" font-size="16" font-weight="bold" fill="#1b202c" text-anchor="start">Answering</text>
+<text x="1068" y="364" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="start">Realises CAP-008, CAP-010, CAP-012</text>
+<rect x="390" y="476" width="280" height="96" rx="10" fill="#ecf9ff" stroke="#79d0f1" stroke-width="1.4"/>
+<text x="408" y="502" font-size="11" font-weight="bold" fill="#007fa0" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">BC-002</text>
+<text x="652" y="502" font-size="9.5" font-weight="bold" fill="#7e8aa7" text-anchor="end">Core</text>
+<text x="408" y="528" font-size="16" font-weight="bold" fill="#1b202c" text-anchor="start">Ontology</text>
+<text x="408" y="550" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="start">Realises CAP-003, CAP-007</text>
+<rect x="1050" y="104" width="280" height="96" rx="10" fill="#f4f6ff" stroke="#d1d8ff" stroke-width="1.4"/>
+<text x="1068" y="130" font-size="11" font-weight="bold" fill="#5a56f5" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">BC-007</text>
+<text x="1312" y="130" font-size="9.5" font-weight="bold" fill="#7e8aa7" text-anchor="end">Supporting</text>
+<text x="1068" y="156" font-size="16" font-weight="bold" fill="#1b202c" text-anchor="start">Evaluation</text>
+<text x="1068" y="178" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="start">Realises CAP-011</text>
+<rect x="720" y="104" width="280" height="96" rx="10" fill="#f4f6ff" stroke="#d1d8ff" stroke-width="1.4"/>
+<text x="738" y="130" font-size="11" font-weight="bold" fill="#5a56f5" text-anchor="start" font-family="IBM Plex Mono, Menlo, Consolas, monospace">BC-006</text>
+<text x="982" y="130" font-size="9.5" font-weight="bold" fill="#7e8aa7" text-anchor="end">Supporting</text>
+<text x="738" y="156" font-size="16" font-weight="bold" fill="#1b202c" text-anchor="start">Portal and identity</text>
+<text x="738" y="178" font-size="10.5" font-weight="normal" fill="#3e465a" text-anchor="start">Realises CAP-009, CAP-010</text>
+<rect x="30" y="751" width="18" height="14" rx="3" fill="#ecf9ff" stroke="#79d0f1" stroke-width="1.2"/>
+<text x="54" y="762" font-size="10.5" font-weight="normal" fill="#525c74" text-anchor="start">Core subdomain</text>
+<rect x="180" y="751" width="18" height="14" rx="3" fill="#f4f6ff" stroke="#d1d8ff" stroke-width="1.2"/>
+<text x="204" y="762" font-size="10.5" font-weight="normal" fill="#525c74" text-anchor="start">Supporting subdomain</text>
+<rect x="330" y="751" width="18" height="14" rx="3" fill="#e9edf5" stroke="#b9c2d8" stroke-width="1.2"/>
+<text x="354" y="762" font-size="10.5" font-weight="normal" fill="#525c74" text-anchor="start">Generic subdomain</text>
+<line x1="480" y1="758" x2="508" y2="758" stroke="#007fa0" stroke-width="1.8" marker-end="url(#arr)"/>
+<text x="514" y="762" font-size="10.5" font-weight="normal" fill="#525c74" text-anchor="start">upstream supplies downstream</text>
+<line x1="700" y1="758" x2="728" y2="758" stroke="#7e8aa7" stroke-width="1.6" stroke-dasharray="7 5"/>
+<text x="734" y="762" font-size="10.5" font-weight="normal" fill="#525c74" text-anchor="start">shared kernel, a boundary not yet cut</text>
+</svg>

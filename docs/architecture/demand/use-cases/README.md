@@ -2,6 +2,8 @@
 
 What an actor gets from the store, written in the use-case skill's form: participants, interactions and scenarios in the same model form a pattern uses, so the pattern that realises each can be checked against it. Every one is realised by AP-001 (logical) and RA-001 (physical) and fulfilled by the features in [../features.csv](../features.csv). The register is [../use-cases.csv](../use-cases.csv).
 
+![The use cases of Knowledge Store: four actors, a reader, a curator, an administrator and an evaluator, joined to the nine use cases they perform inside the PL-001 boundary, and each use case joined to the outcome it serves](./use-cases.svg)
+
 | Use case | Actor | Outcome |
 |---|---|---|
 | [UC-001 Ask a question and get a grounded answer](UC-001-ask-a-question-and-get-a-grounded-answer/index.md) | A reader (a signed-in person) | OC-001 |
