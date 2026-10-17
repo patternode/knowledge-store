@@ -22,9 +22,9 @@ provenance:
 
 # PAT-001 Ontology-driven GraphRAG with grounded answers
 
-<!-- deck:cover subtitle="The logical pattern: ontology, extraction with provenance, the graph as record, grounded answering" footnote="Reversed from the implementation at 0.3.0. Draft." -->
+<!-- deck:cover subtitle="The architecture pattern: ontology, extraction with provenance, the graph as record, grounded answering" footnote="Reversed from the implementation at 0.3.0. Draft." -->
 
-The logical pattern: technology-agnostic, in architecture building blocks. REF-001 is its physical form on AWS. Every use case in [../../demand/use-cases](../../../demand/use-cases/README.md) is realised by this pattern, and its scenarios walk theirs across the blocks named here; in UML terms this document is the use-case realization and the pattern it applies, in one.
+The architecture pattern: technology-agnostic, in architecture building blocks at logical abstraction. REF-001 is the reference architecture that applies it on AWS. Every use case in [../../demand/use-cases](../../../demand/use-cases/README.md) is realised by this architecture pattern, and its scenarios walk theirs across the blocks named here; in UML terms this document is the use-case realization and the pattern it applies, in one.
 
 <!-- deck:slide label="Context" -->
 
@@ -67,7 +67,7 @@ Generated from the Required Building Blocks and Interfaces tables with the model
 
 ## Required Building Blocks
 
-| Building Block | Role in the pattern |
+| Building Block | Role in the architecture pattern |
 |---|---|
 | ABB-002 Lake | The record and its layers; the contract every container reads |
 | ABB-024 Ingestion and extraction pipeline | Bytes to published facts in one idempotent sweep; composes four contexts today |
@@ -138,4 +138,4 @@ The scenarios are the use cases': UC-001 S1 to S3 for answering, UC-002 for the 
 
 ## Decisions
 
-ADR-001 to ADR-005 and ADR-010 are this pattern's; ADR-006 to ADR-009 belong to REF-001.
+ADR-001 to ADR-005 and ADR-010 are this architecture pattern's; ADR-006 to ADR-009 belong to the reference architecture, REF-001.

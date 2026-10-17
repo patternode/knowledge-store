@@ -27,9 +27,9 @@ provenance:
 
 # REF-001 Knowledge Store on AWS
 
-<!-- deck:cover subtitle="The physical pattern: Knowledge Store as one Terraform module on AWS" footnote="Reversed from the implementation at 0.3.0. Draft." -->
+<!-- deck:cover subtitle="The reference architecture: Knowledge Store as one Terraform module on AWS" footnote="Reversed from the implementation at 0.3.0. Draft." -->
 
-The physical pattern: PAT-001 made concrete in solution building blocks on AWS, as the module deploys it. The narrative, the request flow, the grounding table, the valves and the cost table are in [aws/aws.md](../../../aws/aws.md), which this page does not repeat; the components and their Terraform are in [the deployment components guide](../../../../deploy/aws/components.md). This page is the pattern's register form: what blocks, what interfaces, what controls, what decisions, so the catalogue can be walked from a use case to a running unit.
+The reference architecture: the architecture pattern PAT-001 made concrete in solution building blocks on AWS, as the module deploys it. The narrative, the request flow, the grounding table, the valves and the cost table are in [aws/aws.md](../../../aws/aws.md), which this page does not repeat; the components and their Terraform are in [the deployment components guide](../../../../deploy/aws/components.md). This page is the pattern's register form: what blocks, what interfaces, what controls, what decisions, so the catalogue can be walked from a use case to a running unit.
 
 ![REF-001 solution building blocks and interfaces](./components.svg)
 
