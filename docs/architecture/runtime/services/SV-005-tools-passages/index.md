@@ -10,7 +10,7 @@ created: 2026-10-16
 last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
-realises: [SBB-005]
+realises: [SBB-015]
 part_of: BC-004
 composes_contexts: [BC-004]
 runtime_type: serverless
@@ -33,7 +33,7 @@ The two passage tools as a Gateway target outside the VPC: search by meaning thr
 | Identifier | SV-005, slug `tools-passages` |
 | Kind | Service, serverless |
 | Context | BC-004; composes BC-004 as built |
-| Realises | SBB-005 |
+| Realises | SBB-015 |
 | Node | DN-007 |
 | Code | `src/knowledge_store/tools/gateway.py (lambda_handler, TOOLSET=passages)` |
 | Talks to | Bedrock Retrieve; the lake's gold, silver, ontology and config prefixes. |

@@ -69,28 +69,22 @@ Generated from the Required Building Blocks and Interfaces tables with the model
 
 | Building Block | Role in the pattern |
 |---|---|
-| ABB-001 Source adapters | Items and bytes from each configured source |
-| ABB-002 Lake and layering | The record and its layers; the contract every block reads |
-| ABB-003 Document refinement | Passages, the unit of citation |
-| ABB-004 Sweep orchestration | The idempotent pass that converges the store |
-| ABB-005 Ontology discovery and review | A first draft from the documents |
-| ABB-006 Ontology versioning and renditions | Immutable classified versions; renditions for every consumer |
-| ABB-007 Candidate register and revision proposal | Growth from demand, through a person |
-| ABB-008 Table mapping definition | Tables in the ontology's terms, published with the version |
-| ABB-009 Ontology-guided extraction | Typed facts that cite their passages, validated by shapes |
-| ABB-010 Table binding | Snapshots with citable cells |
-| ABB-011 Graph record and projection | Gold as the record; projections with pointers |
-| ABB-012 Fixed query tools | Read-only tools in the ontology's terms, scope-filtered |
-| ABB-013 Passage search by meaning | One vector per passage; the hit is a passage id |
-| ABB-014 Answering agent | Plans in the ontology's terms; proposes claims |
-| ABB-015 Claim grounding and checks | Nothing shown unchecked |
-| ABB-016 Valves and quotas | Every limit, where it bites |
-| ABB-017 Workbench | Steps, cost, term usage, requests |
+| ABB-002 Lake | The record and its layers; the contract every container reads |
+| ABB-024 Ingestion and extraction pipeline | Bytes to published facts in one idempotent sweep; composes four contexts today |
+| ABB-011 Knowledge graph | The graph projection, rebuilt from the record |
+| ABB-013 Passage index | Passages by meaning; the hit is a passage id |
+| ABB-012 Graph tools | Fixed, read-only tools in the ontology's terms, scope-filtered |
+| ABB-025 Passage tools | Search and read of passages, scope-filtered |
+| ABB-026 Tool gateway | One MCP surface and one token over the tools |
+| ABB-027 Call interceptor | The one scope decision, before any tool runs |
+| ABB-014 Answering agent | Plans, proposes, checks, repairs; nothing shown unchecked |
+| ABB-019 Chat API | The narrow door; quota, state, signed links |
 | ABB-018 Chat page | Where grounding is visible |
-| ABB-019 Chat API | The narrow door |
-| ABB-020 Identity and scope | The person all the way down |
-| ABB-021 Evaluation runner and scorer | Right, not only grounded |
-| ABB-022 Model access and ledger | One client, every call priced |
+| ABB-020 Identity | The person all the way down |
+| ABB-028 Command line | The whole store on one machine; the release commands |
+| ABB-021 Evaluation runner | Right, not only grounded |
+
+Every box is one C4 container under the [calibration standard](https://github.com/dermot-obrien/architecture-continuum/blob/main/standards/building-blocks/standard-building-block-calibration.md): the first pass's components (adapters, refinement, discovery, versioning, candidates, mapping, extraction, binding, projection, the checks, the valves, the workbench, the model client) are rows inside these blocks, and the deployment's infrastructure (triggers, build, module) is kept off the pattern.
 
 <!-- deck:slide label="Interfaces" -->
 
@@ -98,33 +92,29 @@ Generated from the Required Building Blocks and Interfaces tables with the model
 
 | Interface | Provider | Consumer | Purpose |
 |---|---|---|---|
-| IF-01 | ABB-002 Lake and layering | ABB-004 Sweep orchestration | the lake port and layout |
-| IF-02 | ABB-001 Source adapters | ABB-004 Sweep orchestration | items and bytes from each source |
-| IF-03 | ABB-003 Document refinement | ABB-009 Ontology-guided extraction | silver passages |
-| IF-04 | ABB-005 Ontology discovery and review | ABB-006 Ontology versioning and renditions | a draft to publish |
-| IF-05 | ABB-006 Ontology versioning and renditions | ABB-009 Ontology-guided extraction | the tool schema and shapes of the active version |
-| IF-06 | ABB-006 Ontology versioning and renditions | ABB-014 Answering agent | the agent rendition |
-| IF-07 | ABB-006 Ontology versioning and renditions | ABB-011 Graph record and projection | the store renditions and the T-Box |
-| IF-08 | ABB-008 Table mapping definition | ABB-010 Table binding | the structured mapping rendition |
-| IF-09 | ABB-009 Ontology-guided extraction | ABB-011 Graph record and projection | gold per document per version |
-| IF-10 | ABB-010 Table binding | ABB-012 Fixed query tools | snapshots, cells and figures |
-| IF-11 | ABB-011 Graph record and projection | ABB-012 Fixed query tools | the projections to query |
-| IF-12 | ABB-003 Document refinement | ABB-013 Passage search by meaning | passages to index and read |
-| IF-13 | ABB-012 Fixed query tools | ABB-014 Answering agent | fixed tools as the caller |
-| IF-14 | ABB-013 Passage search by meaning | ABB-014 Answering agent | passage search and read |
-| IF-15 | ABB-014 Answering agent | ABB-015 Claim grounding and checks | proposed claims; repairs back |
-| IF-16 | ABB-016 Valves and quotas | ABB-014 Answering agent | limits on every call |
-| IF-17 | ABB-014 Answering agent | ABB-017 Workbench | steps, usage, gap reports |
-| IF-18 | ABB-017 Workbench | ABB-007 Candidate register and revision proposal | ontology requests |
-| IF-19 | ABB-009 Ontology-guided extraction | ABB-007 Candidate register and revision proposal | candidates |
-| IF-20 | ABB-007 Candidate register and revision proposal | ABB-006 Ontology versioning and renditions | a revision draft |
-| IF-21 | ABB-014 Answering agent | ABB-019 Chat API | the answer, steps streamed |
-| IF-22 | ABB-019 Chat API | ABB-018 Chat page | the HTTP API |
-| IF-23 | ABB-020 Identity and scope | ABB-019 Chat API | who is asking |
-| IF-24 | ABB-020 Identity and scope | ABB-012 Fixed query tools | the caller's scope on every call |
-| IF-25 | ABB-022 Model access and ledger | ABB-009 Ontology-guided extraction | the model, priced |
-| IF-26 | ABB-022 Model access and ledger | ABB-014 Answering agent | the model, priced |
-| IF-27 | ABB-021 Evaluation runner and scorer | ABB-014 Answering agent | evaluation questions |
+| IF-01 | ABB-002 Lake | ABB-024 Ingestion and extraction pipeline | the lake port, the layout and the upload events |
+| IF-02 | ABB-024 Ingestion and extraction pipeline | ABB-011 Knowledge graph | named graphs loaded per document per version |
+| IF-03 | ABB-024 Ingestion and extraction pipeline | ABB-013 Passage index | passages synced; an ingestion job |
+| IF-04 | ABB-002 Lake | ABB-012 Graph tools | the gold index, the snapshots and the active version |
+| IF-05 | ABB-011 Knowledge graph | ABB-012 Graph tools | read-only SPARQL |
+| IF-06 | ABB-013 Passage index | ABB-025 Passage tools | Retrieve |
+| IF-07 | ABB-002 Lake | ABB-025 Passage tools | passages read by id |
+| IF-08 | ABB-012 Graph tools | ABB-026 Tool gateway | the graph toolset as a target |
+| IF-09 | ABB-025 Passage tools | ABB-026 Tool gateway | the passages toolset as a target |
+| IF-10 | ABB-027 Call interceptor | ABB-026 Tool gateway | the caller's scope on every call |
+| IF-11 | ABB-026 Tool gateway | ABB-014 Answering agent | fixed tools over MCP as the caller |
+| IF-12 | ABB-020 Identity | ABB-026 Tool gateway | token verification |
+| IF-13 | ABB-020 Identity | ABB-019 Chat API | who is asking |
+| IF-14 | ABB-020 Identity | ABB-018 Chat page | sign-in and tokens |
+| IF-15 | ABB-020 Identity | ABB-014 Answering agent | tokens accepted |
+| IF-16 | ABB-014 Answering agent | ABB-019 Chat API | the answer, steps streamed |
+| IF-17 | ABB-019 Chat API | ABB-018 Chat page | the HTTP API |
+| IF-18 | ABB-002 Lake | ABB-019 Chat API | served layers read; requests written; signed links |
+| IF-19 | ABB-002 Lake | ABB-014 Answering agent | the agent rendition of the active version |
+| IF-20 | ABB-002 Lake | ABB-028 Command line | the lake, over a folder or the bucket |
+| IF-21 | ABB-028 Command line | ABB-002 Lake | a version published, activated or proposed |
+| IF-22 | ABB-021 Evaluation runner | ABB-014 Answering agent | evaluation questions |
+| IF-23 | ABB-021 Evaluation runner | ABB-019 Chat API | questions through the API as a person |
 
 ## Scenarios
 
@@ -137,12 +127,12 @@ The scenarios are the use cases': UC-001 S1 to S3 for answering, UC-002 for the 
 | Control | Where | What it stops |
 |---|---|---|
 | The scope rule at every hop | ABB-020 | A public caller reading private content |
-| Claims checked by code | ABB-015 | An invented quote, value or figure |
+| Claims checked by code | ABB-014 | An invented quote, value or figure |
 | Fixed tools | ABB-012 | Writes, free queries, escape from scope |
-| Valves | ABB-016 | Runaway cost per question, per person, per deployment |
-| Publish refuses an understated bump | ABB-006 | A silent semantic change |
-| Candidates stay out of the graph | ABB-007 | Document text changing the ontology |
-| Documents as data | ABB-003, ABB-009 | Document text being executed or trusted |
+| Valves | ABB-014 | Runaway cost per question, per person, per deployment |
+| Publish refuses an understated bump | ABB-024 | A silent semantic change |
+| Candidates stay out of the graph | ABB-024 | Document text changing the ontology |
+| Documents as data | ABB-024 | Document text being executed or trusted |
 
 <!-- deck:slide label="Decisions" -->
 

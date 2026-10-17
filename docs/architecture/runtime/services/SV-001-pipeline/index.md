@@ -10,7 +10,7 @@ created: 2026-10-16
 last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
-realises: [SBB-014, SBB-002]
+realises: [SBB-002]
 part_of: BC-001
 composes_contexts: [BC-001, BC-002, BC-003, BC-004]
 runtime_type: container
@@ -33,7 +33,7 @@ The Fargate task that runs one sweep over every collection: ingest, refine, disc
 | Identifier | SV-001, slug `pipeline` |
 | Kind | Service, container |
 | Context | BC-001; composes BC-001, BC-002, BC-003, BC-004 as built |
-| Realises | SBB-014, SBB-002 |
+| Realises | SBB-002 |
 | Node | DN-004 |
 | Code | `src/knowledge_store/pipeline/run.py (entry: knowledge-store run)` |
 | Talks to | The lake; the extraction model through Bedrock or the Anthropic API; Neptune (write); the Knowledge Base ingestion job; the optional backends. |

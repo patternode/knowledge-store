@@ -21,7 +21,7 @@ success_criteria:
   - "The steps and the cost of the answer are visible while it runs"
 frequency: high
 supports_outcome: OC-001
-realised_by_abbs: [ABB-014, ABB-015, ABB-016, ABB-017, ABB-012, ABB-013, ABB-019, ABB-018]
+realised_by_abbs: [ABB-014, ABB-012, ABB-013, ABB-019, ABB-018]
 realised_by: [PAT-001, REF-001]
 fulfilled_by_features: [FE-001, FE-002, FE-008, FE-009, FE-010]
 model:
@@ -105,8 +105,8 @@ What each local participant stands for in the catalogue: an actor or an external
 | 02 | ABB-018 Chat page | realises |
 | 03 | ABB-019 Chat API | realises |
 | 04 | ABB-014 Answering agent | realises |
-| 05 | ABB-012 Fixed query tools | partial |
-| 06 | ABB-015 Claim grounding and checks | realises |
+| 05 | ABB-026 Tool gateway | partial |
+| 06 | ABB-014 Answering agent | partial |
 | 07 | gap | gap |
 
 ## Scenarios

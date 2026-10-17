@@ -39,6 +39,7 @@ From the bottom: pick a service in [runtime/services.csv](runtime/services.csv),
 | Finding | Where it is recorded |
 |---|---|
 | The pipeline image composes four contexts and the portal Lambda three; the continuum says a service serves one | CN-006, with the smallest step that satisfies the rule for answering |
+| At container grain the ontology and extraction contexts have no building block of their own: their models run inside the pipeline container | BC-002, BC-003, ABB-024, CN-006; the catalogue was recalibrated under the building block calibration standard |
 | Two import cycles cross the context boundary between the tools and the portal's index | BC-004, BC-006, SV-003, SV-004 |
 | The portal's fallback answering loop does not meet ADR-002 (no claim-level check) | BC-005, ADR-002 |
 | Contracts were published nowhere as a list | [solution/contracts.csv](solution/contracts.csv), sixteen of them |

@@ -26,7 +26,7 @@ maturity:
   assessor: "Patternode (Dermot O'Brien), reversed from the implementation"
 subdomain_kind: supporting
 provided_by_platform: PL-001
-realised_by_abbs: [ABB-013]
+realised_by_abbs: [ABB-013, ABB-025, ABB-024]
 gaps:
   - "One embedding model, set at deployment; changing it rebuilds the index"
   - "No hybrid ranking across vector and keyword"
@@ -45,7 +45,7 @@ provenance:
 | Status | Draft, reversed from the implementation at 0.3.0 |
 | Subdomain | supporting |
 | Maturity | 3, target 4 |
-| Realised by | ABB-013 |
+| Realised by | ABB-013, ABB-025, ABB-024 |
 
 Finding the passage that answers a question that describes a situation rather than naming things, with one vector per passage so a hit is a passage id the graph's facts also cite.
 

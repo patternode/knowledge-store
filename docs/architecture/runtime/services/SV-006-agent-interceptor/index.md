@@ -10,7 +10,7 @@ created: 2026-10-16
 last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
-realises: [SBB-005]
+realises: [SBB-017]
 part_of: BC-006
 composes_contexts: [BC-006]
 runtime_type: serverless
@@ -33,7 +33,7 @@ The REQUEST interceptor that decodes the verified bearer token and overwrites ca
 | Identifier | SV-006, slug `agent-interceptor` |
 | Kind | Service, serverless |
 | Context | BC-006; composes BC-006 as built |
-| Realises | SBB-005 |
+| Realises | SBB-017 |
 | Node | DN-007 |
 | Code | `src/knowledge_store/tools/interceptor.py (lambda_handler)` |
 | Talks to | Nothing. |

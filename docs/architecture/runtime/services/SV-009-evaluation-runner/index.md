@@ -10,7 +10,7 @@ created: 2026-10-16
 last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
-realises: [SBB-013]
+realises: [SBB-019]
 part_of: BC-007
 composes_contexts: [BC-007]
 runtime_type: native
@@ -33,7 +33,7 @@ Runs an evaluation set against a lake in process or against the deployed chat as
 | Identifier | SV-009, slug `evaluation-runner` |
 | Kind | Service, native |
 | Context | BC-007; composes BC-007 as built |
-| Realises | SBB-013 |
+| Realises | SBB-019 |
 | Node | DN-014 |
 | Code | `src/knowledge_store/evals/run.py (python -m knowledge_store.evals)` |
 | Talks to | The agent in process, or POST /api/chat with a person's token. |

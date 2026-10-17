@@ -69,4 +69,4 @@ Runs are started by hand and cost a model call per question; the two shipped set
 
 ## Building blocks
 
-ABB-021; each is a page under [../abbs](../../abbs/README.md).
+ABB-021 Evaluation runner, a page under [../abbs](../../abbs/README.md).

@@ -1,14 +1,14 @@
 id,name,level,parent,subdomain_kind,realised_by_abbs,maturity,path
 CAP-001,Grounded knowledge from documents,L1,,core,,4,capabilities/CAP-001-grounded-knowledge-from-documents/index.md
-CAP-002,Document ingestion and passage derivation,L2,CAP-001,supporting,ABB-001 ABB-002 ABB-003 ABB-004,4,capabilities/CAP-002-document-ingestion-and-passage-derivation/index.md
-CAP-003,Ontology lifecycle management,L2,CAP-001,core,ABB-005 ABB-006 ABB-007 ABB-008,4,capabilities/CAP-003-ontology-lifecycle-management/index.md
-CAP-004,Fact extraction with provenance,L2,CAP-001,core,ABB-009 ABB-010,4,capabilities/CAP-004-fact-extraction-with-provenance/index.md
-CAP-005,Knowledge graph projection and query,L2,CAP-001,core,ABB-011 ABB-012,4,capabilities/CAP-005-knowledge-graph-projection-and-query/index.md
-CAP-006,Passage search by meaning,L2,CAP-001,supporting,ABB-013,3,capabilities/CAP-006-passage-search-by-meaning/index.md
-CAP-007,Structured lookup,L2,CAP-001,core,ABB-008 ABB-010 ABB-012,3,capabilities/CAP-007-structured-lookup/index.md
-CAP-008,Grounded answering,L2,CAP-001,core,ABB-014 ABB-015 ABB-016,4,capabilities/CAP-008-grounded-answering/index.md
-CAP-009,Access control by scope,L2,CAP-001,supporting,ABB-020 ABB-012,4,capabilities/CAP-009-access-control-by-scope/index.md
-CAP-010,Cost and spend control,L2,CAP-001,supporting,ABB-016 ABB-022,4,capabilities/CAP-010-cost-and-spend-control/index.md
+CAP-002,Document ingestion and passage derivation,L2,CAP-001,supporting,ABB-024 ABB-002,4,capabilities/CAP-002-document-ingestion-and-passage-derivation/index.md
+CAP-003,Ontology lifecycle management,L2,CAP-001,core,ABB-024 ABB-002 ABB-028,4,capabilities/CAP-003-ontology-lifecycle-management/index.md
+CAP-004,Fact extraction with provenance,L2,CAP-001,core,ABB-024,4,capabilities/CAP-004-fact-extraction-with-provenance/index.md
+CAP-005,Knowledge graph projection and query,L2,CAP-001,core,ABB-011 ABB-012 ABB-024,4,capabilities/CAP-005-knowledge-graph-projection-and-query/index.md
+CAP-006,Passage search by meaning,L2,CAP-001,supporting,ABB-013 ABB-025 ABB-024,3,capabilities/CAP-006-passage-search-by-meaning/index.md
+CAP-007,Structured lookup,L2,CAP-001,core,ABB-024 ABB-012,3,capabilities/CAP-007-structured-lookup/index.md
+CAP-008,Grounded answering,L2,CAP-001,core,ABB-014,4,capabilities/CAP-008-grounded-answering/index.md
+CAP-009,Access control by scope,L2,CAP-001,supporting,ABB-020 ABB-027 ABB-026 ABB-012 ABB-025 ABB-019 ABB-018,4,capabilities/CAP-009-access-control-by-scope/index.md
+CAP-010,Cost and spend control,L2,CAP-001,supporting,ABB-014 ABB-019,4,capabilities/CAP-010-cost-and-spend-control/index.md
 CAP-011,Answer evaluation,L2,CAP-001,supporting,ABB-021,3,capabilities/CAP-011-answer-evaluation/index.md
-CAP-012,Answer transparency and curation feedback,L2,CAP-001,core,ABB-017 ABB-007,3,capabilities/CAP-012-answer-transparency-and-curation-feedback/index.md
-CAP-013,Self-contained deployment and operation,L2,CAP-001,generic,ABB-023,4,capabilities/CAP-013-self-contained-deployment-and-operation/index.md
+CAP-012,Answer transparency and curation feedback,L2,CAP-001,core,ABB-014 ABB-018 ABB-019,3,capabilities/CAP-012-answer-transparency-and-curation-feedback/index.md
+CAP-013,Self-contained deployment and operation,L2,CAP-001,generic,ABB-028,4,capabilities/CAP-013-self-contained-deployment-and-operation/index.md

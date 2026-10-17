@@ -10,7 +10,7 @@ last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 part_of: PL-001
-contains: [ABB-018, ABB-019, ABB-020]
+contains: [ABB-018, ABB-019, ABB-020, ABB-027]
 realises_capabilities: [CAP-009, CAP-010]
 subdomain_kind: supporting
 c4_levels: [container, component]
@@ -41,7 +41,7 @@ provenance:
 | Owner team | Patternode (Dermot O'Brien) |
 | Subdomain | supporting |
 | Realises | CAP-009, CAP-010 |
-| Contains | ABB-018, ABB-019, ABB-020 |
+| Contains | ABB-018, ABB-019, ABB-020, ABB-027 |
 
 People, sessions, scope, quotas and the chat page: who may ask, who may read what, and the page and API they do it through.
 
@@ -76,4 +76,4 @@ The handler routes everything behind one Lambda, dispatching answers to itself a
 
 ## Building blocks
 
-ABB-018, ABB-019, ABB-020; each is a page under [../abbs](../../abbs/README.md).
+ABB-018 Chat page, ABB-019 Chat API, ABB-020 Identity and ABB-027 Call interceptor, each a page under [../abbs](../../abbs/README.md). The daily quota, the workbench endpoints and the site grant are components of the Chat API.

@@ -96,9 +96,9 @@ What each local participant stands for in the catalogue: an actor or an external
 | Local ID | Maps To | Relationship |
 |---|---|---|
 | 01 | gap | gap |
-| 02 | ABB-021 Evaluation runner and scorer | realises |
+| 02 | ABB-021 Evaluation runner | realises |
 | 03 | ABB-014 Answering agent | realises |
-| 04 | ABB-021 Evaluation runner and scorer | partial |
+| 04 | ABB-021 Evaluation runner | partial |
 
 ## Scenarios
 

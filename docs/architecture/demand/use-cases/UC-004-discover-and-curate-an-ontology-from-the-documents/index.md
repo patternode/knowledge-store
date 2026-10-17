@@ -21,7 +21,7 @@ success_criteria:
   - "Publish refuses a version that understates the change"
 frequency: low
 supports_outcome: OC-002
-realised_by_abbs: [ABB-005, ABB-006, ABB-004]
+realised_by_abbs: [ABB-024]
 realised_by: [PAT-001, REF-001]
 fulfilled_by_features: [FE-004, FE-005]
 model:
@@ -99,11 +99,11 @@ What each local participant stands for in the catalogue: an actor or an external
 | Local ID | Maps To | Relationship |
 |---|---|---|
 | 01 | gap | gap |
-| 02 | ABB-005 Ontology discovery and review | realises |
+| 02 | ABB-024 Ingestion and extraction pipeline | realises |
 | 03 | gap | gap |
-| 04 | ABB-006 Ontology versioning and renditions | partial |
-| 05 | ABB-023 Deployment automation | partial |
-| 06 | ABB-006 Ontology versioning and renditions | realises |
+| 04 | ABB-002 Lake | partial |
+| 05 | ABB-028 Command line | realises |
+| 06 | ABB-002 Lake | partial |
 
 ## Scenarios
 

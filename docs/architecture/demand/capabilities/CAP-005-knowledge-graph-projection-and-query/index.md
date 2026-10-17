@@ -28,7 +28,7 @@ maturity:
   assessor: "Patternode (Dermot O'Brien), reversed from the implementation"
 subdomain_kind: core
 provided_by_platform: PL-001
-realised_by_abbs: [ABB-011, ABB-012]
+realised_by_abbs: [ABB-011, ABB-012, ABB-024]
 gaps:
   - "The in-memory index is right for tens of thousands of entities; beyond that MongoDB is the projection (CN-001, CN-005)"
   - "Passage search over SPARQL is not implemented; the Knowledge Base or the keyword index serves it"
@@ -47,7 +47,7 @@ provenance:
 | Status | Draft, reversed from the implementation at 0.3.0 |
 | Subdomain | core |
 | Maturity | 4, target 4 |
-| Realised by | ABB-011, ABB-012 |
+| Realised by | ABB-011, ABB-012, ABB-024 |
 
 Keeping the extracted RDF as the record, projecting it into the stores that answer queries (an index, a SPARQL store, optional graph and document backends), and answering fixed read-only questions in the ontology's terms, filtered to what the caller may read.
 

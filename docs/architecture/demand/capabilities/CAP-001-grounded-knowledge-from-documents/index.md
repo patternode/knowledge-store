@@ -45,7 +45,7 @@ provenance:
 | Status | Draft, reversed from the implementation at 0.3.0 |
 | Subdomain | core |
 | Maturity | 4, target 4 |
-| Realised by | none directly; its L2 capabilities are realised |
+| Realised by | none: provisioning, not a block |
 
 The L1 capability: turning an organisation's documents into typed, cited facts and answering from them with nothing shown that was not checked.
 

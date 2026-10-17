@@ -10,7 +10,7 @@ created: 2026-10-16
 last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
-realises: [SBB-007]
+realises: [SBB-018]
 part_of: BC-006
 composes_contexts: [BC-006]
 runtime_type: managed-service
@@ -33,7 +33,7 @@ The static chat and ontology pages served from a private bucket through CloudFro
 | Identifier | SV-007, slug `chat-page` |
 | Kind | Service, managed-service |
 | Context | BC-006; composes BC-006 as built |
-| Realises | SBB-007 |
+| Realises | SBB-018 |
 | Node | DN-009 |
 | Code | `chat/ (index.html, app.js, common.js, ontology.html, ontology.js, styles.css; config.json and brand.css written by Terraform)` |
 | Talks to | The portal API; Cognito's hosted UI; a host website over postMessage in site mode. |

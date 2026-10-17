@@ -23,7 +23,7 @@ consequences:
     - "Two applies"
     - "The launch stack's trust boundary must be restricted by the account"
 change_type: introduce
-affects_artefacts: [BC-008, ABB-023]
+affects_artefacts: [BC-008]
 resolves: []
 provenance:
   origin: ai-generated
@@ -56,4 +56,4 @@ Negative: Two applies; The launch stack's trust boundary must be restricted by t
 
 ## Affects
 
-BC-008, ABB-023.
+BC-008, .

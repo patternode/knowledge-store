@@ -23,7 +23,7 @@ consequences:
     - "Site sign-in needs two service clients"
     - "Token lifetimes bound a long answer"
 change_type: introduce
-affects_artefacts: [BC-006, ABB-020, ABB-012]
+affects_artefacts: [BC-006, ABB-020, ABB-027, ABB-012, ABB-025]
 resolves: []
 provenance:
   origin: ai-generated
@@ -56,4 +56,4 @@ Negative: Site sign-in needs two service clients; Token lifetimes bound a long a
 
 ## Affects
 
-BC-006, ABB-020, ABB-012.
+BC-006, ABB-020, ABB-027, ABB-012, ABB-025.

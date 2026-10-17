@@ -22,7 +22,7 @@ consequences:
   negative:
     - "Some questions need a tool that does not exist yet"
 change_type: introduce
-affects_artefacts: [BC-004, ABB-012]
+affects_artefacts: [BC-004, ABB-012, ABB-025]
 resolves: []
 provenance:
   origin: ai-generated
@@ -55,4 +55,4 @@ Negative: Some questions need a tool that does not exist yet.
 
 ## Affects
 
-BC-004, ABB-012.
+BC-004, ABB-012, ABB-025.

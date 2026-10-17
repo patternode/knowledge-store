@@ -97,9 +97,9 @@ What each local participant stands for in the catalogue: an actor or an external
 |---|---|---|
 | 01 | gap | gap |
 | 02 | ABB-018 Chat page | realises |
-| 03 | gap | gap |
+| 03 | ABB-020 Identity | partial |
 | 04 | ABB-019 Chat API | partial |
-| 05 | ABB-020 Identity and scope | partial |
+| 05 | ABB-027 Call interceptor | partial |
 
 ## Scenarios
 

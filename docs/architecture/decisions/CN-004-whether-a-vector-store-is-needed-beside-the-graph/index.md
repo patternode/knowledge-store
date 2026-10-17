@@ -17,7 +17,7 @@ criteria:
   - "Recall on frontline questions"
   - "Cost at rest"
 resolved_by: ADR-007
-affects: [CAP-006, ABB-013]
+affects: [CAP-006, ABB-013, ABB-025]
 provenance:
   origin: ai-generated
   review_state: ai-raw
@@ -34,6 +34,6 @@ Do questions that describe a situation need search by meaning, or does the graph
 
 Criteria: Recall on frontline questions; Cost at rest.
 
-Status: resolved, resolved by ADR-007. Affects CAP-006, ABB-013.
+Status: resolved, resolved by ADR-007. Affects CAP-006, ABB-013, ABB-025.
 
 Resolved: yes, on S3 Vectors, switchable off.

@@ -18,7 +18,7 @@ criteria:
   - "Freshness"
   - "Citation stability"
   - "Scope enforcement"
-affects: [CAP-007, ABB-008, ABB-010, ABB-012]
+affects: [CAP-007, ABB-024, ABB-012]
 provenance:
   origin: ai-generated
   review_state: ai-raw
@@ -36,6 +36,6 @@ How should a table that lives in a database, rather than a file in the landing t
 
 Criteria: Freshness; Citation stability; Scope enforcement.
 
-Status: open. Affects CAP-007, ABB-008, ABB-010, ABB-012.
+Status: open. Affects CAP-007, ABB-024, ABB-012.
 
 The mapping already renders R2RML for this; nothing reads it yet. docs/architecture/aws/structured.md says where the accelerator fits.

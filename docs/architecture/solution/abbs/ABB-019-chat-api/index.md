@@ -3,31 +3,31 @@ kind: abb
 id: ABB-019
 title: "ABB-019 Chat API"
 short_name: "API"
-description: "The HTTP API behind the page: quota, asynchronous answering with progress, the index-backed views, drafts and requests for curators, and signed links to documents and tables after the scope check."
-version: 0.1.0
+description: "The one HTTP door into the store: it verifies who is asking, takes the quota, dispatches the question to the agent as that person, keeps the answer and the steps, serves the index-backed views, and signs links into the lake."
+version: 0.2.0
 status: draft
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 category: "Portal"
 part_of: BC-006
-realises_capabilities: [CAP-009, CAP-010]
-realised_by: [SBB-007, SBB-013]
+realises_capabilities: [CAP-009, CAP-010, CAP-012]
+realised_by: [SBB-007]
 requires:
-  - { abb: ABB-020, cardinality: "1", rationale: "Who is asking" }
-  - { abb: ABB-014, cardinality: "1", rationale: "Dispatches to the agent" }
-  - { abb: ABB-012, cardinality: "1", rationale: "Serves the index-backed routes" }
-  - { abb: ABB-002, cardinality: "1", rationale: "Document and table links" }
+  - { abb: ABB-020, cardinality: "1", rationale: "Verifies tokens or the site grant" }
+  - { abb: ABB-014, cardinality: "1", rationale: "Invokes the agent as the person" }
+  - { abb: ABB-002, cardinality: "1", rationale: "Reads the served layers, writes requests, signs links" }
 domains: [application]
 interfaces:
-  - { id: "I1", direction: "in", type: "request", description: "The routes of CT-001 behind the origin check" }
-  - { id: "I2", direction: "out", type: "request", description: "Invoke the agent as the person or a service client; self-invoke for the asynchronous half" }
-  - { id: "I3", direction: "out", type: "query", description: "Chat state: answers, progress, quotas, usage" }
+  - { id: "I1", direction: "in", type: "request", description: "ANY /api/{proxy+} behind the edge and the origin secret: collections, status, summary, ontology, entities, documents, tables, chat, workbench, requests (CT-001)" }
+  - { id: "I2", direction: "out", type: "request", description: "POST /invocations to the agent as the person, with a session id (CT-004)" }
+  - { id: "I3", direction: "out", type: "query", description: "Chat state: chats, quota and usage per subject and day (ST-011)" }
+  - { id: "I4", direction: "out", type: "query", description: "Signed links into the lake for documents and tables; ontology requests written" }
 mandatory_subabbs: [iam, observability, governance]
 cross_cutting: false
 references:
-  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/portal_api/handler.py, state.py, agent_client.py, local.py", ref: "main" }
+  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/portal_api/handler.py", ref: "main" }
 provenance:
   origin: ai-generated
   review_state: ai-raw
@@ -40,83 +40,88 @@ provenance:
 | ABB ID | ABB-019 |
 | ABB Name | Chat API |
 | Short Name | API |
-| Version | 0.1.0 |
-| Status | draft, reversed from the implementation at 0.3.0 |
+| Version | 0.2.0 |
+| Status | draft, reversed from the implementation at 0.3.0, recalibrated to container grain |
 | Category | Portal |
 | Bounded context | BC-006 |
-| Realises | CAP-009, CAP-010 |
-| Realised by | SBB-007, SBB-013 |
+| Realises | CAP-009, CAP-010, CAP-012 |
+| Realised by | SBB-007 |
+| Grain | One C4 container: passes the container test of the [calibration standard](https://github.com/dermot-obrien/architecture-continuum/blob/main/standards/building-blocks/standard-building-block-calibration.md) |
 
-The HTTP API behind the page: quota, asynchronous answering with progress, the index-backed views, drafts and requests for curators, and signed links to documents and tables after the scope check.
+The one HTTP door into the store: it verifies who is asking, takes the quota, dispatches the question to the agent as that person, keeps the answer and the steps, serves the index-backed views, and signs links into the lake.
 
 ## 1  Purpose
 
-The API is the one door, and it is narrow: bounded inputs, a quota before any model call, an asynchronous answer because the gateway allows thirty seconds, and nothing served to another person.
+Everything a page needs is behind one narrow API whose every route knows the subject. Quota, chat state, the workbench endpoints, the site grant and the signed links are components of it because they run inside the same function and are not separable.
 
 ## 2  Building block
 
 ### 2.1  Component Diagram
 
-The components below are the diagram's boxes; the draw.io is not yet drawn. The outside view of this block is its row in [REF-001](../../patterns/REF-001-knowledge-store-on-aws/index.md).
+The components below are the boxes of this container's component diagram, which is not yet drawn. The outside view of this block is its box in [PAT-001](../../patterns/PAT-001-ontology-driven-graphrag/index.md) and the row of its SBB in [REF-001](../../patterns/REF-001-knowledge-store-on-aws/index.md).
 
-### 2.2  Fundamental functionality
+### 2.2  Components
 
-- **Routes.** collections, status, summary, ontology, entities, entity, passage, graph, neighbourhood, paths, drafts, draft, table, document, chat, usage, requests
-- **Dispatch.** Self-invoke with the job; progress written at most once a second; the page polls
-- **Chat state port.** DynamoDB, MongoDB or memory behind one protocol
-- **Links.** Presigned for ten minutes after the scope check
-- **Local server.** The same handler on loopback with a synthetic private caller
+- **Routes.** Every route of CT-001, with the subject on each
+- **Dispatch.** Asynchronous answering by self-invocation; polling of the result
+- **Chat state port.** DynamoDB, MongoDB or memory behind one port (ST-011)
+- **Quota.** Questions per subject per day taken before dispatch; usage recorded after
+- **Workbench endpoints.** Steps, prices, term usage and ontology requests for the page's panel
+- **Site grant.** X-Site-Grant verified against the host's keys when a host website embeds the page (CT-011)
+- **Links.** Presigned document and table links with the subject in the audit trail
+- **Fallback loop.** An in-function tool loop used until the agent Runtime exists in a deployment; it lacks the claim-level checks (a finding against ADR-002)
 
 ### 2.3  Attributes
 
-- **Boundedness.** Question, search, history and limits clamped before work
-- **Fairness.** A refused question costs no model call
+- **Narrowness.** One API, no direct store access from a page
+- **Subject on every call.** No anonymous route in hosted or site mode
 
 ### 2.4  Semantic
 
-Inside: routing, state, dispatch, links. Outside: answering and identity.
+Inside: routes, dispatch, state, quota, grant, links. Outside: the agent (ABB-014), the tokens (ABB-020), the page (ABB-018) and the lake (ABB-002).
 
 ### 2.5  Identity & Access Management
 
-Reads served prefixes, writes ontology requests, reads and writes the chat table, invokes the chat model and itself, reads two secrets.
+A Cognito JWT authoriser on the route, or the site grant verified in the function; its own role for the lake's served prefixes, the table, the secrets and the agent's endpoint; no IAM grant to invoke the agent, which the token authorises.
 
 ### 2.6  Observability
 
-One access log line per request with the caller's subject; generic errors to the caller, full to the log.
+An access log per request with the subject; the function's log group; usage rows per day.
 
 ### 2.7  Governance & Policy Enforcement
 
-Throttle, reserved concurrency, origin secret, web ACL.
+Reserved concurrency and the API throttle; the origin secret between the edge and the API; quotas as deployment inputs.
 
 ## 3  Interfaces
 
 | Interface | Direction | Type | Description |
 |---|---|---|---|
-| I1 | in | request | The routes of CT-001 behind the origin check |
-| I2 | out | request | Invoke the agent as the person or a service client; self-invoke for the asynchronous half |
-| I3 | out | data | Chat state: answers, progress, quotas, usage |
+| I1 | in | request | ANY /api/{proxy+} behind the edge and the origin secret: collections, status, summary, ontology, entities, documents, tables, chat, workbench, requests (CT-001) |
+| I2 | out | request | POST /invocations to the agent as the person, with a session id (CT-004) |
+| I3 | out | query | Chat state: chats, quota and usage per subject and day (ST-011) |
+| I4 | out | query | Signed links into the lake for documents and tables; ontology requests written |
 
 ### 3.4  Capability dependencies (requires)
 
-- ABB-020 (1): Who is asking
-- ABB-014 (1): Dispatches to the agent
-- ABB-012 (1): Serves the index-backed routes
-- ABB-002 (1): Document and table links
+- ABB-020 (1): Verifies tokens or the site grant
+- ABB-014 (1): Invokes the agent as the person
+- ABB-002 (1): Reads the served layers, writes requests, signs links
 
 ## 4  Mapping
 
 | Where | What |
 |---|---|
-| Code | `src/knowledge_store/portal_api/handler.py, state.py, agent_client.py, local.py` |
-| Capabilities | CAP-009, CAP-010 |
+| Code | `src/knowledge_store/portal_api/handler.py, state.py, agent_client.py, chat.py, local.py; site_grant.py, claims.py; workbench.py (the endpoints)` |
+| Capabilities | CAP-009, CAP-010, CAP-012 |
 | Context | BC-006 |
 
 ## 5  Solution Building Block guidance
 
-Realised as one Lambda behind API Gateway and CloudFront with DynamoDB (SBB-007), or the local server (SBB-013).
+Realised as a Lambda behind API Gateway with a DynamoDB table (SBB-007). The command line serves the same API locally (ABB-028).
 
 ## 6  Revision history
 
 | Version | Date | Change |
 |---|---|---|
 | 0.1.0 | 2026-10-16 | Reversed from the implementation |
+| 0.2.0 | 2026-10-17 | Recalibrated to container grain |

@@ -21,7 +21,7 @@ consequences:
   negative:
     - "Two-valued; a private reader sees every private source"
 change_type: introduce
-affects_artefacts: [BC-006, ABB-020]
+affects_artefacts: [BC-006, ABB-027, ABB-020]
 resolves: [CN-002]
 provenance:
   origin: ai-generated
@@ -54,4 +54,4 @@ Negative: Two-valued; a private reader sees every private source.
 
 ## Affects
 
-BC-006, ABB-020. Resolves CN-002.
+BC-006, ABB-027, ABB-020. Resolves CN-002.

@@ -54,18 +54,22 @@ Multi-region, multi-account and a shared tenant model are out of scope: one depl
 | Building Block | Realises | Role |
 |---|---|---|
 | SBB-001 Lake on S3 | ABB-002 | The record |
-| SBB-002 Sweep on ECS Fargate with EventBridge, SQS, Pipes and Scheduler | ABB-004 | The sweep and its triggers |
-| SBB-014 The pipeline image | ABB-001, ABB-003, ABB-005 to ABB-011 | Every pipeline-side block |
+| SBB-002 Pipeline image on ECS Fargate with EventBridge, SQS, Pipes and Scheduler | ABB-024 | The sweep: every stage in one image, started by uploads and a schedule |
 | SBB-003 Knowledge graph on Amazon Neptune | ABB-011 | The SPARQL projection |
 | SBB-004 Passage index on Bedrock Knowledge Base with S3 Vectors | ABB-013 | Search by meaning |
-| SBB-005 Tools on AgentCore Gateway with Lambda targets and the interceptor | ABB-012, ABB-013, ABB-020 | The fixed tools, scoped |
-| SBB-006 Chat agent on AgentCore Runtime with Strands, Bedrock and Guardrails | ABB-014 to ABB-017 | Answering |
-| SBB-007 Portal on CloudFront, API Gateway, Lambda and DynamoDB | ABB-018, ABB-019 | The page and the API |
+| SBB-005 Graph tools on Lambda behind the AgentCore Gateway | ABB-012 | The graph and structured tools |
+| SBB-015 Passage tools on Lambda behind the AgentCore Gateway | ABB-025 | Search and read of passages |
+| SBB-016 Tool gateway on Amazon Bedrock AgentCore Gateway | ABB-026 | One MCP surface with the authoriser and the interception point |
+| SBB-017 Call interceptor on Lambda | ABB-027 | The scope decision |
+| SBB-006 Chat agent on AgentCore Runtime with Strands, Bedrock and Guardrails | ABB-014 | Answering |
+| SBB-007 Portal API on API Gateway, Lambda and DynamoDB | ABB-019 | The API, the quota and the chat state |
+| SBB-018 Chat page on CloudFront | ABB-018 | The page |
 | SBB-008 Identity on Cognito | ABB-020 | People and tokens |
-| SBB-009 Image build on CodeBuild and ECR | ABB-023 | Images in the account |
-| SBB-010 Terraform module with the CloudFormation launch stack | ABB-023 | The deployment |
-| SBB-012 Model access through Bedrock or the Anthropic API | ABB-022 | The model, priced |
-| SBB-011 Optional projection backends | ABB-011 | When memory is outgrown |
+| SBB-011 Optional projection backends: Neo4j, Apache AGE and MongoDB | ABB-011 | When Neptune is not the graph |
+| SBB-013 Command line on Python, the local profile | ABB-028 | The store on one machine; the release commands |
+| SBB-019 Evaluation runner on Python | ABB-021 | Right, not only grounded |
+
+Every box is one container, as the [calibration standard](https://github.com/dermot-obrien/architecture-continuum/blob/main/standards/building-blocks/standard-building-block-calibration.md) requires of a physical pattern. The image build (DN-003, DN-013), the Terraform module and the launch stack (CT-010) and the models (DN-011) are nodes, contracts and external systems, not boxes; the deployment view below places the services on the nodes.
 
 <!-- deck:slide label="Interfaces" -->
 
@@ -73,24 +77,29 @@ Multi-region, multi-account and a shared tenant model are out of scope: one depl
 
 | Interface | Provider | Consumer | Purpose |
 |---|---|---|---|
-| IF-01 | SBB-001 Lake on S3 | SBB-002 Sweep on ECS Fargate with EventBridge, SQS, Pipes and Scheduler | upload events; the lake read and written |
-| IF-02 | SBB-009 Image build on CodeBuild and ECR | SBB-002 Sweep on ECS Fargate with EventBridge, SQS, Pipes and Scheduler | the pipeline image |
-| IF-03 | SBB-002 Sweep on ECS Fargate with EventBridge, SQS, Pipes and Scheduler | SBB-014 The pipeline image: rdflib, pySHACL, pypdf and Claude | runs the sweep |
-| IF-04 | SBB-012 Model access through Bedrock or the Anthropic API | SBB-014 The pipeline image: rdflib, pySHACL, pypdf and Claude | discovery and extraction calls |
-| IF-05 | SBB-014 The pipeline image: rdflib, pySHACL, pypdf and Claude | SBB-003 Knowledge graph on Amazon Neptune | named graphs loaded |
-| IF-06 | SBB-014 The pipeline image: rdflib, pySHACL, pypdf and Claude | SBB-004 Passage index on Bedrock Knowledge Base with S3 Vectors | passages synced; an ingestion job |
-| IF-07 | SBB-014 The pipeline image: rdflib, pySHACL, pypdf and Claude | SBB-011 Optional projection backends: Neo4j, Apache AGE and MongoDB | the optional loads |
-| IF-08 | SBB-003 Knowledge graph on Amazon Neptune | SBB-005 Tools on AgentCore Gateway with Lambda targets and the interceptor | read-only SPARQL |
-| IF-09 | SBB-004 Passage index on Bedrock Knowledge Base with S3 Vectors | SBB-005 Tools on AgentCore Gateway with Lambda targets and the interceptor | Retrieve |
-| IF-10 | SBB-005 Tools on AgentCore Gateway with Lambda targets and the interceptor | SBB-006 Chat agent on AgentCore Runtime with Strands, Bedrock and Guardrails | MCP tools as the caller (CT-002, CT-003) |
-| IF-11 | SBB-012 Model access through Bedrock or the Anthropic API | SBB-006 Chat agent on AgentCore Runtime with Strands, Bedrock and Guardrails | the agent model and the guardrail |
-| IF-12 | SBB-006 Chat agent on AgentCore Runtime with Strands, Bedrock and Guardrails | SBB-007 Portal on CloudFront, API Gateway, Lambda and DynamoDB | invocation as the person; steps streamed (CT-004) |
-| IF-13 | SBB-008 Identity on Cognito | SBB-007 Portal on CloudFront, API Gateway, Lambda and DynamoDB | sign-in and tokens (CT-012) |
-| IF-14 | SBB-008 Identity on Cognito | SBB-005 Tools on AgentCore Gateway with Lambda targets and the interceptor | the JWT authoriser; the scope written by the interceptor |
-| IF-15 | SBB-001 Lake on S3 | SBB-007 Portal on CloudFront, API Gateway, Lambda and DynamoDB | served layers read; requests written; signed links |
-| IF-16 | SBB-001 Lake on S3 | SBB-005 Tools on AgentCore Gateway with Lambda targets and the interceptor | gold, silver, ontology and config read |
-| IF-17 | SBB-009 Image build on CodeBuild and ECR | SBB-006 Chat agent on AgentCore Runtime with Strands, Bedrock and Guardrails | the agent image |
-| IF-18 | SBB-010 Terraform module with the CloudFormation launch stack | SBB-001 Lake on S3 | provisions; writes configuration and tool schemas (CT-010) |
+| IF-01 | SBB-001 Lake on S3 | SBB-002 Pipeline image on ECS Fargate with EventBridge, SQS, Pipes and Scheduler | upload events (CT-005); the lake read and written |
+| IF-02 | SBB-002 Pipeline image on ECS Fargate with EventBridge, SQS, Pipes and Scheduler | SBB-003 Knowledge graph on Amazon Neptune | named graphs loaded |
+| IF-03 | SBB-002 Pipeline image on ECS Fargate with EventBridge, SQS, Pipes and Scheduler | SBB-004 Passage index on Bedrock Knowledge Base with S3 Vectors | passages synced; an ingestion job |
+| IF-04 | SBB-002 Pipeline image on ECS Fargate with EventBridge, SQS, Pipes and Scheduler | SBB-011 Optional projection backends: Neo4j, Apache AGE and MongoDB | the optional loads |
+| IF-05 | SBB-003 Knowledge graph on Amazon Neptune | SBB-005 Graph tools on Lambda behind the AgentCore Gateway | read-only SPARQL |
+| IF-06 | SBB-001 Lake on S3 | SBB-005 Graph tools on Lambda behind the AgentCore Gateway | gold, ontology and config read |
+| IF-07 | SBB-004 Passage index on Bedrock Knowledge Base with S3 Vectors | SBB-015 Passage tools on Lambda behind the AgentCore Gateway | Retrieve |
+| IF-08 | SBB-001 Lake on S3 | SBB-015 Passage tools on Lambda behind the AgentCore Gateway | silver read by id |
+| IF-09 | SBB-005 Graph tools on Lambda behind the AgentCore Gateway | SBB-016 Tool gateway on Amazon Bedrock AgentCore Gateway | the graph target (CT-002) |
+| IF-10 | SBB-015 Passage tools on Lambda behind the AgentCore Gateway | SBB-016 Tool gateway on Amazon Bedrock AgentCore Gateway | the passages target (CT-003) |
+| IF-11 | SBB-017 Call interceptor on Lambda | SBB-016 Tool gateway on Amazon Bedrock AgentCore Gateway | caller_private on every call |
+| IF-12 | SBB-008 Identity on Cognito | SBB-016 Tool gateway on Amazon Bedrock AgentCore Gateway | the JWT authoriser (CT-012) |
+| IF-13 | SBB-016 Tool gateway on Amazon Bedrock AgentCore Gateway | SBB-006 Chat agent on AgentCore Runtime with Strands, Bedrock and Guardrails | MCP tools as the caller (CT-002, CT-003) |
+| IF-14 | SBB-008 Identity on Cognito | SBB-006 Chat agent on AgentCore Runtime with Strands, Bedrock and Guardrails | the Runtime's authoriser (CT-012) |
+| IF-15 | SBB-006 Chat agent on AgentCore Runtime with Strands, Bedrock and Guardrails | SBB-007 Portal API on API Gateway, Lambda and DynamoDB | invocation as the person; steps streamed (CT-004) |
+| IF-16 | SBB-008 Identity on Cognito | SBB-007 Portal API on API Gateway, Lambda and DynamoDB | tokens verified (CT-012) |
+| IF-17 | SBB-008 Identity on Cognito | SBB-018 Chat page on CloudFront | sign-in (CT-012, CT-016) |
+| IF-18 | SBB-007 Portal API on API Gateway, Lambda and DynamoDB | SBB-018 Chat page on CloudFront | /api behind the same distribution (CT-001) |
+| IF-19 | SBB-001 Lake on S3 | SBB-007 Portal API on API Gateway, Lambda and DynamoDB | served layers read; requests written; signed links |
+| IF-20 | SBB-001 Lake on S3 | SBB-006 Chat agent on AgentCore Runtime with Strands, Bedrock and Guardrails | the agent rendition read |
+| IF-21 | SBB-001 Lake on S3 | SBB-013 Command line on Python, the local profile | the bucket, or a folder in its place |
+| IF-22 | SBB-013 Command line on Python, the local profile | SBB-001 Lake on S3 | versions published and activated (CT-006) |
+| IF-23 | SBB-019 Evaluation runner on Python | SBB-007 Portal API on API Gateway, Lambda and DynamoDB | questions as a person (CT-001) |
 
 The contracts register, [../../contracts.csv](../../contracts.csv), gives each interface its definition and versioning.
 
