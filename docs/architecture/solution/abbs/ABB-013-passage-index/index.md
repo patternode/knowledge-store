@@ -5,7 +5,7 @@ title: "ABB-013 Passage index"
 short_name: "PIDX"
 description: "Search of passages by meaning as its own store: one vector per passage, synced from the lake, so that a hit is a passage id the checks can re-read."
 version: 0.2.0
-status: draft
+status: active
 created: 2026-10-16
 last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"

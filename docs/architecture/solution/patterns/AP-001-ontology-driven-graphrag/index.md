@@ -5,7 +5,7 @@ title: "AP-001 Ontology-driven GraphRAG with grounded answers"
 pattern_type: architecture-pattern
 pattern_scope: platform
 status: draft
-version: "0.1"
+version: "0.1.0"
 created: 2026-10-16
 last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"

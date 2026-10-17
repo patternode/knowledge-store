@@ -5,7 +5,7 @@ title: "ABB-020 Identity"
 short_name: "IDP"
 description: "The identity provider: the people and the service clients, the private-readers group, and the tokens every other container verifies, so that the person's identity goes all the way down (ADR-003)."
 version: 0.2.0
-status: draft
+status: active
 created: 2026-10-16
 last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"

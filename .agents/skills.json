@@ -1,8 +1,38 @@
 {
   "sources": [
-    { "bundle": "https://github.com/dermot-obrien/architecture-continuum.git", "ref": "main" },
-    { "bundle": "https://github.com/dermot-obrien/architecture-pattern.git", "ref": "main", "skills": ["pattern", "use-case", "cross-reference"] },
-    { "bundle": "https://github.com/dermot-obrien/diagram-model.git", "ref": "main" },
-    { "bundle": "https://github.com/dermot-obrien/markdown-deck.git", "ref": "main" }
+    {
+      "bundle": "https://github.com/dermot-obrien/architecture-continuum.git",
+      "ref": "v0.5.0"
+    },
+    {
+      "repo": "https://github.com/dermot-obrien/architecture-pattern.git",
+      "ref": "363a743a911ae2d5764401ce46b6a871eb354e76",
+      "path": "skills/pattern",
+      "name": "pattern"
+    },
+    {
+      "repo": "https://github.com/dermot-obrien/architecture-pattern.git",
+      "ref": "363a743a911ae2d5764401ce46b6a871eb354e76",
+      "path": "skills/use-case",
+      "name": "use-case"
+    },
+    {
+      "repo": "https://github.com/dermot-obrien/architecture-pattern.git",
+      "ref": "363a743a911ae2d5764401ce46b6a871eb354e76",
+      "path": "skills/cross-reference",
+      "name": "cross-reference"
+    },
+    {
+      "repo": "https://github.com/dermot-obrien/diagram-model.git",
+      "ref": "f098f067b9a5ae859e4c56e84fcce7afd96fbdfd",
+      "path": "skills/model",
+      "name": "model"
+    },
+    {
+      "repo": "https://github.com/dermot-obrien/markdown-deck.git",
+      "ref": "markdown-deck--v0.6.8",
+      "path": "skills/markdown-deck",
+      "name": "markdown-deck"
+    }
   ]
 }

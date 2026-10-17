@@ -28,7 +28,7 @@ maturity:
   assessor: "Patternode (Dermot O'Brien), reversed from the implementation"
 subdomain_kind: core
 provided_by_platform: PL-001
-realised_by_abbs: [ABB-024]
+realised_by_abbs: [ABB-024, ABB-028]
 gaps:
   - "Delta selection is a heuristic; a new term can apply to a document it misses (extract --all-delta exists)"
   - "A periodic full re-extraction is advised and not scheduled"
@@ -47,7 +47,7 @@ provenance:
 | Status | Draft, reversed from the implementation at 0.3.0 |
 | Subdomain | core |
 | Maturity | 4, target 4 |
-| Realised by | ABB-024 |
+| Realised by | ABB-024, ABB-028 |
 
 Extracting typed facts from passages against the active ontology version, with every fact grounded in the passages it cites and validated by SHACL, kept per document per version as the record, and extended by delta extraction when the ontology grows.
 

@@ -22,8 +22,8 @@ A consideration is an open question with more than one credible answer; a decisi
 | Consideration | Status | Affects |
 |---|---|---|
 | [CN-001 Neptune or Neo4j as the graph for an organisation's collections](CN-001-neptune-or-neo4j-as-the-graph-for-an-organisation-s-collections/index.md) | open | CAP-005, ABB-011, SBB-003, SBB-011 |
-| [CN-002 Controls a document carries of its own](CN-002-controls-a-document-carries-of-its-own/index.md) | open | CAP-009, ABB-020, ABB-024 |
-| [CN-003 Live structured sources through a virtual knowledge graph](CN-003-live-structured-sources-through-a-virtual-knowledge-graph/index.md) | open | CAP-007, ABB-024, ABB-012 |
+| [CN-002 Controls a document carries of its own](CN-002-controls-a-document-carries-of-its-own/index.md) | resolved by ADR-010 | CAP-009, ABB-027, ABB-024 |
+| [CN-003 Live structured sources through a virtual knowledge graph](CN-003-live-structured-sources-through-a-virtual-knowledge-graph/index.md) | resolved by ADR-009 | CAP-007, ABB-024, ABB-012 |
 | [CN-004 Whether a vector store is needed beside the graph](CN-004-whether-a-vector-store-is-needed-beside-the-graph/index.md) | resolved, ADR-007 | CAP-006, ABB-013 |
 | [CN-005 Where the projection and the chat state live at scale](CN-005-where-the-projection-and-the-chat-state-live-at-scale/index.md) | resolved, ADR-008 | CAP-005, ABB-011, ABB-019 |
 | [CN-006 Decoupling the deployables along the bounded contexts](CN-006-decoupling-the-deployables-along-the-bounded-contexts/index.md) | open | BC-001, BC-004, BC-005, BC-006, SV-001, SV-003, SV-004 |

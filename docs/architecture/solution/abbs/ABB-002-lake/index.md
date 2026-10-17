@@ -5,7 +5,7 @@ title: "ABB-002 Lake"
 short_name: "LAKE"
 description: "The record of everything: one object store behind one port, with a stated layout of layers, the ontology versions, the candidate register and the ledger, so that every other store is a projection that can be rebuilt from it."
 version: 0.2.0
-status: draft
+status: active
 created: 2026-10-16
 last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"

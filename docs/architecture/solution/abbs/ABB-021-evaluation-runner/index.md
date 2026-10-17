@@ -5,7 +5,7 @@ title: "ABB-021 Evaluation runner"
 short_name: "EVAL"
 description: "The command that runs a set of questions against a lake or a deployed chat, scores each answer deterministically against the facts it must and must not state and the sources it should cite, and reports."
 version: 0.2.0
-status: draft
+status: active
 created: 2026-10-16
 last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"

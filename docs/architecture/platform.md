@@ -13,7 +13,7 @@ strategic_owner: "Product owner, Knowledge Store"
 lifecycle_state: baseline
 classification: public
 owns_outcomes: [OC-001, OC-002, OC-003]
-provides_capabilities: [CAP-002, CAP-003, CAP-004, CAP-005, CAP-006, CAP-007, CAP-008, CAP-009, CAP-010, CAP-011, CAP-012, CAP-013]
+provides_capabilities: [CAP-001, CAP-002, CAP-003, CAP-004, CAP-005, CAP-006, CAP-007, CAP-008, CAP-009, CAP-010, CAP-011, CAP-012, CAP-013]
 contains_bounded_contexts: [BC-001, BC-002, BC-003, BC-004, BC-005, BC-006, BC-007, BC-008]
 self_service_interfaces:
   - "The Terraform module infra/modules/knowledge-store, pinned by release tag (CT-010)"

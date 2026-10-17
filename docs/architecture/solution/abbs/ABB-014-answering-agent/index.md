@@ -5,7 +5,7 @@ title: "ABB-014 Answering agent"
 short_name: "AGENT"
 description: "The container that answers: it plans in the ontology's terms, calls the fixed tools as the person asking, proposes claims with citations, re-reads and checks every citation, repairs once, applies the guardrail, and shows nothing unchecked, under valves and with every step recorded and priced."
 version: 0.2.0
-status: draft
+status: active
 created: 2026-10-16
 last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"

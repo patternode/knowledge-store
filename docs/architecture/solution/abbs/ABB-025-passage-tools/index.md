@@ -5,7 +5,7 @@ title: "ABB-025 Passage tools"
 short_name: "PTOOLS"
 description: "Search and read of passages as one function behind the gateway: by meaning through the index when there is one, by keyword otherwise, always returning passage ids the checks can re-read."
 version: 0.2.0
-status: draft
+status: active
 created: 2026-10-16
 last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"

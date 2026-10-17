@@ -5,7 +5,7 @@ title: "ABB-028 Command line"
 short_name: "CLI"
 description: "The command an operator or curator runs: the whole pipeline in one process over a folder or the bucket, the ontology release commands that publish, activate and propose versions under the release controls, the ledger report, and a local portal server."
 version: 0.2.0
-status: draft
+status: active
 created: 2026-10-16
 last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"

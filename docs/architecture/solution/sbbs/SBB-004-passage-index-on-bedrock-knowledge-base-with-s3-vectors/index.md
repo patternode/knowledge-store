@@ -10,7 +10,7 @@ last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-013]
-realised_by_services: [pipeline, tools-passages]
+realised_by_services: []
 products:
   - { name: "Amazon Bedrock Knowledge Bases", vendor: "AWS", licensing: "pay per use" }
   - { name: "Amazon S3 Vectors", vendor: "AWS", licensing: "storage and queries" }
@@ -32,7 +32,7 @@ provenance:
 |---|---|
 | SBB ID | SBB-004 |
 | Realises | ABB-013 |
-| Realised by services | pipeline, tools-passages |
+| Realised by services | None: a managed store, created by the Terraform module. Used by pipeline, tools-passages |
 | Products | Amazon Bedrock Knowledge Bases; Amazon S3 Vectors; Amazon Titan Text Embeddings v2 |
 | Cloud | aws, managed |
 | Status | active, as deployed at 0.3.0, recalibrated to container grain |

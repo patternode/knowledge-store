@@ -10,7 +10,7 @@ last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-002]
-realised_by_services: [pipeline, portal-api, tools-graph, tools-passages]
+realised_by_services: []
 products:
   - { name: "Amazon S3", vendor: "AWS", licensing: "pay per use" }
 product_mapping:
@@ -30,7 +30,7 @@ provenance:
 |---|---|
 | SBB ID | SBB-001 |
 | Realises | ABB-002 |
-| Realised by services | pipeline, portal-api, tools-graph, tools-passages |
+| Realised by services | None: a managed store, created by the Terraform module. Used by pipeline, portal-api, tools-graph, tools-passages |
 | Products | Amazon S3 |
 | Cloud | aws, managed |
 | Status | active, as deployed at 0.3.0, recalibrated to container grain |

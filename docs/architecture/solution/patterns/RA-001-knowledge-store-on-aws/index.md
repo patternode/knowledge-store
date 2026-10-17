@@ -5,7 +5,7 @@ title: "RA-001 Knowledge Store on AWS"
 pattern_type: reference-architecture
 pattern_scope: platform
 status: active
-version: "0.3"
+version: "0.3.0"
 created: 2026-10-16
 last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"

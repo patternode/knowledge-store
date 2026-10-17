@@ -5,7 +5,7 @@ title: "ABB-012 Graph tools"
 short_name: "GTOOLS"
 description: "The fixed, read-only tools over the graph and the bound tables, in the ontology's terms, as one function behind the gateway: no free query reaches a store, and every result is filtered by the caller's scope."
 version: 0.2.0
-status: draft
+status: active
 created: 2026-10-16
 last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"

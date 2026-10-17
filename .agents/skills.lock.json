@@ -1,117 +1,145 @@
 {
   "lockfile": 1,
   "skills": {
+    "aaa-continuum": {
+      "version": "0.1.0",
+      "source": "bundle",
+      "bundle": "https://github.com/dermot-obrien/architecture-continuum.git",
+      "bundleRef": "v0.5.0",
+      "ref": null,
+      "path": "skills/aaa-continuum",
+      "commit": "dd87bfcbfd01b5ba553ed2c9a74cb98b81032b93",
+      "hash": "8be8f7f421654459"
+    },
     "aaa-create-abb": {
-      "version": "0.5.1",
-      "source": "folder",
+      "version": "0.6.4",
+      "source": "bundle",
+      "bundle": "https://github.com/dermot-obrien/architecture-continuum.git",
+      "bundleRef": "v0.5.0",
       "ref": null,
       "path": "skills/aaa-create-abb",
-      "commit": null,
-      "hash": "33dbd6c2270df9f2"
+      "commit": "dd87bfcbfd01b5ba553ed2c9a74cb98b81032b93",
+      "hash": "e42504f88057b7e9"
     },
     "aaa-create-capability": {
-      "version": "0.5.1",
-      "source": "folder",
+      "version": "0.6.4",
+      "source": "bundle",
+      "bundle": "https://github.com/dermot-obrien/architecture-continuum.git",
+      "bundleRef": "v0.5.0",
       "ref": null,
       "path": "skills/aaa-create-capability",
-      "commit": null,
-      "hash": "431191cacc6df315"
+      "commit": "dd87bfcbfd01b5ba553ed2c9a74cb98b81032b93",
+      "hash": "ded0e77a247f2316"
     },
     "aaa-create-context": {
-      "version": "0.5.1",
-      "source": "folder",
+      "version": "0.5.4",
+      "source": "bundle",
+      "bundle": "https://github.com/dermot-obrien/architecture-continuum.git",
+      "bundleRef": "v0.5.0",
       "ref": null,
       "path": "skills/aaa-create-context",
-      "commit": null,
-      "hash": "649dd928dc75cd61"
+      "commit": "dd87bfcbfd01b5ba553ed2c9a74cb98b81032b93",
+      "hash": "b734f0c5aef1daf5"
     },
     "aaa-create-platform": {
-      "version": "0.5.1",
-      "source": "folder",
+      "version": "0.5.4",
+      "source": "bundle",
+      "bundle": "https://github.com/dermot-obrien/architecture-continuum.git",
+      "bundleRef": "v0.5.0",
       "ref": null,
       "path": "skills/aaa-create-platform",
-      "commit": null,
-      "hash": "ffc64b9a8ec2f615"
+      "commit": "dd87bfcbfd01b5ba553ed2c9a74cb98b81032b93",
+      "hash": "00f296c8c8711b8c"
     },
     "aaa-create-runtime-agent": {
       "version": "0.5.1",
-      "source": "folder",
+      "source": "bundle",
+      "bundle": "https://github.com/dermot-obrien/architecture-continuum.git",
+      "bundleRef": "v0.5.0",
       "ref": null,
       "path": "skills/aaa-create-runtime-agent",
-      "commit": null,
+      "commit": "dd87bfcbfd01b5ba553ed2c9a74cb98b81032b93",
       "hash": "3e081e8845c24c5f"
     },
     "aaa-create-sbb": {
-      "version": "0.5.1",
-      "source": "folder",
+      "version": "0.6.4",
+      "source": "bundle",
+      "bundle": "https://github.com/dermot-obrien/architecture-continuum.git",
+      "bundleRef": "v0.5.0",
       "ref": null,
       "path": "skills/aaa-create-sbb",
-      "commit": null,
-      "hash": "6ca37efb0a9dd95b"
+      "commit": "dd87bfcbfd01b5ba553ed2c9a74cb98b81032b93",
+      "hash": "39a45d5ffdb712de"
     },
     "aaa-create-service": {
-      "version": "0.5.1",
-      "source": "folder",
+      "version": "0.5.4",
+      "source": "bundle",
+      "bundle": "https://github.com/dermot-obrien/architecture-continuum.git",
+      "bundleRef": "v0.5.0",
       "ref": null,
       "path": "skills/aaa-create-service",
-      "commit": null,
-      "hash": "443f1d1d15c4ad10"
+      "commit": "dd87bfcbfd01b5ba553ed2c9a74cb98b81032b93",
+      "hash": "b638747324498f52"
     },
     "aaa-create-strategy": {
-      "version": "0.5.1",
-      "source": "folder",
+      "version": "0.5.4",
+      "source": "bundle",
+      "bundle": "https://github.com/dermot-obrien/architecture-continuum.git",
+      "bundleRef": "v0.5.0",
       "ref": null,
       "path": "skills/aaa-create-strategy",
-      "commit": null,
-      "hash": "0c827a20f3055f8c"
+      "commit": "dd87bfcbfd01b5ba553ed2c9a74cb98b81032b93",
+      "hash": "34ab07272aceefea"
     },
     "aaa-rung": {
-      "version": "0.5.1",
-      "source": "folder",
+      "version": "0.5.2",
+      "source": "bundle",
+      "bundle": "https://github.com/dermot-obrien/architecture-continuum.git",
+      "bundleRef": "v0.5.0",
       "ref": null,
       "path": "skills/aaa-rung",
-      "commit": null,
-      "hash": "5be2b43cea6e880e"
+      "commit": "dd87bfcbfd01b5ba553ed2c9a74cb98b81032b93",
+      "hash": "045172457c3bc7d0"
     },
     "cross-reference": {
-      "version": "0.3.0",
-      "source": "folder",
-      "ref": null,
+      "version": "0.3.1",
+      "source": "https://github.com/dermot-obrien/architecture-pattern.git",
+      "ref": "363a743a911ae2d5764401ce46b6a871eb354e76",
       "path": "skills/cross-reference",
-      "commit": null,
-      "hash": "56a8d37af537db16"
+      "commit": "363a743a911ae2d5764401ce46b6a871eb354e76",
+      "hash": "ec675d95f3017514"
     },
     "markdown-deck": {
       "version": "0.6.8",
-      "source": "folder",
-      "ref": null,
+      "source": "https://github.com/dermot-obrien/markdown-deck.git",
+      "ref": "markdown-deck--v0.6.8",
       "path": "skills/markdown-deck",
-      "commit": null,
+      "commit": "3a3e1c43841a632ba78f1e155e4a42460fed24b7",
       "hash": "d4c6ff41c900a5a0"
     },
     "model": {
       "version": "0.9.1",
-      "source": "folder",
-      "ref": null,
+      "source": "https://github.com/dermot-obrien/diagram-model.git",
+      "ref": "f098f067b9a5ae859e4c56e84fcce7afd96fbdfd",
       "path": "skills/model",
-      "commit": null,
-      "hash": "86fda3fe3475c248"
+      "commit": "f098f067b9a5ae859e4c56e84fcce7afd96fbdfd",
+      "hash": "40dc505daba6b702"
     },
     "pattern": {
-      "version": "0.11.0",
-      "source": "folder",
-      "ref": null,
+      "version": "0.12.0",
+      "source": "https://github.com/dermot-obrien/architecture-pattern.git",
+      "ref": "363a743a911ae2d5764401ce46b6a871eb354e76",
       "path": "skills/pattern",
-      "commit": null,
-      "hash": "9d789c56a5aca51f"
+      "commit": "363a743a911ae2d5764401ce46b6a871eb354e76",
+      "hash": "d7800c193b575762"
     },
     "use-case": {
-      "version": "0.3.0",
-      "source": "folder",
-      "ref": null,
+      "version": "0.3.1",
+      "source": "https://github.com/dermot-obrien/architecture-pattern.git",
+      "ref": "363a743a911ae2d5764401ce46b6a871eb354e76",
       "path": "skills/use-case",
-      "commit": null,
-      "hash": "b4b370c35ee318c6"
+      "commit": "363a743a911ae2d5764401ce46b6a871eb354e76",
+      "hash": "bb53b02bcf6bb04f"
     }
   }
 }

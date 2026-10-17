@@ -10,7 +10,7 @@ last_modified: 2026-10-17
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-011]
-realised_by_services: [pipeline, portal-api]
+realised_by_services: []
 products:
   - { name: "Neo4j or AuraDB", vendor: "Neo4j", licensing: "instance" }
   - { name: "PostgreSQL with Apache AGE", vendor: "PostgreSQL and Apache", licensing: "server" }
@@ -32,7 +32,7 @@ provenance:
 |---|---|
 | SBB ID | SBB-011 |
 | Realises | ABB-011 |
-| Realised by services | pipeline, portal-api |
+| Realised by services | None: a managed store, created by the Terraform module. Used by pipeline, portal-api |
 | Products | Neo4j or AuraDB; PostgreSQL with Apache AGE; MongoDB or a wire-compatible service |
 | Cloud | multi, hybrid |
 | Status | active, as deployed at 0.3.0, recalibrated to container grain |

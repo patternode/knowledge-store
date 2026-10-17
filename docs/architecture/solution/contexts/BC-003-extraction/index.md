@@ -10,7 +10,6 @@ last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 part_of: PL-001
-contains: [ABB-024]
 realises_capabilities: [CAP-004, CAP-007]
 subdomain_kind: core
 c4_levels: [container, component]
@@ -41,7 +40,7 @@ provenance:
 | Owner team | Patternode (Dermot O'Brien) |
 | Subdomain | core |
 | Realises | CAP-004, CAP-007 |
-| Contains | ABB-024 |
+| Contains | No container of its own: its model runs inside ABB-024, which BC-001 contains (CN-006) |
 
 Extraction runs, assertions, grounding of facts, SHACL validation, table snapshots and cells: turning passages and rows into typed facts that cite where they came from, and refusing those that do not.
 
