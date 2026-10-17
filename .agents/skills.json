@@ -1,0 +1,8 @@
+{
+  "sources": [
+    { "bundle": "https://github.com/dermot-obrien/architecture-continuum.git", "ref": "main" },
+    { "bundle": "https://github.com/dermot-obrien/architecture-pattern.git", "ref": "main", "skills": ["pattern", "use-case", "cross-reference"] },
+    { "bundle": "https://github.com/dermot-obrien/diagram-model.git", "ref": "main" },
+    { "bundle": "https://github.com/dermot-obrien/markdown-deck.git", "ref": "main" }
+  ]
+}
