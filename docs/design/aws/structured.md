@@ -121,7 +121,7 @@ python -c "from knowledge_store.ontology import model; from knowledge_store.stru
 d='ontology/<collection>'; mapping.load(d, model.load(data=open(d + '/ontology.ttl').read()))"
 ```
 
-It returns the mapping, or raises naming the first term the ontology does not have. patternode-platform's Knowledge Store lab did this for its missions collection (ontology 1.1.0).
+It returns the mapping, or raises naming the first term the ontology does not have. The space-missions sample's mapping ([`mappings.yaml`](../../../examples/space-missions/ontology/mappings.yaml)) passes it.
 
 ## Snapshot into gold
 

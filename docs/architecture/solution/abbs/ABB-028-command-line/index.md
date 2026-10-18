@@ -83,7 +83,7 @@ The command's own output and the ledger.
 
 ### 2.7  Governance & Policy Enforcement
 
-Publishing and activating a version are commands a person runs, logged in the version's manifest; the lab follows a pinned release of this repository.
+Publishing and activating a version are commands a person runs, logged in the version's manifest; a deployment follows a pinned release of this repository.
 
 ## 3  Interfaces
 

@@ -25,7 +25,7 @@ The tests run offline with a fake model (`tests/fake_llm.py`). Please add a test
 
 ## Pull requests
 
-- One change per pull request, into `main`, with the template filled in: what, why (with the issue, thread or decision it serves, or `No reference:` and the reason), how it was verified, and what the lab needs.
+- One change per pull request, into `main`, with the template filled in: what, why (with the issue, thread or decision it serves, or `No reference:` and the reason), how it was verified, and what a deployment needs.
 - The title is a Conventional Commits subject (`feat(scope): what changed`), and so is every commit subject. The title becomes the squash subject, which is the change's line in the release notes and decides the next version (see Releases below). The PR check fails a title, a commit subject or a description that does not follow this.
 - CI must pass: the tests and `terraform validate`.
 - Contributions are licensed under the Apache License 2.0, as the rest of the project is (inbound equals outbound), and no separate agreement is needed. Please sign off your commits (`git commit -s`) to certify the [Developer Certificate of Origin](https://developercertificate.org/).

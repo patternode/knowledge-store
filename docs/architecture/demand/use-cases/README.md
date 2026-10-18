@@ -16,4 +16,4 @@ What an actor gets from the store, written in the use-case skill's form: partici
 | [UC-008 Sign in and read within scope](UC-008-sign-in-and-read-within-scope/index.md) | A reader | OC-003 |
 | [UC-009 Deploy the store in your own account](UC-009-deploy-the-store-in-your-own-account/index.md) | An administrator | OC-003 |
 
-Patternode's own use cases for its knowledge lab (`pna:UC-002` to `pna:UC-006`) are the demand side of the same store seen from the lab; they cite these as `ks:UC-NNN` where they overlap.
+A consuming application's own use cases are the demand side of the same store seen from that application; they cite these as `ks:UC-NNN` where they overlap.
