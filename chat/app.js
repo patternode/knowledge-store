@@ -874,7 +874,7 @@ function main() {
     document.title = `${str(c.name || c.id)} · ${window.KS.brandName()}`;
     renderSamples();
   }
-  // Same idea as the earnings lab's suggested questions: a click fills the box and does not spend
+  // Suggested questions: a click fills the box and does not spend
   // a question. Levels come from the collection profile. Without any, three general questions stand in.
   const SAMPLE_LEVELS = [
     { id: 'low', label: 'Low', hint: 'One lookup' },

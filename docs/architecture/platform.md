@@ -21,7 +21,7 @@ self_service_interfaces:
   - "The agent's tools over MCP through AgentCore Gateway (CT-002, CT-003)"
   - "The CLI knowledge-store (CT-014)"
   - "The published ontology renditions per version (CT-006)"
-consuming_teams: ["Patternode: the Knowledge Store lab in patternode-platform", "Any organisation deploying the module in its own AWS account"]
+consuming_teams: ["A host application that deploys the module from its own repository", "Any organisation deploying the module in its own AWS account"]
 slos:
   - { name: "Idle cost", target: "close to nothing while no question is asked and no sweep runs, apart from the graph instance" }
   - { name: "Shown statements grounded", target: "100 percent: a claim is shown only after its citations pass the checks" }
@@ -74,7 +74,7 @@ The split is the one the code suggests, not yet the one it is deployed as: the p
 
 ## Self-service interfaces and consumers
 
-A consumer deploys the module into its own account with its own inputs (collections, models, network, valves), loads documents by uploading them, and reaches the store through the chat page, the HTTP API, the MCP tools and the CLI. Patternode's own deployment is the Knowledge Store lab in patternode-platform, which pins a release tag of the module; its product page there is `pna:PRD-003`.
+A consumer deploys the module into its own account with its own inputs (collections, models, network, valves), loads documents by uploading them, and reaches the store through the chat page, the HTTP API, the MCP tools and the CLI. A host deployment pins a release tag of the module in its own repository and keeps its own product and use-case records there.
 
 ## Measures
 

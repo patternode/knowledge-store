@@ -10,9 +10,9 @@ A platform landscape is the layers of platforms, which exist and which depends o
 
 | Relationship | With | Through |
 |---|---|---|
-| Consumed by | The Patternode lab | The Terraform module pinned by tag, moved by patternode-platform's master session; the lab's product is `pna:PRD-003` |
+| Consumed by | A host deployment | The Terraform module pinned by tag, moved by the host's own release process |
 | Consumed by | Any deployment | The same module, from `examples/deployment` |
-| Consumed by | A person's assistant | The MCP tools, where a consumer puts a front on them (`pna:AP-002`, `pna:RA-006` do this for the earnings lab) |
+| Consumed by | A person's assistant | The MCP tools, where a consuming application puts a front on them |
 | Consumes | AWS managed services | Terraform resources in `infra/modules/*`; each is a deployment node in [runtime/nodes.csv](runtime/nodes.csv) |
 | Consumes | Claude, through Bedrock or the Anthropic API | the model client, a component of ABB-024 and ABB-014; every call priced into the ledger |
 | Consumes | Optional backends | ABB-024's projection port, filled by the sweep's load stage |

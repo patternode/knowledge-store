@@ -7,4 +7,4 @@ The two kinds of pattern document the continuum names, and never a pattern on it
 | [AP-001 Ontology-driven GraphRAG with grounded answers](AP-001-ontology-driven-graphrag/index.md) | architecture pattern, logical | CAP-003 to CAP-009 | |
 | [RA-001 Knowledge Store on AWS](RA-001-knowledge-store-on-aws/index.md) | reference architecture, physical | CAP-002 to CAP-013 | AP-001 |
 
-Patternode's house repository keeps `pna:RA-003` Knowledge Lab, `pna:RA-005` Ontology-driven GraphRAG on Neo4j and `pna:AP-002` Knowledge Lab MCP Server, written before this catalogue; they describe the same component from the lab's side and should cite `ks:AP-001` and `ks:RA-001` rather than restate them.
+A consuming application's own catalogue that describes how it uses the store should cite `ks:AP-001` and `ks:RA-001` rather than restate them.

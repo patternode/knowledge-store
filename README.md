@@ -22,8 +22,6 @@ Store before you install it:
   bringing or deriving the ontology, the check every claim passes before it is shown, tables
   beside the text, the reference architecture on AWS, how answers are evaluated, and how agents
   use it.
-- [The earnings lab](https://patternode.com/briefings/earnings-lab/): the same ideas at work on
-  company earnings, with figures checked against what was filed.
 
 ## What it does
 

@@ -23,7 +23,7 @@ Put the ontology here and point the collection at it in `main.tf`:
 
 ```hcl
 collections = {
-  earnings = { ontology_dir = "ontology/earnings" }
+  reports = { ontology_dir = "ontology/reports" }
 }
 ```
 

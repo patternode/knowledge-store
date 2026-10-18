@@ -19,7 +19,7 @@ The product is the store as shipped: the repository's release, which a consumer 
 |---|---|
 | Product | PRD-001 Knowledge Store |
 | Offered by | PL-001 |
-| Consumers | Any organisation deploying the module; Patternode's lab (`pna:PRD-003` is the lab as a product of Patternode's) |
+| Consumers | Any organisation deploying the module, including a host application that pins a release |
 | Released as | A git tag `vX.Y.Z` of this repository, which the module source pins |
 | Versions | 0.1.0 (the core), 0.1.1, 0.1.2, 0.2.0 (the chat agent, valves, evaluation, structured lookup, the AWS reference deployment), 0.3.0 (branding) |
 
@@ -54,4 +54,4 @@ The product is the store as shipped: the repository's release, which a consumer 
 
 ## Improvements
 
-A change to a feature is an improvement. This repository tracks them as issues and pull requests, with the pull request title as the changelog line (CONTRIBUTING.md, Releases); there is no separate improvement register. Patternode's house repository keeps improvements for the lab as `pna:IMP-NNN`.
+A change to a feature is an improvement. This repository tracks them as issues and pull requests, with the pull request title as the changelog line (CONTRIBUTING.md, Releases); there is no separate improvement register. A consuming application keeps its own improvements in its own records.

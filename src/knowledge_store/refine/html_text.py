@@ -1,8 +1,8 @@
-"""Convert SEC exhibit HTML into plain text that keeps table rows on one line.
+"""Convert HTML documents into plain text that keeps table rows on one line.
 
-Earnings releases carry most numbers in tables, so each <tr> becomes one line
-with cells separated by " | ". Standard library only, so the Lambda and
-Fargate images stay small.
+Reports often carry most of their numbers in tables, so each <tr> becomes
+one line with cells separated by " | ". Standard library only, so the Lambda
+and Fargate images stay small.
 """
 
 from __future__ import annotations
