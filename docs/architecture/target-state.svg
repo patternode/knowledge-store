@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="1550" viewBox="0 0 840 1550" role="img" aria-labelledby="title desc">
+<title id="title">The target state of knowledge from documents, by subdomain, with the numbers overlay</title>
+<desc id="desc">Box 1, Ontology (core, BC-002): 2 capabilities, lowest stage R0, 8 gaps. Box 2, Extraction (core, BC-003): 2 capabilities, lowest stage R0, 8 gaps. Box 3, Knowledge graph (core, BC-004): 3 capabilities, lowest stage R0, 5 gaps. Box 4, Answering (core, BC-005): 3 capabilities, lowest stage R0, 7 gaps. Box 5, Sources and documents (supporting, BC-001): 1 capabilities, lowest stage R0, 7 gaps. Box 6, People and access (supporting, BC-006): 2 capabilities, lowest stage R0, 5 gaps. Box 7, Evaluation (supporting, BC-007): 1 capabilities, lowest stage R0, 4 gaps. Box 8, Running it (generic, BC-008): 2 capabilities, lowest stage R0, 6 gaps.</desc>
+<text x="0" y="24" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="22" font-weight="600">Knowledge from documents: the target state</text>
+<text x="0" y="48" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14">Generated from the pages. Box numbers are for pointing at; the ladder is the stage tool's, R1 to R6.</text>
+<rect x="0" y="68" width="840" height="1378" rx="16" fill="#f5f7fb" stroke="#d5dbe9" stroke-width="1.25"/>
+<rect x="16" y="84" width="808" height="514" rx="12" fill="#e7f6fc"/>
+<rect x="32" y="100" width="58" height="24" rx="12" fill="#007fa0"/>
+<text x="61" y="116.3" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" text-anchor="middle">Core</text>
+<text x="102" y="117" fill="#004e64" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14">What makes the store different</text>
+<rect x="16" y="630" width="808" height="470" rx="12" fill="#eef0ff"/>
+<rect x="32" y="646" width="106" height="24" rx="12" fill="#4f46e5"/>
+<text x="85" y="662.3" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" text-anchor="middle">Supporting</text>
+<text x="150" y="663" fill="#352da5" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14">Needed and built here, not the difference</text>
+<rect x="16" y="1132" width="808" height="266" rx="12" fill="#eef1f6"/>
+<rect x="32" y="1148" width="82" height="24" rx="12" fill="#525c74"/>
+<text x="73" y="1164.3" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" text-anchor="middle">Generic</text>
+<text x="126" y="1165" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14">Could be any organisation's</text>
+<g id="box-1">
+<rect x="32" y="140" width="380" height="210" rx="10" fill="#ffffff" stroke="#007fa0" stroke-width="1.25"/>
+<circle cx="58" cy="166" r="14" fill="#007fa0"/><text x="58" y="171" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" text-anchor="middle">1</text>
+<text x="82" y="164" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="15" font-weight="600">Ontology</text>
+<text x="82" y="182" fill="#004e64" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600">BC-002<tspan fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-weight="500"> Ontology</tspan></text>
+<rect x="338" y="152" width="62" height="22" rx="11" fill="#fff4e5" stroke="#b45309"/>
+<text x="369" y="167.5" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" text-anchor="middle">8 gaps</text>
+<text x="48" y="210" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">CAPABILITY</text>
+<text x="240" y="210" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">R1 R2 R3 R4 R5 R6</text>
+<text x="396" y="210" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" text-anchor="end">HELD</text>
+<text x="48" y="232" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600" fill="#004e64">CAP-003</tspan> Ontology lifecycle ma…</text>
+<rect x="240" y="222" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="260" y="222" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="280" y="222" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="300" y="222" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="320" y="222" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="340" y="222" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<text x="396" y="232" fill="#1b202c" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600" text-anchor="end">R0</text>
+<text x="48" y="254" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600" fill="#004e64">CAP-007</tspan> Structured lookup<tspan fill="#7e8aa7"> +2</tspan></text>
+<rect x="240" y="244" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="260" y="244" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="280" y="244" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="300" y="244" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="320" y="244" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="340" y="244" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<text x="396" y="254" fill="#1b202c" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600" text-anchor="end">R0</text>
+<line x1="48" y1="284" x2="396" y2="284" stroke="#e4e9f2" stroke-width="1"/>
+<text x="48" y="300" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-weight="600" fill="#1b202c">ABB</tspan> 0+4  <tspan font-weight="600" fill="#1b202c">SBB</tspan> 0  <tspan font-weight="600" fill="#1b202c">AP</tspan> 1  <tspan font-weight="600" fill="#1b202c">RA</tspan> 1  <tspan font-weight="600" fill="#1b202c">SV</tspan> 0+2  <tspan font-weight="600" fill="#1b202c">CN</tspan> 1</text>
+<text x="48" y="318" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11">1a no-abb  1b no-demand  1c no-outcome  1d open-consideration</text>
+<text x="48" y="334" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11">1e platform-scope-only  1f no-service …</text>
+</g>
+<g id="box-2">
+<rect x="428" y="140" width="380" height="210" rx="10" fill="#ffffff" stroke="#007fa0" stroke-width="1.25"/>
+<circle cx="454" cy="166" r="14" fill="#007fa0"/><text x="454" y="171" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" text-anchor="middle">2</text>
+<text x="478" y="164" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="15" font-weight="600">Extraction</text>
+<text x="478" y="182" fill="#004e64" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600">BC-003<tspan fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-weight="500"> Extraction</tspan></text>
+<rect x="734" y="152" width="62" height="22" rx="11" fill="#fff4e5" stroke="#b45309"/>
+<text x="765" y="167.5" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" text-anchor="middle">8 gaps</text>
+<text x="444" y="210" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">CAPABILITY</text>
+<text x="636" y="210" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">R1 R2 R3 R4 R5 R6</text>
+<text x="792" y="210" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" text-anchor="end">HELD</text>
+<text x="444" y="232" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600" fill="#004e64">CAP-004</tspan> Fact extraction with…</text>
+<rect x="636" y="222" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="656" y="222" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="676" y="222" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="696" y="222" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="716" y="222" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="736" y="222" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<text x="792" y="232" fill="#1b202c" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600" text-anchor="end">R0</text>
+<text x="444" y="254" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600" fill="#004e64">CAP-007</tspan> Structured lookup<tspan fill="#7e8aa7"> +2</tspan></text>
+<rect x="636" y="244" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="656" y="244" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="676" y="244" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="696" y="244" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="716" y="244" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="736" y="244" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<text x="792" y="254" fill="#1b202c" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600" text-anchor="end">R0</text>
+<line x1="444" y1="284" x2="792" y2="284" stroke="#e4e9f2" stroke-width="1"/>
+<text x="444" y="300" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-weight="600" fill="#1b202c">ABB</tspan> 0+3  <tspan font-weight="600" fill="#1b202c">SBB</tspan> 0  <tspan font-weight="600" fill="#1b202c">AP</tspan> 1  <tspan font-weight="600" fill="#1b202c">RA</tspan> 1  <tspan font-weight="600" fill="#1b202c">SV</tspan> 0+2  <tspan font-weight="600" fill="#1b202c">CN</tspan> 1</text>
+<text x="444" y="318" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11">2a no-abb  2b no-demand  2c no-outcome  2d open-consideration</text>
+<text x="444" y="334" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11">2e platform-scope-only  2f no-service …</text>
+</g>
+<g id="box-3">
+<rect x="32" y="366" width="380" height="232" rx="10" fill="#ffffff" stroke="#007fa0" stroke-width="1.25"/>
+<circle cx="58" cy="392" r="14" fill="#007fa0"/><text x="58" y="397" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" text-anchor="middle">3</text>
+<text x="82" y="390" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="15" font-weight="600">Knowledge graph</text>
+<text x="82" y="408" fill="#004e64" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600">BC-004<tspan fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-weight="500"> Knowledge graph</tspan></text>
+<rect x="338" y="378" width="62" height="22" rx="11" fill="#fff4e5" stroke="#b45309"/>
+<text x="369" y="393.5" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" text-anchor="middle">5 gaps</text>
+<text x="48" y="436" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">CAPABILITY</text>
+<text x="240" y="436" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">R1 R2 R3 R4 R5 R6</text>
+<text x="396" y="436" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" text-anchor="end">HELD</text>
+<text x="48" y="458" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600" fill="#004e64">CAP-005</tspan> Knowledge graph proje…</text>
+<rect x="240" y="448" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="260" y="448" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="280" y="448" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="300" y="448" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="320" y="448" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="340" y="448" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<text x="396" y="458" fill="#1b202c" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600" text-anchor="end">R0</text>
+<text x="48" y="480" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600" fill="#004e64">CAP-006</tspan> Passage search by mea…</text>
+<rect x="240" y="470" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="260" y="470" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="280" y="470" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="300" y="470" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="320" y="470" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="340" y="470" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<text x="396" y="480" fill="#1b202c" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600" text-anchor="end">R0</text>
+<text x="48" y="502" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600" fill="#004e64">CAP-007</tspan> Structured lookup<tspan fill="#7e8aa7"> +2</tspan></text>
+<rect x="240" y="492" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="260" y="492" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="280" y="492" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="300" y="492" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="320" y="492" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="340" y="492" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<text x="396" y="502" fill="#1b202c" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600" text-anchor="end">R0</text>
+<line x1="48" y1="532" x2="396" y2="532" stroke="#e4e9f2" stroke-width="1"/>
+<text x="48" y="548" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-weight="600" fill="#1b202c">ABB</tspan> 5+2  <tspan font-weight="600" fill="#1b202c">SBB</tspan> 6  <tspan font-weight="600" fill="#1b202c">AP</tspan> 1  <tspan font-weight="600" fill="#1b202c">RA</tspan> 1  <tspan font-weight="600" fill="#1b202c">SV</tspan> 2+4  <tspan font-weight="600" fill="#1b202c">CN</tspan> 2</text>
+<text x="48" y="566" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11">3a no-demand  3b no-outcome  3c open-consideration</text>
+<text x="48" y="582" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11">3d platform-scope-only  3e service-spans-contexts</text>
+</g>
+<g id="box-4">
+<rect x="428" y="366" width="380" height="232" rx="10" fill="#ffffff" stroke="#007fa0" stroke-width="1.25"/>
+<circle cx="454" cy="392" r="14" fill="#007fa0"/><text x="454" y="397" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" text-anchor="middle">4</text>
+<text x="478" y="390" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="15" font-weight="600">Answering</text>
+<text x="478" y="408" fill="#004e64" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600">BC-005<tspan fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-weight="500"> Answering</tspan></text>
+<rect x="734" y="378" width="62" height="22" rx="11" fill="#fff4e5" stroke="#b45309"/>
+<text x="765" y="393.5" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" text-anchor="middle">7 gaps</text>
+<text x="444" y="436" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">CAPABILITY</text>
+<text x="636" y="436" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">R1 R2 R3 R4 R5 R6</text>
+<text x="792" y="436" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" text-anchor="end">HELD</text>
+<text x="444" y="458" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600" fill="#004e64">CAP-008</tspan> Grounded answering</text>
+<rect x="636" y="448" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="656" y="448" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="676" y="448" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="696" y="448" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="716" y="448" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="736" y="448" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<text x="792" y="458" fill="#1b202c" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600" text-anchor="end">R0</text>
+<text x="444" y="480" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600" fill="#004e64">CAP-010</tspan> Cost and spend con…<tspan fill="#7e8aa7"> +2</tspan></text>
+<rect x="636" y="470" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="656" y="470" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="676" y="470" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="696" y="470" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="716" y="470" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="736" y="470" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<text x="792" y="480" fill="#1b202c" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600" text-anchor="end">R0</text>
+<text x="444" y="502" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600" fill="#004e64">CAP-012</tspan> Answer transparency a…</text>
+<rect x="636" y="492" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="656" y="492" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="676" y="492" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="696" y="492" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="716" y="492" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="736" y="492" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<text x="792" y="502" fill="#1b202c" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600" text-anchor="end">R0</text>
+<line x1="444" y1="532" x2="792" y2="532" stroke="#e4e9f2" stroke-width="1"/>
+<text x="444" y="548" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-weight="600" fill="#1b202c">ABB</tspan> 1+3  <tspan font-weight="600" fill="#1b202c">SBB</tspan> 1  <tspan font-weight="600" fill="#1b202c">AP</tspan> 1  <tspan font-weight="600" fill="#1b202c">RA</tspan> 1  <tspan font-weight="600" fill="#1b202c">SV</tspan> 1+1  <tspan font-weight="600" fill="#1b202c">CN</tspan> 1</text>
+<text x="444" y="566" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11">4a no-demand  4b unbounded  4c open-consideration</text>
+<text x="444" y="582" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11">4d no-architecture-pattern  4e platform-scope-only …</text>
+</g>
+<g id="box-5">
+<rect x="32" y="686" width="380" height="210" rx="10" fill="#ffffff" stroke="#4f46e5" stroke-width="1.25"/>
+<circle cx="58" cy="712" r="14" fill="#4f46e5"/><text x="58" y="717" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" text-anchor="middle">5</text>
+<text x="82" y="710" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="15" font-weight="600">Sources and documents</text>
+<text x="82" y="728" fill="#352da5" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600">BC-001<tspan fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-weight="500"> Ingestion</tspan></text>
+<rect x="338" y="698" width="62" height="22" rx="11" fill="#fff4e5" stroke="#b45309"/>
+<text x="369" y="713.5" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" text-anchor="middle">7 gaps</text>
+<text x="48" y="756" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">CAPABILITY</text>
+<text x="240" y="756" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">R1 R2 R3 R4 R5 R6</text>
+<text x="396" y="756" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" text-anchor="end">HELD</text>
+<text x="48" y="778" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600" fill="#352da5">CAP-002</tspan> Document ingestion an…</text>
+<rect x="240" y="768" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="260" y="768" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="280" y="768" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="300" y="768" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="320" y="768" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="340" y="768" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<text x="396" y="778" fill="#1b202c" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600" text-anchor="end">R0</text>
+<line x1="48" y1="830" x2="396" y2="830" stroke="#e4e9f2" stroke-width="1"/>
+<text x="48" y="846" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-weight="600" fill="#1b202c">ABB</tspan> 2+1  <tspan font-weight="600" fill="#1b202c">SBB</tspan> 2  <tspan font-weight="600" fill="#1b202c">AP</tspan> 0  <tspan font-weight="600" fill="#1b202c">RA</tspan> 1  <tspan font-weight="600" fill="#1b202c">SV</tspan> 1+1  <tspan font-weight="600" fill="#1b202c">CN</tspan> 1</text>
+<text x="48" y="864" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11">5a no-demand  5b no-outcome  5c open-consideration</text>
+<text x="48" y="880" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11">5d no-architecture-pattern  5e platform-scope-only …</text>
+</g>
+<g id="box-6">
+<rect x="428" y="686" width="380" height="210" rx="10" fill="#ffffff" stroke="#4f46e5" stroke-width="1.25"/>
+<circle cx="454" cy="712" r="14" fill="#4f46e5"/><text x="454" y="717" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" text-anchor="middle">6</text>
+<text x="478" y="710" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="15" font-weight="600">People and access</text>
+<text x="478" y="728" fill="#352da5" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600">BC-006<tspan fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-weight="500"> Portal and identity</tspan></text>
+<rect x="734" y="698" width="62" height="22" rx="11" fill="#fff4e5" stroke="#b45309"/>
+<text x="765" y="713.5" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" text-anchor="middle">5 gaps</text>
+<text x="444" y="756" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">CAPABILITY</text>
+<text x="636" y="756" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">R1 R2 R3 R4 R5 R6</text>
+<text x="792" y="756" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" text-anchor="end">HELD</text>
+<text x="444" y="778" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600" fill="#352da5">CAP-009</tspan> Access control by sco…</text>
+<rect x="636" y="768" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="656" y="768" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="676" y="768" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="696" y="768" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="716" y="768" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="736" y="768" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<text x="792" y="778" fill="#1b202c" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600" text-anchor="end">R0</text>
+<text x="444" y="800" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600" fill="#352da5">CAP-010</tspan> Cost and spend con…<tspan fill="#7e8aa7"> +2</tspan></text>
+<rect x="636" y="790" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="656" y="790" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="676" y="790" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="696" y="790" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="716" y="790" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="736" y="790" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<text x="792" y="800" fill="#1b202c" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600" text-anchor="end">R0</text>
+<line x1="444" y1="830" x2="792" y2="830" stroke="#e4e9f2" stroke-width="1"/>
+<text x="444" y="846" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-weight="600" fill="#1b202c">ABB</tspan> 4+5  <tspan font-weight="600" fill="#1b202c">SBB</tspan> 4  <tspan font-weight="600" fill="#1b202c">AP</tspan> 1  <tspan font-weight="600" fill="#1b202c">RA</tspan> 1  <tspan font-weight="600" fill="#1b202c">SV</tspan> 3+0  <tspan font-weight="600" fill="#1b202c">CN</tspan> 1</text>
+<text x="444" y="864" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11">6a no-demand  6b open-consideration</text>
+<text x="444" y="880" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11">6c no-architecture-pattern  6d platform-scope-only …</text>
+</g>
+<g id="box-7">
+<rect x="32" y="912" width="380" height="188" rx="10" fill="#ffffff" stroke="#4f46e5" stroke-width="1.25"/>
+<circle cx="58" cy="938" r="14" fill="#4f46e5"/><text x="58" y="943" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" text-anchor="middle">7</text>
+<text x="82" y="936" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="15" font-weight="600">Evaluation</text>
+<text x="82" y="954" fill="#352da5" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600">BC-007<tspan fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-weight="500"> Evaluation</tspan></text>
+<rect x="338" y="924" width="62" height="22" rx="11" fill="#fff4e5" stroke="#b45309"/>
+<text x="369" y="939.5" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" text-anchor="middle">4 gaps</text>
+<text x="48" y="982" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">CAPABILITY</text>
+<text x="240" y="982" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">R1 R2 R3 R4 R5 R6</text>
+<text x="396" y="982" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" text-anchor="end">HELD</text>
+<text x="48" y="1004" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600" fill="#352da5">CAP-011</tspan> Answer evaluation</text>
+<rect x="240" y="994" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="260" y="994" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="280" y="994" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="300" y="994" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="320" y="994" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="340" y="994" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<text x="396" y="1004" fill="#1b202c" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600" text-anchor="end">R0</text>
+<line x1="48" y1="1034" x2="396" y2="1034" stroke="#e4e9f2" stroke-width="1"/>
+<text x="48" y="1050" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-weight="600" fill="#1b202c">ABB</tspan> 1+0  <tspan font-weight="600" fill="#1b202c">SBB</tspan> 1  <tspan font-weight="600" fill="#1b202c">AP</tspan> 0  <tspan font-weight="600" fill="#1b202c">RA</tspan> 1  <tspan font-weight="600" fill="#1b202c">SV</tspan> 1+0  <tspan font-weight="600" fill="#1b202c">CN</tspan> 0</text>
+<text x="48" y="1068" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11">7a no-demand  7b unbounded  7c no-architecture-pattern</text>
+<text x="48" y="1084" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11">7d platform-scope-only</text>
+</g>
+<g id="box-8">
+<rect x="32" y="1188" width="380" height="210" rx="10" fill="#ffffff" stroke="#525c74" stroke-width="1.25"/>
+<circle cx="58" cy="1214" r="14" fill="#525c74"/><text x="58" y="1219" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" text-anchor="middle">8</text>
+<text x="82" y="1212" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="15" font-weight="600">Running it</text>
+<text x="82" y="1230" fill="#2c3342" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600">BC-008<tspan fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-weight="500"> Platform services</tspan></text>
+<rect x="338" y="1200" width="62" height="22" rx="11" fill="#fff4e5" stroke="#b45309"/>
+<text x="369" y="1215.5" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" text-anchor="middle">6 gaps</text>
+<text x="48" y="1258" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">CAPABILITY</text>
+<text x="240" y="1258" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">R1 R2 R3 R4 R5 R6</text>
+<text x="396" y="1258" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" text-anchor="end">HELD</text>
+<text x="48" y="1280" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600" fill="#2c3342">CAP-010</tspan> Cost and spend con…<tspan fill="#7e8aa7"> +2</tspan></text>
+<rect x="240" y="1270" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="260" y="1270" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="280" y="1270" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="300" y="1270" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="320" y="1270" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="340" y="1270" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<text x="396" y="1280" fill="#1b202c" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600" text-anchor="end">R0</text>
+<text x="48" y="1302" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600" fill="#2c3342">CAP-013</tspan> Self-contained deploy…</text>
+<rect x="240" y="1292" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="260" y="1292" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<rect x="280" y="1292" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="300" y="1292" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="320" y="1292" width="14" height="12" rx="2" fill="#c9d3e3" stroke="none"/>
+<rect x="340" y="1292" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/>
+<text x="396" y="1302" fill="#1b202c" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="12" font-weight="600" text-anchor="end">R0</text>
+<line x1="48" y1="1332" x2="396" y2="1332" stroke="#e4e9f2" stroke-width="1"/>
+<text x="48" y="1348" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-weight="600" fill="#1b202c">ABB</tspan> 1+2  <tspan font-weight="600" fill="#1b202c">SBB</tspan> 1  <tspan font-weight="600" fill="#1b202c">AP</tspan> 0  <tspan font-weight="600" fill="#1b202c">RA</tspan> 1  <tspan font-weight="600" fill="#1b202c">SV</tspan> 1+0  <tspan font-weight="600" fill="#1b202c">CN</tspan> 0</text>
+<text x="48" y="1366" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11">8a no-demand  8b unbounded  8c no-architecture-pattern</text>
+<text x="48" y="1382" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11">8d platform-scope-only  8e service-spans-contexts …</text>
+</g>
+<text x="0" y="1454" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13" font-weight="600">Reading a box</text>
+<rect x="0" y="1468" width="14" height="12" rx="2" fill="#007fa0"/><text x="20" y="1478" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12">stage held (this and every stage below evidenced)</text>
+<rect x="300" y="1468" width="14" height="12" rx="2" fill="#c9d3e3"/><text x="320" y="1478" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12">own check passes, not counted (latent)</text>
+<rect x="580" y="1468" width="14" height="12" rx="2" fill="#ffffff" stroke="#7e8aa7"/><text x="600" y="1478" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12">check fails</text>
+<text x="0" y="1502" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12">ABB own+borrowed from another context · SBB solution building blocks · AP architecture patterns</text>
+<text x="0" y="1520" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12">RA reference architectures · SV services own+composing · CN open considerations</text>
+<text x="0" y="1538" fill="#2c3342" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12">+n beside a capability: realised in n other contexts too. Gap references (3a, 3b) are on the page with the rule that found each.</text>
+</svg>

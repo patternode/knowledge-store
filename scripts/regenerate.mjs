@@ -42,7 +42,11 @@ else {
   }
 }
 
-// 2. Decks and PDFs into site/static/decks, which the pages link to.
+// 2. The target-state view by subdomain, from the pages and the aaa-rung skill's stages. It skips
+// itself in one line when that skill is not installed.
+run("target-state view", process.execPath, [path.join(root, "scripts", "target-state.mjs")]);
+
+// 3. Decks and PDFs into site/static/decks, which the pages link to.
 const deck = path.join(skills, "markdown-deck", "bin", "markdown-deck.mjs");
 if (!existsSync(deck)) skip("deck publishing", "the markdown-deck skill is not installed (npm run skills)");
 else if (!existsSync(path.join(skills, "markdown-deck", "node_modules"))) skip("deck publishing", "markdown-deck's packages are not installed (npm install in .agents/skills/markdown-deck)");

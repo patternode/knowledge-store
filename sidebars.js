@@ -54,6 +54,7 @@ const sidebars = {
       items: [
         {type: 'doc', id: 'docs/architecture/PL-001', label: 'PL-001 Knowledge Store'},
         {type: 'doc', id: 'docs/architecture/landscape', label: 'Landscape'},
+        {type: 'doc', id: 'docs/architecture/target-state', label: 'Target state by subdomain'},
         {
           type: 'category',
           label: 'Demand',
@@ -110,6 +111,7 @@ const sidebars = {
         'docs/design/aws/scalability',
         'docs/design/security',
         'docs/design/source-controls',
+        'docs/design/target-state-view',
       ],
     },
     {

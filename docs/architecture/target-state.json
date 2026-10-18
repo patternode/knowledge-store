@@ -1,0 +1,1306 @@
+{
+  "generated_by": "scripts/target-state.mjs",
+  "domain": "knowledge from documents",
+  "stage_source": "rung.py --json",
+  "subdomains": [
+    {
+      "n": 1,
+      "subdomain": "Ontology",
+      "kind": "core",
+      "need": "Saying what the documents are about, in terms a person owns, versioned and grown without drift",
+      "contexts": [
+        {
+          "id": "BC-002",
+          "name": "Ontology"
+        }
+      ],
+      "outcomes": [
+        "OC-002"
+      ],
+      "capabilities": [
+        {
+          "id": "CAP-003",
+          "name": "Ontology lifecycle management",
+          "held": "R0",
+          "passes": {
+            "R1": false,
+            "R2": true,
+            "R3": false,
+            "R4": true,
+            "R5": true,
+            "R6": false
+          },
+          "blockers": [
+            "CAP-003 names no demand: add required_by_outcomes, or record demand_assumption"
+          ],
+          "shared": []
+        },
+        {
+          "id": "CAP-007",
+          "name": "Structured lookup",
+          "held": "R0",
+          "passes": {
+            "R1": false,
+            "R2": true,
+            "R3": false,
+            "R4": true,
+            "R5": true,
+            "R6": false
+          },
+          "blockers": [
+            "CAP-007 names no demand: add required_by_outcomes, or record demand_assumption"
+          ],
+          "shared": [
+            "BC-003",
+            "BC-004"
+          ]
+        }
+      ],
+      "held": "R0",
+      "measures": {
+        "capabilities": 2,
+        "abbs_own": 0,
+        "abbs_borrowed": 4,
+        "sbbs": 0,
+        "architecture_patterns": 1,
+        "reference_architectures": 1,
+        "patterns_scoped": 0,
+        "services_own": 0,
+        "services_composing": 2,
+        "considerations_open": 1,
+        "gaps": 8
+      },
+      "ids": {
+        "abbs_own": [],
+        "abbs_borrowed": [
+          "ABB-002",
+          "ABB-012",
+          "ABB-024",
+          "ABB-028"
+        ],
+        "sbbs": [],
+        "patterns": [
+          "AP-001",
+          "RA-001"
+        ],
+        "services_own": [],
+        "services_composing": [
+          "SV-001",
+          "SV-008"
+        ],
+        "considerations_open": [
+          "CN-006"
+        ]
+      },
+      "gaps": [
+        {
+          "ref": "1a",
+          "code": "no-abb",
+          "text": "BC-002 contains no building block of its own; its model runs inside ABB-002 (BC-001), ABB-012 (BC-004), ABB-024 (BC-001), ABB-028 (BC-008)"
+        },
+        {
+          "ref": "1b",
+          "code": "no-demand",
+          "text": "CAP-003, CAP-007 name no demand on the capability page, so the stage tool holds them at R0 (the outcomes name them, the inverse is not written)"
+        },
+        {
+          "ref": "1c",
+          "code": "no-outcome",
+          "text": "CAP-007 is required by no outcome, so the demand it answers is not recorded anywhere"
+        },
+        {
+          "ref": "1d",
+          "code": "open-consideration",
+          "text": "Open: CN-006 Decoupling the deployables along the bounded contexts. R3 needs each resolved by an accepted decision"
+        },
+        {
+          "ref": "1e",
+          "code": "platform-scope-only",
+          "text": "Only platform-scoped patterns (AP-001, RA-001) realise its capabilities; none is scoped to the subdomain"
+        },
+        {
+          "ref": "1f",
+          "code": "no-service",
+          "text": "No deployable is BC-002's own; SV-001, SV-008 compose it"
+        },
+        {
+          "ref": "1g",
+          "code": "service-spans-contexts",
+          "text": "SV-001 composes BC-001 BC-002 BC-003 BC-004 (CN-006); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it)"
+        },
+        {
+          "ref": "1h",
+          "code": "register-drift",
+          "text": "The use-case register still cites retired blocks of this context, which the pages no longer do: UC-003 ABB-006, UC-003 ABB-008, UC-004 ABB-005, UC-004 ABB-006, UC-005 ABB-007, UC-005 ABB-006, UC-006 ABB-008"
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "subdomain": "Extraction",
+      "kind": "core",
+      "need": "Turning passages and table rows into typed facts that cite where they came from, and refusing facts that do not",
+      "contexts": [
+        {
+          "id": "BC-003",
+          "name": "Extraction"
+        }
+      ],
+      "outcomes": [
+        "OC-001",
+        "OC-002"
+      ],
+      "capabilities": [
+        {
+          "id": "CAP-004",
+          "name": "Fact extraction with provenance",
+          "held": "R0",
+          "passes": {
+            "R1": false,
+            "R2": true,
+            "R3": false,
+            "R4": true,
+            "R5": true,
+            "R6": false
+          },
+          "blockers": [
+            "CAP-004 names no demand: add required_by_outcomes, or record demand_assumption"
+          ],
+          "shared": []
+        },
+        {
+          "id": "CAP-007",
+          "name": "Structured lookup",
+          "held": "R0",
+          "passes": {
+            "R1": false,
+            "R2": true,
+            "R3": false,
+            "R4": true,
+            "R5": true,
+            "R6": false
+          },
+          "blockers": [
+            "CAP-007 names no demand: add required_by_outcomes, or record demand_assumption"
+          ],
+          "shared": [
+            "BC-002",
+            "BC-004"
+          ]
+        }
+      ],
+      "held": "R0",
+      "measures": {
+        "capabilities": 2,
+        "abbs_own": 0,
+        "abbs_borrowed": 3,
+        "sbbs": 0,
+        "architecture_patterns": 1,
+        "reference_architectures": 1,
+        "patterns_scoped": 0,
+        "services_own": 0,
+        "services_composing": 2,
+        "considerations_open": 1,
+        "gaps": 8
+      },
+      "ids": {
+        "abbs_own": [],
+        "abbs_borrowed": [
+          "ABB-012",
+          "ABB-024",
+          "ABB-028"
+        ],
+        "sbbs": [],
+        "patterns": [
+          "AP-001",
+          "RA-001"
+        ],
+        "services_own": [],
+        "services_composing": [
+          "SV-001",
+          "SV-008"
+        ],
+        "considerations_open": [
+          "CN-006"
+        ]
+      },
+      "gaps": [
+        {
+          "ref": "2a",
+          "code": "no-abb",
+          "text": "BC-003 contains no building block of its own; its model runs inside ABB-012 (BC-004), ABB-024 (BC-001), ABB-028 (BC-008)"
+        },
+        {
+          "ref": "2b",
+          "code": "no-demand",
+          "text": "CAP-004, CAP-007 name no demand on the capability page, so the stage tool holds them at R0 (the outcomes name them, the inverse is not written)"
+        },
+        {
+          "ref": "2c",
+          "code": "no-outcome",
+          "text": "CAP-007 is required by no outcome, so the demand it answers is not recorded anywhere"
+        },
+        {
+          "ref": "2d",
+          "code": "open-consideration",
+          "text": "Open: CN-006 Decoupling the deployables along the bounded contexts. R3 needs each resolved by an accepted decision"
+        },
+        {
+          "ref": "2e",
+          "code": "platform-scope-only",
+          "text": "Only platform-scoped patterns (AP-001, RA-001) realise its capabilities; none is scoped to the subdomain"
+        },
+        {
+          "ref": "2f",
+          "code": "no-service",
+          "text": "No deployable is BC-003's own; SV-001, SV-008 compose it"
+        },
+        {
+          "ref": "2g",
+          "code": "service-spans-contexts",
+          "text": "SV-001 composes BC-001 BC-002 BC-003 BC-004 (CN-006); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it)"
+        },
+        {
+          "ref": "2h",
+          "code": "register-drift",
+          "text": "The use-case register still cites retired blocks of this context, which the pages no longer do: UC-002 ABB-009, UC-005 ABB-009, UC-006 ABB-010"
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "subdomain": "Knowledge graph",
+      "kind": "core",
+      "need": "Keeping the facts as the record, projecting them for query, and answering fixed questions in the ontology's terms",
+      "contexts": [
+        {
+          "id": "BC-004",
+          "name": "Knowledge graph"
+        }
+      ],
+      "outcomes": [
+        "OC-001"
+      ],
+      "capabilities": [
+        {
+          "id": "CAP-005",
+          "name": "Knowledge graph projection and query",
+          "held": "R0",
+          "passes": {
+            "R1": false,
+            "R2": true,
+            "R3": false,
+            "R4": true,
+            "R5": true,
+            "R6": false
+          },
+          "blockers": [
+            "CAP-005 names no demand: add required_by_outcomes, or record demand_assumption"
+          ],
+          "shared": []
+        },
+        {
+          "id": "CAP-006",
+          "name": "Passage search by meaning",
+          "held": "R0",
+          "passes": {
+            "R1": false,
+            "R2": true,
+            "R3": false,
+            "R4": true,
+            "R5": true,
+            "R6": false
+          },
+          "blockers": [
+            "CAP-006 names no demand: add required_by_outcomes, or record demand_assumption"
+          ],
+          "shared": []
+        },
+        {
+          "id": "CAP-007",
+          "name": "Structured lookup",
+          "held": "R0",
+          "passes": {
+            "R1": false,
+            "R2": true,
+            "R3": false,
+            "R4": true,
+            "R5": true,
+            "R6": false
+          },
+          "blockers": [
+            "CAP-007 names no demand: add required_by_outcomes, or record demand_assumption"
+          ],
+          "shared": [
+            "BC-002",
+            "BC-003"
+          ]
+        }
+      ],
+      "held": "R0",
+      "measures": {
+        "capabilities": 3,
+        "abbs_own": 5,
+        "abbs_borrowed": 2,
+        "sbbs": 6,
+        "architecture_patterns": 1,
+        "reference_architectures": 1,
+        "patterns_scoped": 0,
+        "services_own": 2,
+        "services_composing": 4,
+        "considerations_open": 2,
+        "gaps": 5
+      },
+      "ids": {
+        "abbs_own": [
+          "ABB-011",
+          "ABB-012",
+          "ABB-013",
+          "ABB-025",
+          "ABB-026"
+        ],
+        "abbs_borrowed": [
+          "ABB-024",
+          "ABB-028"
+        ],
+        "sbbs": [
+          "SBB-003",
+          "SBB-004",
+          "SBB-005",
+          "SBB-011",
+          "SBB-015",
+          "SBB-016"
+        ],
+        "patterns": [
+          "AP-001",
+          "RA-001"
+        ],
+        "services_own": [
+          "SV-004",
+          "SV-005"
+        ],
+        "services_composing": [
+          "SV-001",
+          "SV-002",
+          "SV-003",
+          "SV-008"
+        ],
+        "considerations_open": [
+          "CN-001",
+          "CN-006"
+        ]
+      },
+      "gaps": [
+        {
+          "ref": "3a",
+          "code": "no-demand",
+          "text": "CAP-005, CAP-006, CAP-007 name no demand on the capability page, so the stage tool holds them at R0 (the outcomes name them, the inverse is not written)"
+        },
+        {
+          "ref": "3b",
+          "code": "no-outcome",
+          "text": "CAP-006, CAP-007 are required by no outcome, so the demand they answer is not recorded anywhere"
+        },
+        {
+          "ref": "3c",
+          "code": "open-consideration",
+          "text": "Open: CN-001 Neptune or Neo4j as the graph for an organisation's collections; CN-006 Decoupling the deployables along the bounded contexts. R3 needs each resolved by an accepted decision"
+        },
+        {
+          "ref": "3d",
+          "code": "platform-scope-only",
+          "text": "Only platform-scoped patterns (AP-001, RA-001) realise its capabilities; none is scoped to the subdomain"
+        },
+        {
+          "ref": "3e",
+          "code": "service-spans-contexts",
+          "text": "SV-001 composes BC-001 BC-002 BC-003 BC-004 (CN-006); SV-002 composes BC-005 BC-004 (no consideration names it); SV-003 composes BC-006 BC-004 BC-005 (CN-006); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it)"
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "subdomain": "Answering",
+      "kind": "core",
+      "need": "Taking a person's question to an answer made only of claims that passed their checks, within limits",
+      "contexts": [
+        {
+          "id": "BC-005",
+          "name": "Answering"
+        }
+      ],
+      "outcomes": [
+        "OC-001",
+        "OC-002",
+        "OC-003"
+      ],
+      "capabilities": [
+        {
+          "id": "CAP-008",
+          "name": "Grounded answering",
+          "held": "R0",
+          "passes": {
+            "R1": false,
+            "R2": false,
+            "R3": true,
+            "R4": true,
+            "R5": true,
+            "R6": false
+          },
+          "blockers": [
+            "CAP-008 names no demand: add required_by_outcomes, or record demand_assumption"
+          ],
+          "shared": []
+        },
+        {
+          "id": "CAP-010",
+          "name": "Cost and spend control",
+          "held": "R0",
+          "passes": {
+            "R1": false,
+            "R2": true,
+            "R3": false,
+            "R4": true,
+            "R5": true,
+            "R6": false
+          },
+          "blockers": [
+            "CAP-010 names no demand: add required_by_outcomes, or record demand_assumption"
+          ],
+          "shared": [
+            "BC-006",
+            "BC-008"
+          ]
+        },
+        {
+          "id": "CAP-012",
+          "name": "Answer transparency and curation feedback",
+          "held": "R0",
+          "passes": {
+            "R1": false,
+            "R2": true,
+            "R3": false,
+            "R4": true,
+            "R5": true,
+            "R6": false
+          },
+          "blockers": [
+            "CAP-012 names no demand: add required_by_outcomes, or record demand_assumption"
+          ],
+          "shared": []
+        }
+      ],
+      "held": "R0",
+      "measures": {
+        "capabilities": 3,
+        "abbs_own": 1,
+        "abbs_borrowed": 3,
+        "sbbs": 1,
+        "architecture_patterns": 1,
+        "reference_architectures": 1,
+        "patterns_scoped": 0,
+        "services_own": 1,
+        "services_composing": 1,
+        "considerations_open": 1,
+        "gaps": 7
+      },
+      "ids": {
+        "abbs_own": [
+          "ABB-014"
+        ],
+        "abbs_borrowed": [
+          "ABB-018",
+          "ABB-019",
+          "ABB-028"
+        ],
+        "sbbs": [
+          "SBB-006"
+        ],
+        "patterns": [
+          "AP-001",
+          "RA-001"
+        ],
+        "services_own": [
+          "SV-002"
+        ],
+        "services_composing": [
+          "SV-003"
+        ],
+        "considerations_open": [
+          "CN-006"
+        ]
+      },
+      "gaps": [
+        {
+          "ref": "4a",
+          "code": "no-demand",
+          "text": "CAP-008, CAP-010, CAP-012 name no demand on the capability page, so the stage tool holds them at R0 (the outcomes name them, the inverse is not written)"
+        },
+        {
+          "ref": "4b",
+          "code": "unbounded",
+          "text": "CAP-008 fails R2: no consideration affects it or its ABBs, and it does not declare open_questions: none"
+        },
+        {
+          "ref": "4c",
+          "code": "open-consideration",
+          "text": "Open: CN-006 Decoupling the deployables along the bounded contexts. R3 needs each resolved by an accepted decision"
+        },
+        {
+          "ref": "4d",
+          "code": "no-architecture-pattern",
+          "text": "CAP-010, CAP-012 are realised by no architecture pattern, only by the reference architecture"
+        },
+        {
+          "ref": "4e",
+          "code": "platform-scope-only",
+          "text": "Only platform-scoped patterns (AP-001, RA-001) realise its capabilities; none is scoped to the subdomain"
+        },
+        {
+          "ref": "4f",
+          "code": "service-spans-contexts",
+          "text": "SV-002 composes BC-005 BC-004 (no consideration names it); SV-003 composes BC-006 BC-004 BC-005 (CN-006)"
+        },
+        {
+          "ref": "4g",
+          "code": "register-drift",
+          "text": "The use-case register still cites retired blocks of this context, which the pages no longer do: UC-001 ABB-015, UC-001 ABB-016, UC-001 ABB-017, UC-005 ABB-017, UC-006 ABB-015"
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "subdomain": "Sources and documents",
+      "kind": "supporting",
+      "need": "Getting content in, keeping an immutable copy, and cutting it into the units a citation points at",
+      "contexts": [
+        {
+          "id": "BC-001",
+          "name": "Ingestion"
+        }
+      ],
+      "outcomes": [],
+      "capabilities": [
+        {
+          "id": "CAP-002",
+          "name": "Document ingestion and passage derivation",
+          "held": "R0",
+          "passes": {
+            "R1": false,
+            "R2": true,
+            "R3": false,
+            "R4": true,
+            "R5": true,
+            "R6": false
+          },
+          "blockers": [
+            "CAP-002 names no demand: add required_by_outcomes, or record demand_assumption"
+          ],
+          "shared": []
+        }
+      ],
+      "held": "R0",
+      "measures": {
+        "capabilities": 1,
+        "abbs_own": 2,
+        "abbs_borrowed": 1,
+        "sbbs": 2,
+        "architecture_patterns": 0,
+        "reference_architectures": 1,
+        "patterns_scoped": 0,
+        "services_own": 1,
+        "services_composing": 1,
+        "considerations_open": 1,
+        "gaps": 7
+      },
+      "ids": {
+        "abbs_own": [
+          "ABB-002",
+          "ABB-024"
+        ],
+        "abbs_borrowed": [
+          "ABB-028"
+        ],
+        "sbbs": [
+          "SBB-001",
+          "SBB-002"
+        ],
+        "patterns": [
+          "RA-001"
+        ],
+        "services_own": [
+          "SV-001"
+        ],
+        "services_composing": [
+          "SV-008"
+        ],
+        "considerations_open": [
+          "CN-006"
+        ]
+      },
+      "gaps": [
+        {
+          "ref": "5a",
+          "code": "no-demand",
+          "text": "CAP-002 names no demand on the capability page, so the stage tool holds it at R0 (the outcomes name them, the inverse is not written)"
+        },
+        {
+          "ref": "5b",
+          "code": "no-outcome",
+          "text": "CAP-002 is required by no outcome, so the demand it answers is not recorded anywhere"
+        },
+        {
+          "ref": "5c",
+          "code": "open-consideration",
+          "text": "Open: CN-006 Decoupling the deployables along the bounded contexts. R3 needs each resolved by an accepted decision"
+        },
+        {
+          "ref": "5d",
+          "code": "no-architecture-pattern",
+          "text": "CAP-002 is realised by no architecture pattern, only by the reference architecture"
+        },
+        {
+          "ref": "5e",
+          "code": "platform-scope-only",
+          "text": "Only platform-scoped patterns (RA-001) realise its capabilities; none is scoped to the subdomain"
+        },
+        {
+          "ref": "5f",
+          "code": "service-spans-contexts",
+          "text": "SV-001 composes BC-001 BC-002 BC-003 BC-004 (CN-006); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it)"
+        },
+        {
+          "ref": "5g",
+          "code": "register-drift",
+          "text": "The use-case register still cites retired blocks of this context, which the pages no longer do: UC-002 ABB-001, UC-002 ABB-003, UC-002 ABB-004, UC-003 ABB-004, UC-004 ABB-004"
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "subdomain": "People and access",
+      "kind": "supporting",
+      "need": "Who may ask, who may read what, and the page they do it on",
+      "contexts": [
+        {
+          "id": "BC-006",
+          "name": "Portal and identity"
+        }
+      ],
+      "outcomes": [
+        "OC-003"
+      ],
+      "capabilities": [
+        {
+          "id": "CAP-009",
+          "name": "Access control by scope",
+          "held": "R0",
+          "passes": {
+            "R1": false,
+            "R2": true,
+            "R3": false,
+            "R4": true,
+            "R5": true,
+            "R6": false
+          },
+          "blockers": [
+            "CAP-009 names no demand: add required_by_outcomes, or record demand_assumption"
+          ],
+          "shared": []
+        },
+        {
+          "id": "CAP-010",
+          "name": "Cost and spend control",
+          "held": "R0",
+          "passes": {
+            "R1": false,
+            "R2": true,
+            "R3": false,
+            "R4": true,
+            "R5": true,
+            "R6": false
+          },
+          "blockers": [
+            "CAP-010 names no demand: add required_by_outcomes, or record demand_assumption"
+          ],
+          "shared": [
+            "BC-005",
+            "BC-008"
+          ]
+        }
+      ],
+      "held": "R0",
+      "measures": {
+        "capabilities": 2,
+        "abbs_own": 4,
+        "abbs_borrowed": 5,
+        "sbbs": 4,
+        "architecture_patterns": 1,
+        "reference_architectures": 1,
+        "patterns_scoped": 0,
+        "services_own": 3,
+        "services_composing": 0,
+        "considerations_open": 1,
+        "gaps": 5
+      },
+      "ids": {
+        "abbs_own": [
+          "ABB-018",
+          "ABB-019",
+          "ABB-020",
+          "ABB-027"
+        ],
+        "abbs_borrowed": [
+          "ABB-012",
+          "ABB-014",
+          "ABB-025",
+          "ABB-026",
+          "ABB-028"
+        ],
+        "sbbs": [
+          "SBB-007",
+          "SBB-008",
+          "SBB-017",
+          "SBB-018"
+        ],
+        "patterns": [
+          "AP-001",
+          "RA-001"
+        ],
+        "services_own": [
+          "SV-003",
+          "SV-006",
+          "SV-007"
+        ],
+        "services_composing": [],
+        "considerations_open": [
+          "CN-006"
+        ]
+      },
+      "gaps": [
+        {
+          "ref": "6a",
+          "code": "no-demand",
+          "text": "CAP-009, CAP-010 name no demand on the capability page, so the stage tool holds them at R0 (the outcomes name them, the inverse is not written)"
+        },
+        {
+          "ref": "6b",
+          "code": "open-consideration",
+          "text": "Open: CN-006 Decoupling the deployables along the bounded contexts. R3 needs each resolved by an accepted decision"
+        },
+        {
+          "ref": "6c",
+          "code": "no-architecture-pattern",
+          "text": "CAP-010 is realised by no architecture pattern, only by the reference architecture"
+        },
+        {
+          "ref": "6d",
+          "code": "platform-scope-only",
+          "text": "Only platform-scoped patterns (AP-001, RA-001) realise its capabilities; none is scoped to the subdomain"
+        },
+        {
+          "ref": "6e",
+          "code": "service-spans-contexts",
+          "text": "SV-003 composes BC-006 BC-004 BC-005 (CN-006)"
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "subdomain": "Evaluation",
+      "kind": "supporting",
+      "need": "Knowing whether the answers are right, without a model as judge",
+      "contexts": [
+        {
+          "id": "BC-007",
+          "name": "Evaluation"
+        }
+      ],
+      "outcomes": [
+        "OC-001"
+      ],
+      "capabilities": [
+        {
+          "id": "CAP-011",
+          "name": "Answer evaluation",
+          "held": "R0",
+          "passes": {
+            "R1": false,
+            "R2": false,
+            "R3": true,
+            "R4": true,
+            "R5": true,
+            "R6": false
+          },
+          "blockers": [
+            "CAP-011 names no demand: add required_by_outcomes, or record demand_assumption"
+          ],
+          "shared": []
+        }
+      ],
+      "held": "R0",
+      "measures": {
+        "capabilities": 1,
+        "abbs_own": 1,
+        "abbs_borrowed": 0,
+        "sbbs": 1,
+        "architecture_patterns": 0,
+        "reference_architectures": 1,
+        "patterns_scoped": 0,
+        "services_own": 1,
+        "services_composing": 0,
+        "considerations_open": 0,
+        "gaps": 4
+      },
+      "ids": {
+        "abbs_own": [
+          "ABB-021"
+        ],
+        "abbs_borrowed": [],
+        "sbbs": [
+          "SBB-019"
+        ],
+        "patterns": [
+          "RA-001"
+        ],
+        "services_own": [
+          "SV-009"
+        ],
+        "services_composing": [],
+        "considerations_open": []
+      },
+      "gaps": [
+        {
+          "ref": "7a",
+          "code": "no-demand",
+          "text": "CAP-011 names no demand on the capability page, so the stage tool holds it at R0 (the outcomes name them, the inverse is not written)"
+        },
+        {
+          "ref": "7b",
+          "code": "unbounded",
+          "text": "CAP-011 fails R2: no consideration affects it or its ABBs, and it does not declare open_questions: none"
+        },
+        {
+          "ref": "7c",
+          "code": "no-architecture-pattern",
+          "text": "CAP-011 is realised by no architecture pattern, only by the reference architecture"
+        },
+        {
+          "ref": "7d",
+          "code": "platform-scope-only",
+          "text": "Only platform-scoped patterns (RA-001) realise its capabilities; none is scoped to the subdomain"
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "subdomain": "Running it",
+      "kind": "generic",
+      "need": "Reaching models, counting cost, configuring and deploying",
+      "contexts": [
+        {
+          "id": "BC-008",
+          "name": "Platform services"
+        }
+      ],
+      "outcomes": [
+        "OC-003"
+      ],
+      "capabilities": [
+        {
+          "id": "CAP-010",
+          "name": "Cost and spend control",
+          "held": "R0",
+          "passes": {
+            "R1": false,
+            "R2": true,
+            "R3": false,
+            "R4": true,
+            "R5": true,
+            "R6": false
+          },
+          "blockers": [
+            "CAP-010 names no demand: add required_by_outcomes, or record demand_assumption"
+          ],
+          "shared": [
+            "BC-005",
+            "BC-006"
+          ]
+        },
+        {
+          "id": "CAP-013",
+          "name": "Self-contained deployment and operation",
+          "held": "R0",
+          "passes": {
+            "R1": false,
+            "R2": false,
+            "R3": true,
+            "R4": true,
+            "R5": true,
+            "R6": false
+          },
+          "blockers": [
+            "CAP-013 names no demand: add required_by_outcomes, or record demand_assumption"
+          ],
+          "shared": []
+        }
+      ],
+      "held": "R0",
+      "measures": {
+        "capabilities": 2,
+        "abbs_own": 1,
+        "abbs_borrowed": 2,
+        "sbbs": 1,
+        "architecture_patterns": 0,
+        "reference_architectures": 1,
+        "patterns_scoped": 0,
+        "services_own": 1,
+        "services_composing": 0,
+        "considerations_open": 0,
+        "gaps": 6
+      },
+      "ids": {
+        "abbs_own": [
+          "ABB-028"
+        ],
+        "abbs_borrowed": [
+          "ABB-014",
+          "ABB-019"
+        ],
+        "sbbs": [
+          "SBB-013"
+        ],
+        "patterns": [
+          "RA-001"
+        ],
+        "services_own": [
+          "SV-008"
+        ],
+        "services_composing": [],
+        "considerations_open": []
+      },
+      "gaps": [
+        {
+          "ref": "8a",
+          "code": "no-demand",
+          "text": "CAP-010, CAP-013 name no demand on the capability page, so the stage tool holds them at R0 (the outcomes name them, the inverse is not written)"
+        },
+        {
+          "ref": "8b",
+          "code": "unbounded",
+          "text": "CAP-013 fails R2: no consideration affects it or its ABBs, and it does not declare open_questions: none"
+        },
+        {
+          "ref": "8c",
+          "code": "no-architecture-pattern",
+          "text": "CAP-010, CAP-013 are realised by no architecture pattern, only by the reference architecture"
+        },
+        {
+          "ref": "8d",
+          "code": "platform-scope-only",
+          "text": "Only platform-scoped patterns (RA-001) realise its capabilities; none is scoped to the subdomain"
+        },
+        {
+          "ref": "8e",
+          "code": "service-spans-contexts",
+          "text": "SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it)"
+        },
+        {
+          "ref": "8f",
+          "code": "register-drift",
+          "text": "The use-case register still cites retired blocks of this context, which the pages no longer do: UC-009 ABB-023, UC-009 ABB-022"
+        }
+      ]
+    }
+  ],
+  "suggestions": [
+    {
+      "kind": "architecture-pattern",
+      "scope": "domain",
+      "box": 1,
+      "title": "Ontology: the Ontology context as an architecture pattern",
+      "realises": [
+        "CAP-003",
+        "CAP-007"
+      ],
+      "why": "names the context's own building blocks, which the catalogue lacks; scopes a logical pattern to the subdomain rather than the platform; is where CN-006 is argued in boxes",
+      "closes": [
+        "1a",
+        "1d",
+        "1e"
+      ],
+      "score": 33,
+      "ref": "P1"
+    },
+    {
+      "kind": "architecture-pattern",
+      "scope": "domain",
+      "box": 2,
+      "title": "Extraction: the Extraction context as an architecture pattern",
+      "realises": [
+        "CAP-004",
+        "CAP-007"
+      ],
+      "why": "names the context's own building blocks, which the catalogue lacks; scopes a logical pattern to the subdomain rather than the platform; is where CN-006 is argued in boxes",
+      "closes": [
+        "2a",
+        "2d",
+        "2e"
+      ],
+      "score": 33,
+      "ref": "P2"
+    },
+    {
+      "kind": "architecture-pattern",
+      "scope": "domain",
+      "box": 3,
+      "title": "Knowledge graph: the Knowledge graph context as an architecture pattern",
+      "realises": [
+        "CAP-005",
+        "CAP-006",
+        "CAP-007"
+      ],
+      "why": "scopes a logical pattern to the subdomain rather than the platform; is where CN-001 and CN-006 are argued in boxes",
+      "closes": [
+        "3c",
+        "3d"
+      ],
+      "score": 32,
+      "ref": "P3"
+    },
+    {
+      "kind": "architecture-pattern",
+      "scope": "domain",
+      "box": 4,
+      "title": "Answering: the Answering context as an architecture pattern",
+      "realises": [
+        "CAP-008",
+        "CAP-010",
+        "CAP-012"
+      ],
+      "why": "scopes a logical pattern to the subdomain rather than the platform; is where CN-006 is argued in boxes",
+      "closes": [
+        "4c",
+        "4e",
+        "4d"
+      ],
+      "score": 32,
+      "ref": "P4"
+    },
+    {
+      "kind": "architecture-pattern",
+      "scope": "capability-area",
+      "box": "1+2+3",
+      "title": "Structured lookup across Ontology, Extraction, Knowledge graph",
+      "realises": [
+        "CAP-007"
+      ],
+      "why": "the capability is realised in 3 contexts, and no pattern says how they divide it",
+      "closes": [],
+      "score": 25,
+      "ref": "P5"
+    },
+    {
+      "kind": "reference-architecture",
+      "scope": "platform",
+      "box": "1+2+3+4+5+6",
+      "title": "The deployables of the target state: Decoupling the deployables along the bounded contexts",
+      "realises": [],
+      "why": "a reference architecture variant per option of CN-006, so the choice is made between drawn alternatives",
+      "closes": [
+        "1g",
+        "2g",
+        "3e",
+        "4f",
+        "5f",
+        "6e"
+      ],
+      "score": 25,
+      "ref": "P6"
+    },
+    {
+      "kind": "architecture-pattern",
+      "scope": "capability-area",
+      "box": "4+6+8",
+      "title": "Cost and spend control across Answering, People and access, Running it",
+      "realises": [
+        "CAP-010"
+      ],
+      "why": "the capability is realised in 3 contexts, and no pattern says how they divide it",
+      "closes": [],
+      "score": 25,
+      "ref": "P7"
+    },
+    {
+      "kind": "architecture-pattern",
+      "scope": "domain",
+      "box": 5,
+      "title": "Sources and documents: the Ingestion context as an architecture pattern",
+      "realises": [
+        "CAP-002"
+      ],
+      "why": "scopes a logical pattern to the subdomain rather than the platform; is where CN-006 is argued in boxes",
+      "closes": [
+        "5c",
+        "5e",
+        "5d"
+      ],
+      "score": 22,
+      "ref": "P8"
+    },
+    {
+      "kind": "architecture-pattern",
+      "scope": "domain",
+      "box": 6,
+      "title": "People and access: the Portal and identity context as an architecture pattern",
+      "realises": [
+        "CAP-009",
+        "CAP-010"
+      ],
+      "why": "scopes a logical pattern to the subdomain rather than the platform; is where CN-006 is argued in boxes",
+      "closes": [
+        "6b",
+        "6d",
+        "6c"
+      ],
+      "score": 22,
+      "ref": "P9"
+    },
+    {
+      "kind": "architecture-pattern",
+      "scope": "domain",
+      "box": 7,
+      "title": "Evaluation: the Evaluation context as an architecture pattern",
+      "realises": [
+        "CAP-011"
+      ],
+      "why": "scopes a logical pattern to the subdomain rather than the platform",
+      "closes": [
+        "7d",
+        "7c"
+      ],
+      "score": 21,
+      "ref": "P10"
+    },
+    {
+      "kind": "architecture-pattern",
+      "scope": "domain",
+      "box": 8,
+      "title": "Running it: the Platform services context as an architecture pattern",
+      "realises": [
+        "CAP-010",
+        "CAP-013"
+      ],
+      "why": "scopes a logical pattern to the subdomain rather than the platform",
+      "closes": [
+        "8d",
+        "8c"
+      ],
+      "score": 11,
+      "ref": "P11"
+    }
+  ],
+  "portfolio": [],
+  "deployables": [
+    {
+      "id": "SV-001",
+      "name": "Pipeline (the sweep)",
+      "kind": "service",
+      "owner": "BC-001",
+      "composes": [
+        "BC-001",
+        "BC-002",
+        "BC-003",
+        "BC-004"
+      ],
+      "considerations": "CN-006"
+    },
+    {
+      "id": "SV-002",
+      "name": "Chat agent",
+      "kind": "service",
+      "owner": "BC-005",
+      "composes": [
+        "BC-005",
+        "BC-004"
+      ],
+      "considerations": ""
+    },
+    {
+      "id": "SV-003",
+      "name": "Portal API",
+      "kind": "service",
+      "owner": "BC-006",
+      "composes": [
+        "BC-006",
+        "BC-004",
+        "BC-005"
+      ],
+      "considerations": "CN-006"
+    },
+    {
+      "id": "SV-004",
+      "name": "Graph tools",
+      "kind": "service",
+      "owner": "BC-004",
+      "composes": [
+        "BC-004"
+      ],
+      "considerations": "CN-006"
+    },
+    {
+      "id": "SV-005",
+      "name": "Passage tools",
+      "kind": "service",
+      "owner": "BC-004",
+      "composes": [
+        "BC-004"
+      ],
+      "considerations": ""
+    },
+    {
+      "id": "SV-006",
+      "name": "Gateway interceptor",
+      "kind": "service",
+      "owner": "BC-006",
+      "composes": [
+        "BC-006"
+      ],
+      "considerations": ""
+    },
+    {
+      "id": "SV-007",
+      "name": "Chat page",
+      "kind": "service",
+      "owner": "BC-006",
+      "composes": [
+        "BC-006"
+      ],
+      "considerations": ""
+    },
+    {
+      "id": "SV-008",
+      "name": "Command line",
+      "kind": "service",
+      "owner": "BC-008",
+      "composes": [
+        "BC-001",
+        "BC-002",
+        "BC-003",
+        "BC-004",
+        "BC-008"
+      ],
+      "considerations": ""
+    },
+    {
+      "id": "SV-009",
+      "name": "Evaluation runner",
+      "kind": "service",
+      "owner": "BC-007",
+      "composes": [
+        "BC-007"
+      ],
+      "considerations": ""
+    }
+  ]
+}
