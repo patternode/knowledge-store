@@ -393,6 +393,8 @@ function page() {
   o.push(`# Target state by subdomain\n`);
   o.push(`The target state of ${domainName} is every subdomain on the [domain page](demand/domains.md) solved: each mapped through its bounded context to capabilities, building blocks, patterns and services, and each capability at the stage the [definition ladder](https://github.com/dermot-obrien/architecture-continuum/blob/main/standards/capabilities/standard-definition-ladder.md) calls buildable or beyond. This page is generated from the pages by \`node scripts/target-state.mjs\`; the reasoning behind it is the design note [Target-state view by subdomain](../design/target-state-view.md). The numbers are for pointing at in a session: a box is its subdomain's number, a gap is the box number and a letter, a pattern to elaborate is P and a number.\n`);
   o.push(`![${esc(`The target state of ${domainName}: ${view.length} subdomains in core, supporting and generic bands, each a numbered box with its context, its capabilities and their stage on the definition ladder, its measures and its gaps`)}](./target-state.svg)\n`);
+  // A Markdown table cell: escape backslashes first, then the pipes that would end the cell.
+  const cell = (t) => String(t).replace(/\\/g, "\\\\").replace(/\|/g, "\\|");
   o.push(`## The numbered map\n`);
   o.push(`| Box | Subdomain | Kind | Context | Outcomes | Capabilities | Lowest stage | ABB own+borrowed | SBB | AP | RA | SV own+composing | Open CN | Gaps |`);
   o.push(`|---|---|---|---|---|---|---|---|---|---|---|---|---|---|`);
@@ -405,11 +407,11 @@ function page() {
   o.push(`Each capability's stage and the first thing blocking the next one, from \`${path.basename(rungPy)} --json\`. A stage whose own check passes above the stage held is latent: it will count once the stages below it hold.\n`);
   o.push(`| Box | Capability | Held | Passes its own check | Blocking the next stage |`);
   o.push(`|---|---|---|---|---|`);
-  for (const v of view) for (const c of v.capabilities) o.push(`| ${v.n} | ${link(c.id)} ${c.name} | ${c.held} | ${STAGES.filter((s) => c.passes[s]).join(" ") || "none"} | ${(c.blockers[0] || "").replace(/\|/g, "\\|")} |`);
+  for (const v of view) for (const c of v.capabilities) o.push(`| ${v.n} | ${link(c.id)} ${c.name} | ${c.held} | ${STAGES.filter((s) => c.passes[s]).join(" ") || "none"} | ${cell(c.blockers[0] || "")} |`);
   o.push(`\n## Gaps\n`);
   o.push(`| Ref | Rule | What is missing |`);
   o.push(`|---|---|---|`);
-  for (const v of view) for (const g of v.gaps) o.push(`| ${g.ref} | ${g.code} | ${g.text.replace(/\|/g, "\\|")} |`);
+  for (const v of view) for (const g of v.gaps) o.push(`| ${g.ref} | ${g.code} | ${cell(g.text)} |`);
   o.push(`\n## Patterns to elaborate next\n`);
   o.push(`Suggested from the gaps, core subdomains first, then by the number of gaps each would close. A suggestion is a starting point for the session, not a decision; the pattern skill writes the document.\n`);
   o.push(`| Ref | Kind | Scope | Box | Pattern | Realises | Why | Closes |`);
