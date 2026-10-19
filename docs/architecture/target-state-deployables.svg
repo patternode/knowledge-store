@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="942" height="470" viewBox="0 0 942 470" role="img" aria-labelledby="title desc">
+<title id="title">The deployables against the bounded contexts of the target state</title>
+<desc id="desc">SV-001 Pipeline (the sweep) is owned by BC-001 and composes BC-001 BC-002 BC-003 BC-004. SV-002 Chat agent is owned by BC-005 and composes BC-005 BC-004. SV-003 Portal API is owned by BC-006 and composes BC-006 BC-004 BC-005. SV-004 Graph tools is owned by BC-004 and composes BC-004. SV-005 Passage tools is owned by BC-004 and composes BC-004. SV-006 Gateway interceptor is owned by BC-006 and composes BC-006. SV-007 Chat page is owned by BC-006 and composes BC-006. SV-008 Command line is owned by BC-008 and composes BC-001 BC-002 BC-003 BC-004 BC-008. SV-009 Evaluation runner is owned by BC-007 and composes BC-007.</desc>
+<text x="0" y="24" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="22" font-weight="600">The deployables against the same contexts</text>
+<text x="0" y="48" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14">A filled dot is the context a service is part of; a ring is a context it composes besides. One dot per row is the rule; the CN that names a row is beside its count.</text>
+<circle cx="267" cy="74" r="12" fill="#007fa0"/><text x="267" y="78.5" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="700" text-anchor="middle">1</text>
+<text x="267" y="102" fill="#004e64" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="11" font-weight="600" text-anchor="middle">BC-002</text>
+<circle cx="341" cy="74" r="12" fill="#007fa0"/><text x="341" y="78.5" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="700" text-anchor="middle">2</text>
+<text x="341" y="102" fill="#004e64" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="11" font-weight="600" text-anchor="middle">BC-003</text>
+<circle cx="415" cy="74" r="12" fill="#007fa0"/><text x="415" y="78.5" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="700" text-anchor="middle">3</text>
+<text x="415" y="102" fill="#004e64" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="11" font-weight="600" text-anchor="middle">BC-004</text>
+<circle cx="489" cy="74" r="12" fill="#007fa0"/><text x="489" y="78.5" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="700" text-anchor="middle">4</text>
+<text x="489" y="102" fill="#004e64" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="11" font-weight="600" text-anchor="middle">BC-005</text>
+<circle cx="563" cy="74" r="12" fill="#4f46e5"/><text x="563" y="78.5" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="700" text-anchor="middle">5</text>
+<text x="563" y="102" fill="#352da5" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="11" font-weight="600" text-anchor="middle">BC-001</text>
+<circle cx="637" cy="74" r="12" fill="#4f46e5"/><text x="637" y="78.5" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="700" text-anchor="middle">6</text>
+<text x="637" y="102" fill="#352da5" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="11" font-weight="600" text-anchor="middle">BC-006</text>
+<circle cx="711" cy="74" r="12" fill="#4f46e5"/><text x="711" y="78.5" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="700" text-anchor="middle">7</text>
+<text x="711" y="102" fill="#352da5" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="11" font-weight="600" text-anchor="middle">BC-007</text>
+<circle cx="785" cy="74" r="12" fill="#525c74"/><text x="785" y="78.5" fill="#ffffff" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="700" text-anchor="middle">8</text>
+<text x="785" y="102" fill="#2c3342" font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-size="11" font-weight="600" text-anchor="middle">BC-008</text>
+<text x="838" y="102" fill="#7e8aa7" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">CONTEXTS</text>
+<rect x="0" y="112" width="942" height="30" fill="#f5f7fb"/>
+<text x="8" y="131" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600">SV-001</tspan> Pipeline (the sweep)</text>
+<circle cx="267" cy="127" r="6" fill="#ffffff" stroke="#b45309" stroke-width="2"/>
+<circle cx="341" cy="127" r="6" fill="#ffffff" stroke="#b45309" stroke-width="2"/>
+<circle cx="415" cy="127" r="6" fill="#ffffff" stroke="#b45309" stroke-width="2"/>
+<circle cx="563" cy="127" r="7" fill="#4f46e5"/>
+<text x="838" y="131" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600">4 (CN-006)</text>
+<text x="8" y="161" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600">SV-002</tspan> Chat agent</text>
+<circle cx="415" cy="157" r="6" fill="#ffffff" stroke="#b45309" stroke-width="2"/>
+<circle cx="489" cy="157" r="7" fill="#007fa0"/>
+<text x="838" y="161" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600">2 (no CN)</text>
+<rect x="0" y="172" width="942" height="30" fill="#f5f7fb"/>
+<text x="8" y="191" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600">SV-003</tspan> Portal API</text>
+<circle cx="415" cy="187" r="6" fill="#ffffff" stroke="#b45309" stroke-width="2"/>
+<circle cx="489" cy="187" r="6" fill="#ffffff" stroke="#b45309" stroke-width="2"/>
+<circle cx="637" cy="187" r="7" fill="#4f46e5"/>
+<text x="838" y="191" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600">3 (CN-006)</text>
+<text x="8" y="221" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600">SV-004</tspan> Graph tools</text>
+<circle cx="415" cy="217" r="7" fill="#007fa0"/>
+<text x="838" y="221" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="400">1</text>
+<rect x="0" y="232" width="942" height="30" fill="#f5f7fb"/>
+<text x="8" y="251" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600">SV-005</tspan> Passage tools</text>
+<circle cx="415" cy="247" r="7" fill="#007fa0"/>
+<text x="838" y="251" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="400">1</text>
+<text x="8" y="281" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600">SV-006</tspan> Gateway interceptor</text>
+<circle cx="637" cy="277" r="7" fill="#4f46e5"/>
+<text x="838" y="281" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="400">1</text>
+<rect x="0" y="292" width="942" height="30" fill="#f5f7fb"/>
+<text x="8" y="311" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600">SV-007</tspan> Chat page</text>
+<circle cx="637" cy="307" r="7" fill="#4f46e5"/>
+<text x="838" y="311" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="400">1</text>
+<text x="8" y="341" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600">SV-008</tspan> Command line</text>
+<circle cx="267" cy="337" r="6" fill="#ffffff" stroke="#b45309" stroke-width="2"/>
+<circle cx="341" cy="337" r="6" fill="#ffffff" stroke="#b45309" stroke-width="2"/>
+<circle cx="415" cy="337" r="6" fill="#ffffff" stroke="#b45309" stroke-width="2"/>
+<circle cx="563" cy="337" r="6" fill="#ffffff" stroke="#b45309" stroke-width="2"/>
+<circle cx="785" cy="337" r="7" fill="#525c74"/>
+<text x="838" y="341" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600">5 (no CN)</text>
+<rect x="0" y="352" width="942" height="30" fill="#f5f7fb"/>
+<text x="8" y="371" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600">SV-009</tspan> Evaluation runner</text>
+<circle cx="711" cy="367" r="7" fill="#4f46e5"/>
+<text x="838" y="371" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="400">1</text>
+</svg>

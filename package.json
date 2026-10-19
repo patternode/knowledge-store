@@ -13,7 +13,8 @@
     "check:architecture": "node scripts/check-architecture.mjs",
     "publish:decks": "node scripts/publish-decks.mjs",
     "prebuild": "node scripts/regenerate.mjs",
-    "regenerate": "node scripts/regenerate.mjs"
+    "regenerate": "node scripts/regenerate.mjs",
+    "target-state": "node scripts/target-state.mjs"
   },
   "dependencies": {
     "@docusaurus/core": "^3.10.2",
