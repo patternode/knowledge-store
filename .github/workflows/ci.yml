@@ -14,7 +14,9 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -e ".[dev]" pydantic
-      - run: pytest -q
+      # Coverage floors per context and layer only rise (docs/engineering-standard.md, section 7).
+      - run: pytest -q --cov=knowledge_store --cov-report=json:coverage.json
+      - run: python tests/check_coverage.py coverage.json
   core:
     # The core with no SDK extras: every AWS and backend test skips, everything else must pass.
     runs-on: ubuntu-latest

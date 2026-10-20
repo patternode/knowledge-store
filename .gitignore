@@ -25,3 +25,4 @@ node_modules/
 docs/architecture/**/dist/
 .import_linter_cache/
 .coverage
+coverage.json
