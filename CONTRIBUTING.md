@@ -6,7 +6,7 @@ Thanks for your interest. Issues and pull requests are welcome.
 
 - For anything larger than a small fix, open an issue first so the approach can be agreed.
 - Keep the core domain-agnostic: no code may name a term from any one domain's ontology. Domain behaviour belongs in an ontology, a profile, or an adapter package.
-- New source types belong in their own package, registered through the `knowledge_store.adapters` entry point, unless they are generally useful.
+- New source types belong in their own package, registered through the `knowledge_store.ingestion.adapters.registry` entry point, unless they are generally useful.
 
 ## Development
 

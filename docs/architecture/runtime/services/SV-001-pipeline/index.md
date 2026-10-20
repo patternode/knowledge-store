@@ -15,8 +15,8 @@ part_of: BC-001
 composes_contexts: [BC-001, BC-002, BC-003, BC-004]
 runtime_type: container
 repo: { url: "https://github.com/patternode/knowledge-store", path: "." }
-module_path: "src/knowledge_store/pipeline/run.py"
-packages: ["knowledge_store.pipeline", "knowledge_store.adapters", "knowledge_store.refine", "knowledge_store.ontology", "knowledge_store.extract", "knowledge_store.structured", "knowledge_store.graph"]
+module_path: "src/knowledge_store/apps/sweep.py"
+packages: ["knowledge_store.apps", "knowledge_store.ingestion.adapters.registry", "knowledge_store.ingestion.domain.parsing", "knowledge_store.ontology.domain", "knowledge_store.extraction.domain", "knowledge_store.extraction.slices", "knowledge_store.knowledge_graph.ports"]
 deployed_to: [DN-004]
 run_by: "PRD-001; started by uploads and a schedule"
 provenance:
@@ -35,7 +35,7 @@ The Fargate task that runs one sweep over every collection: ingest, refine, disc
 | Context | BC-001; composes BC-001, BC-002, BC-003, BC-004 as built |
 | Realises | SBB-002 |
 | Node | DN-004 |
-| Code | `src/knowledge_store/pipeline/run.py (entry: knowledge-store run)` |
+| Code | `src/knowledge_store/apps/sweep.py (entry: knowledge-store run)` |
 | Talks to | The lake; the extraction model through Bedrock or the Anthropic API; Neptune (write); the Knowledge Base ingestion job; the optional backends. |
 | Stores | Writes bronze, silver, gold, ontology versions and drafts, the candidate register, the index, the pointers, kb/passages, the lock, the status and the ledger; reads collection configuration. |
 | Role | <name>-pipeline-task: the lake, configured source buckets, the extraction model, the Anthropic key secret, Neptune connect, read, write and delete, Knowledge Base ingestion jobs. |

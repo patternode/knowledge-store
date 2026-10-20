@@ -15,8 +15,8 @@ part_of: BC-006
 composes_contexts: [BC-006]
 runtime_type: serverless
 repo: { url: "https://github.com/patternode/knowledge-store", path: "." }
-module_path: "src/knowledge_store/tools/interceptor.py"
-packages: ["knowledge_store.tools.interceptor", "knowledge_store.claims"]
+module_path: "src/knowledge_store/access/adapters/gateway_interceptor.py"
+packages: ["knowledge_store.access.adapters.gateway_interceptor", "knowledge_store.access.domain.claims"]
 deployed_to: [DN-007]
 run_by: "PRD-001; run by the Gateway on every call"
 provenance:
@@ -35,7 +35,7 @@ The REQUEST interceptor that decodes the verified bearer token and overwrites ca
 | Context | BC-006; composes BC-006 as built |
 | Realises | SBB-017 |
 | Node | DN-007 |
-| Code | `src/knowledge_store/tools/interceptor.py (lambda_handler)` |
+| Code | `src/knowledge_store/access/adapters/gateway_interceptor.py (lambda_handler)` |
 | Talks to | Nothing. |
 | Stores | None. |
 | Role | <name>-agent-interceptor: logs only. |

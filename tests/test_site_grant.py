@@ -1,4 +1,4 @@
-"""The website's grant (knowledge_store.site_grant): the P-256 verifier against the cryptography
+"""The website's grant (knowledge_store.access.adapters.site_grant): the P-256 verifier against the cryptography
 package's signatures, and the claims checks."""
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from cryptography.hazmat.primitives import hashes  # noqa: E402
 from cryptography.hazmat.primitives.asymmetric import ec  # noqa: E402
 from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature  # noqa: E402
 
-from knowledge_store import site_grant  # noqa: E402
+from knowledge_store.access.adapters import site_grant  # noqa: E402
 from test_review_fixes import mixed  # noqa: E402,F401
 
 ISSUER = "https://site.example"
@@ -143,10 +143,11 @@ def test_off_without_configuration(monkeypatch):
 def test_the_portal_signs_in_through_the_website(mixed, site, monkeypatch):
     """With the website's grant in place of a token: no grant is refused, a role decides the
     scope, and the agent is asked as the matching service client."""
-    from knowledge_store.portal_api import agent_client, handler
+    from knowledge_store.answering.adapters import agent_client
+    from knowledge_store.access.adapters import portal as handler
     from test_chat_api import State
     root, lake = mixed
-    from knowledge_store.pipeline.refine import load_doc, silver_doc_ids
+    from knowledge_store.ingestion.slices.refine import load_doc, silver_doc_ids
     docs = {load_doc(lake, d)["scope"]: d for d in silver_doc_ids(lake)}
 
     def ev(method, path, grant=None, body=None, qs=None):

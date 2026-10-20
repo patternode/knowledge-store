@@ -10,9 +10,11 @@ import pytest
 
 pytest.importorskip("pydantic")
 
-from knowledge_store.agent import app, grounding, valves  # noqa: E402
-from knowledge_store.agent.grounding import Citation, Claim, GroundedAnswer  # noqa: E402
-from knowledge_store.tools import gateway  # noqa: E402
+from knowledge_store.answering.adapters import agent_app as app
+from knowledge_store.answering.domain import grounding
+from knowledge_store.answering.domain import valves  # noqa: E402
+from knowledge_store.answering.domain.grounding import Citation, Claim, GroundedAnswer  # noqa: E402
+from knowledge_store.knowledge_graph.adapters import gateway  # noqa: E402
 from test_review_fixes import mixed  # noqa: F401,E402
 
 
@@ -197,7 +199,7 @@ def test_tool_and_model_budgets():
 def test_limits_attach_to_a_strands_agent():
     strands = pytest.importorskip("strands")
     assert app.add_limits(strands.Agent(callback_handler=None)) == {"tool_calls": 0, "model_calls": 0, "tools_refused": 0}
-    from knowledge_store import workbench
+    from knowledge_store.answering.slices import workbench
     rec = workbench.Recorder()
     app.add_limits(strands.Agent(callback_handler=None), rec)
     assert rec.live  # the hooks report the agent's calls, so nothing is backfilled afterwards

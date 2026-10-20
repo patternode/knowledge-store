@@ -7,11 +7,16 @@ import json
 
 import pytest
 
-from knowledge_store import layout, workbench
-from knowledge_store.ontology import candidates, versions
-from knowledge_store.portal_api import agent_client, chat, handler, index
-from knowledge_store.portal_api.state import MemoryState
-from knowledge_store.tools import gateway
+from knowledge_store.platform_services.domain import layout
+from knowledge_store.answering.slices import workbench
+from knowledge_store.ontology.slices import candidates
+from knowledge_store.ontology.slices import versions
+from knowledge_store.answering.adapters import agent_client
+from knowledge_store.answering.slices import chat
+from knowledge_store.access.adapters import portal as handler
+from knowledge_store.knowledge_graph.adapters import index
+from knowledge_store.access.adapters.state import MemoryState
+from knowledge_store.knowledge_graph.adapters import gateway
 from test_review_fixes import mixed  # noqa: F401
 
 
@@ -194,7 +199,7 @@ def tool_use(name, args, i="t1"):
 
 def test_a_sample_question_may_link_a_table_without_putting_the_url_in_the_question():
     from pathlib import Path
-    from knowledge_store.config import profile_from_dict
+    from knowledge_store.platform_services.slices.config import profile_from_dict
     root = Path(__file__).resolve().parents[1]
     profile = profile_from_dict(json.loads((root / "examples/space-missions/profile.json").read_text()))
     samples = profile.sample_questions()
@@ -214,7 +219,7 @@ def test_a_sample_question_may_link_a_table_without_putting_the_url_in_the_quest
 
 
 def test_sample_questions_keep_a_named_level_and_otherwise_spread():
-    from knowledge_store.config import profile_from_dict
+    from knowledge_store.platform_services.slices.config import profile_from_dict
     named = profile_from_dict({"example_questions": [
         "[low] Where does Moriarty appear?",
         {"text": "Who did he let go, and why?", "level": "high"},
@@ -261,7 +266,7 @@ def test_a_question_is_priced_by_token_kind_and_by_model_call(mixed):
 
 def test_collections_include_the_sample_questions(portal):
     root, lake, _ = portal
-    from knowledge_store.store import put_json
+    from knowledge_store.platform_services.adapters.store import put_json
     put_json(lake, layout.CONFIG_PROFILE, {"name": "Missions", "example_questions": [
         "[low] Which missions returned samples?", "[high] Which also flew a gravity assist, and why?"]})
     body = json.loads(handler.handler(event("GET", "/api/collections"), None)["body"])

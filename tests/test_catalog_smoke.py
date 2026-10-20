@@ -12,12 +12,12 @@ from pathlib import Path
 import pytest
 
 from fake_llm import FakeClient
-from knowledge_store import layout
-from knowledge_store.evals import score
-from knowledge_store.pipeline import run
-from knowledge_store.store import put_json
-from knowledge_store.structured.query import describe
-from knowledge_store.tools import gateway
+from knowledge_store.platform_services.domain import layout
+from knowledge_store.evaluation.domain import score
+from knowledge_store.apps import sweep as run
+from knowledge_store.platform_services.adapters.store import put_json
+from knowledge_store.knowledge_graph.slices.table_query import describe
+from knowledge_store.knowledge_graph.adapters import gateway
 from test_structured import _landing
 
 ROOT = Path(__file__).resolve().parents[1]

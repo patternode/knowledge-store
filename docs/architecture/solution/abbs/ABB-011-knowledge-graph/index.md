@@ -100,7 +100,7 @@ Off switch: knowledge_graph.enabled false removes it and the tools answer from t
 
 | Where | What |
 |---|---|
-| Code | `infra/modules/knowledge-graph; src/knowledge_store/graph/sparql.py (the loader side), neo4j.py, age.py` |
+| Code | `infra/modules/knowledge-graph; src/knowledge_store/knowledge_graph/adapters/sparql.py (the loader side), neo4j.py, age.py` |
 | Capabilities | CAP-005 |
 | Context | BC-004 |
 

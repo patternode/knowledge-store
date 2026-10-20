@@ -9,13 +9,19 @@ from pathlib import Path
 import pytest
 
 from fake_llm import FakeClient
-from knowledge_store import layout
-from knowledge_store.config import Profile
-from knowledge_store.ontology import candidates, discover, model, versions
-from knowledge_store.pipeline import extract, project, refine, run
-from knowledge_store.pipeline.ingest import ingest_source
-from knowledge_store.config import DEFAULT_SOURCES
-from knowledge_store.store import LocalStore, put_json
+from knowledge_store.platform_services.domain import layout
+from knowledge_store.platform_services.slices.config import Profile
+from knowledge_store.ontology.slices import candidates
+from knowledge_store.ontology.slices import discover
+from knowledge_store.ontology.domain import model
+from knowledge_store.ontology.slices import versions
+from knowledge_store.extraction.slices import extract
+from knowledge_store.knowledge_graph.slices import project
+from knowledge_store.ingestion.slices import refine
+from knowledge_store.apps import sweep as run
+from knowledge_store.ingestion.slices.ingest import ingest_source
+from knowledge_store.platform_services.slices.config import DEFAULT_SOURCES
+from knowledge_store.platform_services.adapters.store import LocalStore, put_json
 
 DOCS = {
     "a.md": "# Alpha\n\nMission Alpha was launched by Agency Nova in 2011.\n\nMission Alpha studies Planet Kiro.",
@@ -153,7 +159,7 @@ def test_semantic_change_needs_major(lake, tmp_path):
 
 
 def _collection_lake(tmp_path, cid="default", settings=None):
-    from knowledge_store import collections
+    from knowledge_store.platform_services.slices import collections
     root = LocalStore(tmp_path / "root")
     for name, body in DOCS.items():
         root.put(f"landing/{cid}/{name}", body.encode())
@@ -182,7 +188,7 @@ def test_sweep_curated_mode_waits(tmp_path):
 
 
 def test_collections_are_separate(tmp_path):
-    from knowledge_store import collections
+    from knowledge_store.platform_services.slices import collections
     root, a = _collection_lake(tmp_path, "missions", {"ontology_mode": "auto", "discovery_min_docs": 3,
                                                       "discovery_resamples": 1})
     root.put("landing/notes/n1.md", b"# Shopping\n\nBuy apples and pears for the week ahead, and some bread.")

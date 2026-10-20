@@ -9,11 +9,12 @@ import itertools
 
 import pytest
 
-from knowledge_store import layout
-from knowledge_store.graph import sparql
-from knowledge_store.pipeline.load import ONTOLOGY_GRAPH, load_sparql, sync_passages
-from knowledge_store.portal_api import chat, index
-from knowledge_store.store import get_json, put_json
+from knowledge_store.platform_services.domain import layout
+from knowledge_store.knowledge_graph.adapters import sparql
+from knowledge_store.knowledge_graph.slices.load import ONTOLOGY_GRAPH, load_sparql, sync_passages
+from knowledge_store.answering.slices import chat
+from knowledge_store.knowledge_graph.adapters import index
+from knowledge_store.platform_services.adapters.store import get_json, put_json
 from test_graph import ALPHA, NOVA, ORBIS, ZETA
 from test_review_fixes import mixed  # noqa: F401
 

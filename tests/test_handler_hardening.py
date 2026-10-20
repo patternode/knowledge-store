@@ -9,8 +9,12 @@ import urllib.error
 
 import pytest
 
-from knowledge_store.agent import valves
-from knowledge_store.portal_api import agent_client, chat, handler, index, local
+from knowledge_store.answering.domain import valves
+from knowledge_store.answering.adapters import agent_client
+from knowledge_store.answering.slices import chat
+from knowledge_store.access.adapters import portal as handler
+from knowledge_store.knowledge_graph.adapters import index
+from knowledge_store.apps import local_portal as local
 from test_chat_api import State, event
 from test_review_fixes import _call, mixed  # noqa: F401
 
@@ -268,7 +272,7 @@ def test_the_service_token_is_never_requested_over_plain_http(monkeypatch):
 
 
 def test_the_eval_runner_sends_its_token_only_over_https_or_to_localhost():
-    from knowledge_store.evals.run import api_target
+    from knowledge_store.evaluation.adapters.run import api_target
     for bad in ("http://example.com", "ftp://example.com", "file:///etc/passwd"):
         with pytest.raises(SystemExit):
             api_target(bad, "tok", "c")

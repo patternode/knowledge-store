@@ -12,16 +12,19 @@ from pathlib import Path
 
 import pytest
 
-from knowledge_store import collections, layout
-from knowledge_store.config import SourceConfig
-from knowledge_store.ontology import renditions, versions
-from knowledge_store.pipeline import project, refine
-from knowledge_store.pipeline.ingest import ingest_source
-from knowledge_store.store import LocalStore, put_json
-from knowledge_store.structured.bind import bind, binding, mapped_doc_ids, published_mapping
-from knowledge_store.structured.mapping import Mapping, Table, load as load_mapping, r2rml
-from knowledge_store.structured.query import aggregate, lookup_rows, values_equal
-from knowledge_store.tools import gateway
+from knowledge_store.platform_services.slices import collections
+from knowledge_store.platform_services.domain import layout
+from knowledge_store.platform_services.slices.config import SourceConfig
+from knowledge_store.ontology.domain import renditions
+from knowledge_store.ontology.slices import versions
+from knowledge_store.knowledge_graph.slices import project
+from knowledge_store.ingestion.slices import refine
+from knowledge_store.ingestion.slices.ingest import ingest_source
+from knowledge_store.platform_services.adapters.store import LocalStore, put_json
+from knowledge_store.extraction.slices.bind_tables import bind, binding, mapped_doc_ids, published_mapping
+from knowledge_store.ontology.domain.mapping import Mapping, Table, load as load_mapping, r2rml
+from knowledge_store.knowledge_graph.slices.table_query import aggregate, lookup_rows, values_equal
+from knowledge_store.knowledge_graph.adapters import gateway
 
 ROOT = Path(__file__).resolve().parents[1]
 ONTO = ROOT / "examples/space-missions/ontology"
@@ -227,8 +230,8 @@ def test_the_catalog_is_bound_skipped_and_queried(tmp_path):
 
 def test_a_cited_figure_is_recomputed(tmp_path):
     pytest.importorskip("pydantic")
-    from knowledge_store.agent import app as agent_app
-    from knowledge_store.agent.grounding import Citation, Claim, GroundedAnswer, check, render
+    from knowledge_store.answering.adapters import agent_app
+    from knowledge_store.answering.domain.grounding import Citation, Claim, GroundedAnswer, check, render
     root, lake = _collection(tmp_path)
     versions.publish(lake, ONTO, by="test", activate=True)
     ingest_source(lake, SourceConfig("missions-tables", "local_dir",
@@ -294,7 +297,7 @@ def test_the_sweep_finds_catalog_csvs_in_the_landing_folder(tmp_path, layout_nam
     """The mapping names tables/missions.csv. The lab stores the full landing key, and a
     person often uploads the file itself rather than the tables/ directory. Both bind."""
     from fake_llm import FakeClient
-    from knowledge_store.pipeline import run
+    from knowledge_store.apps import sweep as run
     root, lake = _landing(tmp_path, layout_name)
     put_json(lake, layout.CONFIG_SETTINGS, {"ontology_mode": "curated", "discovery_min_docs": 99})
     rounds = run.run(root, FakeClient, "fake")
@@ -338,7 +341,7 @@ def test_two_files_of_the_same_name_are_not_a_guess(tmp_path):
 
 
 def test_a_mapping_added_to_a_published_version_is_not_ignored(tmp_path):
-    from knowledge_store.ontology import provided
+    from knowledge_store.ontology.slices import provided
     root, lake = _collection(tmp_path)
     bare = tmp_path / "bare"
     bare.mkdir()

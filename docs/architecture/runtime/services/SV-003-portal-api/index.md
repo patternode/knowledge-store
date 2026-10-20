@@ -15,8 +15,8 @@ part_of: BC-006
 composes_contexts: [BC-006, BC-004, BC-005]
 runtime_type: serverless
 repo: { url: "https://github.com/patternode/knowledge-store", path: "." }
-module_path: "src/knowledge_store/portal_api/handler.py"
-packages: ["knowledge_store.portal_api", "knowledge_store.site_grant", "knowledge_store.claims", "knowledge_store.workbench"]
+module_path: "src/knowledge_store/access/adapters/portal.py"
+packages: ["knowledge_store.access.adapters", "knowledge_store.access.adapters.site_grant", "knowledge_store.access.domain.claims", "knowledge_store.answering.slices.workbench"]
 deployed_to: [DN-007, DN-008]
 run_by: "PRD-001"
 provenance:
@@ -35,7 +35,7 @@ The Lambda behind API Gateway and CloudFront: every route of CT-001, the quota, 
 | Context | BC-006; composes BC-006, BC-004, BC-005 as built |
 | Realises | SBB-007 |
 | Node | DN-007, DN-008 |
-| Code | `src/knowledge_store/portal_api/handler.py (handler)` |
+| Code | `src/knowledge_store/access/adapters/portal.py (handler)` |
 | Talks to | The lake (served prefixes; writes ontology requests); the chat table; the agent Runtime as the person or a service client; the chat model for the fallback loop; two secrets. |
 | Stores | Writes chat#, quota# and usage# keys of the chat table and ontology/requests in the lake. |
 | Role | <name>-portal-api: read served layers, write requests, read and write the chat table, invoke the chat model and itself, read the service clients and the Anthropic key secrets. |

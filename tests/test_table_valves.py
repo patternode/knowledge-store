@@ -9,14 +9,15 @@ import pytest
 
 pytest.importorskip("pydantic")
 
-from knowledge_store.agent import app, valves  # noqa: E402
-from knowledge_store.agent.grounding import Citation, Claim, GroundedAnswer  # noqa: E402
-from knowledge_store.config import SourceConfig  # noqa: E402
-from knowledge_store.ontology import versions  # noqa: E402
-from knowledge_store.pipeline.ingest import ingest_source  # noqa: E402
-from knowledge_store.structured.bind import bind  # noqa: E402
-from knowledge_store.structured.query import aggregate, describe, lookup_rows  # noqa: E402
-from knowledge_store.tools import gateway  # noqa: E402
+from knowledge_store.answering.adapters import agent_app as app
+from knowledge_store.answering.domain import valves  # noqa: E402
+from knowledge_store.answering.domain.grounding import Citation, Claim, GroundedAnswer  # noqa: E402
+from knowledge_store.platform_services.slices.config import SourceConfig  # noqa: E402
+from knowledge_store.ontology.slices import versions  # noqa: E402
+from knowledge_store.ingestion.slices.ingest import ingest_source  # noqa: E402
+from knowledge_store.extraction.slices.bind_tables import bind  # noqa: E402
+from knowledge_store.knowledge_graph.slices.table_query import aggregate, describe, lookup_rows  # noqa: E402
+from knowledge_store.knowledge_graph.adapters import gateway  # noqa: E402
 from test_structured import CORPUS, ONTO, _collection  # noqa: E402
 
 
@@ -89,7 +90,7 @@ def test_the_bound_catalog_adds_every_table_question_to_the_prompt(tmp_path):
     assert "Juno" not in bare
 
     from types import SimpleNamespace as NS
-    from knowledge_store.portal_api.chat import system_text
+    from knowledge_store.answering.slices.chat import system_text
     onto = {"classes": [], "relations": [], "attributes": []}
     idx = NS(lake=lake, ontology=onto, ontology_view=lambda private: onto,
              summary={"profile": {"name": "Missions", "description": "A catalog."}})

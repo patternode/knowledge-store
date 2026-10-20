@@ -11,10 +11,12 @@ from pathlib import Path
 import pytest
 
 from fake_llm import FakeClient
-from knowledge_store import collections, layout
-from knowledge_store.pipeline import run
-from knowledge_store.portal_api import handler, index
-from knowledge_store.store import LocalStore, put_json
+from knowledge_store.platform_services.slices import collections
+from knowledge_store.platform_services.domain import layout
+from knowledge_store.apps import sweep as run
+from knowledge_store.access.adapters import portal as handler
+from knowledge_store.knowledge_graph.adapters import index
+from knowledge_store.platform_services.adapters.store import LocalStore, put_json
 from test_lifecycle import DOCS, PROFILE
 
 ROOT = Path(__file__).resolve().parents[1]

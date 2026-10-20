@@ -1,6 +1,6 @@
 # The evaluation set for examples/space-missions: questions with what a right answer states.
-# Run it with: python -m knowledge_store.evals examples/evals/space-missions.yaml --lake <lake> --yes
-# The format is in src/knowledge_store/evals/score.py. Answers follow the corpus as written, which is a
+# Run it with: python -m knowledge_store.evaluation examples/evals/space-missions.yaml --lake <lake> --yes
+# The format is in src/knowledge_store/evaluation/domain/score.py. Answers follow the corpus as written, which is a
 # demonstration text and not fact-checked; where it differs from reality, the note says so.
 #
 # Kept outside examples/space-missions so that loading the corpus does not ingest it.

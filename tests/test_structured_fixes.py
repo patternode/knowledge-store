@@ -13,18 +13,18 @@ from pathlib import Path
 
 import pytest
 
-from knowledge_store.config import SourceConfig
-from knowledge_store.ontology import versions
-from knowledge_store.pipeline.ingest import ingest_source
-from knowledge_store.structured.bind import bind, binding, key_text
-from knowledge_store.structured.query import aggregate, describe, lookup_rows, values_equal
-from knowledge_store.tools import gateway
+from knowledge_store.platform_services.slices.config import SourceConfig
+from knowledge_store.ontology.slices import versions
+from knowledge_store.ingestion.slices.ingest import ingest_source
+from knowledge_store.extraction.slices.bind_tables import bind, binding, key_text
+from knowledge_store.knowledge_graph.slices.table_query import aggregate, describe, lookup_rows, values_equal
+from knowledge_store.knowledge_graph.adapters import gateway
 from test_structured import CORPUS, ONTO, _collection, _copy, _edit, _set_version
 
 pydantic = pytest.importorskip("pydantic")
 
-from knowledge_store.agent import app as agent_app  # noqa: E402
-from knowledge_store.agent.grounding import Citation, Claim, FilterRef, GroundedAnswer, check, figure_matches  # noqa: E402
+from knowledge_store.answering.adapters import agent_app  # noqa: E402
+from knowledge_store.answering.domain.grounding import Citation, Claim, FilterRef, GroundedAnswer, check, figure_matches  # noqa: E402
 
 
 class Tools:
@@ -256,7 +256,7 @@ def test_a_table_made_private_after_the_first_bind_is_rebound_private(tmp_path):
 
 
 def test_a_held_snapshot_stands_only_for_the_same_file_mapping_and_scope(tmp_path):
-    from knowledge_store.structured.bind import _unchanged, mapping_hash, published_mapping
+    from knowledge_store.extraction.slices.bind_tables import _unchanged, mapping_hash, published_mapping
     _, lake, _ = _bound(tmp_path)
     table = published_mapping(lake).table("missions")
     held = binding(lake)["missions"]
@@ -289,7 +289,7 @@ def test_a_private_table_is_not_described_to_a_public_caller(tmp_path):
 def test_bad_tool_arguments_cost_a_tool_call_not_the_answer(tmp_path):
     from types import SimpleNamespace
 
-    from knowledge_store.portal_api import chat
+    from knowledge_store.answering.slices import chat
     root, lake, _ = _bound(tmp_path)
     idx = SimpleNamespace(lake=lake)
     one = chat.run_tool(idx, "lookup_rows", {"type": "Mission", "filters": {"attribute": "name", "op": "eq", "value": "Juno"},
@@ -305,7 +305,7 @@ def test_bad_tool_arguments_cost_a_tool_call_not_the_answer(tmp_path):
 def test_the_portal_shows_only_figures_a_tool_returned(tmp_path):
     from types import SimpleNamespace
 
-    from knowledge_store.portal_api import chat
+    from knowledge_store.answering.slices import chat
     _, lake, _ = _bound(tmp_path)
     idx = SimpleNamespace(lake=lake, passages={}, visible=lambda *_: True)
     fig = aggregate(lake, metric="atlas_v_launches")
@@ -316,14 +316,14 @@ def test_the_portal_shows_only_figures_a_tool_returned(tmp_path):
 
 
 def test_the_cost_keeps_calls_the_hooks_did_not_see():
-    from knowledge_store import workbench
+    from knowledge_store.answering.slices import workbench
     steps = [{"n": 1, "kind": "model", "title": "Thinking", "usage": {"inputTokens": 100, "outputTokens": 10}}]
     cost = workbench.query_cost(steps, model_id=None, usage={"inputTokens": 900, "outputTokens": 90})
     assert sum(p["tokens"] for p in cost["parts"]) == 990
 
 
 def test_a_sample_link_to_a_table_opens_its_snapshot_in_scope(tmp_path):
-    from knowledge_store.portal_api import handler
+    from knowledge_store.access.adapters import portal as handler
     root, lake = _collection(tmp_path)
     dest = _copy(tmp_path)
     _edit(dest / "mappings.yaml", "class: LaunchVehicle\n    key:", "class: LaunchVehicle\n    scope: private\n    key:")

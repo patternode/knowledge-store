@@ -24,7 +24,7 @@ agent = ["boto3>=1.40", "strands-agents>=1.50", "bedrock-agentcore>=1.20", "mcp>
 dev = ["pytest>=8", "moto>=5", "knowledge-store[aws,mongo,neo4j,age,agent]"]
 
 [project.scripts]
-knowledge-store = "knowledge_store.cli:main"
+knowledge-store = "knowledge_store.apps.cli:main"
 
 [build-system]
 requires = ["setuptools>=75"]
@@ -34,8 +34,8 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"knowledge_store.ontology" = ["*.ttl"]
-"knowledge_store.portal_api" = ["*.html", "*.js", "*.css"]
+"knowledge_store.ontology.domain" = ["*.ttl"]
+"knowledge_store.access.adapters" = ["*.html", "*.js", "*.css"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

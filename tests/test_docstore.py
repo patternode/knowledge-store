@@ -11,10 +11,11 @@ import uuid
 
 import pytest
 
-from knowledge_store import layout
-from knowledge_store.pipeline.load import load_documents
-from knowledge_store.portal_api import handler, index
-from knowledge_store.portal_api.docstore import DocIndex, connect
+from knowledge_store.platform_services.domain import layout
+from knowledge_store.knowledge_graph.slices.load import load_documents
+from knowledge_store.access.adapters import portal as handler
+from knowledge_store.knowledge_graph.adapters import index
+from knowledge_store.knowledge_graph.adapters.docstore import DocIndex, connect
 from test_review_fixes import mixed  # noqa: F401  (fixture: a collection with public and private sources)
 
 
@@ -87,7 +88,7 @@ def test_portal_serves_from_the_document_store(both):
 
 
 def test_document_load_is_idempotent_and_rolls(mixed, db):
-    from knowledge_store.store import get_json, put_json
+    from knowledge_store.platform_services.adapters.store import get_json, put_json
     _, lake = mixed
     v = get_json(lake, layout.ONTOLOGY_ACTIVE)["version"]
     first = load_documents(lake, db)

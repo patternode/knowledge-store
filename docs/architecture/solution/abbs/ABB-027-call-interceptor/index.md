@@ -23,7 +23,7 @@ interfaces:
 mandatory_subabbs: [iam, observability, governance]
 cross_cutting: false
 references:
-  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/tools/interceptor.py", ref: "main" }
+  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/access/adapters/gateway_interceptor.py", ref: "main" }
 provenance:
   origin: ai-generated
   review_state: ai-raw
@@ -97,7 +97,7 @@ The private group and the site roles are deployment inputs; the rule is code.
 
 | Where | What |
 |---|---|
-| Code | `src/knowledge_store/tools/interceptor.py; claims.py` |
+| Code | `src/knowledge_store/access/adapters/gateway_interceptor.py; claims.py` |
 | Capabilities | CAP-009 |
 | Context | BC-006 |
 

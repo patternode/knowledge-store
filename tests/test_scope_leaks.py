@@ -10,19 +10,21 @@ import json
 import pytest
 from rdflib import Dataset
 
-from knowledge_store import layout
-from knowledge_store.config import SourceConfig
-from knowledge_store.graph import sparql, traverse
-from knowledge_store.ontology import versions
-from knowledge_store.pipeline import project
-from knowledge_store.pipeline.ingest import ingest_source
-from knowledge_store.pipeline.load import load_sparql
-from knowledge_store.pipeline.refine import load_doc
-from knowledge_store.portal_api import chat, index
-from knowledge_store.portal_api.index import Index
-from knowledge_store.store import put_json
-from knowledge_store.structured.bind import bind
-from knowledge_store.structured.query import aggregate, describe
+from knowledge_store.platform_services.domain import layout
+from knowledge_store.platform_services.slices.config import SourceConfig
+from knowledge_store.knowledge_graph.adapters import sparql
+from knowledge_store.knowledge_graph.domain import traverse
+from knowledge_store.ontology.slices import versions
+from knowledge_store.knowledge_graph.slices import project
+from knowledge_store.ingestion.slices.ingest import ingest_source
+from knowledge_store.knowledge_graph.slices.load import load_sparql
+from knowledge_store.ingestion.slices.refine import load_doc
+from knowledge_store.answering.slices import chat
+from knowledge_store.knowledge_graph.adapters import index
+from knowledge_store.knowledge_graph.adapters.index import Index
+from knowledge_store.platform_services.adapters.store import put_json
+from knowledge_store.extraction.slices.bind_tables import bind
+from knowledge_store.knowledge_graph.slices.table_query import aggregate, describe
 from test_graph import ALPHA, NOVA, ZETA
 from test_review_fixes import _call, mixed  # noqa: F401  (fixture: a collection with public and private sources)
 from test_structured import CORPUS, _collection, _copy, _edit
@@ -205,7 +207,8 @@ def test_a_metric_over_a_private_table_is_hidden(tmp_path):
 
 def test_graph_rows_carry_the_public_view_and_brief_reads_it():
     from types import SimpleNamespace as NS
-    from knowledge_store.graph import rows, traverse
+    from knowledge_store.knowledge_graph.ports import rows
+    from knowledge_store.knowledge_graph.domain import traverse
     spec = NS(classes={}, ancestors=lambda t: [t])
     e = {"id": "entity/org/nova", "label": "Agency Nova", "type": "SecretUnit", "types": ["Organisation", "SecretUnit"],
          "aliases": ["BLACKBIRD", "Nova"], "scope": "public", "docs": ["d1", "d2"], "out": [], "in": [],
@@ -222,7 +225,7 @@ def test_graph_rows_carry_the_public_view_and_brief_reads_it():
 
 
 def test_a_graph_store_node_loaded_before_the_public_view_shows_no_aliases():
-    from knowledge_store.graph import traverse
+    from knowledge_store.knowledge_graph.domain import traverse
     old = {"id": "x", "name": "X", "type": "Organisation", "aliases": ["BLACKBIRD"], "docs": 3, "links": 2,
            "scope": "public", "public_type": None, "public_types": None, "public_aliases": None}
     seen = traverse.brief(old, private=False)
@@ -230,6 +233,7 @@ def test_a_graph_store_node_loaded_before_the_public_view_shows_no_aliases():
 
 
 def test_the_graph_stores_return_the_public_fields():
-    from knowledge_store.graph import age, neo4j
+    from knowledge_store.knowledge_graph.adapters import age
+    from knowledge_store.knowledge_graph.adapters import neo4j
     for f in ("public_type", "public_types", "public_aliases", "public_docs", "public_links"):
         assert f".{f}" in neo4j._BRIEF and f in age._FIELDS and f"y.{f}" in age._returned("y")

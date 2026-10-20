@@ -1,4 +1,4 @@
-from knowledge_store.portal_api.agent_client import session_for
+from knowledge_store.answering.adapters.agent_client import session_for
 
 
 def test_one_warm_session_per_person_and_scope():

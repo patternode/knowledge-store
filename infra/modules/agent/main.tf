@@ -31,7 +31,7 @@ variable "package_root" {
 }
 variable "tool_schema_dir" {
   type        = string
-  description = "src/knowledge_store/tools: schema-graph.json and schema-passages.json, kept in step with the code by a test"
+  description = "src/knowledge_store/knowledge_graph/adapters: schema-graph.json and schema-passages.json, kept in step with the code by a test"
 }
 variable "lake_bucket" { type = string }
 variable "lake_bucket_arn" { type = string }
@@ -230,7 +230,7 @@ resource "aws_lambda_function" "graph" {
   function_name    = "${var.name}-tools-graph"
   role             = aws_iam_role.graph.arn
   runtime          = "python3.12"
-  handler          = "knowledge_store.tools.gateway.lambda_handler"
+  handler          = "knowledge_store.knowledge_graph.adapters.gateway.lambda_handler"
   filename         = data.archive_file.code.output_path
   source_code_hash = data.archive_file.code.output_base64sha256
   timeout          = 60
@@ -278,7 +278,7 @@ resource "aws_lambda_function" "passages" {
   function_name    = "${var.name}-tools-passages"
   role             = aws_iam_role.passages.arn
   runtime          = "python3.12"
-  handler          = "knowledge_store.tools.gateway.lambda_handler"
+  handler          = "knowledge_store.knowledge_graph.adapters.gateway.lambda_handler"
   filename         = data.archive_file.code.output_path
   source_code_hash = data.archive_file.code.output_base64sha256
   timeout          = 60
@@ -306,7 +306,7 @@ resource "aws_lambda_function" "interceptor" {
   function_name    = "${var.name}-agent-interceptor"
   role             = aws_iam_role.interceptor.arn
   runtime          = "python3.12"
-  handler          = "knowledge_store.tools.interceptor.lambda_handler"
+  handler          = "knowledge_store.access.adapters.gateway_interceptor.lambda_handler"
   filename         = data.archive_file.code.output_path
   source_code_hash = data.archive_file.code.output_base64sha256
   timeout          = 10

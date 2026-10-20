@@ -13,9 +13,11 @@ import uuid
 
 import pytest
 
-from knowledge_store import claims, ledger, llm
-from knowledge_store.portal_api import state
-from knowledge_store.store import LocalStore, PrefixStore, S3Store, store_from_uri
+from knowledge_store.access.domain import claims
+from knowledge_store.platform_services.adapters import ledger
+from knowledge_store.platform_services.adapters import llm
+from knowledge_store.access.adapters import state
+from knowledge_store.platform_services.adapters.store import LocalStore, PrefixStore, S3Store, store_from_uri
 
 # --- object stores ------------------------------------------------------------------------
 

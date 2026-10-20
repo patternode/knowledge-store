@@ -10,7 +10,8 @@ import pytest
 from pathlib import Path
 from types import SimpleNamespace
 
-from knowledge_store.tools import gateway, interceptor
+from knowledge_store.knowledge_graph.adapters import gateway
+from knowledge_store.access.adapters import gateway_interceptor as interceptor
 from test_review_fixes import mixed  # noqa: F401  (fixture: a collection with public and private sources)
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -59,7 +60,7 @@ def test_tools_honour_the_injected_scope(mixed, monkeypatch):  # noqa: F811
 @pytest.mark.parametrize("name,toolset", [("schema.json", "all"), ("schema-graph.json", "graph"),
                                           ("schema-passages.json", "passages")])
 def test_committed_tool_schemas_match_the_code(name, toolset):
-    committed = json.loads((ROOT / "src/knowledge_store/tools" / name).read_text())
-    assert committed == gateway.tool_schema(toolset), f"regenerate src/knowledge_store/tools/{name} from tool_schema()"
+    committed = json.loads((ROOT / "src/knowledge_store/knowledge_graph/adapters" / name).read_text())
+    assert committed == gateway.tool_schema(toolset), f"regenerate src/knowledge_store/knowledge_graph/adapters/{name} from tool_schema()"
     for t in committed:
         assert "caller_private" in t["inputSchema"]["properties"], "the interceptor sets a declared input"

@@ -6,10 +6,13 @@ from __future__ import annotations
 import pytest
 
 from fake_llm import FakeClient
-from knowledge_store import layout
-from knowledge_store.ontology import provided, review, versions, writer
-from knowledge_store.pipeline import run
-from knowledge_store.store import get_json
+from knowledge_store.platform_services.domain import layout
+from knowledge_store.ontology.slices import provided
+from knowledge_store.ontology.slices import review
+from knowledge_store.ontology.slices import versions
+from knowledge_store.ontology.domain import writer
+from knowledge_store.apps import sweep as run
+from knowledge_store.platform_services.adapters.store import get_json
 from test_lifecycle import PROFILE, _collection_lake
 
 DRAFT = {

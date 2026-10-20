@@ -45,7 +45,7 @@ run "a_small_demo_without_them" {
 run "the_agent_waits_for_its_image" {
   command = plan
   assert {
-    condition     = module.knowledge_store.agent.runtime_arn == "" && module.knowledge_store.agent.qualifier == "DEFAULT"
+    condition     = module.knowledge_store.answering.adapters.runtime_arn == "" && module.knowledge_store.answering.adapters.qualifier == "DEFAULT"
     error_message = "the Runtime is created only with agent.runtime = true"
   }
 }
@@ -56,11 +56,11 @@ run "the_agent_limits_each_caller_and_its_model" {
     daily_questions = 25
   }
   assert {
-    condition     = module.knowledge_store.agent.invocation_limit == 50
+    condition     = module.knowledge_store.answering.adapters.invocation_limit == 50
     error_message = "by default the agent allows twice daily_questions per person per day"
   }
   assert {
-    condition = toset(module.knowledge_store.agent.model_grants) == toset([
+    condition = toset(module.knowledge_store.answering.adapters.model_grants) == toset([
       "arn:aws:bedrock:*::foundation-model/anthropic.claude-sonnet-5",
       "arn:aws:bedrock:us-east-1:123456789012:inference-profile/us.anthropic.claude-sonnet-5",
     ])
@@ -74,11 +74,11 @@ run "the_agent_limit_can_be_set_or_off" {
     agent = { daily_invocations = 0, model_id = "anthropic.claude-sonnet-5" }
   }
   assert {
-    condition     = module.knowledge_store.agent.invocation_limit == 0
+    condition     = module.knowledge_store.answering.adapters.invocation_limit == 0
     error_message = "daily_invocations = 0 turns the agent's own limit off"
   }
   assert {
-    condition     = toset(module.knowledge_store.agent.model_grants) == toset(["arn:aws:bedrock:*::foundation-model/anthropic.claude-sonnet-5"])
+    condition     = toset(module.knowledge_store.answering.adapters.model_grants) == toset(["arn:aws:bedrock:*::foundation-model/anthropic.claude-sonnet-5"])
     error_message = "a foundation model id is granted as itself, with no inference profile"
   }
 }

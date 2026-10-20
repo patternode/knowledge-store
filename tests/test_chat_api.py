@@ -5,7 +5,8 @@ from __future__ import annotations
 
 import json
 
-from knowledge_store.portal_api import agent_client, handler
+from knowledge_store.answering.adapters import agent_client
+from knowledge_store.access.adapters import portal as handler
 from test_review_fixes import mixed  # noqa: F401
 
 
@@ -62,7 +63,7 @@ def test_an_agent_error_is_a_failed_question(mixed, monkeypatch):
 
 def test_documents_open_only_in_scope(mixed):
     root, lake = mixed
-    from knowledge_store.pipeline.refine import load_doc, silver_doc_ids
+    from knowledge_store.ingestion.slices.refine import load_doc, silver_doc_ids
     docs = {load_doc(lake, d)["scope"]: d for d in silver_doc_ids(lake)}
     ok = handler.handler(event("GET", "/api/document", qs={"doc": docs["public"]}), None)
     assert ok["statusCode"] == 200 and json.loads(ok["body"])["doc"] == docs["public"]

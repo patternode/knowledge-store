@@ -83,7 +83,7 @@ Cognito ([`modules/identity`](../../infra/modules/identity/main.tf)):
 - The pool's deletion protection is off by default so that destroying works; turn it on for a
   long-lived deployment.
 
-Sign-in through a host website (`site_sign_in`, [`site_grant.py`](../../src/knowledge_store/site_grant.py)):
+Sign-in through a host website (`site_sign_in`, [`site_grant.py`](../../src/knowledge_store/access/adapters/site_grant.py)):
 
 - The website signs people in and frames the portal. It hands each page a short grant, an ES256
   JWT whose audience names this lab, and renews it before it expires. The page sends it as
@@ -103,7 +103,7 @@ Sign-in through a host website (`site_sign_in`, [`site_grant.py`](../../src/know
 Every piece of content is public or private. A source is `scope = "private"`, and the facts and
 passages from it are shown only to callers who may read private content: a person in the
 `private-readers` group, a person with a private role of the website, or an application with the
-`tools.private` scope. The rule is one function ([`claims.py`](../../src/knowledge_store/claims.py)),
+`tools.private` scope. The rule is one function ([`claims.py`](../../src/knowledge_store/access/domain/claims.py)),
 and it is applied at each hop:
 
 | Hop | Who checks | What it reads |
@@ -112,7 +112,7 @@ and it is applied at each hop:
 | The agent | the Runtime's authorizer | the same token; the agent's daily count uses its `sub` |
 | The tools | the Gateway's authorizer, then the interceptor | the token's groups or scopes, written into every tool call as `caller_private` |
 
-The interceptor ([`tools/interceptor.py`](../../src/knowledge_store/tools/interceptor.py)) runs
+The interceptor ([`tools/interceptor.py`](../../src/knowledge_store/access/adapters/gateway_interceptor.py)) runs
 after the Gateway has verified the token. It overwrites whatever the model or the caller put in
 `caller_private`, so the model cannot ask for more than the person may read. The tools trust only
 that argument, and only a real boolean true: a call that arrives without the interceptor, such as
@@ -157,7 +157,7 @@ TTL, and the API sends `cache-control: no-store`, so no answer is ever served to
 
 The path is CloudFront, then API Gateway, then the Lambda
 ([`modules/portal`](../../infra/modules/portal/main.tf),
-[`portal_api/handler.py`](../../src/knowledge_store/portal_api/handler.py)).
+[`portal_api/handler.py`](../../src/knowledge_store/access/adapters/portal.py)).
 
 - API Gateway checks the Cognito token before the Lambda runs. With site sign-in the route is
   open at API Gateway and the Lambda verifies the grant instead, on every request.
@@ -183,11 +183,11 @@ The path is CloudFront, then API Gateway, then the Lambda
 ## The agent
 
 The agent on AgentCore Runtime ([`modules/agent`](../../infra/modules/agent/main.tf),
-[`agent/app.py`](../../src/knowledge_store/agent/app.py)) accepts only tokens from the portal's
+[`agent/app.py`](../../src/knowledge_store/answering/adapters/agent_app.py)) accepts only tokens from the portal's
 client and the service clients. Its only incoming header is `Authorization`. A session idles out
 after `agent.idle_session_minutes`.
 
-Grounding ([`agent/grounding.py`](../../src/knowledge_store/agent/grounding.py)) is the control
+Grounding ([`agent/grounding.py`](../../src/knowledge_store/answering/domain/grounding.py)) is the control
 that makes the answer safe to show. The model's answer is never shown as written. It is a list of
 claims, each citing a passage with a verbatim quote, or a cell or a figure of a mapped table, and
 code checks each citation:
@@ -208,12 +208,12 @@ The Bedrock Guardrail screens each question for prompt attacks (high strength) a
 content (medium), and checks each remaining claim's grounding. Its refusal messages name no
 internals.
 
-The valves ([`agent/valves.py`](../../src/knowledge_store/agent/valves.py)) bound every
+The valves ([`agent/valves.py`](../../src/knowledge_store/answering/domain/valves.py)) bound every
 question: tool calls, model calls, output tokens per call, repair turns, question length and
 history. Past the tool limit, tools refuse and the agent answers from what it has.
 
 Because a person can call the Runtime directly with the token the portal forwards, the agent
-counts each person's invocations per day itself ([`agent/quota.py`](../../src/knowledge_store/agent/quota.py)),
+counts each person's invocations per day itself ([`agent/quota.py`](../../src/knowledge_store/access/slices/quota.py)),
 in the portal's state table under its own key space, set a little above the portal's limit so a
 retry through the portal is not refused. The service clients are exempt, because only the portal
 holds their credentials and the portal has already counted the person.
@@ -240,8 +240,8 @@ What remains is the risk that a planted document steers which passages are read 
 are stated, within what the sources support. Weigh it for your corpus; it is why private
 documents sit behind the scope filter rather than in a shared prompt.
 
-Ingestion is bounded as well ([`adapters/http_urls.py`](../../src/knowledge_store/adapters/http_urls.py),
-[`refine/parsers.py`](../../src/knowledge_store/refine/parsers.py)):
+Ingestion is bounded as well ([`adapters/http_urls.py`](../../src/knowledge_store/ingestion/adapters/http_urls.py),
+[`refine/parsers.py`](../../src/knowledge_store/ingestion/domain/parsers.py)):
 
 - The URL adapter fetches HTTPS only, initially and across redirects, and only from hosts that
   resolve to public addresses, so a listed page cannot send the fetcher onto the account's own
@@ -382,15 +382,15 @@ These are the places where the design accepts a risk or leaves a decision to you
 
 | Control | File |
 |---|---|
-| Who may read private content | [`src/knowledge_store/claims.py`](../../src/knowledge_store/claims.py) |
-| The caller's scope on every tool call | [`src/knowledge_store/tools/interceptor.py`](../../src/knowledge_store/tools/interceptor.py) |
-| The site grant | [`src/knowledge_store/site_grant.py`](../../src/knowledge_store/site_grant.py) |
-| Citation checks | [`src/knowledge_store/agent/grounding.py`](../../src/knowledge_store/agent/grounding.py) |
-| Limits per question | [`src/knowledge_store/agent/valves.py`](../../src/knowledge_store/agent/valves.py) |
-| The agent's daily count | [`src/knowledge_store/agent/quota.py`](../../src/knowledge_store/agent/quota.py) |
-| The portal's routes, quota, origin check and input limits | [`src/knowledge_store/portal_api/handler.py`](../../src/knowledge_store/portal_api/handler.py) |
-| URL fetching | [`src/knowledge_store/adapters/http_urls.py`](../../src/knowledge_store/adapters/http_urls.py) |
-| Size limits on documents | [`src/knowledge_store/refine/parsers.py`](../../src/knowledge_store/refine/parsers.py) |
+| Who may read private content | [`src/knowledge_store/access/domain/claims.py`](../../src/knowledge_store/access/domain/claims.py) |
+| The caller's scope on every tool call | [`src/knowledge_store/access/adapters/gateway_interceptor.py`](../../src/knowledge_store/access/adapters/gateway_interceptor.py) |
+| The site grant | [`src/knowledge_store/access/adapters/site_grant.py`](../../src/knowledge_store/access/adapters/site_grant.py) |
+| Citation checks | [`src/knowledge_store/answering/domain/grounding.py`](../../src/knowledge_store/answering/domain/grounding.py) |
+| Limits per question | [`src/knowledge_store/answering/domain/valves.py`](../../src/knowledge_store/answering/domain/valves.py) |
+| The agent's daily count | [`src/knowledge_store/access/slices/quota.py`](../../src/knowledge_store/access/slices/quota.py) |
+| The portal's routes, quota, origin check and input limits | [`src/knowledge_store/access/adapters/portal.py`](../../src/knowledge_store/access/adapters/portal.py) |
+| URL fetching | [`src/knowledge_store/ingestion/adapters/http_urls.py`](../../src/knowledge_store/ingestion/adapters/http_urls.py) |
+| Size limits on documents | [`src/knowledge_store/ingestion/domain/parsers.py`](../../src/knowledge_store/ingestion/domain/parsers.py) |
 | The page's policy and DOM rules | [`chat/index.html`](../../chat/index.html), [`chat/common.js`](../../chat/common.js) |
 | Sign-in | [`infra/modules/identity/main.tf`](../../infra/modules/identity/main.tf) |
 | CloudFront, the API and its role | [`infra/modules/portal/main.tf`](../../infra/modules/portal/main.tf) |

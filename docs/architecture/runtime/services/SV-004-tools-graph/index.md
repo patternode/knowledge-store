@@ -15,8 +15,8 @@ part_of: BC-004
 composes_contexts: [BC-004]
 runtime_type: serverless
 repo: { url: "https://github.com/patternode/knowledge-store", path: "." }
-module_path: "src/knowledge_store/tools/gateway.py"
-packages: ["knowledge_store.tools", "knowledge_store.graph", "knowledge_store.portal_api.index", "knowledge_store.structured.query"]
+module_path: "src/knowledge_store/knowledge_graph/adapters/gateway.py"
+packages: ["knowledge_store.knowledge_graph.adapters", "knowledge_store.knowledge_graph.ports", "knowledge_store.knowledge_graph.adapters.index", "knowledge_store.knowledge_graph.slices.table_query"]
 deployed_to: [DN-007, DN-006]
 run_by: "PRD-001; called by the Gateway"
 provenance:
@@ -35,7 +35,7 @@ The ten graph and table tools as a Gateway target in the private subnets, readin
 | Context | BC-004; composes BC-004 as built |
 | Realises | SBB-005 |
 | Node | DN-007, DN-006 |
-| Code | `src/knowledge_store/tools/gateway.py (lambda_handler, TOOLSET=graph)` |
+| Code | `src/knowledge_store/knowledge_graph/adapters/gateway.py (lambda_handler, TOOLSET=graph)` |
 | Talks to | Neptune over SPARQL with SigV4; the lake's gold, ontology and config prefixes. |
 | Stores | Reads only. |
 | Role | <name>-tools-graph: read config and the collections' gold, ontology and config layers; Neptune connect and read; VPC networking. |

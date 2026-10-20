@@ -14,11 +14,12 @@ import os
 
 import pytest
 
-from knowledge_store import graph, layout
-from knowledge_store.graph import traverse
-from knowledge_store.pipeline.load import load_graph
-from knowledge_store.portal_api import index
-from knowledge_store.store import get_json, put_json
+from knowledge_store.knowledge_graph import ports as graph
+from knowledge_store.platform_services.domain import layout
+from knowledge_store.knowledge_graph.domain import traverse
+from knowledge_store.knowledge_graph.slices.load import load_graph
+from knowledge_store.knowledge_graph.adapters import index
+from knowledge_store.platform_services.adapters.store import get_json, put_json
 from test_review_fixes import mixed  # noqa: F401  (fixture: a collection with public and private sources)
 
 ALPHA, ORBIS = "entity/Mission/mission-alpha", "entity/SpaceAgency/agency-orbis"
@@ -46,8 +47,8 @@ def test_release_renders_graph_schemas(mixed):
 
 def test_rows_follow_the_mapping(mixed):
     _, lake = mixed
-    from knowledge_store.extract.rdf import data_base
-    from knowledge_store.ontology import versions
+    from knowledge_store.extraction.domain.rdf import data_base
+    from knowledge_store.ontology.slices import versions
     v = versions.active_version(lake)
     spec, _ = versions.load_version(lake, v)
     nodes, edges = graph.rows(get_json(lake, layout.index_key(v, "entities")),
@@ -92,14 +93,14 @@ def backend(request):
         if not uri:
             pytest.skip("NEO4J_TEST_URI is not set")
         from neo4j import GraphDatabase
-        from knowledge_store.graph.neo4j import Neo4jStore
+        from knowledge_store.knowledge_graph.adapters.neo4j import Neo4jStore
         s = Neo4jStore(GraphDatabase.driver(uri, auth=("neo4j", os.environ["NEO4J_TEST_PASSWORD"])))
     else:
         dsn = os.environ.get("AGE_TEST_DSN")
         if not dsn:
             pytest.skip("AGE_TEST_DSN is not set")
         import psycopg
-        from knowledge_store.graph.age import AgeStore
+        from knowledge_store.knowledge_graph.adapters.age import AgeStore
         with psycopg.connect(dsn, autocommit=True) as c:
             c.execute("CREATE EXTENSION IF NOT EXISTS age")
         s = AgeStore(dsn)
@@ -179,7 +180,7 @@ def test_age_readers_can_read_but_not_write(mixed):
     if not dsn:
         pytest.skip("AGE_TEST_DSN is not set")
     import psycopg
-    from knowledge_store.graph.age import AgeStore
+    from knowledge_store.knowledge_graph.adapters.age import AgeStore
     with psycopg.connect(dsn, autocommit=True) as c:
         if not c.execute("SELECT 1 FROM pg_roles WHERE rolname = 'ks_reader'").fetchone():
             c.execute("CREATE ROLE ks_reader LOGIN PASSWORD 'reader-test'")

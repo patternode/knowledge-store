@@ -11,10 +11,10 @@ from email.message import Message
 
 import pytest
 
-from knowledge_store.adapters import http_urls
-from knowledge_store.adapters.base import SourceItem
-from knowledge_store.config import SourceConfig
-from knowledge_store.refine import UnsupportedFormat, parse
+from knowledge_store.ingestion.adapters import http_urls
+from knowledge_store.ingestion.ports import SourceItem
+from knowledge_store.platform_services.slices.config import SourceConfig
+from knowledge_store.ingestion.domain.parsing import UnsupportedFormat, parse
 
 # --- http_urls -----------------------------------------------------------------------------------
 
@@ -147,7 +147,7 @@ def test_html_title_still_extracted():
 
 
 def test_size_caps_per_format(monkeypatch):
-    from knowledge_store.refine import parsers
+    from knowledge_store.ingestion.domain import parsers
     monkeypatch.setattr(parsers, "MAX_BYTES", 100)
     monkeypatch.setitem(parsers.MAX_BYTES_BY_PARSER, parsers.parse_pdf, 200)
     with pytest.raises(UnsupportedFormat, match="limit"):
@@ -158,8 +158,8 @@ def test_size_caps_per_format(monkeypatch):
 
 
 def test_oversized_document_recorded_not_fatal(monkeypatch):
-    from knowledge_store.pipeline.refine import refine_one
-    from knowledge_store.refine import parsers
+    from knowledge_store.ingestion.slices.refine import refine_one
+    from knowledge_store.ingestion.domain import parsers
     monkeypatch.setattr(parsers, "MAX_BYTES", 10)
 
     class Lake:
@@ -182,7 +182,8 @@ TTL = """@prefix owl: <http://www.w3.org/2002/07/owl#> .
 @pytest.mark.parametrize("kind", ["owl:Class", "owl:ObjectProperty", "owl:DatatypeProperty"])
 @pytest.mark.parametrize("path", ["neo4j/schema.cypher", "age/schema.sql"])
 def test_malicious_local_name_rejected(kind, path):
-    from knowledge_store.ontology import model, renditions
+    from knowledge_store.ontology.domain import model
+    from knowledge_store.ontology.domain import renditions
     evil = "x');SELECT(drop_graph('g',true))--"
     spec = model.load(data=TTL % (evil, kind))
     if (path == "age/schema.sql") != (kind == "owl:ObjectProperty"):
@@ -193,7 +194,8 @@ def test_malicious_local_name_rejected(kind, path):
 
 
 def test_plain_names_render_on_loader_labels():
-    from knowledge_store.ontology import model, renditions
+    from knowledge_store.ontology.domain import model
+    from knowledge_store.ontology.domain import renditions
     spec = model.load(data=TTL % ("launchedBy", "owl:ObjectProperty") + "<http://ex.org/o#revenue> a owl:DatatypeProperty ; "
                                                                       "rdfs:domain <http://ex.org/o#Company> .\n")
     cy = renditions.render_schema(spec, "neo4j/schema.cypher")

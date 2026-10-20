@@ -7,10 +7,11 @@ from types import SimpleNamespace
 import pytest
 
 from fake_llm import FakeClient
-from knowledge_store import collections, layout
-from knowledge_store.pipeline import run
-from knowledge_store.store import LocalStore, put_json
-from knowledge_store.tools import gateway
+from knowledge_store.platform_services.slices import collections
+from knowledge_store.platform_services.domain import layout
+from knowledge_store.apps import sweep as run
+from knowledge_store.platform_services.adapters.store import LocalStore, put_json
+from knowledge_store.knowledge_graph.adapters import gateway
 from test_lifecycle import DOCS, PROFILE
 
 

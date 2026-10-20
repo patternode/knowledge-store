@@ -117,7 +117,7 @@ Turning tables on for such a collection takes four steps:
 Check the mapping before applying, with the same code publish runs:
 
 ```bash
-python -c "from knowledge_store.ontology import model; from knowledge_store.structured import mapping; \
+python -c "from knowledge_store.ontology.domain import model; from knowledge_store.extraction.slices import mapping; \
 d='ontology/<collection>'; mapping.load(d, model.load(data=open(d + '/ontology.ttl').read()))"
 ```
 

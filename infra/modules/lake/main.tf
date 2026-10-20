@@ -1,5 +1,5 @@
 # Knowledge Store's lake: one bucket, layered by prefix (see
-# the repository root/src/knowledge_store/layout.py, which this must match).
+# the repository root/src/knowledge_store/platform_services/domain/layout.py, which this must match).
 #
 #   landing/   uploads from people and tools (the default source)
 #   bronze/    immutable, content-addressed copies
