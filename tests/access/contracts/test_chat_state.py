@@ -54,6 +54,7 @@ def test_a_chat_is_kept_as_json_with_its_owner(dynamo):
 
 
 def test_a_dynamodb_error_other_than_the_limit_is_raised():
+    pytest.importorskip("botocore")
     from botocore.exceptions import ClientError
 
     class Failing:

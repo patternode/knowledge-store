@@ -45,6 +45,7 @@ class StubBedrock:
 
 
 def guardrail():
+    pytest.importorskip("boto3")
     return Guardrail("gr-1", "3", client=StubBedrock())
 
 
@@ -106,6 +107,7 @@ def test_the_guardrail_is_both_checks_in_one_object():
 
 
 def test_the_question_is_screened_as_input_and_claims_as_output_with_their_qualifiers():
+    pytest.importorskip("boto3")
     stub = StubBedrock()
     g = Guardrail("gr-1", "3", client=stub)
     g.question("Who?")
@@ -118,16 +120,19 @@ def test_the_question_is_screened_as_input_and_claims_as_output_with_their_quali
 
 
 def test_the_grounding_source_is_capped_at_the_guardrails_limit():
+    pytest.importorskip("boto3")
     stub = StubBedrock()
     Guardrail("gr", client=stub).grounded("q", "claim words", ["x" * 200000])
     assert len(stub.calls[0]["content"][0]["text"]["text"]) == 100000
 
 
 def test_an_intervention_without_a_message_gets_a_plain_one():
+    pytest.importorskip("boto3")
     assert Guardrail("gr", client=StubBedrock(message=False)).question(ATTACK) == "That question can't be answered here."
 
 
 def test_a_guardrail_without_the_grounding_check_passes_every_claim():
+    pytest.importorskip("boto3")
     assert Guardrail("gr", client=StubBedrock(grounding=False)).grounded("q", UNGROUNDED, [SOURCE]) == (True, None)
 
 

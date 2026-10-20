@@ -303,12 +303,14 @@ def test_age_keys_are_safe_graph_names_per_collection_and_build():
 
 
 def test_age_lists_a_collections_graphs_by_its_prefix():
+    pytest.importorskip("psycopg")
     c = Conn({"FROM ag_catalog.ag_graph WHERE name LIKE": [("ks_b",), ("ks_a",)]})
     s = _age(c)
     assert s.keys("m") == ["ks_a", "ks_b"] and c.ran[-1][1][0].startswith("ks_") and c.ran[-1][1][0].endswith("_%")
 
 
 def test_age_drops_only_a_graph_that_exists():
+    pytest.importorskip("psycopg")
     c = Conn()
     _age(c).drop("ks_gone")
     assert not any("drop_graph" in t for t, _ in c.ran)
@@ -318,6 +320,7 @@ def test_age_drops_only_a_graph_that_exists():
 
 
 def test_age_bound_graph_reads_agtype_values():
+    pytest.importorskip("psycopg")
     import json as _json
     from knowledge_store.knowledge_graph.adapters.age import _FIELDS
     node = ['"a"', '"A"', '"Thing"', "[]", "1", "2", '"public"'] + ["null"] * (len(_FIELDS) - 7)
@@ -333,6 +336,7 @@ def test_age_bound_graph_reads_agtype_values():
 
 
 def test_age_has_no_unknown_node():
+    pytest.importorskip("psycopg")
     assert _age(Conn()).bind("ks_g").node("nope") is None
 
 

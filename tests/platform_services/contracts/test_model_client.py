@@ -219,12 +219,14 @@ def _status_error(code):
 
 @pytest.mark.parametrize("code", [429, 503, 529])
 def test_overload_and_rate_limits_are_throttling(code):
+    pytest.importorskip("httpx")
     sdk = _SDK(_Stream(error=_status_error(code)))
     with pytest.raises(llm.ThrottlingException):
         llm.AnthropicConverse(client=sdk).converse(modelId="claude-haiku-4-5", messages=[])
 
 
 def test_other_api_errors_pass_through():
+    pytest.importorskip("httpx")
     sdk = _SDK(_Stream(error=_status_error(400)))
     with pytest.raises(anthropic.APIStatusError):
         llm.AnthropicConverse(client=sdk).converse(modelId="claude-haiku-4-5", messages=[])
