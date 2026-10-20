@@ -24,3 +24,4 @@ node_modules/
 # Deck bundles the pattern skill builds beside each use case and pattern (publish.py); rebuilt from the document, never committed
 docs/architecture/**/dist/
 .import_linter_cache/
+.coverage

@@ -11,11 +11,14 @@ from __future__ import annotations
 import ast
 import importlib
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
 PKG = Path(__file__).resolve().parents[1] / "src" / "knowledge_store"
+ROOT_DIR = Path(__file__).resolve().parents[1]
 CONTEXTS = ["ingestion", "ontology", "extraction", "knowledge_graph", "answering", "access", "evaluation",
             "platform_services"]
 
@@ -36,11 +39,12 @@ def imported(tree) -> set[str]:
     return out
 
 
-def test_import_contracts_hold(monkeypatch, capsys):
-    cli = pytest.importorskip("importlinter.cli", reason="import-linter is in the dev extra")
-    monkeypatch.chdir(PKG.parents[1])
-    code = cli.lint_imports(no_cache=True)
-    assert code == 0, capsys.readouterr().out[-4000:]
+def test_import_contracts_hold():
+    """In a subprocess: import-linter configures logging, which would leak into later tests."""
+    pytest.importorskip("importlinter.cli", reason="import-linter is in the dev extra")
+    r = subprocess.run([sys.executable, "-c", "from importlinter.cli import lint_imports; raise SystemExit(lint_imports(no_cache=True))"],
+                       cwd=ROOT_DIR, capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout[-4000:] + r.stderr[-2000:]
 
 
 def test_the_environment_is_read_only_in_adapters_composition_roots_and_settings():
