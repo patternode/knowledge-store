@@ -17,7 +17,7 @@ output "pipeline_logs" { value = module.knowledge_store.pipeline_logs }
 output "cognito_user_pool" { value = module.knowledge_store.cognito_user_pool }
 output "cognito_client_id" { value = module.knowledge_store.cognito_client_id }
 output "agent" {
-  value       = module.knowledge_store.answering.adapters
+  value       = module.knowledge_store.agent
   description = "the chat agent: its runtime (empty until agent.runtime = true), Gateway and guardrail"
 }
 output "knowledge_graph" { value = module.knowledge_store.knowledge_graph }
