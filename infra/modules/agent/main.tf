@@ -11,7 +11,7 @@
 # The agent acts only as its caller: the Runtime accepts the caller's Cognito access token and the
 # agent presents the same token to the Gateway, so it can never read more than the person asking.
 # Because a person can call the Runtime directly with that token, the agent also counts each
-# person's invocations per day itself (invocation_quota, agent/quota.py), not only the portal.
+# person's invocations per day itself (invocation_quota, access/adapters/agent_quota.py), not only the portal.
 #
 # Two applies: the Runtime needs its image, which CodeBuild builds after the first apply. Set
 # runtime_enabled = true once the agent image exists in ECR. Until then the chat API answers with

@@ -34,7 +34,7 @@ turning a backend on needs no migration step: the next sweep fills it.
   node is unique on `(g, id)` and carries a label per class, ancestors included. AGE keeps each
   load as a graph of its own, and gives a vertex one label, so classes are in a `types` property.
 - A backend answers two primitives: a node by id, and the relations of a set of nodes. The
-  neighbourhood and path traversals (`graph/traverse.py`) run on those primitives, the same code
+  neighbourhood and path traversals (`knowledge_graph/domain/traverse.py`) run on those primitives, the same code
   for memory and every backend, and a contract test checks that Neo4j and AGE give the in-memory
   answer for every entity and every pair, in both scopes. A public caller never passes through a
   private entity or along a private relation.

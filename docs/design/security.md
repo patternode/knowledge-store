@@ -112,7 +112,7 @@ and it is applied at each hop:
 | The agent | the Runtime's authorizer | the same token; the agent's daily count uses its `sub` |
 | The tools | the Gateway's authorizer, then the interceptor | the token's groups or scopes, written into every tool call as `caller_private` |
 
-The interceptor ([`tools/interceptor.py`](../../src/knowledge_store/access/adapters/gateway_interceptor.py)) runs
+The interceptor ([`access/adapters/gateway_interceptor.py`](../../src/knowledge_store/access/adapters/gateway_interceptor.py)) runs
 after the Gateway has verified the token. It overwrites whatever the model or the caller put in
 `caller_private`, so the model cannot ask for more than the person may read. The tools trust only
 that argument, and only a real boolean true: a call that arrives without the interceptor, such as
@@ -157,7 +157,7 @@ TTL, and the API sends `cache-control: no-store`, so no answer is ever served to
 
 The path is CloudFront, then API Gateway, then the Lambda
 ([`modules/portal`](../../infra/modules/portal/main.tf),
-[`portal_api/handler.py`](../../src/knowledge_store/apps/portal_api.py)).
+[`apps/portal_api.py`](../../src/knowledge_store/apps/portal_api.py)).
 
 - API Gateway checks the Cognito token before the Lambda runs. With site sign-in the route is
   open at API Gateway and the Lambda verifies the grant instead, on every request.
@@ -183,11 +183,11 @@ The path is CloudFront, then API Gateway, then the Lambda
 ## The agent
 
 The agent on AgentCore Runtime ([`modules/agent`](../../infra/modules/agent/main.tf),
-[`agent/app.py`](../../src/knowledge_store/answering/adapters/agent_app.py)) accepts only tokens from the portal's
+[`answering/adapters/agent_app.py`](../../src/knowledge_store/answering/adapters/agent_app.py)) accepts only tokens from the portal's
 client and the service clients. Its only incoming header is `Authorization`. A session idles out
 after `agent.idle_session_minutes`.
 
-Grounding ([`agent/grounding.py`](../../src/knowledge_store/answering/domain/grounding.py)) is the control
+Grounding ([`answering/domain/grounding.py`](../../src/knowledge_store/answering/domain/grounding.py)) is the control
 that makes the answer safe to show. The model's answer is never shown as written. It is a list of
 claims, each citing a passage with a verbatim quote, or a cell or a figure of a mapped table, and
 code checks each citation:
@@ -208,12 +208,12 @@ The Bedrock Guardrail screens each question for prompt attacks (high strength) a
 content (medium), and checks each remaining claim's grounding. Its refusal messages name no
 internals.
 
-The valves ([`agent/valves.py`](../../src/knowledge_store/answering/domain/valves.py)) bound every
+The valves ([`answering/domain/valves.py`](../../src/knowledge_store/answering/domain/valves.py)) bound every
 question: tool calls, model calls, output tokens per call, repair turns, question length and
 history. Past the tool limit, tools refuse and the agent answers from what it has.
 
 Because a person can call the Runtime directly with the token the portal forwards, the agent
-counts each person's invocations per day itself ([`agent/quota.py`](../../src/knowledge_store/access/adapters/agent_quota.py)),
+counts each person's invocations per day itself ([`access/adapters/agent_quota.py`](../../src/knowledge_store/access/adapters/agent_quota.py)),
 in the portal's state table under its own key space, set a little above the portal's limit so a
 retry through the portal is not refused. The service clients are exempt, because only the portal
 holds their credentials and the portal has already counted the person.
@@ -241,7 +241,7 @@ are stated, within what the sources support. Weigh it for your corpus; it is why
 documents sit behind the scope filter rather than in a shared prompt.
 
 Ingestion is bounded as well ([`adapters/http_urls.py`](../../src/knowledge_store/ingestion/adapters/http_urls.py),
-[`refine/parsers.py`](../../src/knowledge_store/ingestion/domain/parsers.py)):
+[`ingestion/domain/parsers.py`](../../src/knowledge_store/ingestion/domain/parsers.py)):
 
 - The URL adapter fetches HTTPS only, initially and across redirects, and only from hosts that
   resolve to public addresses, so a listed page cannot send the fetcher onto the account's own

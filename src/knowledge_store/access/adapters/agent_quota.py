@@ -1,6 +1,6 @@
 """The agent's own per-person daily limit on invocations.
 
-The portal counts each person's questions (DAILY_QUESTIONS, portal_api/state.py) before it asks
+The portal counts each person's questions (DAILY_QUESTIONS, access/adapters/state.py) before it asks
 the agent, but the Runtime accepts the same Cognito access token the portal forwards, so a person
 can POST to the Runtime's /invocations directly. This limit holds there too: every invocation
 takes one from a counter in the portal's state table, under its own key namespace

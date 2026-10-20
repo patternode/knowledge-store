@@ -14,7 +14,7 @@ realised_by_services: [agent-interceptor]
 products:
   - { name: "AWS Lambda", vendor: "AWS", licensing: "pay per request" }
 product_mapping:
-  - { abb_component: "Scope rule", sbb_product: "tools/interceptor.py: sub and cognito:groups, or the site grant's roles, to caller_private" }
+  - { abb_component: "Scope rule", sbb_product: "access/adapters/gateway_interceptor.py: sub and cognito:groups, or the site grant's roles, to caller_private" }
   - { abb_component: "Marking", sbb_product: "The argument written into the forwarded call" }
 cloud_provider: aws
 deployment_model: managed
@@ -44,7 +44,7 @@ The scope decision in its own function so that no tool reads a token and the rul
 
 | ABB component | Realised by |
 |---|---|
-| Scope rule | tools/interceptor.py: sub and cognito:groups, or the site grant's roles, to caller_private |
+| Scope rule | access/adapters/gateway_interceptor.py: sub and cognito:groups, or the site grant's roles, to caller_private |
 | Marking | The argument written into the forwarded call |
 
 ## 3  Operation

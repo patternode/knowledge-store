@@ -6,7 +6,7 @@ search   the Bedrock Knowledge Base (vectors in S3 Vectors) when KNOWLEDGE_BASE_
 read     the passage's text from the projection, or from the silver layer for a passage no fact
          cites (a search hit can be one). The caller's scope is checked against the document's.
 
-A passage id begins with the first 16 characters of its document's id (refine/chunk.py), which
+A passage id begins with the first 16 characters of its document's id (ingestion/domain/chunk.py), which
 is how a passage is found in silver without an index.
 """
 

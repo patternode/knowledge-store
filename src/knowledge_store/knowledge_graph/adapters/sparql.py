@@ -2,11 +2,11 @@
 
 The gold N-Quads are the record, and a SPARQL store can hold them as they are: one named graph
 per document at each version in the active chain, and the active ontology (the T-Box) in a named
-graph of its own. pipeline/load.py keeps the store in step with the lake. Neptune's default graph
+graph of its own. knowledge_graph/adapters/loading.py keeps the store in step with the lake. Neptune's default graph
 is the union of its named graphs, so a query sees the active chain and its ontology, and nothing
 else of this collection once the loader has dropped what left the chain.
 
-SparqlIndex answers the index's entity queries (portal_api/index.py) from the store:
+SparqlIndex answers the index's entity queries (knowledge_graph/adapters/index.py) from the store:
 
     search_entities, list_entities   labels and synonyms, typed through rdfs:subClassOf* in the
                                      ontology graph, so a query for a class finds its subclasses

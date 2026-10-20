@@ -90,4 +90,4 @@ Read them with three caveats:
 | `GET /api/usage?window=all\|month` | `{questions, classes, relations, attributes}`, each term with its `queried`, `read` and `cited` counts |
 | `GET /api/requests`, `POST /api/requests` `{question, report, ontology_version}` | The kept requests, newest first, and keeping one. For people with private access only, because reports quote questions and passages. |
 
-The code is in `src/knowledge_store/answering/slices/workbench.py` (steps, terms, counters, requests and the analyst's prompt and schema), `agent/app.py` (`analyse`, streaming), `portal_api/handler.py` and `portal_api/chat.py`, and in the chat page's `app.js` and `ontology.js`.
+The code is in `src/knowledge_store/answering/slices/workbench.py` (steps, terms, counters, requests and the analyst's prompt and schema), `answering/adapters/agent_app.py` (`analyse`, streaming), `apps/portal_api.py` and `answering/adapters/fallback_chat.py`, and in the chat page's `app.js` and `ontology.js`.

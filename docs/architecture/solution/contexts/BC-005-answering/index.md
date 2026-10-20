@@ -63,10 +63,11 @@ Questions, claims, citations, checks, valves and steps: taking a person's questi
 
 ## Where the model lives today
 
-- `agent/app.py (the agent on AgentCore Runtime: admit, prompt, tool loop, re-read, check, repair, guardrail, render; the gaps analyst; streaming)`
-- `agent/grounding.py (the claim models and the checks), agent/valves.py (every limit, the table questions, the guardrail wrapper), agent/quota.py`
-- `workbench.py (steps, term usage, cost, the analyst prompt and report, ontology requests)`
-- `portal_api/chat.py (the portal's own Converse loop, the fallback when the Runtime is off)`
+- `answering/domain/` (grounding: the claim models and checks; valves: every limit and the table questions)
+- `answering/ports.py` (QuestionScreen, ClaimVerifier)
+- `answering/slices/workbench.py` (steps, term usage, cost, the analyst prompt and report, term requests)
+- `answering/adapters/` (agent_app: the agent loop on Strands; bedrock_guardrail: the question screen and claim verifier; agent_client; fallback_chat: the portal's own tool loop)
+- `apps/agent.py`: AgentCore Runtime's entry point, composing the agent with Access's quota
 
 Two answering paths exist: the agent on the Runtime with structured output and full checks, and the portal's own loop with citation markers and no claim-level check, used until the Runtime is switched on. The context's rules are the agent's; the loop is a transitional implementation (CN-006).
 

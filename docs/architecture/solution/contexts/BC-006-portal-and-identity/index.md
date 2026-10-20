@@ -25,7 +25,7 @@ ubiquitous_language:
   - { term: "Document link", definition: "A signed URL to the original or a bound table, issued after the scope check, for ten minutes" }
 relationships:
   - { with: BC-005, pattern: customer-supplier, role: upstream }
-  - { with: BC-004, pattern: shared-kernel, role: downstream }
+  - { with: BC-004, pattern: open-host-service, role: downstream }
   - { with: BC-008, pattern: conformist, role: downstream }
 provenance:
   origin: ai-generated
@@ -60,9 +60,10 @@ People, sessions, scope, quotas and the chat page: who may ask, who may read wha
 
 ## Where the model lives today
 
-- `portal_api/handler.py, state.py, agent_client.py, local.py (routes, chat state behind one port, the Runtime client, the local server)`
-- `site_grant.py, claims.py, tools/interceptor.py (the host website's grant; the scope rule; the Gateway interceptor that applies it)`
-- `chat/ (the chat and ontology pages), portal/ (the earlier explorer page, not deployed by the module)`
+- `access/domain/claims.py` (the scope rule)
+- `access/adapters/` (state: chat state behind one port; agent_quota; site_grant; gateway_interceptor)
+- `apps/portal_api.py` and `apps/local_portal.py`: the portal API Lambda and the local server compose Access, Answering and Knowledge Graph
+- `chat/` (the chat and ontology pages), `portal/` (the earlier explorer page, not deployed by the module)
 
 The handler routes everything behind one Lambda, dispatching answers to itself asynchronously; the interceptor is deployed beside the Gateway but applies this context's rule. The explorer page under portal/ is in the repository and not in the module.
 
@@ -71,7 +72,7 @@ The handler routes everything behind one Lambda, dispatching answers to itself a
 | With | Pattern | Role | Why |
 |---|---|---|---|
 | BC-005 | customer-supplier | upstream | Dispatches the question and keeps the answer |
-| BC-004 | shared-kernel | downstream | Serves the index-backed routes from the same index module the tools use |
+| BC-004 | open-host-service | downstream | The portal API serves the index-backed routes through Knowledge Graph's contract |
 | BC-008 | conformist | downstream | Model access for the fallback loop |
 
 ## Building blocks

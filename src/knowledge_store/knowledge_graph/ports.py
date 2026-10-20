@@ -15,7 +15,7 @@ backend, so they answer alike. A backend also filters by scope in its queries, a
 filters again.
 
 Each load is a new graph, keyed by collection, version and build. The pipeline's load stage
-(pipeline/load.py) fills it, checks its counts against the projection, then points the lake at
+(knowledge_graph/adapters/loading.py) fills it, checks its counts against the projection, then points the lake at
 it (layout.GRAPH_POINTER); the portal reads a graph only when that pointer names the index it
 is serving, and falls back to memory otherwise. The previous graph is kept for rollback, and
 older ones are dropped.

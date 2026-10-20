@@ -2,8 +2,8 @@
 scope filtering and simple search. Private content is visible only to private-scope callers.
 
 Neighbourhoods and paths come from the graph backend when the lake points at a graph loaded
-from this very index (see pipeline/load.py), and from memory otherwise; both run the same
-traversal (graph/traverse.py), so the answer does not depend on which."""
+from this very index (see knowledge_graph/adapters/loading.py), and from memory otherwise; both run the same
+traversal (knowledge_graph/domain/traverse.py), so the answer does not depend on which."""
 
 from __future__ import annotations
 

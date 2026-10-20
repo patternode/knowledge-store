@@ -8,16 +8,16 @@ Two toolsets, one per Lambda (TOOLSET), because they need different networks:
     graph      list_collections, describe_ontology, search_entities, list_entities, get_entity,
                neighbourhood, find_paths, describe_structured, lookup_rows, aggregate. With
                NEPTUNE_ENDPOINT set the entity tools query Neptune
-               (graph/sparql.py), so this Lambda runs in the VPC beside it, with no route out.
+               (knowledge_graph/adapters/sparql.py), so this Lambda runs in the VPC beside it, with no route out.
     passages   search_passages, read_passages. Search goes to the Knowledge Base when
-               KNOWLEDGE_BASE_ID is set (tools/passages.py), so this Lambda runs outside the VPC.
+               KNOWLEDGE_BASE_ID is set (knowledge_graph/adapters/passages.py), so this Lambda runs outside the VPC.
 
 Without NEPTUNE_ENDPOINT the graph tools answer from the in-memory projection, and without
 KNOWLEDGE_BASE_ID passage search is by keyword: the same tools for a local run, a test, or
 another cloud. TOOLSET=all (the default) serves every tool from one function.
 
 Scope. Gateway checks the caller's token, then calls this function with its own IAM role, so the
-caller's identity does not reach here directly. The REQUEST interceptor (tools/interceptor.py)
+caller's identity does not reach here directly. The REQUEST interceptor (access/adapters/gateway_interceptor.py)
 derives it from the verified token and writes `caller_private` into every call, overwriting any
 value the model supplied. Without the interceptor (a local run, a test) the argument is absent and
 the tools serve public-scope content only.

@@ -16,7 +16,7 @@ composes_contexts: [BC-006, BC-004, BC-005]
 runtime_type: serverless
 repo: { url: "https://github.com/patternode/knowledge-store", path: "." }
 module_path: "src/knowledge_store/apps/portal_api.py"
-packages: ["knowledge_store.access.adapters", "knowledge_store.access.adapters.site_grant", "knowledge_store.access.domain.claims", "knowledge_store.answering.slices.workbench"]
+packages: ["knowledge_store.apps.portal_api", "knowledge_store.access", "knowledge_store.answering", "knowledge_store.knowledge_graph"]
 deployed_to: [DN-007, DN-008]
 run_by: "PRD-001"
 provenance:

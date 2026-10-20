@@ -18,9 +18,12 @@ ubiquitous_language:
   - { term: "Set", definition: "A YAML file of questions for one collection" }
   - { term: "Question kind", definition: "lookup, list, multi-hop, aggregate, comparison, unanswerable" }
   - { term: "Must, must not, first", definition: "The facts a right answer states, the near miss it must not, two names whose order matters" }
-  - { term: "Correct", definition: "Every must found, no must not, the order right; for an unanswerable question, an abstention" }
+  - { term: "Correct", definition: "Every must and figure found, no must not, the order right; for an unanswerable question, a decline" }
   - { term: "Grounded share", definition: "Claims shown over claims proposed" }
-  - { term: "False negative, false positive", definition: "Abstained on an answerable question; answered an unanswerable one" }
+  - { term: "False answer", definition: "An unanswerable question answered with a stated fact; a reply that declines, even with a citation, is not one" }
+  - { term: "False abstention", definition: "An answerable question declined" }
+  - { term: "Unsupported claim", definition: "A claim, on any question, that the claim verifier finds its cited source does not support" }
+  - { term: "Baseline gate", definition: "A run compared with the kept baseline: a regression, a fall in accuracy, or a rise in false answers or unsupported claims fails it" }
 relationships:
   - { with: BC-005, pattern: customer-supplier, role: downstream }
   - { with: BC-004, pattern: customer-supplier, role: downstream }
@@ -49,16 +52,21 @@ Evaluation sets, runs and scores: knowing whether the answers are right without 
 | Set | A YAML file of questions for one collection |
 | Question kind | lookup, list, multi-hop, aggregate, comparison, unanswerable |
 | Must, must not, first | The facts a right answer states, the near miss it must not, two names whose order matters |
-| Correct | Every must found, no must not, the order right; for an unanswerable question, an abstention |
+| Correct | Every must and figure found, no must not, the order right; for an unanswerable question, a decline |
 | Grounded share | Claims shown over claims proposed |
-| False negative, false positive | Abstained on an answerable question; answered an unanswerable one |
+| False answer | An unanswerable question answered with a stated fact; a reply that declines, even with a citation, is not one |
+| False abstention | An answerable question declined |
+| Unsupported claim | A claim, on any question, that the claim verifier finds its cited source does not support |
+| Baseline gate | A run compared with the kept baseline: a regression, a fall in accuracy, or a rise in false answers or unsupported claims fails it |
 
 ## Where the model lives today
 
-- `evals/score.py, run.py (the set format, the runner against a lake or the API, deterministic scoring, the report)`
-- `examples/evals/ (the space-missions and Sherlock Holmes sets)`
+- `evaluation/domain/` (sets: the format; score: the measures; numeric: figures at their stated rounding; compare: the baseline gate)
+- `evaluation/ports.py` (Answerer, TruthSource, ClaimVerifier, Grader, RunStore, Runner)
+- `evaluation/slices/` (run_set, gate) and `evaluation/adapters/` (answerers, set_files, run_store, report, verifiers, inspect_runner)
+- `apps/evaluate.py` (the command) and `examples/evals/` (the space-missions and Sherlock Holmes sets)
 
-Runs are started by hand and cost a model call per question; the two shipped sets are the evidence the capabilities cite.
+Runs are started by hand and cost a model call per question; the two shipped sets are the evidence the capabilities cite. The measures, the claim verifier and the gate are patternode-architecture ADR-048; the score itself stays free of model judges.
 
 ## Relationships with other contexts
 

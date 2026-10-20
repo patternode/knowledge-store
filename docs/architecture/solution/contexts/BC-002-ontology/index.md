@@ -62,12 +62,8 @@ Terms, versions, renditions, drafts, candidates and mappings: what a collection'
 
 ## Where the model lives today
 
-- `ontology/model.py, writer.py (the spec loaded from Turtle; Turtle and SHACL written from a definition)`
-- `ontology/discover.py, review.py (a first draft from a sample, reviewed)`
-- `ontology/versions.py, renditions.py, provided.py (publish, classify, chain, activate, render; the provided master)`
-- `ontology/candidates.py (the register and the revision proposal)`
-- `structured/mapping.py (the table mapping and metrics as part of a version; R2RML)`
-- `ontology/core.ttl, core-shapes.ttl (the core vocabulary ks:)`
+- `ontology/domain/` (the model loaded from Turtle, the writer, renditions, the extraction tool schema, table mappings; core.ttl and core-shapes.ttl)
+- `ontology/slices/` (discover, review, versions: publish, classify, chain, activate; provided; candidates, including the chat's term requests)
 
 Discovery and review are LLM calls whose edits are applied in code. Publish refuses an understated bump and an existing version. Candidates reads the workbench module directly for requests, a dependency that runs against the layering and belongs behind the request file format.
 

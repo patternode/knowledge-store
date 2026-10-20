@@ -16,7 +16,7 @@ composes_contexts: [BC-004]
 runtime_type: serverless
 repo: { url: "https://github.com/patternode/knowledge-store", path: "." }
 module_path: "src/knowledge_store/knowledge_graph/adapters/gateway.py"
-packages: ["knowledge_store.knowledge_graph.adapters.passages", "knowledge_store.ingestion.slices.refine (load_doc, load_passages)"]
+packages: ["knowledge_store.knowledge_graph (adapters.passages)", "knowledge_store.ingestion (load_doc, load_passages)"]
 deployed_to: [DN-007]
 run_by: "PRD-001; called by the Gateway"
 provenance:

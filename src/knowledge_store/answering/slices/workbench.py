@@ -17,11 +17,11 @@ A question counts once per term and level, however many calls touched it, so the
 every reader. They measure what people ask about, which is not the same as what the ontology does
 well: a term nobody asks about may still be needed, and a much-used term may answer badly.
 
-Requests. When a question cannot be answered, the analyst (agent/app.py analyse, or the portal's
+Requests. When a question cannot be answered, the analyst (answering/adapters/agent_app.py analyse, or the portal's
 own loop) explores with the same tools and reports what would be needed: ontology extensions,
 data to add, and facts the passages state that extraction missed. A curator can keep the report
 as an ontology request (ontology/requests/ in the collection's lake), which the candidate register
-reads alongside the terms extraction found (ontology/candidates.py).
+reads alongside the terms extraction found (ontology/slices/candidates.py).
 
 Standard library only (requested_terms reads the ontology package): the portal Lambda and the
 agent both import it.

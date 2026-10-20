@@ -106,7 +106,7 @@ None beyond the cross-cutting trio.
 
 | Where | What |
 |---|---|
-| Code | `src/knowledge_store/platform_services/adapters/store.py, layout.py, collections.py, ontology/versions.py (the layout of a version); infra/modules/lake` |
+| Code | `src/knowledge_store/platform_services/adapters/store.py, layout.py, collections.py, ontology/slices/versions.py (the layout of a version); infra/modules/lake` |
 | Capabilities | CAP-002, CAP-003 |
 | Context | BC-001 |
 

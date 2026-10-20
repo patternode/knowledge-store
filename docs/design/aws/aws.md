@@ -89,7 +89,7 @@ The model's answer is never shown as written. It is a list of claims, each with 
 A failed citation goes back to the agent once (`grounding_repairs`), with the reason. What still
 fails is removed. A claim left without a citation is removed. When no claim is left, the answer
 says the sources cannot answer the question, and lists what was missing. The checks are in
-[`agent/grounding.py`](../../../src/knowledge_store/answering/domain/grounding.py) and are tested without a model.
+[`answering/domain/grounding.py`](../../../src/knowledge_store/answering/domain/grounding.py) and are tested without a model.
 
 ## Valves
 

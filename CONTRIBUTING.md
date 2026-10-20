@@ -21,7 +21,7 @@ The stack itself is the module in `infra/modules/knowledge-store`; `infra/stack`
 
 The documentation site is built with [Docusaurus](https://docusaurus.io/) from the repository's own Markdown (`npm ci`, then `npm run build`; `npm run start` previews it). The build is strict: a broken link, anchor or image fails it, and CI builds it on every pull request. A relative link to a file that is not a page (code, Terraform, a sample document) becomes a link to that file on GitHub, so write links as they read on GitHub. Which Markdown files are pages is decided in `site/src/remark-repo-links.cjs`; a merge to `main` publishes the site.
 
-The tests run offline with a fake model (`tests/fake_llm.py`). Please add a test with every change in behaviour.
+The tests run offline with a fake model (`tests/fake_llm.py`). Please add a test with every change in behaviour. The same `pytest` run checks the code's structure (import-linter and `tests/test_architecture.py`); [AGENTS.md](AGENTS.md#code-layout) says how the code is laid out by bounded context.
 
 ## Pull requests
 

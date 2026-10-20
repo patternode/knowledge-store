@@ -27,7 +27,7 @@ relationships:
   - { with: BC-003, pattern: customer-supplier, role: downstream }
   - { with: BC-002, pattern: published-language, role: downstream }
   - { with: BC-005, pattern: open-host-service, role: upstream }
-  - { with: BC-006, pattern: shared-kernel, role: upstream }
+  - { with: BC-006, pattern: open-host-service, role: upstream }
 provenance:
   origin: ai-generated
   review_state: ai-raw
@@ -61,13 +61,12 @@ The record per document, its projections and the fixed queries over them: keepin
 
 ## Where the model lives today
 
-- `pipeline/project.py, pipeline/load.py (gold to the index; the index and gold to Neptune, the backends and the Knowledge Base)`
-- `graph/ (the GraphStore and Adjacency protocols, traversal, SPARQL over Neptune, Neo4j, AGE)`
-- `portal_api/index.py, portal_api/docstore.py (the in-memory projection and its MongoDB form)`
-- `structured/query.py (describe, lookup_rows, aggregate over snapshots)`
-- `tools/gateway.py, tools/passages.py (the twelve fixed tools and the passage search and read)`
+- `knowledge_graph/ports.py` (GraphStore, Adjacency, ReadModel, SparqlStore, PassageSearch)
+- `knowledge_graph/domain/` (traversal, the rows a property graph loads)
+- `knowledge_graph/slices/` (project: gold to the index; tools: the read tools every surface calls; table_query: lookups over bound tables)
+- `knowledge_graph/adapters/` (index and docstore: the read model in memory and in MongoDB; sparql: Neptune and in process; neo4j, age, backends; loading: the projection into each store; passages: Knowledge Base and keyword search; gateway: the Gateway's Lambda)
 
-The index is loaded into one process from JSON and cached a minute; the SPARQL index answers the same questions over Neptune; backends bind only while the pointer names the served build. The tools Lambda imports the portal package's chat and index modules, and graph.sparql imports the index at call time: two cycles the context boundary will cut.
+The index is loaded into one process from JSON and cached a minute; the SPARQL index answers the same questions over Neptune; backends bind only while the pointer names the served build. The read tools are one slice (`slices/tools.py`) that the Gateway's Lambda, the in-process agent and the portal's fallback chat all call, so they cannot drift apart.
 
 ## Relationships with other contexts
 
@@ -76,7 +75,7 @@ The index is loaded into one process from JSON and cached a minute; the SPARQL i
 | BC-003 | customer-supplier | downstream | Gold is the input |
 | BC-002 | published-language | downstream | Renditions for the stores and the T-Box |
 | BC-005 | open-host-service | upstream | The tools are the service the agent and the portal's loop consume |
-| BC-006 | shared-kernel | upstream | The index module lives in the portal package and is shared with the tools (a seam to cut, CN-006) |
+| BC-006 | open-host-service | upstream | The portal API reads the index through Knowledge Graph's contract, as the tools do |
 
 ## Building blocks
 

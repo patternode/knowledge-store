@@ -24,7 +24,7 @@ def _bearer(context) -> str | None:
 
 def admit(token: str | None, quota: "quotas.AgentQuota | None") -> str | None:
     """None if the caller may ask now, else why not. Counts the invocation against the caller's
-    daily limit (agent/quota.py), which holds even when the Runtime is called without the portal.
+    daily limit (access/adapters/agent_quota.py), which holds even when the Runtime is called without the portal.
     A limit that cannot be checked refuses: the limit is the only bound on a direct caller's spend."""
     if quota is None:
         return None

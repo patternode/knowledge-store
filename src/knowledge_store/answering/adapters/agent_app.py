@@ -25,20 +25,20 @@ How it answers:
    passages it was extracted from; it reads those passages, and searches passages for anything
    the graph does not hold.
 3. It answers as claims. A document claim cites a passage with a verbatim quote. A table claim
-   cites a cell or a figure (agent/grounding.py). The catalog questions a mapped table answers
-   are in agent/valves.py and are added to this prompt when the mapping has them.
+   cites a cell or a figure (answering/domain/grounding.py). The catalog questions a mapped table answers
+   are in answering/domain/valves.py and are added to this prompt when the mapping has them.
 4. Code checks every citation against the passage, cell or figure the caller can read; failed
    citations go back to the agent once for repair; what still fails is removed; an optional
    Bedrock Guardrail checks each remaining claim against that source. The answer shown is built
    from the claims that survive. With none, the agent says it cannot answer from the sources.
 
-The limits around all of this are in agent/valves.py. Each caller's daily number of invocations is
-limited here too (agent/quota.py), not only in the portal, since the Runtime accepts their token directly.
+The limits around all of this are in answering/domain/valves.py. Each caller's daily number of invocations is
+limited here too (access/adapters/agent_quota.py), not only in the portal, since the Runtime accepts their token directly.
 
 The same code runs locally against the lake and in-process tools (answer_locally), which is how
 the evaluation (knowledge_store.evaluation) runs without a deployment.
 
-Local run:  GATEWAY_MCP_URL=... AGENT_MODEL_ID=... python -m knowledge_store.answering.adapters.agent_app
+Local run:  GATEWAY_MCP_URL=... AGENT_MODEL_ID=... python -m knowledge_store.apps.agent
             curl -X POST localhost:8080/invocations -H "Authorization: Bearer $TOKEN" -d '{"question": ...}'
 """
 

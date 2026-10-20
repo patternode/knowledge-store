@@ -16,7 +16,7 @@ composes_contexts: [BC-001, BC-002, BC-003, BC-004]
 runtime_type: container
 repo: { url: "https://github.com/patternode/knowledge-store", path: "." }
 module_path: "src/knowledge_store/apps/sweep.py"
-packages: ["knowledge_store.apps", "knowledge_store.ingestion.adapters", "knowledge_store.ingestion.domain.parsing", "knowledge_store.ontology.domain", "knowledge_store.extraction.domain", "knowledge_store.extraction.slices", "knowledge_store.knowledge_graph.ports"]
+packages: ["knowledge_store.apps.sweep", "knowledge_store.ingestion", "knowledge_store.ontology", "knowledge_store.extraction", "knowledge_store.knowledge_graph", "knowledge_store.platform_services"]
 deployed_to: [DN-004]
 run_by: "PRD-001; started by uploads and a schedule"
 provenance:

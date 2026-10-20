@@ -20,7 +20,7 @@ settings of the AWS account rather than of the kit.
 | The portal's address | CloudFront's `*.cloudfront.net` domain by default | `portal_domain`: your own name and certificate |
 | The name before the script runs: the static `<title>` and header text, shown for an instant | [`chat/index.html`](../chat/index.html), [`chat/ontology.html`](../chat/ontology.html) | a fork, if the instant matters |
 | The page's copy: the question box's placeholder, the hint under it, the panel headings, the buttons | the HTML, and the strings in [`chat/app.js`](../chat/app.js) and [`chat/ontology.js`](../chat/ontology.js) | a fork |
-| The agent's refusal, and the guardrail's two messages | `ABSTAIN` in [`agent/grounding.py`](../src/knowledge_store/answering/domain/grounding.py); `blocked_input_messaging` and `blocked_outputs_messaging` in [`modules/agent`](../infra/modules/agent/main.tf) | a fork |
+| The agent's refusal, and the guardrail's two messages | `ABSTAIN` in [`answering/domain/grounding.py`](../src/knowledge_store/answering/domain/grounding.py); `blocked_input_messaging` and `blocked_outputs_messaging` in [`modules/agent`](../infra/modules/agent/main.tf) | a fork |
 | The sign-in page and its address | Cognito's hosted sign-in at `<name>-<account>.auth.<region>.amazoncognito.com`, unstyled | a Cognito customisation in the account (below) |
 | The invitation and recovery emails | Cognito's default sender and wording | a Cognito email configuration (below) |
 | The names of the AWS resources | `name`, which prefixes every resource | the input, before the first apply |
@@ -137,7 +137,7 @@ formats above; anything else in `files` is served as a plain download.
 The sentences a person reads are in the HTML (the placeholder, the hint under the question box,
 the workbench's empty states, the button labels) and in the two scripts, as plain strings passed
 to `h(...)`. The agent's one sentence when it cannot answer is `ABSTAIN` in
-[`agent/grounding.py`](../src/knowledge_store/answering/domain/grounding.py), and the guardrail's two
+[`answering/domain/grounding.py`](../src/knowledge_store/answering/domain/grounding.py), and the guardrail's two
 messages are in the agent module. None of these is an input, and the pages are English with the
 strings not collected for translation. Changing them is a fork of the repository, deployed by
 pointing the deployment template's module `source` at the fork:

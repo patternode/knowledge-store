@@ -9,3 +9,5 @@ ADR-007,A passage index on S3 Vectors beside the graph,active,BC-004 ABB-013,CN-
 ADR-008,Memory is the default projection; graph and document backends are optional,active,BC-004 ABB-011,CN-005,ADR-008-memory-is-the-default-projection-graph-and-document-backends-are-optional.md
 ADR-009,"A mapped table stays a file, bound at a snapshot into gold",active,BC-003 ABB-024 ABB-024 ABB-012,CN-003,ADR-009-a-mapped-table-stays-a-file-bound-at-a-snapshot-into-gold.md
 ADR-010,"Scope is the one access control today, stated per source",active,BC-006 ABB-020,CN-002,ADR-010-scope-is-the-one-access-control-today-stated-per-source.md
+ADR-011,"The code is cut by bounded context, and a deployable splits off only on a trigger",active,BC-001 BC-002 BC-003 BC-004 BC-005 BC-006 BC-007 BC-008,CN-006,ADR-011-the-code-is-cut-by-bounded-context-and-deployables-split-on-a-trigger.md
+ADR-012,"Evaluation counts false answers and unsupported claims, and gates releases on a baseline",active,BC-007 BC-005,,ADR-012-evaluation-counts-false-answers-and-unsupported-claims-and-gates-releases.md

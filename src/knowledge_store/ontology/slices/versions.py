@@ -16,7 +16,7 @@ taxonomy:
     removal      a term removed or deprecated              major   full re-extraction
 
 A new subclass of an existing class counts as additive: entity IRIs are keyed by root class
-(extract/rdf.py), so a delta run can retype an existing entity without duplicating it. The
+(extraction/domain/rdf.py), so a delta run can retype an existing entity without duplicating it. The
 semver bump must match the class, so a version number tells a reader what it costs.
 
 Versions form a chain. An additive or descriptive version names its base, and its gold holds

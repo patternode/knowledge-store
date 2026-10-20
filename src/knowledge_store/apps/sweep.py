@@ -21,7 +21,7 @@ Ontology mode (config/settings.json, from tfvars):
 
 A provided ontology (config/ontology/, from the collection's ontology_dir in tfvars) takes the
 place of discovery in either mode: the sweep publishes and activates it, and extracts against it
-(ontology/provided.py).
+(ontology/slices/provided.py).
 """
 
 from __future__ import annotations

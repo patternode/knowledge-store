@@ -14,12 +14,12 @@ The target state of knowledge from documents is every subdomain on the [domain p
 
 | Box | Subdomain | Kind | Context | Outcomes | Capabilities | Lowest stage | ABB own+borrowed | SBB | AP | RA | SV own+composing | Open CN | Gaps |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | Ontology | core | [BC-002](solution/contexts/BC-002-ontology/index.md) | OC-002 | CAP-003, CAP-007 | R0 | 0+4 | 0 | 1 | 1 | 0+2 | 1 | 8 |
-| 2 | Extraction | core | [BC-003](solution/contexts/BC-003-extraction/index.md) | OC-001, OC-002 | CAP-004, CAP-007 | R0 | 0+3 | 0 | 1 | 1 | 0+2 | 1 | 8 |
-| 3 | Knowledge graph | core | [BC-004](solution/contexts/BC-004-knowledge-graph/index.md) | OC-001 | CAP-005, CAP-006, CAP-007 | R0 | 5+2 | 6 | 1 | 1 | 2+4 | 2 | 5 |
-| 4 | Answering | core | [BC-005](solution/contexts/BC-005-answering/index.md) | OC-001, OC-002, OC-003 | CAP-008, CAP-010, CAP-012 | R0 | 1+3 | 1 | 1 | 1 | 1+1 | 1 | 7 |
-| 5 | Sources and documents | supporting | [BC-001](solution/contexts/BC-001-ingestion/index.md) |  | CAP-002 | R0 | 2+1 | 2 | 0 | 1 | 1+1 | 1 | 7 |
-| 6 | People and access | supporting | [BC-006](solution/contexts/BC-006-portal-and-identity/index.md) | OC-003 | CAP-009, CAP-010 | R0 | 4+5 | 4 | 1 | 1 | 3+0 | 1 | 5 |
+| 1 | Ontology | core | [BC-002](solution/contexts/BC-002-ontology/index.md) | OC-002 | CAP-003, CAP-007 | R0 | 0+4 | 0 | 1 | 1 | 0+2 | 0 | 7 |
+| 2 | Extraction | core | [BC-003](solution/contexts/BC-003-extraction/index.md) | OC-001, OC-002 | CAP-004, CAP-007 | R0 | 0+3 | 0 | 1 | 1 | 0+2 | 0 | 7 |
+| 3 | Knowledge graph | core | [BC-004](solution/contexts/BC-004-knowledge-graph/index.md) | OC-001 | CAP-005, CAP-006, CAP-007 | R0 | 5+2 | 6 | 1 | 1 | 2+4 | 1 | 5 |
+| 4 | Answering | core | [BC-005](solution/contexts/BC-005-answering/index.md) | OC-001, OC-002, OC-003 | CAP-008, CAP-010, CAP-012 | R0 | 1+3 | 1 | 1 | 1 | 1+1 | 0 | 6 |
+| 5 | Sources and documents | supporting | [BC-001](solution/contexts/BC-001-ingestion/index.md) |  | CAP-002 | R0 | 2+1 | 2 | 0 | 1 | 1+1 | 0 | 6 |
+| 6 | People and access | supporting | [BC-006](solution/contexts/BC-006-portal-and-identity/index.md) | OC-003 | CAP-009, CAP-010 | R0 | 4+5 | 4 | 1 | 1 | 3+0 | 0 | 4 |
 | 7 | Evaluation | supporting | [BC-007](solution/contexts/BC-007-evaluation/index.md) | OC-001 | CAP-011 | R0 | 1+0 | 1 | 0 | 1 | 1+0 | 0 | 4 |
 | 8 | Running it | generic | [BC-008](solution/contexts/BC-008-platform-services/index.md) | OC-003 | CAP-010, CAP-013 | R0 | 1+2 | 1 | 0 | 1 | 1+0 | 0 | 6 |
 
@@ -55,43 +55,38 @@ Each capability's stage and the first thing blocking the next one, from `rung.py
 | 1a | no-abb | BC-002 contains no building block of its own; its model runs inside ABB-002 (BC-001), ABB-012 (BC-004), ABB-024 (BC-001), ABB-028 (BC-008) |
 | 1b | no-demand | CAP-003, CAP-007 name no demand on the capability page, so the stage tool holds them at R0 (the outcomes name them, the inverse is not written) |
 | 1c | no-outcome | CAP-007 is required by no outcome, so the demand it answers is not recorded anywhere |
-| 1d | open-consideration | Open: CN-006 Decoupling the deployables along the bounded contexts. R3 needs each resolved by an accepted decision |
-| 1e | platform-scope-only | Only platform-scoped patterns (AP-001, RA-001) realise its capabilities; none is scoped to the subdomain |
-| 1f | no-service | No deployable is BC-002's own; SV-001, SV-008 compose it |
-| 1g | service-spans-contexts | SV-001 composes BC-001 BC-002 BC-003 BC-004 (CN-006); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it) |
-| 1h | register-drift | The use-case register still cites retired blocks of this context, which the pages no longer do: UC-003 ABB-006, UC-003 ABB-008, UC-004 ABB-005, UC-004 ABB-006, UC-005 ABB-007, UC-005 ABB-006, UC-006 ABB-008 |
+| 1d | platform-scope-only | Only platform-scoped patterns (AP-001, RA-001) realise its capabilities; none is scoped to the subdomain |
+| 1e | no-service | No deployable is BC-002's own; SV-001, SV-008 compose it |
+| 1f | service-spans-contexts | SV-001 composes BC-001 BC-002 BC-003 BC-004 (no consideration names it); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it) |
+| 1g | register-drift | The use-case register still cites retired blocks of this context, which the pages no longer do: UC-003 ABB-006, UC-003 ABB-008, UC-004 ABB-005, UC-004 ABB-006, UC-005 ABB-007, UC-005 ABB-006, UC-006 ABB-008 |
 | 2a | no-abb | BC-003 contains no building block of its own; its model runs inside ABB-012 (BC-004), ABB-024 (BC-001), ABB-028 (BC-008) |
 | 2b | no-demand | CAP-004, CAP-007 name no demand on the capability page, so the stage tool holds them at R0 (the outcomes name them, the inverse is not written) |
 | 2c | no-outcome | CAP-007 is required by no outcome, so the demand it answers is not recorded anywhere |
-| 2d | open-consideration | Open: CN-006 Decoupling the deployables along the bounded contexts. R3 needs each resolved by an accepted decision |
-| 2e | platform-scope-only | Only platform-scoped patterns (AP-001, RA-001) realise its capabilities; none is scoped to the subdomain |
-| 2f | no-service | No deployable is BC-003's own; SV-001, SV-008 compose it |
-| 2g | service-spans-contexts | SV-001 composes BC-001 BC-002 BC-003 BC-004 (CN-006); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it) |
-| 2h | register-drift | The use-case register still cites retired blocks of this context, which the pages no longer do: UC-002 ABB-009, UC-005 ABB-009, UC-006 ABB-010 |
+| 2d | platform-scope-only | Only platform-scoped patterns (AP-001, RA-001) realise its capabilities; none is scoped to the subdomain |
+| 2e | no-service | No deployable is BC-003's own; SV-001, SV-008 compose it |
+| 2f | service-spans-contexts | SV-001 composes BC-001 BC-002 BC-003 BC-004 (no consideration names it); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it) |
+| 2g | register-drift | The use-case register still cites retired blocks of this context, which the pages no longer do: UC-002 ABB-009, UC-005 ABB-009, UC-006 ABB-010 |
 | 3a | no-demand | CAP-005, CAP-006, CAP-007 name no demand on the capability page, so the stage tool holds them at R0 (the outcomes name them, the inverse is not written) |
 | 3b | no-outcome | CAP-006, CAP-007 are required by no outcome, so the demand they answer is not recorded anywhere |
-| 3c | open-consideration | Open: CN-001 Neptune or Neo4j as the graph for an organisation's collections; CN-006 Decoupling the deployables along the bounded contexts. R3 needs each resolved by an accepted decision |
+| 3c | open-consideration | Open: CN-001 Neptune or Neo4j as the graph for an organisation's collections. R3 needs each resolved by an accepted decision |
 | 3d | platform-scope-only | Only platform-scoped patterns (AP-001, RA-001) realise its capabilities; none is scoped to the subdomain |
-| 3e | service-spans-contexts | SV-001 composes BC-001 BC-002 BC-003 BC-004 (CN-006); SV-002 composes BC-005 BC-004 (no consideration names it); SV-003 composes BC-006 BC-004 BC-005 (CN-006); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it) |
+| 3e | service-spans-contexts | SV-001 composes BC-001 BC-002 BC-003 BC-004 (no consideration names it); SV-002 composes BC-005 BC-004 (no consideration names it); SV-003 composes BC-006 BC-004 BC-005 (no consideration names it); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it) |
 | 4a | no-demand | CAP-008, CAP-010, CAP-012 name no demand on the capability page, so the stage tool holds them at R0 (the outcomes name them, the inverse is not written) |
 | 4b | unbounded | CAP-008 fails R2: no consideration affects it or its ABBs, and it does not declare open_questions: none |
-| 4c | open-consideration | Open: CN-006 Decoupling the deployables along the bounded contexts. R3 needs each resolved by an accepted decision |
-| 4d | no-architecture-pattern | CAP-010, CAP-012 are realised by no architecture pattern, only by the reference architecture |
-| 4e | platform-scope-only | Only platform-scoped patterns (AP-001, RA-001) realise its capabilities; none is scoped to the subdomain |
-| 4f | service-spans-contexts | SV-002 composes BC-005 BC-004 (no consideration names it); SV-003 composes BC-006 BC-004 BC-005 (CN-006) |
-| 4g | register-drift | The use-case register still cites retired blocks of this context, which the pages no longer do: UC-001 ABB-015, UC-001 ABB-016, UC-001 ABB-017, UC-005 ABB-017, UC-006 ABB-015 |
+| 4c | no-architecture-pattern | CAP-010, CAP-012 are realised by no architecture pattern, only by the reference architecture |
+| 4d | platform-scope-only | Only platform-scoped patterns (AP-001, RA-001) realise its capabilities; none is scoped to the subdomain |
+| 4e | service-spans-contexts | SV-002 composes BC-005 BC-004 (no consideration names it); SV-003 composes BC-006 BC-004 BC-005 (no consideration names it) |
+| 4f | register-drift | The use-case register still cites retired blocks of this context, which the pages no longer do: UC-001 ABB-015, UC-001 ABB-016, UC-001 ABB-017, UC-005 ABB-017, UC-006 ABB-015 |
 | 5a | no-demand | CAP-002 names no demand on the capability page, so the stage tool holds it at R0 (the outcomes name them, the inverse is not written) |
 | 5b | no-outcome | CAP-002 is required by no outcome, so the demand it answers is not recorded anywhere |
-| 5c | open-consideration | Open: CN-006 Decoupling the deployables along the bounded contexts. R3 needs each resolved by an accepted decision |
-| 5d | no-architecture-pattern | CAP-002 is realised by no architecture pattern, only by the reference architecture |
-| 5e | platform-scope-only | Only platform-scoped patterns (RA-001) realise its capabilities; none is scoped to the subdomain |
-| 5f | service-spans-contexts | SV-001 composes BC-001 BC-002 BC-003 BC-004 (CN-006); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it) |
-| 5g | register-drift | The use-case register still cites retired blocks of this context, which the pages no longer do: UC-002 ABB-001, UC-002 ABB-003, UC-002 ABB-004, UC-003 ABB-004, UC-004 ABB-004 |
+| 5c | no-architecture-pattern | CAP-002 is realised by no architecture pattern, only by the reference architecture |
+| 5d | platform-scope-only | Only platform-scoped patterns (RA-001) realise its capabilities; none is scoped to the subdomain |
+| 5e | service-spans-contexts | SV-001 composes BC-001 BC-002 BC-003 BC-004 (no consideration names it); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it) |
+| 5f | register-drift | The use-case register still cites retired blocks of this context, which the pages no longer do: UC-002 ABB-001, UC-002 ABB-003, UC-002 ABB-004, UC-003 ABB-004, UC-004 ABB-004 |
 | 6a | no-demand | CAP-009, CAP-010 name no demand on the capability page, so the stage tool holds them at R0 (the outcomes name them, the inverse is not written) |
-| 6b | open-consideration | Open: CN-006 Decoupling the deployables along the bounded contexts. R3 needs each resolved by an accepted decision |
-| 6c | no-architecture-pattern | CAP-010 is realised by no architecture pattern, only by the reference architecture |
-| 6d | platform-scope-only | Only platform-scoped patterns (AP-001, RA-001) realise its capabilities; none is scoped to the subdomain |
-| 6e | service-spans-contexts | SV-003 composes BC-006 BC-004 BC-005 (CN-006) |
+| 6b | no-architecture-pattern | CAP-010 is realised by no architecture pattern, only by the reference architecture |
+| 6c | platform-scope-only | Only platform-scoped patterns (AP-001, RA-001) realise its capabilities; none is scoped to the subdomain |
+| 6d | service-spans-contexts | SV-003 composes BC-006 BC-004 BC-005 (no consideration names it) |
 | 7a | no-demand | CAP-011 names no demand on the capability page, so the stage tool holds it at R0 (the outcomes name them, the inverse is not written) |
 | 7b | unbounded | CAP-011 fails R2: no consideration affects it or its ABBs, and it does not declare open_questions: none |
 | 7c | no-architecture-pattern | CAP-011 is realised by no architecture pattern, only by the reference architecture |
@@ -109,17 +104,16 @@ Suggested from the gaps, core subdomains first, then by the number of gaps each 
 
 | Ref | Kind | Scope | Box | Pattern | Realises | Why | Closes |
 |---|---|---|---|---|---|---|---|
-| P1 | architecture-pattern | domain | 1 | Ontology: the Ontology context as an architecture pattern | CAP-003, CAP-007 | names the context's own building blocks, which the catalogue lacks; scopes a logical pattern to the subdomain rather than the platform; is where CN-006 is argued in boxes | 1a, 1d, 1e |
-| P2 | architecture-pattern | domain | 2 | Extraction: the Extraction context as an architecture pattern | CAP-004, CAP-007 | names the context's own building blocks, which the catalogue lacks; scopes a logical pattern to the subdomain rather than the platform; is where CN-006 is argued in boxes | 2a, 2d, 2e |
-| P3 | architecture-pattern | domain | 3 | Knowledge graph: the Knowledge graph context as an architecture pattern | CAP-005, CAP-006, CAP-007 | scopes a logical pattern to the subdomain rather than the platform; is where CN-001 and CN-006 are argued in boxes | 3c, 3d |
-| P4 | architecture-pattern | domain | 4 | Answering: the Answering context as an architecture pattern | CAP-008, CAP-010, CAP-012 | scopes a logical pattern to the subdomain rather than the platform; is where CN-006 is argued in boxes | 4c, 4d, 4e |
+| P1 | architecture-pattern | domain | 1 | Ontology: the Ontology context as an architecture pattern | CAP-003, CAP-007 | names the context's own building blocks, which the catalogue lacks; scopes a logical pattern to the subdomain rather than the platform | 1a, 1d |
+| P2 | architecture-pattern | domain | 2 | Extraction: the Extraction context as an architecture pattern | CAP-004, CAP-007 | names the context's own building blocks, which the catalogue lacks; scopes a logical pattern to the subdomain rather than the platform | 2a, 2d |
+| P3 | architecture-pattern | domain | 3 | Knowledge graph: the Knowledge graph context as an architecture pattern | CAP-005, CAP-006, CAP-007 | scopes a logical pattern to the subdomain rather than the platform; is where CN-001 is argued in boxes | 3c, 3d |
+| P4 | architecture-pattern | domain | 4 | Answering: the Answering context as an architecture pattern | CAP-008, CAP-010, CAP-012 | scopes a logical pattern to the subdomain rather than the platform | 4c, 4d |
 | P5 | architecture-pattern | capability-area | 1+2+3 | Structured lookup across Ontology, Extraction, Knowledge graph | CAP-007 | the capability is realised in 3 contexts, and no pattern says how they divide it |  |
-| P6 | reference-architecture | platform | 1+2+3+4+5+6 | The deployables of the target state: Decoupling the deployables along the bounded contexts |  | a reference architecture variant per option of CN-006, so the choice is made between drawn alternatives | 1g, 2g, 3e, 4f, 5f, 6e |
-| P7 | architecture-pattern | capability-area | 4+6+8 | Cost and spend control across Answering, People and access, Running it | CAP-010 | the capability is realised in 3 contexts, and no pattern says how they divide it |  |
-| P8 | architecture-pattern | domain | 5 | Sources and documents: the Ingestion context as an architecture pattern | CAP-002 | scopes a logical pattern to the subdomain rather than the platform; is where CN-006 is argued in boxes | 5c, 5d, 5e |
-| P9 | architecture-pattern | domain | 6 | People and access: the Portal and identity context as an architecture pattern | CAP-009, CAP-010 | scopes a logical pattern to the subdomain rather than the platform; is where CN-006 is argued in boxes | 6b, 6c, 6d |
-| P10 | architecture-pattern | domain | 7 | Evaluation: the Evaluation context as an architecture pattern | CAP-011 | scopes a logical pattern to the subdomain rather than the platform | 7c, 7d |
-| P11 | architecture-pattern | domain | 8 | Running it: the Platform services context as an architecture pattern | CAP-010, CAP-013 | scopes a logical pattern to the subdomain rather than the platform | 8c, 8d |
+| P6 | architecture-pattern | capability-area | 4+6+8 | Cost and spend control across Answering, People and access, Running it | CAP-010 | the capability is realised in 3 contexts, and no pattern says how they divide it |  |
+| P7 | architecture-pattern | domain | 5 | Sources and documents: the Ingestion context as an architecture pattern | CAP-002 | scopes a logical pattern to the subdomain rather than the platform | 5c, 5d |
+| P8 | architecture-pattern | domain | 6 | People and access: the Portal and identity context as an architecture pattern | CAP-009, CAP-010 | scopes a logical pattern to the subdomain rather than the platform | 6b, 6c |
+| P9 | architecture-pattern | domain | 7 | Evaluation: the Evaluation context as an architecture pattern | CAP-011 | scopes a logical pattern to the subdomain rather than the platform | 7c, 7d |
+| P10 | architecture-pattern | domain | 8 | Running it: the Platform services context as an architecture pattern | CAP-010, CAP-013 | scopes a logical pattern to the subdomain rather than the platform | 8c, 8d |
 
 No pattern in the catalogue carries a portfolio block yet, so none is shown as planned.
 

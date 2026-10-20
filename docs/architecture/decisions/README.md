@@ -16,6 +16,8 @@ A consideration is an open question with more than one credible answer; a decisi
 | [ADR-008 Memory is the default projection; graph and document backends are optional](ADR-008-memory-is-the-default-projection-graph-and-document-backends-are-optional.md) | BC-004, ABB-011 |
 | [ADR-009 A mapped table stays a file, bound at a snapshot into gold](ADR-009-a-mapped-table-stays-a-file-bound-at-a-snapshot-into-gold.md) | BC-003, ABB-024, ABB-012 |
 | [ADR-010 Scope is the one access control today, stated per source](ADR-010-scope-is-the-one-access-control-today-stated-per-source.md) | BC-006, ABB-020 |
+| [ADR-011 The code is cut by bounded context, and a deployable splits off only on a trigger](ADR-011-the-code-is-cut-by-bounded-context-and-deployables-split-on-a-trigger.md) | BC-001 to BC-008, SV-001 to SV-006, SV-009 |
+| [ADR-012 Evaluation counts false answers and unsupported claims, and gates releases on a baseline](ADR-012-evaluation-counts-false-answers-and-unsupported-claims-and-gates-releases.md) | BC-007, BC-005, SV-009, ABB-021 |
 
 ## Considerations
 
@@ -26,6 +28,6 @@ A consideration is an open question with more than one credible answer; a decisi
 | [CN-003 Live structured sources through a virtual knowledge graph](CN-003-live-structured-sources-through-a-virtual-knowledge-graph/index.md) | resolved by ADR-009 | CAP-007, ABB-024, ABB-012 |
 | [CN-004 Whether a vector store is needed beside the graph](CN-004-whether-a-vector-store-is-needed-beside-the-graph/index.md) | resolved, ADR-007 | CAP-006, ABB-013 |
 | [CN-005 Where the projection and the chat state live at scale](CN-005-where-the-projection-and-the-chat-state-live-at-scale/index.md) | resolved, ADR-008 | CAP-005, ABB-011, ABB-019 |
-| [CN-006 Decoupling the deployables along the bounded contexts](CN-006-decoupling-the-deployables-along-the-bounded-contexts/index.md) | open | BC-001, BC-004, BC-005, BC-006, SV-001, SV-003, SV-004 |
+| [CN-006 Decoupling the deployables along the bounded contexts](CN-006-decoupling-the-deployables-along-the-bounded-contexts/index.md) | resolved by ADR-011 | BC-001, BC-004, BC-005, BC-006, SV-001, SV-003, SV-004 |
 
 The design notes that carry the reasoning in full stay where they are: [security.md](../../design/security.md) (ADR-002, ADR-003), [source-controls.md](../../design/source-controls.md) (CN-002, ADR-010), [aws/backends.md](../../design/aws/backends.md) (ADR-008), [aws/scalability.md](../../design/aws/scalability.md) (CN-001), [aws/structured.md](../../design/aws/structured.md) (ADR-009, CN-003) and [aws/aws.md](../../design/aws/aws.md) (ADR-007, the cost table).

@@ -106,7 +106,7 @@ The schema is uploaded with the release; the fallback is a stated behaviour, not
 
 | Where | What |
 |---|---|
-| Code | `src/knowledge_store/knowledge_graph/adapters/gateway.py (passages toolset); tools/passages.py` |
+| Code | `src/knowledge_store/knowledge_graph/adapters/gateway.py (passages toolset); knowledge_graph/adapters/passages.py` |
 | Capabilities | CAP-006, CAP-009 |
 | Context | BC-004 |
 
