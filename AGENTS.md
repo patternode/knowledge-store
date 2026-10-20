@@ -21,6 +21,8 @@ People run pinned releases of this repository, so every change is versioned. The
 
 ## Code layout
 
+Follow [the engineering standard](docs/engineering-standard.md) for every change: name the subdomain, bounded context and slice first, put the code where its section 3 says, and add tests at the levels its section 7 sets. Its appendix lists this repository's contexts and checks. The points below are the ones agents most often need.
+
 The code is cut by bounded context, as patternode-architecture ADR-046 sets out, and the tests hold it there. Read [the contexts page](docs/architecture/solution/contexts/README.md) before moving code.
 
 1. Each context is a package in `src/knowledge_store/` (`ingestion`, `ontology`, `extraction`, `knowledge_graph`, `answering`, `access`, `evaluation`, `platform_services`). Its `__init__` is its contract: the names other contexts may import, loaded on first use. Another context imports only from that package, never from its `domain`, `slices`, `ports` or `adapters`.
