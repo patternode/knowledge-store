@@ -13,6 +13,7 @@ import pytest
 
 from fake_llm import FakeClient
 from knowledge_store.platform_services.domain import layout
+from knowledge_store.evaluation import load_set
 from knowledge_store.evaluation.domain import score
 from knowledge_store.apps import sweep as run
 from knowledge_store.platform_services.ports import put_json
@@ -66,7 +67,7 @@ def test_catalog_questions_hit_the_tables(tmp_path, layout_name):
     bound = {t["logical_table"]: t.get("snapshot") for t in described["types"]}
     assert bound.get("missions") and bound.get("launch_vehicles"), described
 
-    catalog = [q for q in score.load(SET).questions if q.structured]
+    catalog = [q for q in load_set(SET).questions if q.structured]
     assert len(catalog) >= 5
     for q in catalog:
         got = _ask(root, q.structured)
@@ -74,7 +75,7 @@ def test_catalog_questions_hit_the_tables(tmp_path, layout_name):
 
 
 def test_a_table_citation_counts_as_the_catalog_source():
-    q = next(q for q in score.load(SET).questions if q.id == "u01")
+    q = next(q for q in load_set(SET).questions if q.id == "u01")
     hit = score.score(q, {"answer": "The catalog gives Juno a sample cost of 1100.",
                           "sources": [{"name": "missions", "kind": "cell", "title": "sample_cost_million_usd = 1100"}]})
     assert hit["correct"] and hit["source_hit"] is True

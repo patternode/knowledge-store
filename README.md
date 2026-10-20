@@ -244,7 +244,7 @@ Measure the agent against questions with known answers, including some the sourc
 answer, which it must decline:
 
 ```bash
-python -m knowledge_store.evaluation examples/evals/space-missions.yaml --lake <lake> --model <model id> --yes
+python -m knowledge_store.apps.evaluate examples/evals/space-missions.yaml --lake <lake> --model <model id> --yes
 ```
 
 The Sherlock Holmes stories have a set too, `examples/evals/sherlock-holmes.yaml`, for the `holmes`

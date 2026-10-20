@@ -157,9 +157,9 @@ passage it rests on) and a false negative (the sources answer it and the agent d
 
 ```bash
 # the agent in-process against a lake (your AWS credentials call Bedrock)
-python -m knowledge_store.evaluation examples/evals/space-missions.yaml --lake s3://<lake> --model <model id> --yes
+python -m knowledge_store.apps.evaluate examples/evals/space-missions.yaml --lake s3://<lake> --model <model id> --yes
 # the deployed chat, as a signed-in person (an access token in KS_TOKEN)
-python -m knowledge_store.evaluation examples/evals/space-missions.yaml --api https://<portal> --yes
+python -m knowledge_store.apps.evaluate examples/evals/space-missions.yaml --api https://<portal> --yes
 ```
 
 Every question is a model run, so a run costs money; without `--yes` the command prints its

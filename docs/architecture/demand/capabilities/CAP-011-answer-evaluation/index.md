@@ -18,7 +18,7 @@ components:
     - "Write a set: question, kind, must, must_not, first, sources, answerable"
     - "Run in-process against a lake or against the deployed chat as a person"
     - "Score and report accuracy, grounded share, source hits, false abstentions and missed abstentions"
-  technology: "YAML sets, the runner (python -m knowledge_store.evaluation), deterministic scoring, a markdown and JSON report"
+  technology: "YAML sets, the runner (python -m knowledge_store.apps.evaluate), deterministic scoring, a markdown and JSON report"
 maturity:
   current: 3
   target: 4
@@ -60,7 +60,7 @@ A grounded answer can still be wrong or missing. Evaluation sets make the four o
 | Organisation | The product owner keeps the example sets; a deployment keeps its own |
 | People | Evaluators, Curators reading false negatives |
 | Processes | Write a set: question, kind, must, must_not, first, sources, answerable; Run in-process against a lake or against the deployed chat as a person; Score and report accuracy, grounded share, source hits, false abstentions and missed abstentions |
-| Technology | YAML sets, the runner (python -m knowledge_store.evaluation), deterministic scoring, a markdown and JSON report |
+| Technology | YAML sets, the runner (python -m knowledge_store.apps.evaluate), deterministic scoring, a markdown and JSON report |
 
 ## 3  Sub-capabilities
 

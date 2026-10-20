@@ -35,7 +35,7 @@ Runs an evaluation set against a lake in process or against the deployed chat as
 | Context | BC-007; composes BC-007 as built |
 | Realises | SBB-019 |
 | Node | DN-014 |
-| Code | `src/knowledge_store/evaluation/adapters/run.py (python -m knowledge_store.evaluation)` |
+| Code | `src/knowledge_store/evaluation/adapters/run.py (python -m knowledge_store.apps.evaluate)` |
 | Talks to | The agent in process, or POST /api/chat with a person's token. |
 | Stores | build/eval/<name>-<timestamp>/ locally. |
 | Role | The evaluator's credentials or token. |
