@@ -2,7 +2,8 @@
 
 An answer states a figure at some rounding: "$2.2 billion" is 2,200,000,000 stated to the
 hundred million. The figure matches when the expected value rounds to what the answer states,
-that is, when they differ by at most half a unit of the answer's last stated digit. The rounding
+that is, when they differ by at most half a unit of the answer's last stated digit, and by at
+most 5% however coarse the rounding: "$2 billion" is 2.04 billion rounded, but not 2.4 billion. The rounding
 is the answer's, never the expected value's: a round expected figure (3,000,000,000) must not
 widen the window for every number near it. A set can instead give a relative tolerance.
 
@@ -36,6 +37,11 @@ def stated(text: str) -> list[tuple[Decimal, Decimal]]:
     return out
 
 
+# However coarsely an answer rounds, it may be at most this far from the expected figure:
+# "$2 billion" states 2.04 billion, not 2.4 billion.
+MAX_ROUNDING = Decimal("0.05")
+
+
 def matches(text: str, expected: float, tolerance: float | None = None) -> bool:
     """The text states the expected figure."""
     target = Decimal(str(expected))
@@ -43,6 +49,6 @@ def matches(text: str, expected: float, tolerance: float | None = None) -> bool:
         if tolerance is not None:
             if abs(value - target) <= abs(target) * Decimal(str(tolerance)):
                 return True
-        elif abs(value - target) <= half:
+        elif abs(value - target) <= half and abs(value - target) <= abs(target) * MAX_ROUNDING:
             return True
     return False

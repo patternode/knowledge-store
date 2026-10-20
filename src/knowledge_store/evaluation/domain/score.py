@@ -3,8 +3,12 @@
 The set format is in sets.py. Measures, per question:
 
     correct          answerable: every fact and figure stated, none forbidden, comparison in order;
-                     unanswerable: the agent declined (abstained, or said what the sources lack)
-                     and stated nothing the set forbids
+                     unanswerable: the agent declined (abstained, or said what the sources lack),
+                     stated nothing the set forbids, and made no claim the verifier rejects.
+                     A fact counts only where the answer asserts it: a mention inside a negated
+                     clause ("it was not Atlas V") neither states a fact nor breaks a must_not
+    hedged           unanswerable, declined, but still showing claims, with no verifier to check
+                     them: flagged for review, not failed
     score            the share of facts and figures stated (0 if a forbidden one is, or the order is wrong)
     abstained        the agent said the sources do not answer it, and made no claims
     declined         abstained, or answered only with what the sources lack (its gaps)
@@ -56,8 +60,31 @@ def _pattern(spelling: str) -> str:
 
 
 def position(text: str, spellings: list[str]) -> int | None:
+    """Where the text first mentions any spelling, negated or not (a leak is a leak)."""
     t = _norm(text)
     hits = [m.start() for s in spellings for m in [re.search(_pattern(s), t)] if m]
+    return min(hits) if hits else None
+
+
+# A mention inside a negated clause ("it was not Atlas V") does not state the fact. The clause runs
+# from the last sentence or clause break, or "but", to the mention; "no doubt" and "not only"
+# do not negate.
+_CLAUSE = re.compile(r"[.;:!?,]|\b(?:but|however|instead|whereas)\b")
+_NEGATION = re.compile(r"\b(?:not|no|never|neither|nor|none|without|rather than|instead of|other than)\b|n't\b")
+_NOT_NEGATION = re.compile(r"\bno doubt\b|\bnot only\b")
+
+
+def negated(text: str, at: int) -> bool:
+    """The mention at `at` (in the normalised text) sits in a negated clause."""
+    start = max((m.end() for m in _CLAUSE.finditer(text, 0, at)), default=0)
+    clause = _NOT_NEGATION.sub(" ", text[start:at])
+    return bool(_NEGATION.search(clause))
+
+
+def asserted(text: str, spellings: list[str]) -> int | None:
+    """Where the text first states any spelling outside a negated clause."""
+    t = _norm(text)
+    hits = [m.start() for s in spellings for m in re.finditer(_pattern(s), t) if not negated(t, m.start())]
     return min(hits) if hits else None
 
 
@@ -104,13 +131,18 @@ def score(q: Question, result: dict, verdicts: list[dict] | None = None) -> dict
     claims = len(result.get("claims") or []) if not abstained else 0
     unsupported = sum(1 for v in verdicts or [] if not v.get("supported", True)) if verdicts is not None else None
     supported_share = round(1 - unsupported / len(verdicts), 3) if verdicts else None
-    forbidden = [s for s in q.must_not if position(answer, [s]) is not None]
+    forbidden = [s for s in q.must_not if asserted(answer, [s]) is not None]
     base = {"id": q.id, "kind": q.kind, "family": q.family, "answerable": q.answerable, "abstained": abstained,
             "declined": did_decline, "grounded": grounded, "source_hit": source_hit, "citation_precision": precision,
             "citation_recall": recall, "claims": claims, "unsupported": unsupported, "supported_share": supported_share,
             "error": result.get("error"), "judged": q.judged}
     if not q.answerable:
-        ok = did_decline and not forbidden and not result.get("error")
+        # A decline that goes on to claim what the verifier cannot find is a guess, not a decline.
+        # Without a verifier, a decline that still shows claims is flagged for review, not failed:
+        # declines often show the context they did find.
+        guessed = did_decline and bool(unsupported)
+        ok = did_decline and not forbidden and not guessed and not result.get("error")
+        base["hedged"] = did_decline and claims > 0 and verdicts is None
         return {**base, "correct": ok, "score": 1.0 if ok else 0.0, "missing": [], "forbidden": forbidden,
                 "false_answer": not ok and not result.get("error"), "false_abstention": False}
     if q.judged and not (q.must or q.figures):
@@ -119,11 +151,11 @@ def score(q: Question, result: dict, verdicts: list[dict] | None = None) -> dict
         ok = not did_decline and not forbidden and not result.get("error")
         return {**base, "correct": ok, "score": 1.0 if ok else 0.0, "missing": [], "forbidden": forbidden,
                 "order_ok": True, "false_answer": False, "false_abstention": did_decline and not result.get("error")}
-    found = [position(answer, m) is not None for m in q.must]
+    found = [asserted(answer, m) is not None for m in q.must]
     figs = [numeric.matches(answer, f["value"], f.get("tolerance")) for f in q.figures]
     order_ok = True
     if q.first:
-        right, wrong = position(answer, [q.first[0]]), position(answer, [q.first[1]])
+        right, wrong = asserted(answer, [q.first[0]]), asserted(answer, [q.first[1]])
         order_ok = right is not None and (wrong is None or right < wrong)
     stated = found + figs
     value = 0.0 if forbidden or not order_ok else sum(stated) / len(stated)
@@ -178,6 +210,7 @@ def summarise(rows: list[dict]) -> dict:
                 "citation_recall": _mean([r.get("citation_recall") for r in sel]),
                 "false_answers": sum(bool(r.get("false_answer")) for r in sel),
                 "false_abstentions": sum(bool(r.get("false_abstention")) for r in sel),
+                "hedged_declines": sum(bool(r.get("hedged")) for r in sel),
                 "claims_verified": sum(r.get("claims") or 0 for r in verified) if verified else None,
                 "unsupported_claims": sum(r["unsupported"] for r in verified) if verified else None,
                 "supported_share": _mean([r.get("supported_share") for r in verified]) if verified else None,

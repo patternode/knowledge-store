@@ -82,8 +82,13 @@ def test_the_score_is_the_share_of_facts_and_figures_stated():
 
 
 def test_a_forbidden_spelling_scores_zero():
-    r = score(q(must_not=["Delta II"]), reply("Atlas V, not a Delta II."))
+    r = score(q(must_not=["Delta II"]), reply("Atlas V and a Delta II."))
     assert not r["correct"] and r["score"] == 0.0 and r["forbidden"] == ["Delta II"]
+
+
+def test_ruling_out_the_near_miss_is_not_stating_it():
+    r = score(q(must_not=["Delta II"]), reply("Atlas V, not a Delta II."))
+    assert r["correct"] and r["forbidden"] == []
 
 
 def test_a_comparison_in_the_wrong_order_scores_zero():
