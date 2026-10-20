@@ -9,8 +9,8 @@ import pytest
 boto3 = pytest.importorskip("boto3")
 moto = pytest.importorskip("moto")
 
-from knowledge_store.answering.adapters import agent_app as app
-from knowledge_store.access.slices import quota  # noqa: E402
+from knowledge_store.apps import agent as app
+from knowledge_store.access.adapters import agent_quota as quota  # noqa: E402
 from knowledge_store.access.adapters.state import DynamoState  # noqa: E402
 
 

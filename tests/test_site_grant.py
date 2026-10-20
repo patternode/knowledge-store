@@ -144,7 +144,7 @@ def test_the_portal_signs_in_through_the_website(mixed, site, monkeypatch):
     """With the website's grant in place of a token: no grant is refused, a role decides the
     scope, and the agent is asked as the matching service client."""
     from knowledge_store.answering.adapters import agent_client
-    from knowledge_store.access.adapters import portal as handler
+    from knowledge_store.apps import portal_api as handler
     from test_chat_api import State
     root, lake = mixed
     from knowledge_store.ingestion.slices.refine import load_doc, silver_doc_ids

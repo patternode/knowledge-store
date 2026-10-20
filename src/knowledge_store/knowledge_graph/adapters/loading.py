@@ -19,13 +19,14 @@ import json
 import logging
 import os
 
-from knowledge_store.platform_services.slices import collections
-from knowledge_store.knowledge_graph import ports as graph
-from knowledge_store.platform_services.domain import layout
-from knowledge_store.extraction.domain.rdf import data_base
-from knowledge_store.ontology.domain import renditions
-from knowledge_store.ontology.slices import versions
-from knowledge_store.platform_services.adapters.store import Store, get_json, put_json
+from knowledge_store.platform_services import collections
+from knowledge_store.knowledge_graph.adapters import backends as graph
+from knowledge_store.knowledge_graph.domain.graph_rows import rows as graph_rows
+from knowledge_store.platform_services import layout
+from knowledge_store.extraction import data_base
+from knowledge_store.ontology import renditions
+from knowledge_store.ontology import versions
+from knowledge_store.platform_services import Store, get_json, put_json
 
 log = logging.getLogger("load")
 
@@ -50,7 +51,7 @@ def load_graph(lake: Store, store=None) -> dict | None:
         return current
     cid = collections.collection_id(lake) or collections.DEFAULT_ID
     spec, _ = versions.load_version(lake, version)
-    nodes, edges = graph.rows(get_json(lake, layout.index_key(version, "entities")),
+    nodes, edges = graph_rows(get_json(lake, layout.index_key(version, "entities")),
                               get_json(lake, layout.index_key(version, "passages")), spec, data_base(spec))
     key = store.key_for(cid, version, built)
     store.drop(key)  # what an interrupted attempt left
@@ -135,7 +136,7 @@ def _graphs(lake: Store, version: str, spec) -> dict[str, tuple[str, str]]:
             for ctx in ds.graphs():
                 if len(ctx):
                     out[str(ctx.identifier)] = (f"{v}:{etag}", ctx.serialize(format="nt"))
-    from knowledge_store.extraction.slices.bind_tables import binding as structured_binding
+    from knowledge_store.extraction import binding as structured_binding
     for entry in structured_binding(lake, version).values():
         key = entry.get("graph")
         if not key or not lake.exists(key):
@@ -225,7 +226,7 @@ def sync_passages(lake: Store, kb=None, start=None) -> dict | None:
     kb/passages/<collection>/ at the lake's root, which the Knowledge Base's data source reads;
     then an ingestion job when anything changed. One passage is one vector (chunking NONE), so a
     search hit is a passage id, the same id the graph's citations use."""
-    from knowledge_store.ingestion.slices.refine import load_doc, load_passages, silver_doc_ids
+    from knowledge_store.ingestion import load_doc, load_passages, silver_doc_ids
     kb = kb or knowledge_base()
     if kb is None:
         return None

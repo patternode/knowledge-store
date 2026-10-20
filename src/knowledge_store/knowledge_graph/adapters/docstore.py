@@ -20,7 +20,7 @@ import math
 import re
 from collections import Counter
 
-from knowledge_store.platform_services.domain import layout
+from knowledge_store.platform_services import layout
 from knowledge_store.knowledge_graph.domain import traverse
 from knowledge_store.knowledge_graph.adapters.index import MAX_QUERY, Index, public_names, tokens
 

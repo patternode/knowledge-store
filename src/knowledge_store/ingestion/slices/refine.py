@@ -7,13 +7,15 @@ the document's gold facts cite passages that no longer exist and it must be re-e
 
 from __future__ import annotations
 
+from collections.abc import Collection
+
 import json
 import logging
 
-from knowledge_store.platform_services.domain import layout
+from knowledge_store.platform_services import layout
 from knowledge_store.ingestion.domain.parsing import UnsupportedFormat, parse
 from knowledge_store.ingestion.domain.chunk import CHUNKER_VERSION, Passage, chunk_text
-from knowledge_store.platform_services.adapters.store import Store, put_json
+from knowledge_store.platform_services import Store, put_json
 from knowledge_store.ingestion.slices.ingest import bronze_objects
 
 log = logging.getLogger("refine")
@@ -46,9 +48,12 @@ def refine_one(lake: Store, meta: dict) -> dict:
     return {"doc_id": doc_id, "status": "refined", "passages": len(passages)}
 
 
-def refine_all(lake: Store, *, reparse: bool = False, limit: int | None = None) -> list[dict]:
-    from knowledge_store.extraction.slices.bind_tables import mapped_doc_ids
-    mapped = mapped_doc_ids(lake)
+def refine_all(lake: Store, *, reparse: bool = False, limit: int | None = None,
+               mapped: Collection[str] = ()) -> list[dict]:
+    """Parse every bronze object not yet refined. mapped names the documents a table mapping
+    claims (Extraction's mapped_doc_ids): they are tables, not documents, and are skipped. The
+    caller supplies them, so Ingestion does not depend on Extraction."""
+    mapped = set(mapped)
     rows = []
     for doc_id, meta in bronze_objects(lake).items():
         if limit is not None and len(rows) >= limit:

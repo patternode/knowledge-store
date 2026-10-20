@@ -59,18 +59,18 @@ import os
 import time
 import uuid
 
-from knowledge_store.platform_services.slices import collections
-from knowledge_store.platform_services.domain import layout
+from knowledge_store.platform_services import collections
+from knowledge_store.platform_services import layout
 from knowledge_store.access.adapters import site_grant
-from knowledge_store.answering.slices import workbench
+from knowledge_store.answering import workbench
 from knowledge_store.access.domain.claims import private_reader, subject
-from knowledge_store.answering.domain import valves
-from knowledge_store.platform_services.slices.config import load_profile
-from knowledge_store.knowledge_graph.domain import traverse
-from knowledge_store.platform_services.adapters.store import S3Store, put_json, store_from_uri
-from knowledge_store.answering.adapters import agent_client
-from knowledge_store.answering.slices import chat
-from knowledge_store.knowledge_graph.adapters import index
+from knowledge_store.answering import valves
+from knowledge_store.platform_services import load_profile
+from knowledge_store.knowledge_graph import traverse
+from knowledge_store.platform_services import S3Store, put_json, store_from_uri
+from knowledge_store.answering import agent_client
+from knowledge_store.answering import fallback_chat as chat
+from knowledge_store.knowledge_graph import index
 from knowledge_store.access.adapters import state as chat_state
 
 log = logging.getLogger()
@@ -168,7 +168,7 @@ def bearer(event: dict) -> str:
 def document_link(lk, doc_id: str, private: bool) -> dict | None:
     """Where a person can open a source document: its own URL when it came from the web, else a
     short-lived link to the copy in the lake. None if there is no such document in their scope."""
-    from knowledge_store.ingestion.slices.refine import load_doc
+    from knowledge_store.ingestion import load_doc
     if not doc_id or "/" in doc_id or not lk.exists(layout.doc_key(doc_id)):
         return None
     doc = load_doc(lk, doc_id)
@@ -193,7 +193,7 @@ def document_link(lk, doc_id: str, private: bool) -> dict | None:
 def table_link(lk, location: str, private: bool) -> dict | None:
     """A short-lived link to the snapshot a mapped table is bound to, found by the location its
     mapping names. None if no table has that location, or the caller may not read it."""
-    from knowledge_store.extraction.slices.bind_tables import binding
+    from knowledge_store.extraction import binding
     hit = next((b for b in binding(lk).values() if b.get("location") == location), None)
     if not hit or not (private or hit.get("scope", "public") == "public"):
         return None

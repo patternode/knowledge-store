@@ -10,8 +10,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import ClassVar
 
-from knowledge_store.platform_services.slices.config import SourceConfig
-from knowledge_store.platform_services.adapters.store import Store
+from knowledge_store.platform_services import SourceConfig
+from knowledge_store.platform_services import Store
 from knowledge_store.ingestion.ports import SourceItem
 
 

@@ -29,6 +29,8 @@ agent both import it.
 
 from __future__ import annotations
 
+from knowledge_store.platform_services import layout
+
 import datetime as dt
 import json
 import logging
@@ -130,7 +132,7 @@ class Recorder:
         target["took_ms"] = max(0, now - int(target.get("ms") or 0))
         if not isinstance(usage, dict) or not usage:
             return
-        from knowledge_store.platform_services.adapters import ledger
+        from knowledge_store.platform_services import ledger
         kept = {k: int(usage.get(k) or 0) for k in USAGE_KEYS}
         priced = ledger.cost_parts(model_id or "", kept, provider=provider) if model_id else None
         target["usage"] = kept
@@ -292,7 +294,7 @@ def query_cost(steps, *, model_id: str | None, usage: dict | None = None, provid
     Tool lookups are not in the price. A guardrail check is named when one ran, because it is not
     priced here either.
     """
-    from knowledge_store.platform_services.adapters import ledger
+    from knowledge_store.platform_services import ledger
     calls = []
     reported = []
     for s in steps or []:
@@ -357,7 +359,7 @@ def month(now: dt.datetime | None = None) -> str:
 
 # --- requests ----------------------------------------------------------------------------------
 
-REQUESTS = "ontology/requests"
+REQUESTS = layout.TERM_REQUESTS
 
 
 def request_record(question: str, report: dict, *, version: str | None, by: str, now: dt.datetime | None = None) -> tuple[str, dict]:
@@ -388,38 +390,6 @@ def clean_report(r: dict) -> dict:
         "extraction": rows(r.get("extraction"), ["what", "passage_id", "why"]),
         "rewrites": [_short(x, 300) for x in (r.get("rewrites") or [])[:5] if isinstance(x, str) and x.strip()],
     }
-
-
-def requested_terms(lake) -> list[dict]:
-    """Every term the kept requests propose, merged by kind and normalised name, with how many
-    requests asked for it and the questions behind them: rows for the candidate register."""
-    from knowledge_store.ontology.domain.model import normalise
-    kinds = {"classes": "class", "relations": "relation", "attributes": "attribute"}
-    terms: dict[tuple[str, str], dict] = {}
-    for key in sorted(lake.list(REQUESTS + "/")):
-        if not key.endswith(".json"):
-            continue
-        try:
-            rec = json.loads(lake.get(key))
-        except ValueError:
-            continue
-        for plural, rows in ((rec.get("report") or {}).get("ontology") or {}).items():
-            if plural not in kinds:
-                continue
-            for row in rows or []:
-                name = str(row.get("name") or "").strip()
-                if not name:
-                    continue
-                t = terms.setdefault((kinds[plural], normalise(name)), {
-                    "kind": kinds[plural], "term": name, "asked": 0, "definitions": [], "questions": [], "requests": [],
-                    "nearest": row.get("parent") or row.get("domain")})
-                t["asked"] += 1
-                t["requests"].append(rec.get("id"))
-                if row.get("definition") and len(t["definitions"]) < 3 and row["definition"] not in t["definitions"]:
-                    t["definitions"].append(row["definition"])
-                if rec.get("question") and len(t["questions"]) < 5:
-                    t["questions"].append(rec["question"])
-    return sorted(terms.values(), key=lambda t: (-t["asked"], t["kind"], t["term"]))
 
 
 # --- the analyst ---------------------------------------------------------------------------------

@@ -21,7 +21,7 @@ neo4j = ["neo4j>=5.20"]
 age = ["psycopg[binary]>=3.2"]
 # The chat agent (as in Dockerfile.agent) and the evaluation runner.
 agent = ["boto3>=1.40", "strands-agents>=1.50", "bedrock-agentcore>=1.20", "mcp>=1.20,<3", "pydantic>=2", "pyyaml>=6"]
-dev = ["pytest>=8", "moto>=5", "knowledge-store[aws,mongo,neo4j,age,agent]"]
+dev = ["pytest>=8", "moto>=5", "import-linter>=2.1", "knowledge-store[aws,mongo,neo4j,age,agent]"]
 
 [project.scripts]
 knowledge-store = "knowledge_store.apps.cli:main"
@@ -40,3 +40,126 @@ where = ["src"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+
+# Contexts, slices and ports (patternode-architecture ADR-046): the boundaries, checked by
+# `lint-imports`, which tests/test_architecture.py runs, so `pytest` fails on a violation.
+# Generated from the packages on disk; regenerate when a context gains or loses a layer.
+[tool.importlinter]
+root_package = "knowledge_store"
+include_external_packages = true
+exclude_type_checking_imports = true
+
+[[tool.importlinter.contracts]]
+name = "ingestion: adapters, slices, ports, domain, in that order"
+type = "layers"
+layers = ["knowledge_store.ingestion.adapters", "knowledge_store.ingestion.slices", "knowledge_store.ingestion.ports", "knowledge_store.ingestion.domain"]
+
+[[tool.importlinter.contracts]]
+name = "ontology: adapters, slices, ports, domain, in that order"
+type = "layers"
+layers = ["knowledge_store.ontology.slices", "knowledge_store.ontology.domain"]
+
+[[tool.importlinter.contracts]]
+name = "extraction: adapters, slices, ports, domain, in that order"
+type = "layers"
+layers = ["knowledge_store.extraction.slices", "knowledge_store.extraction.domain"]
+
+[[tool.importlinter.contracts]]
+name = "knowledge_graph: adapters, slices, ports, domain, in that order"
+type = "layers"
+layers = ["knowledge_store.knowledge_graph.adapters", "knowledge_store.knowledge_graph.slices", "knowledge_store.knowledge_graph.ports", "knowledge_store.knowledge_graph.domain"]
+
+[[tool.importlinter.contracts]]
+name = "answering: adapters, slices, ports, domain, in that order"
+type = "layers"
+layers = ["knowledge_store.answering.adapters", "knowledge_store.answering.slices", "knowledge_store.answering.ports", "knowledge_store.answering.domain"]
+
+[[tool.importlinter.contracts]]
+name = "access: adapters, slices, ports, domain, in that order"
+type = "layers"
+layers = ["knowledge_store.access.adapters", "knowledge_store.access.domain"]
+
+[[tool.importlinter.contracts]]
+name = "evaluation: adapters, slices, ports, domain, in that order"
+type = "layers"
+layers = ["knowledge_store.evaluation.adapters", "knowledge_store.evaluation.domain"]
+
+[[tool.importlinter.contracts]]
+name = "platform_services: adapters, slices, ports, domain, in that order"
+type = "layers"
+layers = ["knowledge_store.platform_services.adapters", "knowledge_store.platform_services.slices", "knowledge_store.platform_services.ports", "knowledge_store.platform_services.domain"]
+
+[[tool.importlinter.contracts]]
+name = "ingestion: other contexts use only its contract"
+type = "forbidden"
+source_modules = ["knowledge_store.ontology", "knowledge_store.extraction", "knowledge_store.knowledge_graph", "knowledge_store.answering", "knowledge_store.access", "knowledge_store.evaluation", "knowledge_store.platform_services", "knowledge_store.kernel"]
+forbidden_modules = ["knowledge_store.ingestion.adapters", "knowledge_store.ingestion.slices", "knowledge_store.ingestion.ports", "knowledge_store.ingestion.domain"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "ontology: other contexts use only its contract"
+type = "forbidden"
+source_modules = ["knowledge_store.ingestion", "knowledge_store.extraction", "knowledge_store.knowledge_graph", "knowledge_store.answering", "knowledge_store.access", "knowledge_store.evaluation", "knowledge_store.platform_services", "knowledge_store.kernel"]
+forbidden_modules = ["knowledge_store.ontology.slices", "knowledge_store.ontology.domain"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "extraction: other contexts use only its contract"
+type = "forbidden"
+source_modules = ["knowledge_store.ingestion", "knowledge_store.ontology", "knowledge_store.knowledge_graph", "knowledge_store.answering", "knowledge_store.access", "knowledge_store.evaluation", "knowledge_store.platform_services", "knowledge_store.kernel"]
+forbidden_modules = ["knowledge_store.extraction.slices", "knowledge_store.extraction.domain"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "knowledge_graph: other contexts use only its contract"
+type = "forbidden"
+source_modules = ["knowledge_store.ingestion", "knowledge_store.ontology", "knowledge_store.extraction", "knowledge_store.answering", "knowledge_store.access", "knowledge_store.evaluation", "knowledge_store.platform_services", "knowledge_store.kernel"]
+forbidden_modules = ["knowledge_store.knowledge_graph.adapters", "knowledge_store.knowledge_graph.slices", "knowledge_store.knowledge_graph.ports", "knowledge_store.knowledge_graph.domain"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "answering: other contexts use only its contract"
+type = "forbidden"
+source_modules = ["knowledge_store.ingestion", "knowledge_store.ontology", "knowledge_store.extraction", "knowledge_store.knowledge_graph", "knowledge_store.access", "knowledge_store.evaluation", "knowledge_store.platform_services", "knowledge_store.kernel"]
+forbidden_modules = ["knowledge_store.answering.adapters", "knowledge_store.answering.slices", "knowledge_store.answering.ports", "knowledge_store.answering.domain"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "access: other contexts use only its contract"
+type = "forbidden"
+source_modules = ["knowledge_store.ingestion", "knowledge_store.ontology", "knowledge_store.extraction", "knowledge_store.knowledge_graph", "knowledge_store.answering", "knowledge_store.evaluation", "knowledge_store.platform_services", "knowledge_store.kernel"]
+forbidden_modules = ["knowledge_store.access.adapters", "knowledge_store.access.domain"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "evaluation: other contexts use only its contract"
+type = "forbidden"
+source_modules = ["knowledge_store.ingestion", "knowledge_store.ontology", "knowledge_store.extraction", "knowledge_store.knowledge_graph", "knowledge_store.answering", "knowledge_store.access", "knowledge_store.platform_services", "knowledge_store.kernel"]
+forbidden_modules = ["knowledge_store.evaluation.adapters", "knowledge_store.evaluation.domain"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "platform_services: other contexts use only its contract"
+type = "forbidden"
+source_modules = ["knowledge_store.ingestion", "knowledge_store.ontology", "knowledge_store.extraction", "knowledge_store.knowledge_graph", "knowledge_store.answering", "knowledge_store.access", "knowledge_store.evaluation", "knowledge_store.kernel"]
+forbidden_modules = ["knowledge_store.platform_services.adapters", "knowledge_store.platform_services.slices", "knowledge_store.platform_services.ports", "knowledge_store.platform_services.domain"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Domains import no SDK or driver"
+type = "forbidden"
+source_modules = ["knowledge_store.ingestion.domain", "knowledge_store.ontology.domain", "knowledge_store.extraction.domain", "knowledge_store.knowledge_graph.domain", "knowledge_store.answering.domain", "knowledge_store.access.domain", "knowledge_store.evaluation.domain", "knowledge_store.platform_services.domain", "knowledge_store.kernel"]
+forbidden_modules = ["boto3", "botocore", "anthropic", "neo4j", "psycopg", "pymongo", "strands", "bedrock_agentcore", "mcp"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "The kernel depends on no context"
+type = "forbidden"
+source_modules = ["knowledge_store.kernel"]
+forbidden_modules = ["knowledge_store.ingestion", "knowledge_store.ontology", "knowledge_store.extraction", "knowledge_store.knowledge_graph", "knowledge_store.answering", "knowledge_store.access", "knowledge_store.evaluation", "knowledge_store.platform_services", "knowledge_store.apps"]
+
+[[tool.importlinter.contracts]]
+name = "Nothing imports a composition root"
+type = "forbidden"
+source_modules = ["knowledge_store.ingestion", "knowledge_store.ontology", "knowledge_store.extraction", "knowledge_store.knowledge_graph", "knowledge_store.answering", "knowledge_store.access", "knowledge_store.evaluation", "knowledge_store.platform_services", "knowledge_store.kernel"]
+forbidden_modules = ["knowledge_store.apps"]

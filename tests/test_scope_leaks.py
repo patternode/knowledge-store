@@ -16,13 +16,13 @@ from knowledge_store.knowledge_graph.adapters import sparql
 from knowledge_store.knowledge_graph.domain import traverse
 from knowledge_store.ontology.slices import versions
 from knowledge_store.knowledge_graph.slices import project
-from knowledge_store.ingestion.slices.ingest import ingest_source
-from knowledge_store.knowledge_graph.slices.load import load_sparql
+from knowledge_store.ingestion.adapters.registry import ingest_source
+from knowledge_store.knowledge_graph.adapters.loading import load_sparql
 from knowledge_store.ingestion.slices.refine import load_doc
-from knowledge_store.answering.slices import chat
+from knowledge_store.answering.adapters import fallback_chat as chat
 from knowledge_store.knowledge_graph.adapters import index
 from knowledge_store.knowledge_graph.adapters.index import Index
-from knowledge_store.platform_services.adapters.store import put_json
+from knowledge_store.platform_services.ports import put_json
 from knowledge_store.extraction.slices.bind_tables import bind
 from knowledge_store.knowledge_graph.slices.table_query import aggregate, describe
 from test_graph import ALPHA, NOVA, ZETA
@@ -207,7 +207,7 @@ def test_a_metric_over_a_private_table_is_hidden(tmp_path):
 
 def test_graph_rows_carry_the_public_view_and_brief_reads_it():
     from types import SimpleNamespace as NS
-    from knowledge_store.knowledge_graph.ports import rows
+    from knowledge_store.knowledge_graph.domain.graph_rows import rows
     from knowledge_store.knowledge_graph.domain import traverse
     spec = NS(classes={}, ancestors=lambda t: [t])
     e = {"id": "entity/org/nova", "label": "Agency Nova", "type": "SecretUnit", "types": ["Organisation", "SecretUnit"],

@@ -26,16 +26,16 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from rdflib import RDF, RDFS, Dataset
 
-from knowledge_store.platform_services.domain import layout
-from knowledge_store.platform_services.adapters import ledger
-from knowledge_store.platform_services.slices.config import Profile
+from knowledge_store.platform_services import layout
+from knowledge_store.platform_services import ledger
+from knowledge_store.platform_services import Profile
 from knowledge_store.extraction.slices.extractor import ExtractionOutcome, Extractor, run_record
 from knowledge_store.extraction.domain.rdf import Iris, to_nquads
-from knowledge_store.ontology.domain import model
-from knowledge_store.ontology.slices import versions
-from knowledge_store.ontology.domain.model import KL
-from knowledge_store.platform_services.adapters.store import Store, put_json
-from knowledge_store.ingestion.slices.refine import load_doc, load_passages, silver_doc_ids
+from knowledge_store.ontology import model
+from knowledge_store.ontology import versions
+from knowledge_store.ontology import KL
+from knowledge_store.platform_services import Store, put_json
+from knowledge_store.ingestion import load_doc, load_passages, silver_doc_ids
 
 log = logging.getLogger("extract")
 

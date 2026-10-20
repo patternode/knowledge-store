@@ -35,7 +35,7 @@ import time
 import urllib.parse
 import urllib.request
 
-from knowledge_store.platform_services.domain import layout
+from knowledge_store.platform_services import layout
 from knowledge_store.knowledge_graph.domain import traverse
 
 KS = "https://w3id.org/knowledge-store/core#"

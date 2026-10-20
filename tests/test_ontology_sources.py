@@ -12,7 +12,7 @@ from knowledge_store.ontology.slices import review
 from knowledge_store.ontology.slices import versions
 from knowledge_store.ontology.domain import writer
 from knowledge_store.apps import sweep as run
-from knowledge_store.platform_services.adapters.store import get_json
+from knowledge_store.platform_services.ports import get_json
 from test_lifecycle import PROFILE, _collection_lake
 
 DRAFT = {

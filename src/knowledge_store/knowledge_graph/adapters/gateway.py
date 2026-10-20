@@ -34,13 +34,13 @@ import json
 import logging
 import os
 
-from knowledge_store.platform_services.slices import collections
-from knowledge_store.platform_services.domain import layout
-from knowledge_store.platform_services.slices.config import load_profile
-from knowledge_store.answering.slices import chat
+from knowledge_store.platform_services import collections
+from knowledge_store.platform_services import layout
+from knowledge_store.platform_services import load_profile
+from knowledge_store.knowledge_graph.slices import tools as chat
 from knowledge_store.knowledge_graph.adapters import index
-from knowledge_store.platform_services.adapters.store import S3Store
-from knowledge_store.knowledge_graph.slices import passages
+from knowledge_store.platform_services import S3Store
+from knowledge_store.knowledge_graph.adapters import passages
 
 log = logging.getLogger()
 log.setLevel(logging.INFO)

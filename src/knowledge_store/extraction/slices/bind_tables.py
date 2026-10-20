@@ -24,9 +24,9 @@ import io
 import json
 from urllib.parse import quote, unquote
 
-from knowledge_store.platform_services.domain import layout
-from knowledge_store.platform_services.adapters.store import Store, put_json
-from knowledge_store.ontology.domain.mapping import Mapping, Table, subject_template
+from knowledge_store.platform_services import layout
+from knowledge_store.platform_services import Store, put_json
+from knowledge_store.ontology import Mapping, Table, subject_template
 
 MAX_TABLE_BYTES = 50 * 1024 * 1024   # a mapped file larger than this is not bound
 MAX_TABLE_ROWS = 200_000
@@ -132,7 +132,7 @@ def mapped_doc_ids(lake: Store) -> set[str]:
     mapping = published_mapping(lake)
     if mapping is None:
         return set()
-    from knowledge_store.ingestion.slices.ingest import bronze_objects
+    from knowledge_store.ingestion import bronze_objects
     objects = bronze_objects(lake)
     chosen = set()
     for path in mapping.locations():
@@ -226,14 +226,14 @@ def bind(lake: Store, version: str | None = None) -> dict:
 
     from knowledge_store.extraction.domain.rdf import Iris
     from knowledge_store.kernel.values import canonical, parse_value
-    from knowledge_store.ontology.slices import versions
-    from knowledge_store.ontology.domain.model import DATATYPES, KL
+    from knowledge_store.ontology import versions
+    from knowledge_store.ontology import DATATYPES, KL
     version = version or active(lake)
     mapping = published_mapping(lake, version) if version else None
     if not version or mapping is None:
         return {"written": 0, "unchanged": 0, "missing": [], "misses": []}
     spec, shapes = versions.load_version(lake, version)
-    from knowledge_store.ingestion.slices.ingest import bronze_objects
+    from knowledge_store.ingestion import bronze_objects
     objects = bronze_objects(lake)
     prior = binding(lake, version)
     out_binding = dict(prior)
@@ -369,7 +369,7 @@ def bind(lake: Store, version: str | None = None) -> dict:
         graph_key = layout.structured_graph_key(version, source, doc_id)
         cells_key = layout.structured_cells_key(version, source, doc_id)
         from knowledge_store.extraction.domain.validate import shacl_errors
-        from knowledge_store.ontology.domain.model import CORE_SHAPES, CORE_TTL
+        from knowledge_store.ontology import CORE_SHAPES, CORE_TTL
         shape_g = Graph().parse(str(CORE_SHAPES), format="turtle")
         if shapes is not None:
             for triple in shapes:
@@ -409,7 +409,7 @@ def _unchanged(lake: Store, held: dict, table: Table, meta: dict, doc_id: str) -
 def _assert(g, ids, s, p, o, run, cell) -> None:
     from rdflib import RDF
 
-    from knowledge_store.ontology.domain.model import KL
+    from knowledge_store.ontology import KL
     a = ids.assertion(s, p, o)
     g.add((s, p, o))
     g.add((a, RDF.type, KL.Assertion))

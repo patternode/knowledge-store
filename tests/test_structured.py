@@ -19,8 +19,9 @@ from knowledge_store.ontology.domain import renditions
 from knowledge_store.ontology.slices import versions
 from knowledge_store.knowledge_graph.slices import project
 from knowledge_store.ingestion.slices import refine
-from knowledge_store.ingestion.slices.ingest import ingest_source
-from knowledge_store.platform_services.adapters.store import LocalStore, put_json
+from knowledge_store.ingestion.adapters.registry import ingest_source
+from knowledge_store.platform_services.adapters.store import LocalStore
+from knowledge_store.platform_services.ports import put_json
 from knowledge_store.extraction.slices.bind_tables import bind, binding, mapped_doc_ids, published_mapping
 from knowledge_store.ontology.domain.mapping import Mapping, Table, load as load_mapping, r2rml
 from knowledge_store.knowledge_graph.slices.table_query import aggregate, lookup_rows, values_equal
@@ -170,7 +171,7 @@ def test_the_catalog_is_bound_skipped_and_queried(tmp_path):
     versions.publish(lake, ONTO, by="test", activate=True)
     corpus = _corpus(tmp_path)
     ingest_source(lake, SourceConfig("missions-tables", "local_dir", {"path": str(corpus), "pattern": "**/*.csv"}))
-    refined = refine.refine_all(lake)
+    refined = refine.refine_all(lake, mapped=mapped_doc_ids(lake))
     assert {r["status"] for r in refined} == {"mapped", "refined"}
     mapped = mapped_doc_ids(lake)
     assert len(mapped) == 2
@@ -178,7 +179,7 @@ def test_the_catalog_is_bound_skipped_and_queried(tmp_path):
         assert not lake.exists(layout.doc_key(doc_id))
         assert json.loads(lake.get(layout.skipped_key(doc_id)))["status"] == "mapped"
     assert refine.silver_doc_ids(lake)  # the unmapped notes.csv
-    assert refine.refine_all(lake) == []
+    assert refine.refine_all(lake, mapped=mapped_doc_ids(lake)) == []
 
     report = bind(lake)
     assert report["written"] == 2 and report["misses"] == [], report["misses"]

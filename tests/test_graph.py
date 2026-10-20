@@ -14,12 +14,14 @@ import os
 
 import pytest
 
-from knowledge_store.knowledge_graph import ports as graph
+from knowledge_store.knowledge_graph.adapters import backends as graph
+from knowledge_store.knowledge_graph.domain.graph_rows import rows as graph_rows
+from knowledge_store.kernel.identifiers import safe_name
 from knowledge_store.platform_services.domain import layout
 from knowledge_store.knowledge_graph.domain import traverse
-from knowledge_store.knowledge_graph.slices.load import load_graph
+from knowledge_store.knowledge_graph.adapters.loading import load_graph
 from knowledge_store.knowledge_graph.adapters import index
-from knowledge_store.platform_services.adapters.store import get_json, put_json
+from knowledge_store.platform_services.ports import get_json, put_json
 from test_review_fixes import mixed  # noqa: F401  (fixture: a collection with public and private sources)
 
 ALPHA, ORBIS = "entity/Mission/mission-alpha", "entity/SpaceAgency/agency-orbis"
@@ -51,7 +53,7 @@ def test_rows_follow_the_mapping(mixed):
     from knowledge_store.ontology.slices import versions
     v = versions.active_version(lake)
     spec, _ = versions.load_version(lake, v)
-    nodes, edges = graph.rows(get_json(lake, layout.index_key(v, "entities")),
+    nodes, edges = graph_rows(get_json(lake, layout.index_key(v, "entities")),
                               get_json(lake, layout.index_key(v, "passages")), spec, data_base(spec))
     zeta = next(n for n in nodes if n["props"]["id"] == ZETA)
     assert zeta["labels"][:2] == ["Entity", "Mission"] and zeta["props"]["scope"] == "private"
@@ -59,7 +61,7 @@ def test_rows_follow_the_mapping(mixed):
     from_zeta = [e for e in edges if e["s"] == ZETA]
     assert from_zeta and all(e["props"]["scope"] == "private" and e["type"] == "LAUNCHED_BY" for e in from_zeta)
     with pytest.raises(ValueError):
-        graph.safe_name("Bad Label) DETACH DELETE n //")
+        safe_name("Bad Label) DETACH DELETE n //")
 
 
 # --- the traversal contract -----------------------------------------------------------------

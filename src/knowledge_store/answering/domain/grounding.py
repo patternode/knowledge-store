@@ -106,7 +106,7 @@ def _passage_ok(cit: Citation, passages: dict[str, dict], i: int, failures: list
 
 
 def _cell_ok(cit: Citation, cells: dict[str, dict], i: int, failures: list[dict]) -> bool:
-    from knowledge_store.knowledge_graph.slices.table_query import values_equal
+    from knowledge_store.knowledge_graph import values_equal
     cell = cells.get(cit.cell_id)
     if cell is None:
         failures.append({"claim": i, "cell_id": cit.cell_id, "reason": "no such cell, or not readable"})
@@ -256,7 +256,7 @@ def render(claims: list[Claim], passages: dict[str, dict], gaps: list[str],
                             "text": f"{c.get('column')}: {c.get('value')}", "quotes": quotes[pid],
                             "name": c.get("table"), "row": list(c.get("row") or [])})
         else:
-            from knowledge_store.knowledge_graph.slices.table_query import describe_figure
+            from knowledge_store.knowledge_graph import describe_figure
             m = metrics.get(pid) or {}
             what = describe_figure(m) if m else pid.split("#", 1)[0]
             group = pid.split("#", 1)[1] if "#" in pid else ""
@@ -279,7 +279,7 @@ def guardrail_source(cit: Citation, passages: dict, cells: dict, metrics: dict) 
     """What the grounding guardrail checks a claim against, for one citation: the passage; a cell
     with its table and its whole row, so the entity the value belongs to is in the source; or a
     figure with what it was computed over."""
-    from knowledge_store.knowledge_graph.slices.table_query import describe_figure
+    from knowledge_store.knowledge_graph import describe_figure
     if cit.passage_id and cit.passage_id in passages:
         return passages[cit.passage_id].get("text", "")
     if cit.cell_id and cit.cell_id in cells:

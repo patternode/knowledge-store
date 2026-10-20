@@ -11,8 +11,8 @@ import pytest
 
 from knowledge_store.answering.domain import valves
 from knowledge_store.answering.adapters import agent_client
-from knowledge_store.answering.slices import chat
-from knowledge_store.access.adapters import portal as handler
+from knowledge_store.answering.adapters import fallback_chat as chat
+from knowledge_store.apps import portal_api as handler
 from knowledge_store.knowledge_graph.adapters import index
 from knowledge_store.apps import local_portal as local
 from test_chat_api import State, event

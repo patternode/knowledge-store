@@ -15,14 +15,16 @@ import importlib
 
 def lazy(package: str, exports: dict[str, str]):
     """`__getattr__` and `__dir__` for a contract package. exports maps a published name to the
-    module (relative to the package) that defines it."""
+    module (relative to the package) that defines it, or, with a leading @, to a module that is
+    itself published (for a module of constants or helpers that callers use as a namespace)."""
 
     def __getattr__(name: str):
         mod = exports.get(name)
         if mod is None:
             raise AttributeError(f"module {package!r} publishes no {name!r}")
-        value = getattr(importlib.import_module(f"{package}.{mod}"), name)
-        return value
+        if mod.startswith("@"):
+            return importlib.import_module(f"{package}.{mod[1:]}")
+        return getattr(importlib.import_module(f"{package}.{mod}"), name)
 
     def __dir__():
         return sorted(exports)

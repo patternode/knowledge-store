@@ -14,8 +14,8 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from knowledge_store.platform_services.slices.config import SourceConfig
-from knowledge_store.platform_services.adapters.store import S3Store, Store
+from knowledge_store.platform_services import SourceConfig
+from knowledge_store.platform_services import S3Store, Store
 from knowledge_store.ingestion.ports import SourceItem
 
 

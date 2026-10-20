@@ -23,12 +23,12 @@ import datetime as dt
 import json
 from collections import defaultdict
 
-from knowledge_store.platform_services.domain import layout
-from knowledge_store.answering.slices import workbench
-from knowledge_store.platform_services.slices.config import Profile
-from knowledge_store.platform_services.adapters.store import Store, put_json
+from knowledge_store.platform_services import layout
+from knowledge_store.platform_services import Profile
+from knowledge_store.platform_services import Store, put_json
 from knowledge_store.ontology.slices import discover
 from knowledge_store.ontology.domain import model
+from knowledge_store.ontology.domain.model import normalise
 from knowledge_store.ontology.slices import versions
 from knowledge_store.ontology.domain import writer
 
@@ -63,7 +63,7 @@ def build_register(lake: Store, version: str) -> dict:
                      "nearest": max(t["nearest"], key=t["nearest"].get) if t["nearest"] else None,
                      "covered_by": idx.get(norm), "asked": 0, "questions": []})
     by_key = {(r["kind"], model.normalise(r["term"])): r for r in rows}
-    for q in workbench.requested_terms(lake):
+    for q in requested_terms(lake):
         r = by_key.get((q["kind"], model.normalise(q["term"])))
         if r is None:
             r = {"kind": q["kind"], "term": q["term"], "also": [], "docs": 0, "definitions": [], "evidence": [],
@@ -117,3 +117,34 @@ def propose_revision(client, model_id: str, lake: Store, profile: Profile, *, mi
                              "Publishing it needs a major version and a full re-extraction.")
     discover.write_draft(lake, draft_id, ttl, writer.shapes_ttl(spec), report)
     return report
+
+
+def requested_terms(lake) -> list[dict]:
+    """Every term the kept requests propose, merged by kind and normalised name, with how many
+    requests asked for it and the questions behind them: rows for the candidate register."""
+    kinds = {"classes": "class", "relations": "relation", "attributes": "attribute"}
+    terms: dict[tuple[str, str], dict] = {}
+    for key in sorted(lake.list(layout.TERM_REQUESTS + "/")):
+        if not key.endswith(".json"):
+            continue
+        try:
+            rec = json.loads(lake.get(key))
+        except ValueError:
+            continue
+        for plural, rows in ((rec.get("report") or {}).get("ontology") or {}).items():
+            if plural not in kinds:
+                continue
+            for row in rows or []:
+                name = str(row.get("name") or "").strip()
+                if not name:
+                    continue
+                t = terms.setdefault((kinds[plural], normalise(name)), {
+                    "kind": kinds[plural], "term": name, "asked": 0, "definitions": [], "questions": [], "requests": [],
+                    "nearest": row.get("parent") or row.get("domain")})
+                t["asked"] += 1
+                t["requests"].append(rec.get("id"))
+                if row.get("definition") and len(t["definitions"]) < 3 and row["definition"] not in t["definitions"]:
+                    t["definitions"].append(row["definition"])
+                if rec.get("question") and len(t["questions"]) < 5:
+                    t["questions"].append(rec["question"])
+    return sorted(terms.values(), key=lambda t: (-t["asked"], t["kind"], t["term"]))

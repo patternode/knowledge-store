@@ -6,8 +6,8 @@ import mimetypes
 from dataclasses import dataclass, field
 from typing import ClassVar, Iterator, Protocol
 
-from knowledge_store.platform_services.slices.config import SourceConfig
-from knowledge_store.platform_services.adapters.store import Store
+from knowledge_store.platform_services import SourceConfig
+from knowledge_store.platform_services import Store
 
 
 @dataclass(frozen=True)

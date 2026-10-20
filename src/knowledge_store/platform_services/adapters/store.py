@@ -1,4 +1,4 @@
-"""Object store port with S3 and local-filesystem adapters.
+"""The object store's S3 and local-filesystem adapters (the port is platform_services.ports.Store).
 
 Every job reads and writes through this port so that the whole pipeline runs
 locally against a directory (tests, dry runs) and in S3 unchanged. boto3 is imported only by
@@ -13,18 +13,9 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Iterator, Protocol
+from typing import Iterator
 
-
-class Store(Protocol):
-    def put(self, key: str, body: bytes, content_type: str = "application/octet-stream") -> None: ...
-    def get(self, key: str) -> bytes: ...
-    def exists(self, key: str) -> bool: ...
-    def list(self, prefix: str) -> Iterator[str]: ...
-    def objects(self, prefix: str) -> Iterator[tuple[str, str]]: ...
-    def put_if_absent(self, key: str, body: bytes) -> bool: ...
-    def delete(self, key: str) -> None: ...
-    def uri(self, key: str) -> str: ...
+from knowledge_store.platform_services.ports import PrefixStore, Store, get_json, put_json  # noqa: F401  (re-exported for adapters)
 
 
 class LocalStore:
@@ -139,53 +130,3 @@ def store_from_uri(uri: str) -> Store:
     if uri.startswith("s3://"):
         return S3Store(uri[5:].split("/", 1)[0])
     return LocalStore(uri)
-
-
-def put_json(store: Store, key: str, obj) -> None:
-    store.put(key, json.dumps(obj, indent=2, default=str).encode(), "application/json")
-
-
-def get_json(store: Store, key: str):
-    return json.loads(store.get(key))
-
-
-class PrefixStore:
-    """A view of another store under a key prefix: how each collection gets a lake of its own
-    (collections/<id>/...) with the same layout, so no step needs to know collections exist.
-    whole is the whole lake, for what spans collections (adapters reading landing/, the lock)."""
-
-    def __init__(self, inner: Store, prefix: str):
-        self.inner = inner
-        self.prefix = prefix if prefix.endswith("/") else prefix + "/"
-        self.whole = getattr(inner, "whole", inner)
-
-    def _k(self, key: str) -> str:
-        return self.prefix + key
-
-    def put(self, key, body, content_type="application/octet-stream"):
-        self.inner.put(self._k(key), body, content_type)
-
-    def get(self, key):
-        return self.inner.get(self._k(key))
-
-    def exists(self, key):
-        return self.inner.exists(self._k(key))
-
-    def list(self, prefix):
-        n = len(self.prefix)
-        for k in self.inner.list(self._k(prefix)):
-            yield k[n:]
-
-    def objects(self, prefix):
-        n = len(self.prefix)
-        for k, etag in self.inner.objects(self._k(prefix)):
-            yield k[n:], etag
-
-    def put_if_absent(self, key, body):
-        return self.inner.put_if_absent(self._k(key), body)
-
-    def delete(self, key):
-        self.inner.delete(self._k(key))
-
-    def uri(self, key):
-        return self.inner.uri(self._k(key))

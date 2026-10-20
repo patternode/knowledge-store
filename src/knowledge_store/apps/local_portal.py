@@ -19,7 +19,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from knowledge_store.access.adapters import portal as handler
+from knowledge_store.apps import portal_api as handler
 from knowledge_store.platform_services.adapters.store import LocalStore
 from knowledge_store.access.adapters.state import MemoryState
 

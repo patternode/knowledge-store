@@ -23,7 +23,7 @@ import copy
 import json
 import logging
 
-from knowledge_store.platform_services.slices.config import Profile
+from knowledge_store.platform_services import Profile
 from knowledge_store.ontology.domain import model
 
 log = logging.getLogger("review")

@@ -99,7 +99,7 @@ Off switch: knowledge_base.enabled false removes it and the passage tools fall b
 
 | Where | What |
 |---|---|
-| Code | `infra/modules/knowledge-base; src/knowledge_store/knowledge_graph/slices/load.py (sync)` |
+| Code | `infra/modules/knowledge-base; src/knowledge_store/knowledge_graph/adapters/loading.py (sync)` |
 | Capabilities | CAP-006 |
 | Context | BC-004 |
 

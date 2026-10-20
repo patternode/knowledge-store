@@ -12,8 +12,8 @@ from knowledge_store.answering.slices import workbench
 from knowledge_store.ontology.slices import candidates
 from knowledge_store.ontology.slices import versions
 from knowledge_store.answering.adapters import agent_client
-from knowledge_store.answering.slices import chat
-from knowledge_store.access.adapters import portal as handler
+from knowledge_store.answering.adapters import fallback_chat as chat
+from knowledge_store.apps import portal_api as handler
 from knowledge_store.knowledge_graph.adapters import index
 from knowledge_store.access.adapters.state import MemoryState
 from knowledge_store.knowledge_graph.adapters import gateway
@@ -266,7 +266,7 @@ def test_a_question_is_priced_by_token_kind_and_by_model_call(mixed):
 
 def test_collections_include_the_sample_questions(portal):
     root, lake, _ = portal
-    from knowledge_store.platform_services.adapters.store import put_json
+    from knowledge_store.platform_services.ports import put_json
     put_json(lake, layout.CONFIG_PROFILE, {"name": "Missions", "example_questions": [
         "[low] Which missions returned samples?", "[high] Which also flew a gravity assist, and why?"]})
     body = json.loads(handler.handler(event("GET", "/api/collections"), None)["body"])

@@ -25,8 +25,8 @@ from urllib.parse import quote
 from rdflib import RDF, RDFS, XSD, Dataset, Graph, Literal, URIRef
 from rdflib.namespace import SKOS
 
-from knowledge_store.ontology.domain.model import DATATYPES, KL, OntologySpec
-from knowledge_store.ingestion.domain.chunk import Passage
+from knowledge_store.ontology import DATATYPES, KL, OntologySpec
+from knowledge_store.ingestion import Passage
 from knowledge_store.extraction.domain.validate import parse_value
 
 

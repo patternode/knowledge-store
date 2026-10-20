@@ -18,10 +18,12 @@ from knowledge_store.ontology.slices import versions
 from knowledge_store.extraction.slices import extract
 from knowledge_store.knowledge_graph.slices import project
 from knowledge_store.ingestion.slices import refine
+from knowledge_store.extraction import mapped_doc_ids
 from knowledge_store.apps import sweep as run
-from knowledge_store.ingestion.slices.ingest import ingest_source
+from knowledge_store.ingestion.adapters.registry import ingest_source
 from knowledge_store.platform_services.slices.config import DEFAULT_SOURCES
-from knowledge_store.platform_services.adapters.store import LocalStore, put_json
+from knowledge_store.platform_services.adapters.store import LocalStore
+from knowledge_store.platform_services.ports import put_json
 
 DOCS = {
     "a.md": "# Alpha\n\nMission Alpha was launched by Agency Nova in 2011.\n\nMission Alpha studies Planet Kiro.",
@@ -70,17 +72,17 @@ def test_ingest_is_content_addressed_and_idempotent(lake):
 
 def test_refine_parses_every_format(lake):
     ingest_source(lake, DEFAULT_SOURCES[0])
-    rows = refine.refine_all(lake)
+    rows = refine.refine_all(lake, mapped=mapped_doc_ids(lake))
     assert {r["status"] for r in rows} == {"refined"}
     titles = {refine.load_doc(lake, d)["title"] for d in refine.silver_doc_ids(lake)}
     assert {"Alpha", "Gamma", "Delta"} <= titles
-    assert refine.refine_all(lake) == []
+    assert refine.refine_all(lake, mapped=mapped_doc_ids(lake)) == []
 
 
 def test_full_lifecycle(lake, tmp_path):
     client = FakeClient()
     ingest_source(lake, DEFAULT_SOURCES[0])
-    refine.refine_all(lake)
+    refine.refine_all(lake, mapped=mapped_doc_ids(lake))
 
     # 1. discovery -> draft, never active by itself
     rep = discover.discover(client, "fake", lake, PROFILE, sample=5, resamples=2)
@@ -212,7 +214,7 @@ def test_lock_is_exclusive(lake):
 def test_release_renders_every_target(lake, tmp_path):
     client = FakeClient()
     ingest_source(lake, DEFAULT_SOURCES[0])
-    refine.refine_all(lake)
+    refine.refine_all(lake, mapped=mapped_doc_ids(lake))
     rep = discover.discover(client, "fake", lake, PROFILE, sample=5, resamples=1)
     m = versions.publish(lake, _publish_draft(lake, rep["draft_id"], tmp_path), activate=True)
     assert set(m["renditions"]) >= {"owl/ontology.ttl", "owl/shapes.ttl", "agent/ontology.md", "agent/ontology.json",
@@ -242,7 +244,7 @@ class StringifyingClient(FakeClient):
 
 def test_discovery_survives_json_encoded_proposals(lake):
     ingest_source(lake, DEFAULT_SOURCES[0])
-    refine.refine_all(lake)
+    refine.refine_all(lake, mapped=mapped_doc_ids(lake))
     rep = discover.discover(StringifyingClient(), "fake", lake, PROFILE, sample=5, resamples=2)
     spec = model.load(data=lake.get(f"{layout.ONTOLOGY_DRAFTS}/{rep['draft_id']}/ontology.ttl").decode())
     assert set(spec.classes) == {"Mission", "SpaceAgency", "TargetBody"}

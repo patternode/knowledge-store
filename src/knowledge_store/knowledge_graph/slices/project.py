@@ -26,14 +26,14 @@ from urllib.parse import unquote
 from rdflib import RDF, RDFS, Dataset, Literal
 from rdflib.namespace import SKOS
 
-from knowledge_store.platform_services.domain import layout
-from knowledge_store.platform_services.slices.config import load_profile, load_sources
-from knowledge_store.extraction.domain.rdf import data_base
-from knowledge_store.ontology.domain import model
-from knowledge_store.ontology.slices import versions
-from knowledge_store.ontology.domain.model import KL
-from knowledge_store.platform_services.adapters.store import Store, put_json
-from knowledge_store.ingestion.slices.refine import load_doc, load_passages
+from knowledge_store.platform_services import layout
+from knowledge_store.platform_services import load_profile, load_sources
+from knowledge_store.extraction import data_base
+from knowledge_store.ontology import model
+from knowledge_store.ontology import versions
+from knowledge_store.ontology import KL
+from knowledge_store.platform_services import Store, put_json
+from knowledge_store.ingestion import load_doc, load_passages
 
 log = logging.getLogger("project")
 
@@ -96,7 +96,7 @@ def project(lake: Store) -> dict | None:
             if key.endswith(".nq"):
                 ds.parse(data=lake.get(key).decode(), format="nquads")
                 doc_ids.add(layout.doc_id_from_key(key))
-    from knowledge_store.extraction.slices.bind_tables import binding as structured_binding
+    from knowledge_store.extraction import binding as structured_binding
     for entry in structured_binding(lake, version).values():
         key = entry.get("graph")
         if key and lake.exists(key):

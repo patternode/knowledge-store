@@ -33,8 +33,8 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from knowledge_store.platform_services.domain import layout
-from knowledge_store.platform_services.adapters.store import Store, put_json
+from knowledge_store.platform_services import layout
+from knowledge_store.platform_services import Store, put_json
 from knowledge_store.ontology.domain import model
 
 SEMVER = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")

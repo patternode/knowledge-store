@@ -27,7 +27,7 @@ interfaces:
 mandatory_subabbs: [iam, observability, governance]
 cross_cutting: false
 references:
-  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/access/adapters/portal.py", ref: "main" }
+  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/apps/portal_api.py", ref: "main" }
 provenance:
   origin: ai-generated
   review_state: ai-raw
@@ -111,7 +111,7 @@ Reserved concurrency and the API throttle; the origin secret between the edge an
 
 | Where | What |
 |---|---|
-| Code | `src/knowledge_store/access/adapters/portal.py, state.py, agent_client.py, chat.py, local.py; site_grant.py, claims.py; workbench.py (the endpoints)` |
+| Code | `src/knowledge_store/apps/portal_api.py, state.py, agent_client.py, chat.py, local.py; site_grant.py, claims.py; workbench.py (the endpoints)` |
 | Capabilities | CAP-009, CAP-010, CAP-012 |
 | Context | BC-006 |
 

@@ -35,8 +35,8 @@ ESTIMATE_USD_PER_QUESTION = 0.25
 
 
 def local_target(lake_uri: str, collection: str, model_id: str | None):
-    from knowledge_store.answering.adapters.agent_app import answer_locally
-    from knowledge_store.platform_services.adapters.store import store_from_uri
+    from knowledge_store.answering import answer_locally
+    from knowledge_store.platform_services import store_from_uri
     root = store_from_uri(lake_uri)
 
     def ask(q: score.Question) -> dict:

@@ -17,7 +17,7 @@ from __future__ import annotations
 import json
 import re
 
-from knowledge_store.platform_services.adapters.store import PrefixStore, Store
+from knowledge_store.platform_services.ports import PrefixStore, Store
 
 CONFIG = "config/collections.json"
 PREFIX = "collections"

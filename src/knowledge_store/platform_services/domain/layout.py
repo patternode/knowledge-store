@@ -47,6 +47,7 @@ ONTOLOGY_VERSIONS = "ontology/versions"
 ONTOLOGY_ACTIVE = "ontology/active.json"
 ONTOLOGY_DRAFTS = "ontology/drafts"
 CANDIDATE_REGISTER = "ontology/candidates/register.json"
+TERM_REQUESTS = "ontology/requests"   # the chat's requests for terms it lacked: written by Answering, read by Ontology
 CONFIG_SOURCES = "config/sources.json"
 CONFIG_PROFILE = "config/profile.json"
 CONFIG_SETTINGS = "config/settings.json"

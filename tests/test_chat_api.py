@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 
 from knowledge_store.answering.adapters import agent_client
-from knowledge_store.access.adapters import portal as handler
+from knowledge_store.apps import portal_api as handler
 from test_review_fixes import mixed  # noqa: F401
 
 

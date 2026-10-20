@@ -224,7 +224,7 @@ Parsing is chosen by format, separately, so adapters never parse. To add a sourc
 own package:
 
 ```toml
-[project.entry-points."knowledge_store.ingestion.adapters.registry"]
+[project.entry-points."knowledge_store.adapters"]
 sharepoint = "my_package.sharepoint:SharePointAdapter"
 ```
 

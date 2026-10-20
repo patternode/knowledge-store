@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import os
 
-from knowledge_store.platform_services.domain import layout
+from knowledge_store.platform_services import layout
 
 PASSAGE_ID_PREFIX = 16
 
@@ -24,8 +24,9 @@ def knowledge_base_id() -> str | None:
 
 
 def kb_search(cid: str, query: str, *, private: bool, limit: int = 6, client=None) -> list[dict]:
-    import boto3
-    client = client or boto3.client("bedrock-agent-runtime")
+    if client is None:
+        import boto3
+        client = boto3.client("bedrock-agent-runtime")
     flt: dict = {"equals": {"key": "collection", "value": cid}}
     if not private:
         flt = {"andAll": [flt, {"equals": {"key": "scope", "value": "public"}}]}
@@ -44,7 +45,7 @@ def kb_search(cid: str, query: str, *, private: bool, limit: int = 6, client=Non
 
 def from_silver(lake, ids: list[str], *, private: bool) -> list[dict]:
     """Passages by id from the silver layer, in the caller's scope."""
-    from knowledge_store.ingestion.slices.refine import load_doc, load_passages
+    from knowledge_store.ingestion import load_doc, load_passages
     prefixes = {i[:PASSAGE_ID_PREFIX] for i in ids}
     docs = [layout.doc_id_from_key(k) for k in lake.list(layout.SILVER_DOCS + "/") if k.endswith(".json")]
     want, out = set(ids), []
@@ -79,9 +80,40 @@ def read(lake, idx, ids: list[str], *, private: bool) -> list[dict]:
     return [found[p] for p in ids if p in found]
 
 
-def search(lake, idx, cid: str, query: str, *, private: bool, limit: int = 6) -> dict:
+class KnowledgeBaseSearch:
+    """PassageSearch by meaning, over the Bedrock Knowledge Base."""
+
+    method = "vector"
+
+    def __init__(self, client=None):
+        self.client = client
+
+    def search(self, collection: str, query: str, *, private: bool, limit: int = 6) -> list[dict]:
+        return kb_search(collection, query, private=private, limit=limit, client=self.client)
+
+
+class KeywordSearch:
+    """PassageSearch by keyword, over the projection's passages."""
+
+    method = "keyword"
+
+    def __init__(self, idx):
+        self.idx = idx
+
+    def search(self, collection: str, query: str, *, private: bool, limit: int = 6) -> list[dict]:
+        return self.idx.search_passages(query, private=private, limit=limit)
+
+
+def passage_search(idx) -> "KnowledgeBaseSearch | KeywordSearch | None":
+    """The configured PassageSearch: the Knowledge Base when KNOWLEDGE_BASE_ID is set, else
+    keyword search over the projection, else none (no projection yet)."""
     if knowledge_base_id():
-        return {"passages": kb_search(cid, query, private=private, limit=limit), "method": "vector"}
-    if idx is None:
+        return KnowledgeBaseSearch()
+    return KeywordSearch(idx) if idx is not None else None
+
+
+def search(lake, idx, cid: str, query: str, *, private: bool, limit: int = 6) -> dict:
+    found = passage_search(idx)
+    if found is None:
         return {"error": f"collection {cid!r} has no knowledge graph yet"}
-    return {"passages": idx.search_passages(query, private=private, limit=limit), "method": "keyword"}
+    return {"passages": found.search(cid, query, private=private, limit=limit), "method": found.method}

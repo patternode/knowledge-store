@@ -82,7 +82,7 @@ the number of versions as well as the corpus.
 - `load_sparql` lists and parses every gold `.nq` file on every sweep to decide what changed, then
   loads changed graphs one at a time with `DROP SILENT GRAPH` and `INSERT DATA` over HTTPS, each
   request signed and on a new connection
-  ([`pipeline/load.py`](../../../src/knowledge_store/knowledge_graph/slices/load.py)). It first asks Neptune for
+  ([`pipeline/load.py`](../../../src/knowledge_store/knowledge_graph/adapters/loading.py)). It first asks Neptune for
   the graphs it holds with `SELECT DISTINCT ?g`, which reads every quad. A million graphs at half a
   second each is about six days of loading.
 - `sync_passages` hashes every passage of every document on every sweep and writes two S3 objects

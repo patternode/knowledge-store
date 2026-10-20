@@ -17,6 +17,11 @@ named by ANTHROPIC_API_KEY_SECRET (how the deployed jobs, proxy and agent get it
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from knowledge_store.platform_services.ports import ModelClient
+
 import json
 import logging
 import os
@@ -91,7 +96,7 @@ def thinks_by_default(name: str) -> bool:
     return bool(v) and v[0] in ("opus", "sonnet") and v[1] >= 5
 
 
-def runtime_client(read_timeout: int = 300, max_attempts: int = 2):
+def runtime_client(read_timeout: int = 300, max_attempts: int = 2) -> "ModelClient":
     """The client callers call `converse` on, for the configured provider. Every call is
     recorded in the call ledger (knowledge_store.platform_services.adapters.ledger)."""
     from knowledge_store.platform_services.adapters.ledger import LedgerClient

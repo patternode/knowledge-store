@@ -53,8 +53,10 @@ import time
 
 from knowledge_store.answering.slices import workbench
 from knowledge_store.answering.domain import grounding
-from knowledge_store.access.slices import quota as quotas
+from knowledge_store.access import agent_quota as quotas
 from knowledge_store.answering.domain import valves
+from knowledge_store.answering.adapters.bedrock_guardrail import Guardrail
+from knowledge_store.answering.ports import Guard
 from knowledge_store.answering.domain.grounding import GapReport, GroundedAnswer
 
 log = logging.getLogger("agent")
@@ -241,7 +243,7 @@ def _metrics(tools, collection: str, answer: grounding.GroundedAnswer, seen: dic
 
 
 def answer(question: str, collection: str, history: list[dict] | None, tools, *, model=None,
-           guardrail: "valves.Guardrail | None" = None, agent_factory=None, on_step=None) -> dict:
+           guardrail: "Guard | None" = None, agent_factory=None, on_step=None) -> dict:
     """One question, answered and checked. tools: .tools (for the agent) and .call(name, args).
     on_step, if given, is called with each step as it happens (knowledge_store.answering.slices.workbench)."""
     started = time.monotonic()
@@ -424,7 +426,7 @@ class LocalTools:
 
     def __init__(self, root, private: bool = False):
         from strands.tools import PythonAgentTool
-        from knowledge_store.knowledge_graph.adapters import gateway
+        from knowledge_store.knowledge_graph import gateway
         self.root, self.private, self._gateway = root, private, gateway
         self.tools = []
         for name, (desc, props, req) in gateway.TOOLS.items():
@@ -477,58 +479,4 @@ def answer_locally(root, collection: str, question: str, history=None, *, privat
                    model_id: str | None = None) -> dict:
     """The agent against a lake, with the tools in-process: for evaluation and local runs."""
     return answer(question, collection, history, LocalTools(root, private), model=bedrock_model(model_id),
-                  guardrail=valves.Guardrail.from_env())
-
-
-def _bearer(context) -> str | None:
-    for k, v in ((getattr(context, "request_headers", None) or {}).items()):
-        if k.lower() == "authorization":
-            return v.split(" ", 1)[1] if v.lower().startswith("bearer ") else v
-    return os.environ.get("DEV_BEARER_TOKEN")
-
-
-def admit(token: str | None, quota: "quotas.AgentQuota | None") -> str | None:
-    """None if the caller may ask now, else why not. Counts the invocation against the caller's
-    daily limit (agent/quota.py), which holds even when the Runtime is called without the portal.
-    A limit that cannot be checked refuses: the limit is the only bound on a direct caller's spend."""
-    if quota is None:
-        return None
-    try:
-        return quota.check(token)
-    except Exception:
-        log.exception("quota check failed")
-        return "the daily limit could not be checked; try again shortly"
-
-
-def make_app(quota: "quotas.AgentQuota | None" = None):
-    from bedrock_agentcore.runtime import BedrockAgentCoreApp
-    app = BedrockAgentCoreApp()
-    quota = quota if quota is not None else quotas.AgentQuota.from_env()
-
-    @app.entrypoint
-    def invoke(payload: dict, context=None):
-        payload = payload or {}
-        token = _bearer(context)
-        if not token:
-            return {"error": "no caller token: the agent acts only as its caller"}
-        refused = admit(token, quota)
-        if refused:
-            return {"error": refused, "quota": True}
-
-        def work(on_step=None):
-            with GatewayTools(os.environ["GATEWAY_MCP_URL"], token) as tools:
-                return run(payload, tools, guardrail=valves.Guardrail.from_env(), on_step=on_step)
-
-        if payload.get("stream"):
-            return streamed(work)  # a generator: the runtime sends it as server-sent events
-        try:
-            return work()
-        except Exception:  # report to the caller rather than a bare 500; the detail is logged
-            log.exception("question failed")
-            return {"error": FAILED}
-
-    return app
-
-
-if __name__ == "__main__":
-    make_app().run()
+                  guardrail=Guardrail.from_env())

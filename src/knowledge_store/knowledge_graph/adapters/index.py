@@ -14,8 +14,8 @@ import re
 import time
 from collections import Counter, defaultdict
 
-from knowledge_store.knowledge_graph import ports as graph
-from knowledge_store.platform_services.domain import layout
+from knowledge_store.knowledge_graph.adapters import backends as graph
+from knowledge_store.platform_services import layout
 from knowledge_store.knowledge_graph.domain import traverse
 from knowledge_store.knowledge_graph.domain.traverse import public_names
 

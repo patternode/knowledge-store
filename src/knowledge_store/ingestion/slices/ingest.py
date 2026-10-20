@@ -13,10 +13,10 @@ import json
 import logging
 from dataclasses import dataclass
 
-from knowledge_store.ingestion.adapters import registry as adapters
-from knowledge_store.platform_services.domain import layout
-from knowledge_store.platform_services.slices.config import SourceConfig
-from knowledge_store.platform_services.adapters.store import Store, put_json
+from knowledge_store.ingestion.ports import SourceAdapter
+from knowledge_store.platform_services import layout
+from knowledge_store.platform_services import SourceConfig
+from knowledge_store.platform_services import Store, put_json
 
 log = logging.getLogger("ingest")
 
@@ -33,9 +33,10 @@ class IngestStats:
         return dict(self.__dict__)
 
 
-def ingest_source(lake: Store, source: SourceConfig, *, limit: int | None = None) -> tuple[IngestStats, list[dict]]:
-    # Adapters read from the whole lake (landing/ is outside any collection's prefix).
-    adapter = adapters.build(source, getattr(lake, "whole", lake))
+def ingest(lake: Store, source: SourceConfig, adapter: SourceAdapter, *,
+           limit: int | None = None) -> tuple[IngestStats, list[dict]]:
+    """Every item the source's adapter lists, into bronze. The adapter is built by the caller
+    (ingestion.adapters.registry.ingest_source builds it from the source's type)."""
     stats, rows = IngestStats(), []
     for item in adapter.items():
         if limit is not None and stats.stored + stats.duplicate >= limit:

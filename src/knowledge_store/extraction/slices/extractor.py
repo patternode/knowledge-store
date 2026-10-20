@@ -20,11 +20,11 @@ from dataclasses import dataclass, field
 
 from rdflib import Graph
 
-from knowledge_store.platform_services.slices.config import Profile
-from knowledge_store.ontology.domain.model import CORE_SHAPES, CORE_TTL, OntologySpec
-from knowledge_store.ingestion.domain.chunk import Passage
+from knowledge_store.platform_services import Profile
+from knowledge_store.ontology import CORE_SHAPES, CORE_TTL, OntologySpec
+from knowledge_store.ingestion import Passage
 from knowledge_store.extraction.domain.rdf import build_graph, label_messages
-from knowledge_store.ontology.domain.tool_schema import PROMPT_VERSION, TOOL_NAME, tool_spec
+from knowledge_store.ontology import PROMPT_VERSION, TOOL_NAME, tool_spec
 from knowledge_store.extraction.domain.validate import clean_candidates, grounding_errors, shacl_errors, shape_errors
 
 log = logging.getLogger("extract")

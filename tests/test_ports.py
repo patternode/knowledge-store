@@ -17,7 +17,8 @@ from knowledge_store.access.domain import claims
 from knowledge_store.platform_services.adapters import ledger
 from knowledge_store.platform_services.adapters import llm
 from knowledge_store.access.adapters import state
-from knowledge_store.platform_services.adapters.store import LocalStore, PrefixStore, S3Store, store_from_uri
+from knowledge_store.platform_services.adapters.store import LocalStore, S3Store, store_from_uri
+from knowledge_store.platform_services.ports import PrefixStore
 
 # --- object stores ------------------------------------------------------------------------
 
@@ -245,3 +246,38 @@ def test_state_from_env(monkeypatch):
     monkeypatch.setenv("CHAT_STATE", "redis")
     with pytest.raises(ValueError):
         state.from_env()
+
+
+# --- passage search -------------------------------------------------------------------------
+
+
+class _Index:
+    def search_passages(self, q, *, private, limit=6):
+        rows = [{"id": "p1", "text": "Juno launched on an Atlas V", "scope": "public"},
+                {"id": "p2", "text": "a private note about Juno", "scope": "private"}]
+        return [r for r in rows if q.lower() in r["text"].lower() and (private or r["scope"] == "public")][:limit]
+
+
+class _KnowledgeBase:
+    def retrieve(self, **req):
+        self.req = req
+        return {"retrievalResults": [
+            {"content": {"text": "Juno launched on an Atlas V"}, "score": 0.9,
+             "metadata": {"collection": "missions", "scope": "public", "passage_id": "p1", "doc": "d1"}},
+            {"content": {"text": "a private note"}, "score": 0.8,
+             "metadata": {"collection": "missions", "scope": "private", "passage_id": "p2", "doc": "d2"}}]}
+
+
+@pytest.fixture(params=["keyword", "vector"])
+def passage_search(request, monkeypatch):
+    from knowledge_store.knowledge_graph.adapters.passages import KeywordSearch, KnowledgeBaseSearch
+    if request.param == "keyword":
+        return KeywordSearch(_Index())
+    monkeypatch.setenv("KNOWLEDGE_BASE_ID", "kb-1")
+    return KnowledgeBaseSearch(client=_KnowledgeBase())
+
+
+def test_passage_search_keeps_to_the_callers_scope(passage_search):
+    public = passage_search.search("missions", "juno", private=False)
+    assert [p["id"] for p in public] == ["p1"]
+    assert passage_search.method in ("keyword", "vector")

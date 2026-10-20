@@ -6,6 +6,11 @@ This module is the context's contract: other contexts import only the names belo
 from knowledge_store.kernel.contract import lazy
 
 _EXPORTS: dict[str, str] = {
+    "active": "slices.bind_tables",
+    "binding": "slices.bind_tables",
+    "data_base": "domain.rdf",
+    "mapped_doc_ids": "slices.bind_tables",
+    "published_mapping": "slices.bind_tables",
 }
 
 __getattr__, __dir__ = lazy(__name__, _EXPORTS)

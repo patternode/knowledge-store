@@ -24,10 +24,10 @@ import re
 import time
 from decimal import Decimal
 
-from knowledge_store.platform_services.adapters.store import Store
+from knowledge_store.platform_services import Store
 from knowledge_store.kernel.values import canonical, number
-from knowledge_store.extraction.slices.bind_tables import active, binding, published_mapping
-from knowledge_store.ontology.domain.mapping import Column, Mapping, Table
+from knowledge_store.extraction import active, binding, published_mapping
+from knowledge_store.ontology import Column, Mapping, Table
 
 OPS = ("eq", "neq", "lt", "lte", "gt", "gte", "prefix")
 AGG = ("count", "sum", "min", "max", "avg")

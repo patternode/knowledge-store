@@ -23,19 +23,9 @@ older ones are dropped.
 
 from __future__ import annotations
 
-import os
-import re
 from typing import Protocol
 
-_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
-
-
-def safe_name(name: str) -> str:
-    """Labels and relationship types are written into query text (no engine takes them as
-    parameters), so they must be plain identifiers. Ontology names are; this makes sure."""
-    if not _NAME.match(name):
-        raise ValueError(f"{name!r} is not a plain identifier, so it cannot be a graph label")
-    return name
+from knowledge_store.kernel.identifiers import safe_name  # noqa: F401  (re-exported)
 
 
 class Adjacency(Protocol):
@@ -57,62 +47,39 @@ class GraphStore(Protocol):
     def bind(self, key: str) -> Adjacency: ...
 
 
-def from_env() -> GraphStore | None:
-    kind = os.environ.get("GRAPH_BACKEND", "none")
-    if kind == "none":
-        return None
-    if kind == "neo4j":
-        from knowledge_store.knowledge_graph.adapters.neo4j import Neo4jStore
-        return Neo4jStore.from_env()
-    if kind == "age":
-        from knowledge_store.knowledge_graph.adapters.age import AgeStore
-        return AgeStore.from_env()
-    raise ValueError(f"GRAPH_BACKEND must be none, neo4j or age, not {kind!r}")
+class ReadModel(Protocol):
+    """The projection as the tools and the portal read it, filtered by scope. The in-memory index
+    (adapters.index.Index), the document store (adapters.docstore.DocIndex) and the SPARQL store
+    (adapters.sparql.SparqlIndex) implement it, so a tool answers alike whichever serves it."""
+
+    version: str
+    summary: dict
+
+    def visible(self, item: dict, private: bool) -> bool: ...
+    def entity_view(self, e: dict, private: bool) -> dict: ...
+    def summary_view(self, private: bool) -> dict: ...
+    def ontology_view(self, private: bool) -> dict: ...
+    def search_entities(self, q: str = "", type_: str | None = None, *, private: bool, limit: int = 25) -> dict: ...
+    def search_passages(self, q: str, *, private: bool, limit: int = 6) -> list[dict]: ...
+    def passage_view(self, pid: str) -> dict: ...
+    def neighbourhood(self, focus: str, *, hops: int = 1, private: bool, limit: int = 40) -> dict: ...
+    def paths(self, source: str, target: str, *, max_hops: int = 3, private: bool, limit: int = 10) -> dict: ...
 
 
-_store: dict[str, GraphStore | None] = {}
+class SparqlStore(Protocol):
+    """A SPARQL endpoint holding the gold graphs: Neptune (adapters.sparql.NeptuneClient) or an
+    in-process rdflib dataset (adapters.sparql.LocalClient)."""
+
+    def select(self, query: str) -> list[dict[str, tuple[str, str]]]: ...
+    def update(self, update: str) -> None: ...
 
 
-def store() -> GraphStore | None:
-    """The configured backend, one per process."""
-    if "s" not in _store:
-        _store["s"] = from_env()
-    return _store["s"]
+class PassageSearch(Protocol):
+    """Search over a collection's passages, in the caller's scope: by meaning (the Bedrock
+    Knowledge Base, adapters.passages.KnowledgeBaseSearch) or by keyword over the projection
+    (adapters.passages.KeywordSearch)."""
 
+    method: str
 
-def stamp(built_at: str) -> str:
-    """2026-09-30T12:34:56+00:00 -> 20260930123456"""
-    return re.sub(r"\D", "", built_at)[:14]
+    def search(self, collection: str, query: str, *, private: bool, limit: int = 6) -> list[dict]: ...
 
-
-def rows(entities: list[dict], passages: dict, spec, base: str) -> tuple[list[dict], list[dict]]:
-    """Nodes and edges from the projection (the entities and passages project() writes), in the
-    shape the neo4j/mapping.json rendition describes. (Imported here, not at the top: the portal
-    Lambda imports this package and ships without rdflib, which renditions needs.)"""
-    from knowledge_store.ontology.domain.renditions import label_of, property_of, rel_type
-
-    def public(pids) -> bool:
-        return any(passages.get(p, {}).get("scope") == "public" for p in pids)
-
-    nodes, edges = [], []
-    for e in entities:
-        types = sorted({a for t in e["types"] if t in spec.classes for a in spec.ancestors(t)} | set(e["types"]))
-        props = {"id": e["id"], "iri": base + e["id"], "name": e["label"], "type": e["type"], "types": types,
-                 "aliases": list(e["aliases"]), "scope": e.get("scope", "public"), "docs": len(e["docs"]),
-                 "links": len(e["out"]) + len(e["in"]), "mentioned_in": list(e["passages"])}
-        if isinstance(e.get("public"), dict):  # what public documents say of it, flat (no map properties in Neo4j)
-            p = e["public"]
-            props.update({"public_type": p.get("type") or "", "public_types": list(p.get("types") or []),
-                          "public_aliases": list(p.get("aliases") or []), "public_docs": int(p.get("docs") or 0),
-                          "public_links": int(p.get("links") or 0)})
-        for a in e["attributes"]:
-            k = property_of(a["p"])
-            props.setdefault(k, []).append(a["v"])
-            cited = props.setdefault(f"{k}__passages", [])
-            cited.extend(p for p in a["passages"] if p not in cited)
-        nodes.append({"labels": ["Entity", *(safe_name(label_of(t)) for t in types)], "props": props})
-        for r in e["out"]:
-            edges.append({"s": e["id"], "o": r["o"], "type": safe_name(rel_type(r["p"])),
-                          "props": {"p": r["p"], "passages": list(r["passages"]),
-                                    "scope": "public" if public(r["passages"]) else "private"}})
-    return nodes, edges

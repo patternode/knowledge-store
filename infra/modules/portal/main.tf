@@ -513,7 +513,7 @@ resource "aws_lambda_function" "api" {
   function_name                  = "${var.name}-portal-api"
   role                           = aws_iam_role.api.arn
   runtime                        = "python3.12"
-  handler                        = "knowledge_store.access.adapters.portal.handler"
+  handler                        = "knowledge_store.apps.portal_api.handler"
   filename                       = data.archive_file.api.output_path
   source_code_hash               = data.archive_file.api.output_base64sha256
   timeout                        = 600

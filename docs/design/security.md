@@ -157,7 +157,7 @@ TTL, and the API sends `cache-control: no-store`, so no answer is ever served to
 
 The path is CloudFront, then API Gateway, then the Lambda
 ([`modules/portal`](../../infra/modules/portal/main.tf),
-[`portal_api/handler.py`](../../src/knowledge_store/access/adapters/portal.py)).
+[`portal_api/handler.py`](../../src/knowledge_store/apps/portal_api.py)).
 
 - API Gateway checks the Cognito token before the Lambda runs. With site sign-in the route is
   open at API Gateway and the Lambda verifies the grant instead, on every request.
@@ -213,7 +213,7 @@ question: tool calls, model calls, output tokens per call, repair turns, questio
 history. Past the tool limit, tools refuse and the agent answers from what it has.
 
 Because a person can call the Runtime directly with the token the portal forwards, the agent
-counts each person's invocations per day itself ([`agent/quota.py`](../../src/knowledge_store/access/slices/quota.py)),
+counts each person's invocations per day itself ([`agent/quota.py`](../../src/knowledge_store/access/adapters/agent_quota.py)),
 in the portal's state table under its own key space, set a little above the portal's limit so a
 retry through the portal is not refused. The service clients are exempt, because only the portal
 holds their credentials and the portal has already counted the person.
@@ -387,8 +387,8 @@ These are the places where the design accepts a risk or leaves a decision to you
 | The site grant | [`src/knowledge_store/access/adapters/site_grant.py`](../../src/knowledge_store/access/adapters/site_grant.py) |
 | Citation checks | [`src/knowledge_store/answering/domain/grounding.py`](../../src/knowledge_store/answering/domain/grounding.py) |
 | Limits per question | [`src/knowledge_store/answering/domain/valves.py`](../../src/knowledge_store/answering/domain/valves.py) |
-| The agent's daily count | [`src/knowledge_store/access/slices/quota.py`](../../src/knowledge_store/access/slices/quota.py) |
-| The portal's routes, quota, origin check and input limits | [`src/knowledge_store/access/adapters/portal.py`](../../src/knowledge_store/access/adapters/portal.py) |
+| The agent's daily count | [`src/knowledge_store/access/adapters/agent_quota.py`](../../src/knowledge_store/access/adapters/agent_quota.py) |
+| The portal's routes, quota, origin check and input limits | [`src/knowledge_store/apps/portal_api.py`](../../src/knowledge_store/apps/portal_api.py) |
 | URL fetching | [`src/knowledge_store/ingestion/adapters/http_urls.py`](../../src/knowledge_store/ingestion/adapters/http_urls.py) |
 | Size limits on documents | [`src/knowledge_store/ingestion/domain/parsers.py`](../../src/knowledge_store/ingestion/domain/parsers.py) |
 | The page's policy and DOM rules | [`chat/index.html`](../../chat/index.html), [`chat/common.js`](../../chat/common.js) |

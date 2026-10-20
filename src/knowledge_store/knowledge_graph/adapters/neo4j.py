@@ -16,7 +16,8 @@ import hashlib
 import os
 from collections import defaultdict
 
-from knowledge_store.knowledge_graph.ports import safe_name, stamp
+from knowledge_store.kernel.identifiers import safe_name
+from knowledge_store.knowledge_graph.domain.graph_rows import stamp
 
 BATCH = 1000
 _BRIEF = ("{.id, .name, .type, .aliases, .docs, .links, .scope, .public_type, .public_types, .public_aliases, "

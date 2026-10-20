@@ -26,6 +26,8 @@ place of discovery in either mode: the sweep publishes and activates it, and ext
 
 from __future__ import annotations
 
+from knowledge_store.extraction import mapped_doc_ids
+
 import datetime as dt
 import json
 import logging
@@ -42,10 +44,10 @@ from knowledge_store.ontology.slices import candidates
 from knowledge_store.ontology.slices import discover
 from knowledge_store.ontology.slices import provided
 from knowledge_store.ontology.slices import versions
-from knowledge_store.platform_services.adapters.store import Store, put_json
+from knowledge_store.platform_services.ports import Store, put_json
 from knowledge_store.extraction.slices.extract import extract_all
-from knowledge_store.ingestion.slices.ingest import ingest_source
-from knowledge_store.knowledge_graph.slices.load import load_documents, load_graph, load_sparql, sync_passages
+from knowledge_store.ingestion.adapters.registry import ingest_source
+from knowledge_store.knowledge_graph.adapters.loading import load_documents, load_graph, load_sparql, sync_passages
 from knowledge_store.knowledge_graph.slices.project import project
 from knowledge_store.ingestion.slices.refine import refine_all, silver_doc_ids
 
@@ -123,7 +125,7 @@ def sweep_once(lake: Store, client_factory, model_id: str, cfg: dict) -> dict:
     provided_now = provided.apply(lake)
     if provided_now:
         stats["ontology"] = provided_now
-    refined = refine_all(lake)
+    refined = refine_all(lake, mapped=mapped_doc_ids(lake))
     stats["refined"] = sum(1 for r in refined if r["status"] == "refined")
     profile = load_profile(lake)
     if not versions.active_version(lake):

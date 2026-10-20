@@ -18,8 +18,8 @@ import re
 
 from rdflib import Graph
 
-from knowledge_store.ontology.domain.model import OntologySpec
-from knowledge_store.ingestion.domain.chunk import Passage
+from knowledge_store.ontology import OntologySpec
+from knowledge_store.ingestion import Passage
 from knowledge_store.kernel.sparql_lock import PARSE_LOCK
 from knowledge_store.kernel.values import parse_value  # noqa: F401  (re-exported: extraction and bind share one reading of a value)
 

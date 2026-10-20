@@ -34,11 +34,11 @@ import logging
 import random
 from collections import defaultdict
 
-from knowledge_store.platform_services.domain import layout
-from knowledge_store.platform_services.slices.config import Profile
-from knowledge_store.platform_services.adapters.llm import decode_tool_input
-from knowledge_store.ingestion.slices.refine import load_doc, load_passages, silver_doc_ids
-from knowledge_store.platform_services.adapters.store import Store, put_json
+from knowledge_store.platform_services import layout
+from knowledge_store.platform_services import Profile
+from knowledge_store.platform_services import decode_tool_input
+from knowledge_store.ingestion import load_doc, load_passages, silver_doc_ids
+from knowledge_store.platform_services import Store, put_json
 from knowledge_store.ontology.domain import model
 from knowledge_store.ontology.domain import writer
 from knowledge_store.ontology.slices import review as reviewer

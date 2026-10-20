@@ -22,7 +22,7 @@ import json
 import os
 import threading
 
-from knowledge_store.knowledge_graph.ports import safe_name
+from knowledge_store.kernel.identifiers import safe_name
 
 
 def _agtype(value):

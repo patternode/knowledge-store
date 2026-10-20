@@ -28,15 +28,13 @@ concurrency. Each number is an environment variable, set from Terraform.
 
 from __future__ import annotations
 
-import os
 from typing import NamedTuple
+
+from knowledge_store.kernel import settings
 
 
 def limit(name: str, default: int) -> int:
-    try:
-        return int(os.environ.get(name, default))
-    except ValueError:
-        return default
+    return settings.number(name, default)
 
 
 MAX_QUESTION_CHARS = limit("MAX_QUESTION_CHARS", 2000)
@@ -112,42 +110,3 @@ def table_query_note(questions: tuple[str, ...]) -> str:
     lines = "\n".join(f"- {question}" for question in questions)
     return ("\n\nThese questions are answered from the mapped tables. "
             "Cite each value as its cell and each total as its figure:\n" + lines)
-
-
-class Guardrail:
-    """ApplyGuardrail on the question (INPUT) and on each claim (OUTPUT, contextual grounding)."""
-
-    def __init__(self, guardrail_id: str, version: str = "DRAFT", client=None):
-        import boto3
-        self.id, self.version = guardrail_id, version
-        self.client = client or boto3.client("bedrock-runtime")
-
-    @classmethod
-    def from_env(cls) -> "Guardrail | None":
-        gid = os.environ.get("GUARDRAIL_ID")
-        return cls(gid, os.environ.get("GUARDRAIL_VERSION", "DRAFT")) if gid else None
-
-    def _apply(self, source: str, content: list[dict]) -> dict:
-        return self.client.apply_guardrail(guardrailIdentifier=self.id, guardrailVersion=self.version,
-                                           source=source, content=content)
-
-    def question(self, text: str) -> str | None:
-        """None if the question may go to the agent, else the guardrail's message."""
-        r = self._apply("INPUT", [{"text": {"text": text}}])
-        if r.get("action") == "GUARDRAIL_INTERVENED":
-            outs = r.get("outputs") or []
-            return outs[0]["text"] if outs else "That question can't be answered here."
-        return None
-
-    def grounded(self, question: str, claim: str, sources: list[str]) -> tuple[bool, float | None]:
-        """Whether the claim is grounded in its sources, and the score, by the guardrail's
-        contextual grounding check. sources are the passage text, or `column: value` for a
-        cell, or the figure for a metric. A guardrail without that check passes every claim."""
-        r = self._apply("OUTPUT", [{"text": {"text": "\n\n".join(sources)[:100000], "qualifiers": ["grounding_source"]}},
-                                   {"text": {"text": question, "qualifiers": ["query"]}},
-                                   {"text": {"text": claim, "qualifiers": ["guard_content"]}}])
-        for a in r.get("assessments") or []:
-            for f in (a.get("contextualGroundingPolicy") or {}).get("filters") or []:
-                if f.get("type") == "GROUNDING":
-                    return f.get("action") != "BLOCKED", f.get("score")
-        return True, None

@@ -21,8 +21,8 @@ import logging
 import tempfile
 from pathlib import Path
 
-from knowledge_store.platform_services.domain import layout
-from knowledge_store.platform_services.adapters.store import Store
+from knowledge_store.platform_services import layout
+from knowledge_store.platform_services import Store
 from knowledge_store.ontology.domain import model
 from knowledge_store.ontology.slices import versions
 from knowledge_store.ontology.domain import writer

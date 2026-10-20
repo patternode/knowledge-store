@@ -15,7 +15,7 @@ import pytest
 
 from knowledge_store.platform_services.slices.config import SourceConfig
 from knowledge_store.ontology.slices import versions
-from knowledge_store.ingestion.slices.ingest import ingest_source
+from knowledge_store.ingestion.adapters.registry import ingest_source
 from knowledge_store.extraction.slices.bind_tables import bind, binding, key_text
 from knowledge_store.knowledge_graph.slices.table_query import aggregate, describe, lookup_rows, values_equal
 from knowledge_store.knowledge_graph.adapters import gateway
@@ -289,7 +289,7 @@ def test_a_private_table_is_not_described_to_a_public_caller(tmp_path):
 def test_bad_tool_arguments_cost_a_tool_call_not_the_answer(tmp_path):
     from types import SimpleNamespace
 
-    from knowledge_store.answering.slices import chat
+    from knowledge_store.answering.adapters import fallback_chat as chat
     root, lake, _ = _bound(tmp_path)
     idx = SimpleNamespace(lake=lake)
     one = chat.run_tool(idx, "lookup_rows", {"type": "Mission", "filters": {"attribute": "name", "op": "eq", "value": "Juno"},
@@ -305,7 +305,7 @@ def test_bad_tool_arguments_cost_a_tool_call_not_the_answer(tmp_path):
 def test_the_portal_shows_only_figures_a_tool_returned(tmp_path):
     from types import SimpleNamespace
 
-    from knowledge_store.answering.slices import chat
+    from knowledge_store.answering.adapters import fallback_chat as chat
     _, lake, _ = _bound(tmp_path)
     idx = SimpleNamespace(lake=lake, passages={}, visible=lambda *_: True)
     fig = aggregate(lake, metric="atlas_v_launches")
@@ -323,7 +323,7 @@ def test_the_cost_keeps_calls_the_hooks_did_not_see():
 
 
 def test_a_sample_link_to_a_table_opens_its_snapshot_in_scope(tmp_path):
-    from knowledge_store.access.adapters import portal as handler
+    from knowledge_store.apps import portal_api as handler
     root, lake = _collection(tmp_path)
     dest = _copy(tmp_path)
     _edit(dest / "mappings.yaml", "class: LaunchVehicle\n    key:", "class: LaunchVehicle\n    scope: private\n    key:")

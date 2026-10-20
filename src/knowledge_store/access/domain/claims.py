@@ -18,11 +18,11 @@ because the Lambda packages ship without dependencies.
 
 from __future__ import annotations
 
-import os
+from knowledge_store.kernel import settings
 
 
 def _names(var: str, default: str) -> list[str]:
-    return [n.strip() for n in os.environ.get(var, default).split(",") if n.strip()]
+    return settings.names(var, default)
 
 
 def values(claims: dict, names: list[str]) -> set[str]:
@@ -47,11 +47,11 @@ def subject(claims: dict) -> str:
 
 def private_reader(claims: dict) -> bool:
     """A person in the private group (or holding the private role)."""
-    return os.environ.get("PRIVATE_GROUP", "private-readers") in values(claims, _names("GROUPS_CLAIM", "cognito:groups"))
+    return settings.text("PRIVATE_GROUP", "private-readers") in values(claims, _names("GROUPS_CLAIM", "cognito:groups"))
 
 
 def private_scope() -> str:
-    return os.environ.get("PRIVATE_SCOPE") or f"{os.environ.get('SCOPE_PREFIX', 'knowledge-store')}/tools.private"
+    return settings.text("PRIVATE_SCOPE") or f"{settings.text('SCOPE_PREFIX', 'knowledge-store')}/tools.private"
 
 
 def private_caller(claims: dict) -> bool:

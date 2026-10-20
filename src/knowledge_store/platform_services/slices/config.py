@@ -17,7 +17,7 @@ import re
 from dataclasses import dataclass, field
 
 from knowledge_store.platform_services.domain import layout
-from knowledge_store.platform_services.adapters.store import Store
+from knowledge_store.platform_services.ports import Store
 
 LEVELS = ("low", "medium", "high")
 _MARK = re.compile(r"^\[(low|medium|high)\]\s*", re.IGNORECASE)

@@ -20,6 +20,8 @@ $EXTRACTION_MODEL_ID.
 
 from __future__ import annotations
 
+from knowledge_store.extraction import mapped_doc_ids
+
 import argparse
 import json
 import logging
@@ -122,7 +124,7 @@ def main(argv: list[str] | None = None) -> int:
             out[s.name] = stats.as_dict()
         _print(out)
     elif args.cmd == "refine":
-        rows = refine.refine_all(lake, reparse=args.reparse)
+        rows = refine.refine_all(lake, reparse=args.reparse, mapped=mapped_doc_ids(lake))
         _print({"refined": sum(r["status"] == "refined" for r in rows), "rows": rows[:50]})
     elif args.cmd == "extract":
         rows = extract.extract_all(lake, _client(), args.model, load_profile(lake), workers=args.workers,
