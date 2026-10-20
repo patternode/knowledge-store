@@ -110,7 +110,7 @@ def main(argv: list[str] | None = None) -> int:
     from knowledge_store.ontology.domain import model
     from knowledge_store.ontology.slices import versions
     from knowledge_store.extraction.slices import extract
-    from knowledge_store.ingestion.slices import ingest
+    from knowledge_store.ingestion.adapters.registry import ingest_source
     from knowledge_store.knowledge_graph.slices import project
     from knowledge_store.ingestion.slices import refine
     from knowledge_store.apps import sweep as run
@@ -120,7 +120,7 @@ def main(argv: list[str] | None = None) -> int:
     elif args.cmd == "ingest":
         out = {}
         for s in load_sources(lake):
-            stats, _ = ingest.ingest_source(lake, s)
+            stats, _ = ingest_source(lake, s)
             out[s.name] = stats.as_dict()
         _print(out)
     elif args.cmd == "refine":

@@ -29,6 +29,7 @@ _EXPORTS: dict[str, str] = {
     "load_set": "adapters.set_files",
     "matches": "domain.numeric",
     "parse": "domain.sets",
+    "position": "domain.score",
     "report": "adapters.report",
     "run": "slices.run_set",
     "score": "domain.score",

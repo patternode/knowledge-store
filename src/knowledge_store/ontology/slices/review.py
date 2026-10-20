@@ -30,6 +30,7 @@ log = logging.getLogger("review")
 
 REVIEW_TOOL = "review_ontology"
 PROMPT_VERSION = "kl-review-v1"
+SINGULAR = {"classes": "class", "relations": "relation", "attributes": "attribute"}
 OPS = ("set_parent", "merge", "drop", "set_domain", "set_range", "set_datatype")
 KINDS = ("classes", "relations", "attributes")
 
@@ -133,7 +134,7 @@ class _Draft:
             for t in self.d[kind]:
                 hit = [f for f in fields if t.get(f) and model.normalise(t[f]) == model.normalise(old)]
                 if hit and new is None:
-                    effects.append(f"dropped {kind[:-1]} {t['name']} (its {hit[0]} was {old})")
+                    effects.append(f"dropped {SINGULAR[kind]} {t['name']} (its {hit[0]} was {old})")
                     continue
                 for f in hit:
                     t[f] = new
@@ -148,7 +149,7 @@ class _Draft:
             return "unknown op or kind"
         t = self.find(kind, e.get("term"))
         if t is None:
-            return f"no {kind[:-1]} named {e.get('term')!r}"
+            return f"no {SINGULAR[kind]} named {e.get('term')!r}"
         if op == "set_parent":
             if kind != "classes":
                 return "set_parent applies to classes"
@@ -165,7 +166,7 @@ class _Draft:
         if op == "merge":
             into = self.find(kind, value)
             if into is None or into is t:
-                return f"no other {kind[:-1]} named {value!r} to merge into"
+                return f"no other {SINGULAR[kind]} named {value!r} to merge into"
             names = [t["name"], t.get("label"), *(t.get("synonyms") or [])]
             into["synonyms"] = sorted({*(into.get("synonyms") or []), *(n for n in names if n)} - {into["name"]})
             into["merged_from"] = sorted({*(into.get("merged_from") or []), t["name"]})
@@ -174,9 +175,10 @@ class _Draft:
                 self.repoint(t["name"], into["name"])
             return None
         if op == "drop":
-            self.d[kind].remove(t)
             if kind == "classes":
+                # Before the class goes: repoint lifts its children to its parent, which it reads.
                 e["effects"] = self.repoint(t["name"], None)
+            self.d[kind].remove(t)
             return None
         if op in ("set_domain", "set_range"):
             if kind == "classes" or (op == "set_range" and kind != "relations"):

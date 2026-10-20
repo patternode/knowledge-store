@@ -81,7 +81,9 @@ class HttpUrlsAdapter:
 
     def items(self):
         for u in self.urls:
-            name = u.rstrip("/").rsplit("/", 1)[-1] or "index.html"
+            # A site's root has no file name: name it index.html, not after its host (".com").
+            path = urllib.parse.urlsplit(u).path.rstrip("/")
+            name = path.rsplit("/", 1)[-1] or "index.html"
             if "." not in name:
                 name += ".html"
             # No cheap version for a web page: fetch every run and let ingest compare content.

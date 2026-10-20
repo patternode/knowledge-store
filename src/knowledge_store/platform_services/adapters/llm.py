@@ -36,7 +36,7 @@ PROVIDERS = (BEDROCK, ANTHROPIC)
 # us.anthropic.claude-sonnet-4-5-20250929-v1:0 -> claude-sonnet-4-5-20250929
 _BEDROCK_ID = re.compile(r"^(?:(?:us|eu|apac|jp|au|global)\.)?anthropic\.(?P<name>.+?)(?:-v\d+(?::\d+)?)?$")
 
-_STOP_REASONS = {"end_turn": "end_turn", "tool_use": "tool_use", "max_tokens": "max_tokens",
+STOP_REASONS = {"end_turn": "end_turn", "tool_use": "tool_use", "max_tokens": "max_tokens",
                  "stop_sequence": "stop_sequence", "refusal": "content_filtered",
                  "pause_turn": "end_turn", "model_context_window_exceeded": "max_tokens"}
 
@@ -251,7 +251,7 @@ def to_converse_response(msg) -> dict:
              "cacheWriteInputTokens": getattr(u, "cache_creation_input_tokens", None) or 0}
     usage["totalTokens"] = sum(usage.values())
     return {"output": {"message": {"role": "assistant", "content": content}},
-            "stopReason": _STOP_REASONS.get(msg.stop_reason, msg.stop_reason or "end_turn"),
+            "stopReason": STOP_REASONS.get(msg.stop_reason, msg.stop_reason or "end_turn"),
             "usage": usage}
 
 

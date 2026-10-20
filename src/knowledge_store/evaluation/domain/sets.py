@@ -18,6 +18,10 @@ The format, as YAML:
       answerable: true                   false: the sources do not answer it, and the agent must say so
       private: false                     ask as a caller who may read private sources
       family: juno-rocket                questions that ask the same thing in other words share a family
+      judged: false                      true: the set states no fact; an application's truth sources or a
+                                         grader judge the answer, and the score checks only that it answered
+      context: {}                        application data its truth sources read (a metric, a company id);
+                                         the scorer ignores it
 
 Parsing is pure; reading the file is the set_files adapter's job.
 """
@@ -42,6 +46,8 @@ class Question:
     answerable: bool = True
     private: bool = False
     family: str = ""
+    judged: bool = False
+    context: dict = field(default_factory=dict)
     expected: str = ""
     note: str = ""
     # How an offline smoke test reads this question from a mapped table. The scorer ignores it.
@@ -72,8 +78,8 @@ def parse(data: dict, name: str = "") -> EvalSet:
             raise ValueError(f"{q.id}: kind must be one of {KINDS}, not {q.kind!r}")
         if q.kind == "unanswerable" and q.answerable:
             raise ValueError(f"{q.id}: kind unanswerable needs answerable: false")
-        if q.answerable and not (q.must or q.figures):
-            raise ValueError(f"{q.id}: an answerable question needs at least one fact in must or figures")
+        if q.answerable and not (q.must or q.figures or q.judged):
+            raise ValueError(f"{q.id}: an answerable question needs at least one fact in must or figures, or judged: true")
         if q.first and len(q.first) != 2:
             raise ValueError(f"{q.id}: first names two candidates, the correct one first")
         for f in q.figures:

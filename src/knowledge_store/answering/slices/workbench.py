@@ -322,7 +322,7 @@ def query_cost(steps, *, model_id: str | None, usage: dict | None = None, provid
         usd = priced["usd"]
     else:
         parts = [{"key": key, "label": label, "tokens": total[field], "usd": None}
-                 for key, label, field, _ in ledger._PARTS]
+                 for key, label, field, _ in ledger.PARTS]
         usd = None
     note = ("List price for the tokens in this question's model calls. "
             "Searches and passage reads are not charged. Credits, discounts and tax are not included.")

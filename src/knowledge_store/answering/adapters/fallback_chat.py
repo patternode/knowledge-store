@@ -67,7 +67,7 @@ class _Anthropic:
                 content.append({"toolUse": {"toolUseId": b["id"], "name": b["name"], "input": b["input"]}})
         u = m.get("usage", {})
         return {"output": {"message": {"role": "assistant", "content": content}},
-                "stopReason": llm._STOP_REASONS.get(m.get("stop_reason"), "end_turn"),
+                "stopReason": llm.STOP_REASONS.get(m.get("stop_reason"), "end_turn"),
                 "usage": {"inputTokens": u.get("input_tokens", 0), "outputTokens": u.get("output_tokens", 0)}}
 
 

@@ -9,11 +9,11 @@ from __future__ import annotations
 
 import re
 
-_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+_NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")  # fullmatch: "$" would let a trailing newline in
 
 def safe_name(name: str) -> str:
     """Labels and relationship types are written into query text (no engine takes them as
     parameters), so they must be plain identifiers. Ontology names are; this makes sure."""
-    if not _NAME.match(name):
+    if not isinstance(name, str) or not _NAME.fullmatch(name):
         raise ValueError(f"{name!r} is not a plain identifier, so it cannot be a graph label")
     return name

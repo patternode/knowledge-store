@@ -108,11 +108,17 @@ def score(q: Question, result: dict, verdicts: list[dict] | None = None) -> dict
     base = {"id": q.id, "kind": q.kind, "family": q.family, "answerable": q.answerable, "abstained": abstained,
             "declined": did_decline, "grounded": grounded, "source_hit": source_hit, "citation_precision": precision,
             "citation_recall": recall, "claims": claims, "unsupported": unsupported, "supported_share": supported_share,
-            "error": result.get("error")}
+            "error": result.get("error"), "judged": q.judged}
     if not q.answerable:
         ok = did_decline and not forbidden and not result.get("error")
         return {**base, "correct": ok, "score": 1.0 if ok else 0.0, "missing": [], "forbidden": forbidden,
                 "false_answer": not ok and not result.get("error"), "false_abstention": False}
+    if q.judged and not (q.must or q.figures):
+        # Nothing stated to check: the score says only that it answered. Truth sources and a
+        # grader say whether the answer is right.
+        ok = not did_decline and not forbidden and not result.get("error")
+        return {**base, "correct": ok, "score": 1.0 if ok else 0.0, "missing": [], "forbidden": forbidden,
+                "order_ok": True, "false_answer": False, "false_abstention": did_decline and not result.get("error")}
     found = [position(answer, m) is not None for m in q.must]
     figs = [numeric.matches(answer, f["value"], f.get("tolerance")) for f in q.figures]
     order_ok = True
@@ -177,6 +183,13 @@ def summarise(rows: list[dict]) -> dict:
                 "supported_share": _mean([r.get("supported_share") for r in verified]) if verified else None,
                 "errors": sum(1 for r in sel if r.get("error"))}
     out = {"all": block(rows)}
+    judged = [r for r in rows if r.get("judged")]
+    if judged:
+        out["judged"] = block(judged)
+    grades = [str((r.get("grade") or {}).get("verdict")) for r in rows if r.get("grade")]
+    if grades:
+        # The grader's verdicts, beside the score and never folded into it.
+        out["graded"] = {v: grades.count(v) for v in sorted(set(grades))}
     for k in KINDS:
         sel = [r for r in rows if r["kind"] == k]
         if sel:

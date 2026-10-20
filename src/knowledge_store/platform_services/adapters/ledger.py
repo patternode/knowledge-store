@@ -87,7 +87,7 @@ def price_key(model_id: str) -> str:
 
 
 # (key, label, Converse usage field, index into a PRICES row)
-_PARTS = (
+PARTS = (
     ("input", "Input tokens", "inputTokens", 0),
     ("output", "Output tokens", "outputTokens", 1),
     ("cache_write", "Cache write", "cacheWriteInputTokens", 2),
@@ -111,7 +111,7 @@ def cost_parts(model_id: str, usage: dict, *, tier: str = "standard", provider: 
         return None
     scale = _scale(model_id, tier, provider)
     parts, total = [], 0.0
-    for key, label, field, i in _PARTS:
+    for key, label, field, i in PARTS:
         tokens = int((usage or {}).get(field) or 0)
         usd = tokens * p[i] * scale / 1e6
         total += usd
