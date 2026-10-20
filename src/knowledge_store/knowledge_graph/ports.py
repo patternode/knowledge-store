@@ -50,7 +50,12 @@ class GraphStore(Protocol):
 class ReadModel(Protocol):
     """The projection as the tools and the portal read it, filtered by scope. The in-memory index
     (adapters.index.Index), the document store (adapters.docstore.DocIndex) and the SPARQL store
-    (adapters.sparql.SparqlIndex) implement it, so a tool answers alike whichever serves it."""
+    (adapters.sparql.SparqlIndex) implement it, so a tool answers alike whichever serves it.
+
+    One difference, by design: the SPARQL store holds the graph, not passage text. Its
+    search_passages raises NotImplementedError and its passage_view names the passage and its
+    document without the text; a deployment on it searches and reads passages through
+    PassageSearch."""
 
     version: str
     summary: dict
