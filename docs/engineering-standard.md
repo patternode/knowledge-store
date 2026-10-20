@@ -1,6 +1,6 @@
 # Standard: subdomains, bounded contexts, feature slices, ports and tests
 
-Status: adopted on 20 October 2026. The decisions behind it are patternode-architecture ADR-046 (contexts, slices and ports), ADR-044 (features as deployable slices), ADR-035 (independently deployable contexts, rule 1 as amended), ADR-047 (knowledge contexts on Knowledge Store) and ADR-048 (evaluation).
+Status: the owner reviewed and approved this text on 20 October 2026. The decisions it rests on, ADR-046, ADR-047 and ADR-048, are Proposed until he accepts them; where a decision changes on acceptance, this text changes with it. The decisions behind it are patternode-architecture ADR-046 (contexts, slices and ports), ADR-044 (features as deployable slices), ADR-035 (independently deployable contexts, rule 1 as amended), ADR-047 (knowledge contexts on Knowledge Store) and ADR-048 (evaluation).
 
 This standard says how code is cut, organised, deployed and tested in every Patternode repository, and what an agent does before, during and after a change. The same text sits in patternode-architecture (the source, `governance/standards/contexts-slices-and-ports.md`), patternode-platform (`docs/engineering-standard.md`) and knowledge-store (`docs/engineering-standard.md`). Each repository's copy ends with an appendix naming its own subdomains, contexts and checks. When the text and an appendix disagree, the text wins and the appendix is fixed. To change the text, change it in patternode-architecture first and copy it to the other two in the same week.
 
