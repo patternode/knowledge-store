@@ -4,6 +4,23 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 From 0.2.0 on, releases are made by Release Please from the pull requests merged to `main`: a pull request's title is its line here, and the release pull request adds the next section, bumps the version and, when merged, tags `vX.Y.Z` and publishes the GitHub Release. The rules are in [CONTRIBUTING.md](CONTRIBUTING.md#releases). Do not add lines here by hand.
 
+## [0.5.0](https://github.com/patternode/knowledge-store/compare/v0.4.1...v0.5.0) (2026-10-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* bounded contexts with slices and ports, an Evaluation context, and tests at every level ([#108](https://github.com/patternode/knowledge-store/issues/108))
+
+### Added
+
+* bounded contexts with slices and ports, an Evaluation context, and tests at every level ([#108](https://github.com/patternode/knowledge-store/issues/108)) ([d65f229](https://github.com/patternode/knowledge-store/commit/d65f229f96dc38f60cc8781a9297883ce4f70fe5))
+
+
+### Documentation
+
+* **architecture:** a target-state view by subdomain, generated from the pages, with the investigation behind it ([#103](https://github.com/patternode/knowledge-store/issues/103)) ([5727d30](https://github.com/patternode/knowledge-store/commit/5727d305261a0fe27579c9bbc8687aa3f9a3f25d))
+* **architecture:** show the context map first on the contexts page ([#104](https://github.com/patternode/knowledge-store/issues/104)) ([0eef0e8](https://github.com/patternode/knowledge-store/commit/0eef0e8de664e2489b3cfb56f7e0f7422eaca1c5))
+
 ## [0.4.1](https://github.com/patternode/knowledge-store/compare/v0.4.0...v0.4.1) (2026-10-18)
 
 
