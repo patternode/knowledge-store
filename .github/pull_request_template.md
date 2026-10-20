@@ -21,4 +21,4 @@ Refs <!-- Required: the issue (#n, fixes #n, refs #n, or owner/repo#n), thread (
 
 ## Deployments
 
-<!-- Deployments run a pinned release, not main (AGENTS.md). Say whether this change matters to a deployment moving to the next release, and whether it changes the agent image (anything the Runtime container runs, including src/knowledge_store/agent/). "Nothing for deployments" is an answer. -->
+<!-- Deployments run a pinned release, not main (AGENTS.md). Say whether this change matters to a deployment moving to the next release, and whether it changes the agent image (anything the Runtime container runs, including src/knowledge_store/answering/). "Nothing for deployments" is an answer. -->

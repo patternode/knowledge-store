@@ -222,7 +222,7 @@ module "agent" {
   source               = "../agent"
   name                 = var.name
   package_root         = "${local.repo_root}/src"
-  tool_schema_dir      = "${local.repo_root}/src/knowledge_store/tools"
+  tool_schema_dir      = "${local.repo_root}/src/knowledge_store/knowledge_graph/adapters"
   lake_bucket          = module.lake.bucket
   lake_bucket_arn      = module.lake.bucket_arn
   discovery_url        = module.identity.discovery_url

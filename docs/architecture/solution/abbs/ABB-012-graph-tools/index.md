@@ -27,7 +27,7 @@ interfaces:
 mandatory_subabbs: [iam, observability, governance]
 cross_cutting: false
 references:
-  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/tools/gateway.py (graph toolset)", ref: "main" }
+  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/knowledge_graph/adapters/gateway.py (graph toolset)", ref: "main" }
 provenance:
   origin: ai-generated
   review_state: ai-raw
@@ -109,7 +109,7 @@ The tool schema is uploaded by Terraform with the release; a new tool is a pull 
 
 | Where | What |
 |---|---|
-| Code | `src/knowledge_store/tools/gateway.py (graph toolset); portal_api/index.py; graph/sparql.py, traverse.py; structured/query.py` |
+| Code | `src/knowledge_store/knowledge_graph/adapters/gateway.py (graph toolset); knowledge_graph/adapters/index.py; knowledge_graph/adapters/sparql.py, traverse.py; knowledge_graph/slices/table_query.py` |
 | Capabilities | CAP-005, CAP-007, CAP-009 |
 | Context | BC-004 |
 

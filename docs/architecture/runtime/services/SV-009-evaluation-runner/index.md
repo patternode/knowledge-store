@@ -15,8 +15,8 @@ part_of: BC-007
 composes_contexts: [BC-007]
 runtime_type: native
 repo: { url: "https://github.com/patternode/knowledge-store", path: "." }
-module_path: "src/knowledge_store/evals/run.py"
-packages: ["knowledge_store.evals"]
+module_path: "src/knowledge_store/apps/evaluate.py"
+packages: ["knowledge_store.apps.evaluate", "knowledge_store.evaluation", "knowledge_store.answering (answer_locally)"]
 deployed_to: [DN-014]
 run_by: "evaluators"
 provenance:
@@ -35,7 +35,7 @@ Runs an evaluation set against a lake in process or against the deployed chat as
 | Context | BC-007; composes BC-007 as built |
 | Realises | SBB-019 |
 | Node | DN-014 |
-| Code | `src/knowledge_store/evals/run.py (python -m knowledge_store.evals)` |
+| Code | `src/knowledge_store/apps/evaluate.py (python -m knowledge_store.apps.evaluate)` |
 | Talks to | The agent in process, or POST /api/chat with a person's token. |
 | Stores | build/eval/<name>-<timestamp>/ locally. |
 | Role | The evaluator's credentials or token. |

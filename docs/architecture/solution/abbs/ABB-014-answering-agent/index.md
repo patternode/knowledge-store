@@ -28,7 +28,7 @@ interfaces:
 mandatory_subabbs: [iam, observability, governance]
 cross_cutting: false
 references:
-  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/agent/app.py", ref: "main" }
+  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/answering/adapters/agent_app.py", ref: "main" }
 provenance:
   origin: ai-generated
   review_state: ai-raw
@@ -132,7 +132,7 @@ Prompt attack and content filters on the question; contextual grounding by the g
 
 | Where | What |
 |---|---|
-| Code | `src/knowledge_store/agent/app.py, grounding.py, valves.py, quota.py; workbench.py; llm.py, ledger.py` |
+| Code | `src/knowledge_store/answering/adapters/agent_app.py, grounding.py, valves.py, quota.py; workbench.py; llm.py, ledger.py` |
 | Capabilities | CAP-008, CAP-010, CAP-012 |
 | Context | BC-005 |
 

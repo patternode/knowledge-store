@@ -112,6 +112,7 @@ const sidebars = {
         'docs/design/security',
         'docs/design/source-controls',
         'docs/design/target-state-view',
+        'docs/design/evaluation-false-positives',
       ],
     },
     {

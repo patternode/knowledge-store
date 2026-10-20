@@ -4,4 +4,4 @@ CN-002,Controls a document carries of its own,resolved,ADR-010,CAP-009 ABB-027 A
 CN-003,Live structured sources through a virtual knowledge graph,resolved,ADR-009,CAP-007 ABB-024 ABB-012,CN-003-live-structured-sources-through-a-virtual-knowledge-graph/index.md
 CN-004,Whether a vector store is needed beside the graph,resolved,ADR-007,CAP-006 ABB-013 ABB-025,CN-004-whether-a-vector-store-is-needed-beside-the-graph/index.md
 CN-005,Where the projection and the chat state live at scale,resolved,ADR-008,CAP-005 ABB-011 ABB-019,CN-005-where-the-projection-and-the-chat-state-live-at-scale/index.md
-CN-006,Decoupling the deployables along the bounded contexts,open,,BC-001 BC-002 BC-003 BC-004 BC-005 BC-006 ABB-024 ABB-019 SV-001 SV-003 SV-004,CN-006-decoupling-the-deployables-along-the-bounded-contexts/index.md
+CN-006,Decoupling the deployables along the bounded contexts,resolved,ADR-011,BC-001 BC-002 BC-003 BC-004 BC-005 BC-006 ABB-024 ABB-019 SV-001 SV-003 SV-004,CN-006-decoupling-the-deployables-along-the-bounded-contexts/index.md

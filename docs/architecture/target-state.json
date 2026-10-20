@@ -67,8 +67,8 @@
         "patterns_scoped": 0,
         "services_own": 0,
         "services_composing": 2,
-        "considerations_open": 1,
-        "gaps": 8
+        "considerations_open": 0,
+        "gaps": 7
       },
       "ids": {
         "abbs_own": [],
@@ -88,9 +88,7 @@
           "SV-001",
           "SV-008"
         ],
-        "considerations_open": [
-          "CN-006"
-        ]
+        "considerations_open": []
       },
       "gaps": [
         {
@@ -110,26 +108,21 @@
         },
         {
           "ref": "1d",
-          "code": "open-consideration",
-          "text": "Open: CN-006 Decoupling the deployables along the bounded contexts. R3 needs each resolved by an accepted decision"
-        },
-        {
-          "ref": "1e",
           "code": "platform-scope-only",
           "text": "Only platform-scoped patterns (AP-001, RA-001) realise its capabilities; none is scoped to the subdomain"
         },
         {
-          "ref": "1f",
+          "ref": "1e",
           "code": "no-service",
           "text": "No deployable is BC-002's own; SV-001, SV-008 compose it"
         },
         {
-          "ref": "1g",
+          "ref": "1f",
           "code": "service-spans-contexts",
-          "text": "SV-001 composes BC-001 BC-002 BC-003 BC-004 (CN-006); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it)"
+          "text": "SV-001 composes BC-001 BC-002 BC-003 BC-004 (no consideration names it); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it)"
         },
         {
-          "ref": "1h",
+          "ref": "1g",
           "code": "register-drift",
           "text": "The use-case register still cites retired blocks of this context, which the pages no longer do: UC-003 ABB-006, UC-003 ABB-008, UC-004 ABB-005, UC-004 ABB-006, UC-005 ABB-007, UC-005 ABB-006, UC-006 ABB-008"
         }
@@ -200,8 +193,8 @@
         "patterns_scoped": 0,
         "services_own": 0,
         "services_composing": 2,
-        "considerations_open": 1,
-        "gaps": 8
+        "considerations_open": 0,
+        "gaps": 7
       },
       "ids": {
         "abbs_own": [],
@@ -220,9 +213,7 @@
           "SV-001",
           "SV-008"
         ],
-        "considerations_open": [
-          "CN-006"
-        ]
+        "considerations_open": []
       },
       "gaps": [
         {
@@ -242,26 +233,21 @@
         },
         {
           "ref": "2d",
-          "code": "open-consideration",
-          "text": "Open: CN-006 Decoupling the deployables along the bounded contexts. R3 needs each resolved by an accepted decision"
-        },
-        {
-          "ref": "2e",
           "code": "platform-scope-only",
           "text": "Only platform-scoped patterns (AP-001, RA-001) realise its capabilities; none is scoped to the subdomain"
         },
         {
-          "ref": "2f",
+          "ref": "2e",
           "code": "no-service",
           "text": "No deployable is BC-003's own; SV-001, SV-008 compose it"
         },
         {
-          "ref": "2g",
+          "ref": "2f",
           "code": "service-spans-contexts",
-          "text": "SV-001 composes BC-001 BC-002 BC-003 BC-004 (CN-006); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it)"
+          "text": "SV-001 composes BC-001 BC-002 BC-003 BC-004 (no consideration names it); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it)"
         },
         {
-          "ref": "2h",
+          "ref": "2g",
           "code": "register-drift",
           "text": "The use-case register still cites retired blocks of this context, which the pages no longer do: UC-002 ABB-009, UC-005 ABB-009, UC-006 ABB-010"
         }
@@ -348,7 +334,7 @@
         "patterns_scoped": 0,
         "services_own": 2,
         "services_composing": 4,
-        "considerations_open": 2,
+        "considerations_open": 1,
         "gaps": 5
       },
       "ids": {
@@ -386,8 +372,7 @@
           "SV-008"
         ],
         "considerations_open": [
-          "CN-001",
-          "CN-006"
+          "CN-001"
         ]
       },
       "gaps": [
@@ -404,7 +389,7 @@
         {
           "ref": "3c",
           "code": "open-consideration",
-          "text": "Open: CN-001 Neptune or Neo4j as the graph for an organisation's collections; CN-006 Decoupling the deployables along the bounded contexts. R3 needs each resolved by an accepted decision"
+          "text": "Open: CN-001 Neptune or Neo4j as the graph for an organisation's collections. R3 needs each resolved by an accepted decision"
         },
         {
           "ref": "3d",
@@ -414,7 +399,7 @@
         {
           "ref": "3e",
           "code": "service-spans-contexts",
-          "text": "SV-001 composes BC-001 BC-002 BC-003 BC-004 (CN-006); SV-002 composes BC-005 BC-004 (no consideration names it); SV-003 composes BC-006 BC-004 BC-005 (CN-006); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it)"
+          "text": "SV-001 composes BC-001 BC-002 BC-003 BC-004 (no consideration names it); SV-002 composes BC-005 BC-004 (no consideration names it); SV-003 composes BC-006 BC-004 BC-005 (no consideration names it); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it)"
         }
       ]
     },
@@ -501,8 +486,8 @@
         "patterns_scoped": 0,
         "services_own": 1,
         "services_composing": 1,
-        "considerations_open": 1,
-        "gaps": 7
+        "considerations_open": 0,
+        "gaps": 6
       },
       "ids": {
         "abbs_own": [
@@ -526,9 +511,7 @@
         "services_composing": [
           "SV-003"
         ],
-        "considerations_open": [
-          "CN-006"
-        ]
+        "considerations_open": []
       },
       "gaps": [
         {
@@ -543,26 +526,21 @@
         },
         {
           "ref": "4c",
-          "code": "open-consideration",
-          "text": "Open: CN-006 Decoupling the deployables along the bounded contexts. R3 needs each resolved by an accepted decision"
-        },
-        {
-          "ref": "4d",
           "code": "no-architecture-pattern",
           "text": "CAP-010, CAP-012 are realised by no architecture pattern, only by the reference architecture"
         },
         {
-          "ref": "4e",
+          "ref": "4d",
           "code": "platform-scope-only",
           "text": "Only platform-scoped patterns (AP-001, RA-001) realise its capabilities; none is scoped to the subdomain"
         },
         {
-          "ref": "4f",
+          "ref": "4e",
           "code": "service-spans-contexts",
-          "text": "SV-002 composes BC-005 BC-004 (no consideration names it); SV-003 composes BC-006 BC-004 BC-005 (CN-006)"
+          "text": "SV-002 composes BC-005 BC-004 (no consideration names it); SV-003 composes BC-006 BC-004 BC-005 (no consideration names it)"
         },
         {
-          "ref": "4g",
+          "ref": "4f",
           "code": "register-drift",
           "text": "The use-case register still cites retired blocks of this context, which the pages no longer do: UC-001 ABB-015, UC-001 ABB-016, UC-001 ABB-017, UC-005 ABB-017, UC-006 ABB-015"
         }
@@ -610,8 +588,8 @@
         "patterns_scoped": 0,
         "services_own": 1,
         "services_composing": 1,
-        "considerations_open": 1,
-        "gaps": 7
+        "considerations_open": 0,
+        "gaps": 6
       },
       "ids": {
         "abbs_own": [
@@ -634,9 +612,7 @@
         "services_composing": [
           "SV-008"
         ],
-        "considerations_open": [
-          "CN-006"
-        ]
+        "considerations_open": []
       },
       "gaps": [
         {
@@ -651,26 +627,21 @@
         },
         {
           "ref": "5c",
-          "code": "open-consideration",
-          "text": "Open: CN-006 Decoupling the deployables along the bounded contexts. R3 needs each resolved by an accepted decision"
-        },
-        {
-          "ref": "5d",
           "code": "no-architecture-pattern",
           "text": "CAP-002 is realised by no architecture pattern, only by the reference architecture"
         },
         {
-          "ref": "5e",
+          "ref": "5d",
           "code": "platform-scope-only",
           "text": "Only platform-scoped patterns (RA-001) realise its capabilities; none is scoped to the subdomain"
         },
         {
-          "ref": "5f",
+          "ref": "5e",
           "code": "service-spans-contexts",
-          "text": "SV-001 composes BC-001 BC-002 BC-003 BC-004 (CN-006); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it)"
+          "text": "SV-001 composes BC-001 BC-002 BC-003 BC-004 (no consideration names it); SV-008 composes BC-001 BC-002 BC-003 BC-004 BC-008 (no consideration names it)"
         },
         {
-          "ref": "5g",
+          "ref": "5f",
           "code": "register-drift",
           "text": "The use-case register still cites retired blocks of this context, which the pages no longer do: UC-002 ABB-001, UC-002 ABB-003, UC-002 ABB-004, UC-003 ABB-004, UC-004 ABB-004"
         }
@@ -740,8 +711,8 @@
         "patterns_scoped": 0,
         "services_own": 3,
         "services_composing": 0,
-        "considerations_open": 1,
-        "gaps": 5
+        "considerations_open": 0,
+        "gaps": 4
       },
       "ids": {
         "abbs_own": [
@@ -773,9 +744,7 @@
           "SV-007"
         ],
         "services_composing": [],
-        "considerations_open": [
-          "CN-006"
-        ]
+        "considerations_open": []
       },
       "gaps": [
         {
@@ -785,23 +754,18 @@
         },
         {
           "ref": "6b",
-          "code": "open-consideration",
-          "text": "Open: CN-006 Decoupling the deployables along the bounded contexts. R3 needs each resolved by an accepted decision"
-        },
-        {
-          "ref": "6c",
           "code": "no-architecture-pattern",
           "text": "CAP-010 is realised by no architecture pattern, only by the reference architecture"
         },
         {
-          "ref": "6d",
+          "ref": "6c",
           "code": "platform-scope-only",
           "text": "Only platform-scoped patterns (AP-001, RA-001) realise its capabilities; none is scoped to the subdomain"
         },
         {
-          "ref": "6e",
+          "ref": "6d",
           "code": "service-spans-contexts",
-          "text": "SV-003 composes BC-006 BC-004 BC-005 (CN-006)"
+          "text": "SV-003 composes BC-006 BC-004 BC-005 (no consideration names it)"
         }
       ]
     },
@@ -1023,13 +987,12 @@
         "CAP-003",
         "CAP-007"
       ],
-      "why": "names the context's own building blocks, which the catalogue lacks; scopes a logical pattern to the subdomain rather than the platform; is where CN-006 is argued in boxes",
+      "why": "names the context's own building blocks, which the catalogue lacks; scopes a logical pattern to the subdomain rather than the platform",
       "closes": [
         "1a",
-        "1d",
-        "1e"
+        "1d"
       ],
-      "score": 33,
+      "score": 32,
       "ref": "P1"
     },
     {
@@ -1041,13 +1004,12 @@
         "CAP-004",
         "CAP-007"
       ],
-      "why": "names the context's own building blocks, which the catalogue lacks; scopes a logical pattern to the subdomain rather than the platform; is where CN-006 is argued in boxes",
+      "why": "names the context's own building blocks, which the catalogue lacks; scopes a logical pattern to the subdomain rather than the platform",
       "closes": [
         "2a",
-        "2d",
-        "2e"
+        "2d"
       ],
-      "score": 33,
+      "score": 32,
       "ref": "P2"
     },
     {
@@ -1060,7 +1022,7 @@
         "CAP-006",
         "CAP-007"
       ],
-      "why": "scopes a logical pattern to the subdomain rather than the platform; is where CN-001 and CN-006 are argued in boxes",
+      "why": "scopes a logical pattern to the subdomain rather than the platform; is where CN-001 is argued in boxes",
       "closes": [
         "3c",
         "3d"
@@ -1078,13 +1040,12 @@
         "CAP-010",
         "CAP-012"
       ],
-      "why": "scopes a logical pattern to the subdomain rather than the platform; is where CN-006 is argued in boxes",
+      "why": "scopes a logical pattern to the subdomain rather than the platform",
       "closes": [
-        "4c",
-        "4e",
-        "4d"
+        "4d",
+        "4c"
       ],
-      "score": 32,
+      "score": 31,
       "ref": "P4"
     },
     {
@@ -1101,24 +1062,6 @@
       "ref": "P5"
     },
     {
-      "kind": "reference-architecture",
-      "scope": "platform",
-      "box": "1+2+3+4+5+6",
-      "title": "The deployables of the target state: Decoupling the deployables along the bounded contexts",
-      "realises": [],
-      "why": "a reference architecture variant per option of CN-006, so the choice is made between drawn alternatives",
-      "closes": [
-        "1g",
-        "2g",
-        "3e",
-        "4f",
-        "5f",
-        "6e"
-      ],
-      "score": 25,
-      "ref": "P6"
-    },
-    {
       "kind": "architecture-pattern",
       "scope": "capability-area",
       "box": "4+6+8",
@@ -1129,7 +1072,7 @@
       "why": "the capability is realised in 3 contexts, and no pattern says how they divide it",
       "closes": [],
       "score": 25,
-      "ref": "P7"
+      "ref": "P6"
     },
     {
       "kind": "architecture-pattern",
@@ -1139,14 +1082,13 @@
       "realises": [
         "CAP-002"
       ],
-      "why": "scopes a logical pattern to the subdomain rather than the platform; is where CN-006 is argued in boxes",
+      "why": "scopes a logical pattern to the subdomain rather than the platform",
       "closes": [
-        "5c",
-        "5e",
-        "5d"
+        "5d",
+        "5c"
       ],
-      "score": 22,
-      "ref": "P8"
+      "score": 21,
+      "ref": "P7"
     },
     {
       "kind": "architecture-pattern",
@@ -1157,14 +1099,13 @@
         "CAP-009",
         "CAP-010"
       ],
-      "why": "scopes a logical pattern to the subdomain rather than the platform; is where CN-006 is argued in boxes",
+      "why": "scopes a logical pattern to the subdomain rather than the platform",
       "closes": [
-        "6b",
-        "6d",
-        "6c"
+        "6c",
+        "6b"
       ],
-      "score": 22,
-      "ref": "P9"
+      "score": 21,
+      "ref": "P8"
     },
     {
       "kind": "architecture-pattern",
@@ -1180,7 +1121,7 @@
         "7c"
       ],
       "score": 21,
-      "ref": "P10"
+      "ref": "P9"
     },
     {
       "kind": "architecture-pattern",
@@ -1197,7 +1138,7 @@
         "8c"
       ],
       "score": 11,
-      "ref": "P11"
+      "ref": "P10"
     }
   ],
   "portfolio": [],
@@ -1213,7 +1154,7 @@
         "BC-003",
         "BC-004"
       ],
-      "considerations": "CN-006"
+      "considerations": ""
     },
     {
       "id": "SV-002",
@@ -1236,7 +1177,7 @@
         "BC-004",
         "BC-005"
       ],
-      "considerations": "CN-006"
+      "considerations": ""
     },
     {
       "id": "SV-004",
@@ -1246,7 +1187,7 @@
       "composes": [
         "BC-004"
       ],
-      "considerations": "CN-006"
+      "considerations": ""
     },
     {
       "id": "SV-005",

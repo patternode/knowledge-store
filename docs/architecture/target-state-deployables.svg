@@ -27,7 +27,7 @@
 <circle cx="341" cy="127" r="6" fill="#ffffff" stroke="#b45309" stroke-width="2"/>
 <circle cx="415" cy="127" r="6" fill="#ffffff" stroke="#b45309" stroke-width="2"/>
 <circle cx="563" cy="127" r="7" fill="#4f46e5"/>
-<text x="838" y="131" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600">4 (CN-006)</text>
+<text x="838" y="131" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600">4 (no CN)</text>
 <text x="8" y="161" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600">SV-002</tspan> Chat agent</text>
 <circle cx="415" cy="157" r="6" fill="#ffffff" stroke="#b45309" stroke-width="2"/>
 <circle cx="489" cy="157" r="7" fill="#007fa0"/>
@@ -37,7 +37,7 @@
 <circle cx="415" cy="187" r="6" fill="#ffffff" stroke="#b45309" stroke-width="2"/>
 <circle cx="489" cy="187" r="6" fill="#ffffff" stroke="#b45309" stroke-width="2"/>
 <circle cx="637" cy="187" r="7" fill="#4f46e5"/>
-<text x="838" y="191" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600">3 (CN-006)</text>
+<text x="838" y="191" fill="#7c2d12" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="600">3 (no CN)</text>
 <text x="8" y="221" fill="#1b202c" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12"><tspan font-family="IBM Plex Mono, ui-monospace, Consolas, monospace" font-weight="600">SV-004</tspan> Graph tools</text>
 <circle cx="415" cy="217" r="7" fill="#007fa0"/>
 <text x="838" y="221" fill="#525c74" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="400">1</text>

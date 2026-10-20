@@ -15,8 +15,8 @@ part_of: BC-004
 composes_contexts: [BC-004]
 runtime_type: serverless
 repo: { url: "https://github.com/patternode/knowledge-store", path: "." }
-module_path: "src/knowledge_store/tools/gateway.py"
-packages: ["knowledge_store.tools.passages", "knowledge_store.pipeline.refine (load_doc, load_passages)"]
+module_path: "src/knowledge_store/knowledge_graph/adapters/gateway.py"
+packages: ["knowledge_store.knowledge_graph (adapters.passages)", "knowledge_store.ingestion (load_doc, load_passages)"]
 deployed_to: [DN-007]
 run_by: "PRD-001; called by the Gateway"
 provenance:
@@ -35,7 +35,7 @@ The two passage tools as a Gateway target outside the VPC: search by meaning thr
 | Context | BC-004; composes BC-004 as built |
 | Realises | SBB-015 |
 | Node | DN-007 |
-| Code | `src/knowledge_store/tools/gateway.py (lambda_handler, TOOLSET=passages)` |
+| Code | `src/knowledge_store/knowledge_graph/adapters/gateway.py (lambda_handler, TOOLSET=passages)` |
 | Talks to | Bedrock Retrieve; the lake's gold, silver, ontology and config prefixes. |
 | Stores | Reads only. |
 | Role | <name>-tools-passages: read those layers; bedrock:Retrieve on the Knowledge Base. |

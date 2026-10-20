@@ -53,7 +53,7 @@ output "knowledge_base" {
 
 output "evaluate" {
   description = "run an evaluation set against the deployed chat, as a signed-in person (see README)"
-  value       = "python -m knowledge_store.evals <set.yaml> --api ${trimsuffix(module.portal.url, "/")} --token-env KS_TOKEN --yes"
+  value       = "python -m knowledge_store.apps.evaluate <set.yaml> --api ${trimsuffix(module.portal.url, "/")} --token-env KS_TOKEN --yes"
 }
 
 output "provided_ontologies" {

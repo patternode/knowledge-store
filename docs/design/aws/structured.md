@@ -2,13 +2,13 @@
 
 The store answers from documents. A file becomes passages, extraction turns those passages into
 RDF, and the agent looks entities and passages up through fixed tools. CSV and JSON take that
-same path: a CSV is decoded as text (`refine/parsers.py` sends `.csv` through `parse_text`), and
+same path: a CSV is decoded as text (`ingestion/domain/parsers.py` sends `.csv` through `parse_text`), and
 JSON is flattened to `path: value` lines. The model then guesses entities out of the lines.
 
 That is the right path for a report that happens to contain a table. It is the wrong path for a
 table that is the source. A filter ("launches after 2010 on an Atlas V"), a total, or a value
 that must match a cell cannot be grounded as a passage quote: the quote check wants twelve
-characters copied from prose (`agent/grounding.py`), and the graph has no aggregate tool even
+characters copied from prose (`answering/domain/grounding.py`), and the graph has no aggregate tool even
 though evaluation questions already have kind `aggregate`. Entity identity is the root type plus
 a normalised name, so two rows for the same mission under two labels become two nodes.
 
@@ -20,7 +20,7 @@ here calls Ontop, turns a question into SQL, or evaluates a Cedar policy.
 ## What stays
 
 The document path is unchanged. Gold RDF extracted from passages remains the record for anything
-a model inferred. The agent still has no free SPARQL or SQL tool: `tools/gateway.py` builds a
+a model inferred. The agent still has no free SPARQL or SQL tool: `knowledge_graph/adapters/gateway.py` builds a
 fixed query per tool so a shared endpoint can enforce scope. A private source stays private
 through `caller_private`, written by the gateway interceptor from the caller's token. A term
 still reaches the ontology only when a person publishes a version.
@@ -80,7 +80,7 @@ disagrees with the attribute's datatype is refused. A relation's range must be a
 `logical_table`, and each ontology concept it names must be a class.
 
 The release renders the mapping, as it renders every other consumer form
-(`ontology/renditions.py`):
+(`ontology/domain/renditions.py`):
 
 | Rendition | For |
 |---|---|
@@ -117,7 +117,7 @@ Turning tables on for such a collection takes four steps:
 Check the mapping before applying, with the same code publish runs:
 
 ```bash
-python -c "from knowledge_store.ontology import model; from knowledge_store.structured import mapping; \
+python -c "from knowledge_store.ontology.domain import model; from knowledge_store.extraction.slices import mapping; \
 d='ontology/<collection>'; mapping.load(d, model.load(data=open(d + '/ontology.ttl').read()))"
 ```
 
@@ -397,7 +397,7 @@ Context, and this module keeps its document record, its citation check, and its 
    file publishes as it does now.
 2. Done. Bind every CSV the mapping names. Same landing adapter, no new source type. `ks:Cell`
    is in core 1.1.0. `describe_structured`, `lookup_rows` and `aggregate` read the snapshot, and
-   `agent/grounding.py` checks cells. The space-missions catalog is the fixture. Document
+   `answering/domain/grounding.py` checks cells. The space-missions catalog is the fixture. Document
    extraction is untouched.
 3. Done. A named metric is recomputed from its `SELECT` against the snapshot, and the workbench
    shows that lookup as its own step.

@@ -10,7 +10,7 @@ The core vocabulary says where a fact came from, never what it is about. Every d
 | `https://w3id.org/knowledge-store/core/<version>` | That release, from git tag `core-v<version>` |
 | `https://w3id.org/knowledge-store/core/shapes` | The core SHACL shapes (`/core/<version>/shapes` for a release) |
 
-Source: [`src/knowledge_store/ontology/core.ttl`](../src/knowledge_store/ontology/core.ttl) and [`core-shapes.ttl`](../src/knowledge_store/ontology/core-shapes.ttl).
+Source: [`src/knowledge_store/ontology/domain/core.ttl`](../src/knowledge_store/ontology/domain/core.ttl) and [`core-shapes.ttl`](../src/knowledge_store/ontology/domain/core-shapes.ttl).
 
 ## Classes
 

@@ -31,7 +31,7 @@ the same date.
 
 The extractor reifies every fact, so a fact costs about seven quads: the triple itself, the
 assertion's type, subject, predicate and object, the extraction run, and one per cited passage
-([`extract/rdf.py`](../../../src/knowledge_store/extract/rdf.py), `reify`). An entity adds a type,
+([`extraction/domain/rdf.py`](../../../src/knowledge_store/extraction/domain/rdf.py), `reify`). An entity adds a type,
 a label, its aliases and one quad per passage that mentions it. Each document is its own named
 graph, so an entity's type and label are stored again in every document that mentions it.
 
@@ -63,12 +63,12 @@ the number of versions as well as the corpus.
 
 - One writer for the whole lake. `run()` takes one lock on the lake's root and sweeps the
   collections one after another inside it
-  ([`pipeline/run.py`](../../../src/knowledge_store/pipeline/run.py), `run`). More collections make
+  ([`apps/sweep.py`](../../../src/knowledge_store/apps/sweep.py), `run`). More collections make
   a longer sweep, not more parallel work. The EventBridge Pipe starts a task per upload
   (`batch_size = 1`), and every task but one exits on the lock.
 - Extraction is four threads in one task, one Converse loop per document with up to two repair
-  rounds ([`pipeline/extract.py`](../../../src/knowledge_store/pipeline/extract.py),
-  [`extract/extractor.py`](../../../src/knowledge_store/extract/extractor.py)). SHACL validation
+  rounds ([`extraction/slices/extract.py`](../../../src/knowledge_store/extraction/slices/extract.py),
+  [`extraction/slices/extractor.py`](../../../src/knowledge_store/extraction/slices/extractor.py)). SHACL validation
   runs under one process-wide lock (`sparql_lock.PARSE_LOCK`), so that step is serial across the
   threads. At about 45 seconds a document, four threads extract some 7,700 documents a day: a
   million documents is about four months, and a major ontology version (`semantic` or `removal`)
@@ -76,13 +76,13 @@ the number of versions as well as the corpus.
   the concurrency.
 - `project()` parses every `.nq` of every version in the chain into one in-memory rdflib dataset and
   rebuilds all five index files in full, whenever any document was extracted
-  ([`pipeline/project.py`](../../../src/knowledge_store/pipeline/project.py)). rdflib's memory
+  ([`knowledge_graph/slices/project.py`](../../../src/knowledge_store/knowledge_graph/slices/project.py)). rdflib's memory
   store costs several hundred bytes to about a kilobyte a triple (an estimate, not measured here),
   so a 4 GB task holds a few million quads: a department, not an organisation.
 - `load_sparql` lists and parses every gold `.nq` file on every sweep to decide what changed, then
   loads changed graphs one at a time with `DROP SILENT GRAPH` and `INSERT DATA` over HTTPS, each
   request signed and on a new connection
-  ([`pipeline/load.py`](../../../src/knowledge_store/pipeline/load.py)). It first asks Neptune for
+  ([`knowledge_graph/adapters/loading.py`](../../../src/knowledge_store/knowledge_graph/adapters/loading.py)). It first asks Neptune for
   the graphs it holds with `SELECT DISTINCT ?g`, which reads every quad. A million graphs at half a
   second each is about six days of loading.
 - `sync_passages` hashes every passage of every document on every sweep and writes two S3 objects
@@ -108,8 +108,8 @@ What would scale it, in order of payoff:
 
 The portal API's routes read the projection from memory, the passages tool always loads it, and
 the graph tools load it when Neptune is off
-([`portal_api/index.py`](../../../src/knowledge_store/portal_api/index.py),
-[`tools/gateway.py`](../../../src/knowledge_store/tools/gateway.py)). Keyword search loops over every
+([`knowledge_graph/adapters/index.py`](../../../src/knowledge_store/knowledge_graph/adapters/index.py),
+[`knowledge_graph/adapters/gateway.py`](../../../src/knowledge_store/knowledge_graph/adapters/gateway.py)). Keyword search loops over every
 entity and passage. Each warm Lambda can hold every collection's projection at once. The way out is
 in the code already: `PROJECTION_STORE=mongodb` makes the portal stateless and scales it out, and
 `GRAPH_BACKEND` moves traversals into a database ([backends](backends.md)). Neither is wired in the
@@ -129,8 +129,8 @@ most of the queue. Changing the embedding model re-embeds every passage.
 ### The agent and the chat API
 
 - The agent's system prompt holds the whole agent rendition of the ontology: every class, relation
-  and attribute with its definition ([`ontology/renditions.py`](../../../src/knowledge_store/ontology/renditions.py),
-  [`agent/app.py`](../../../src/knowledge_store/agent/app.py)). Discovery aims at 15 classes, which
+  and attribute with its definition ([`ontology/domain/renditions.py`](../../../src/knowledge_store/ontology/domain/renditions.py),
+  [`answering/adapters/agent_app.py`](../../../src/knowledge_store/answering/adapters/agent_app.py)). Discovery aims at 15 classes, which
   is small, but a provided enterprise ontology (FIBO-sized, thousands of terms) would cost tens of
   thousands of tokens on each of up to 14 model calls per question. Past a few hundred terms the
   prompt should carry the top of the class tree and let the agent ask for the rest
@@ -146,13 +146,13 @@ most of the queue. Changing the embedding model re-embeds every passage.
 ### What the graph is asked to do
 
 The graph tools run fixed, read-only SPARQL
-([`graph/sparql.py`](../../../src/knowledge_store/graph/sparql.py)):
+([`knowledge_graph/adapters/sparql.py`](../../../src/knowledge_store/knowledge_graph/adapters/sparql.py)):
 
 - find entities by name (`CONTAINS` over labels and aliases) or by type, following
   `rdfs:subClassOf*` in the ontology graph;
 - fetch an entity's facts and the passages they cite, in batches of 200 ids;
 - neighbourhoods up to three hops and shortest paths up to four, by a breadth-first search in Python
-  over those two primitives ([`graph/traverse.py`](../../../src/knowledge_store/graph/traverse.py)),
+  over those two primitives ([`knowledge_graph/domain/traverse.py`](../../../src/knowledge_store/knowledge_graph/domain/traverse.py)),
   so each hop is a round trip.
 
 Each document is a named graph, and the queries read the union of all named graphs with a filter on

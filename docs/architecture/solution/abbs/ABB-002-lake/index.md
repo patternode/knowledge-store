@@ -23,7 +23,7 @@ interfaces:
 mandatory_subabbs: [iam, observability, governance]
 cross_cutting: false
 references:
-  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/store.py", ref: "main" }
+  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/platform_services/adapters/store.py", ref: "main" }
 provenance:
   origin: ai-generated
   review_state: ai-raw
@@ -106,7 +106,7 @@ None beyond the cross-cutting trio.
 
 | Where | What |
 |---|---|
-| Code | `src/knowledge_store/store.py, layout.py, collections.py, ontology/versions.py (the layout of a version); infra/modules/lake` |
+| Code | `src/knowledge_store/platform_services/adapters/store.py, layout.py, collections.py, ontology/slices/versions.py (the layout of a version); infra/modules/lake` |
 | Capabilities | CAP-002, CAP-003 |
 | Context | BC-001 |
 

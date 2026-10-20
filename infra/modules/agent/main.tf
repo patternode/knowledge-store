@@ -11,7 +11,7 @@
 # The agent acts only as its caller: the Runtime accepts the caller's Cognito access token and the
 # agent presents the same token to the Gateway, so it can never read more than the person asking.
 # Because a person can call the Runtime directly with that token, the agent also counts each
-# person's invocations per day itself (invocation_quota, agent/quota.py), not only the portal.
+# person's invocations per day itself (invocation_quota, access/adapters/agent_quota.py), not only the portal.
 #
 # Two applies: the Runtime needs its image, which CodeBuild builds after the first apply. Set
 # runtime_enabled = true once the agent image exists in ECR. Until then the chat API answers with
@@ -31,7 +31,7 @@ variable "package_root" {
 }
 variable "tool_schema_dir" {
   type        = string
-  description = "src/knowledge_store/tools: schema-graph.json and schema-passages.json, kept in step with the code by a test"
+  description = "src/knowledge_store/knowledge_graph/adapters: schema-graph.json and schema-passages.json, kept in step with the code by a test"
 }
 variable "lake_bucket" { type = string }
 variable "lake_bucket_arn" { type = string }
@@ -230,7 +230,7 @@ resource "aws_lambda_function" "graph" {
   function_name    = "${var.name}-tools-graph"
   role             = aws_iam_role.graph.arn
   runtime          = "python3.12"
-  handler          = "knowledge_store.tools.gateway.lambda_handler"
+  handler          = "knowledge_store.knowledge_graph.adapters.gateway.lambda_handler"
   filename         = data.archive_file.code.output_path
   source_code_hash = data.archive_file.code.output_base64sha256
   timeout          = 60
@@ -278,7 +278,7 @@ resource "aws_lambda_function" "passages" {
   function_name    = "${var.name}-tools-passages"
   role             = aws_iam_role.passages.arn
   runtime          = "python3.12"
-  handler          = "knowledge_store.tools.gateway.lambda_handler"
+  handler          = "knowledge_store.knowledge_graph.adapters.gateway.lambda_handler"
   filename         = data.archive_file.code.output_path
   source_code_hash = data.archive_file.code.output_base64sha256
   timeout          = 60
@@ -306,7 +306,7 @@ resource "aws_lambda_function" "interceptor" {
   function_name    = "${var.name}-agent-interceptor"
   role             = aws_iam_role.interceptor.arn
   runtime          = "python3.12"
-  handler          = "knowledge_store.tools.interceptor.lambda_handler"
+  handler          = "knowledge_store.access.adapters.gateway_interceptor.lambda_handler"
   filename         = data.archive_file.code.output_path
   source_code_hash = data.archive_file.code.output_base64sha256
   timeout          = 10

@@ -97,7 +97,7 @@ None beyond the cross-cutting trio.
 
 | Where | What |
 |---|---|
-| Code | `infra/modules/identity; src/knowledge_store/claims.py (the claim names)` |
+| Code | `infra/modules/identity; src/knowledge_store/access/domain/claims.py (the claim names)` |
 | Capabilities | CAP-009 |
 | Context | BC-006 |
 

@@ -13,7 +13,7 @@
 # runs. The page signs in with Cognito's managed login (code flow with PKCE).
 #
 # With site_sign_in set, people sign in on a host website instead, which frames the portal and
-# hands the page a short grant for this lab (knowledge_store.site_grant). API Gateway then lets
+# hands the page a short grant for this lab (knowledge_store.access.adapters.site_grant). API Gateway then lets
 # requests through and the Lambda verifies the grant on every request; it asks the agent as one of
 # two service clients (service_clients), and CloudFront lets the website frame the pages. The Lambda is a zip
 # built from source by Terraform (stdlib and boto3 only), so the first apply needs no image.
@@ -186,7 +186,7 @@ locals {
     length(var.branding.colors_dark) > 0 ? "@media (prefers-color-scheme: dark) {\n  :root {\n${join("\n", [for k, v in var.branding.colors_dark : "    --${k}: ${v};"])}\n  }\n}" : "",
     var.branding.stylesheet != null ? file(var.branding.stylesheet) : "",
   ]))
-  # the lake layers the API serves, under each collections/<id>/ (see src/knowledge_store/layout.py)
+  # the lake layers the API serves, under each collections/<id>/ (see src/knowledge_store/platform_services/domain/layout.py)
   served_prefixes = ["gold", "portal", "ontology", "config", "silver", "bronze"]
   # Bedrock: the chat model only. A cross-region inference profile (us., eu., global. ...) needs
   # the profile and its foundation model in every region it routes to (none for global.). A model
@@ -467,7 +467,7 @@ resource "aws_iam_role_policy" "api" {
     { Sid = "ListLake", Effect = "Allow", Action = "s3:ListBucket", Resource = var.lake_bucket_arn,
     Condition = { StringLike = { "s3:prefix" = concat(["config/*"], [for p in local.served_prefixes : "collections/*/${p}/*"]) } } },
     # The one place the portal writes to the lake: ontology requests that curators keep from the
-    # workbench (knowledge_store.workbench), which the candidate register reads.
+    # workbench (knowledge_store.answering.slices.workbench), which the candidate register reads.
     { Sid = "KeepRequests", Effect = "Allow", Action = "s3:PutObject",
     Resource = "${var.lake_bucket_arn}/collections/*/ontology/requests/*.json" },
     { Sid = "Chat", Effect = "Allow", Action = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem"],
@@ -513,7 +513,7 @@ resource "aws_lambda_function" "api" {
   function_name                  = "${var.name}-portal-api"
   role                           = aws_iam_role.api.arn
   runtime                        = "python3.12"
-  handler                        = "knowledge_store.portal_api.handler.handler"
+  handler                        = "knowledge_store.apps.portal_api.handler"
   filename                       = data.archive_file.api.output_path
   source_code_hash               = data.archive_file.api.output_base64sha256
   timeout                        = 600

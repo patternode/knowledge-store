@@ -25,7 +25,7 @@ interfaces:
 mandatory_subabbs: [iam, observability, governance]
 cross_cutting: false
 references:
-  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/evals/score.py", ref: "main" }
+  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/evaluation/domain/score.py", ref: "main" }
 provenance:
   origin: ai-generated
   review_state: ai-raw
@@ -103,7 +103,7 @@ Sets ship as examples; a deployment keeps its own.
 
 | Where | What |
 |---|---|
-| Code | `src/knowledge_store/evals/score.py, run.py; examples/evals` |
+| Code | `src/knowledge_store/evaluation/domain/score.py, run.py; examples/evals` |
 | Capabilities | CAP-011 |
 | Context | BC-007 |
 

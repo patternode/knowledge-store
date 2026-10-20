@@ -14,7 +14,7 @@ realised_by_services: [evaluation-runner]
 products:
   - { name: "Python 3.12", vendor: "PSF", licensing: "PSF licence" }
 product_mapping:
-  - { abb_component: "Set loader and scorer", sbb_product: "evals/score.py and run.py in the package" }
+  - { abb_component: "Set loader and scorer", sbb_product: "evaluation/domain/score.py and run.py in the package" }
   - { abb_component: "Targets", sbb_product: "In process against a folder lake, or POST /api/chat with a person's token" }
 cloud_provider: none
 deployment_model: self-hosted
@@ -44,7 +44,7 @@ A command, not a service: evaluation is run by a person before a release, and it
 
 | ABB component | Realised by |
 |---|---|
-| Set loader and scorer | evals/score.py and run.py in the package |
+| Set loader and scorer | evaluation/domain/score.py and run.py in the package |
 | Targets | In process against a folder lake, or POST /api/chat with a person's token |
 
 ## 3  Operation

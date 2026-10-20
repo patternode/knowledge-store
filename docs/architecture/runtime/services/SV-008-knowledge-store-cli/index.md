@@ -15,8 +15,8 @@ part_of: BC-008
 composes_contexts: [BC-001, BC-002, BC-003, BC-004, BC-008]
 runtime_type: native
 repo: { url: "https://github.com/patternode/knowledge-store", path: "." }
-module_path: "src/knowledge_store/cli.py"
-packages: ["knowledge_store.cli"]
+module_path: "src/knowledge_store/apps/cli.py"
+packages: ["knowledge_store.apps.cli"]
 deployed_to: [DN-004, DN-014]
 run_by: "operators and curators"
 provenance:
@@ -35,7 +35,7 @@ Every stage as a command, the ontology lifecycle (pull, diff, publish, activate,
 | Context | BC-008; composes BC-001, BC-002, BC-003, BC-004, BC-008 as built |
 | Realises | SBB-013 |
 | Node | DN-004, DN-014 |
-| Code | `src/knowledge_store/cli.py (console script knowledge-store)` |
+| Code | `src/knowledge_store/apps/cli.py (console script knowledge-store)` |
 | Talks to | The lake and the model; whatever the command needs. |
 | Stores | As the command. |
 | Role | The operator's credentials, or the pipeline task's in the image. |

@@ -76,7 +76,7 @@ The model is a proposer, not a publisher. Its answer is a list of claims with ci
 
 ## 4  What the implementation does today
 
-Claims cite a passage with a verbatim quote, a cell with a value, or a figure with its computation. The checks are in agent/grounding.py and tested without a model. A dropped claim is reported, an empty answer abstains and lists what was missing, and the agent's own daily count holds even when the portal is bypassed.
+Claims cite a passage with a verbatim quote, a cell with a value, or a figure with its computation. The checks are in answering/domain/grounding.py and tested without a model. A dropped claim is reported, an empty answer abstains and lists what was missing, and the agent's own daily count holds even when the portal is bypassed.
 
 ## 5  Maturity
 

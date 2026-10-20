@@ -1,0 +1,254 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1720 931" width="1720" height="931" font-family="IBM Plex Sans, Segoe UI, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
+<title id="t">Knowledge Store contexts and slices</title>
+<desc id="d">Knowledge Store's eight bounded contexts in core, supporting and generic subdomain bands, each with its feature slices, the ports it owns, their adapters and the services it runs in, with the applications that use it above and how the contexts meet below.</desc>
+<rect width="1720" height="931" fill="#ffffff"/>
+<text x="24" y="34" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">Knowledge Store: subdomains, bounded contexts and feature slices (target)</text>
+<text x="24" y="56" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Each box is a bounded context: one module with its own model, contract and stores. Inside it, feature slices sit over a pure domain core; ports appear only where an adapter varies.</text>
+<text x="24" y="72" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">All contexts run in a few services by default (ADR-044). A context gets a service of its own only on a trigger; Extraction&#x27;s model-heavy batch work is the first.</text>
+<text x="24" y="104" font-size="11" font-weight="bold" fill="#374151" text-anchor="start">USED BY (each brings adapters, an ontology, tools and a question set through the contracts)</text>
+<rect x="24" y="114" width="186" height="30" rx="6" fill="#e2e8f0" stroke="#475569"/>
+<text x="117.0" y="133" font-size="12" font-weight="normal" fill="#111827" text-anchor="middle">Earnings: Analyst product</text>
+<rect x="220" y="114" width="160" height="30" rx="6" fill="#e2e8f0" stroke="#475569"/>
+<text x="300.0" y="133" font-size="12" font-weight="normal" fill="#111827" text-anchor="middle">Banking knowledge lab</text>
+<rect x="390" y="114" width="224" height="30" rx="6" fill="#e2e8f0" stroke="#475569"/>
+<text x="502.0" y="133" font-size="12" font-weight="normal" fill="#111827" text-anchor="middle">Knowledge labs (any collection)</text>
+<rect x="624" y="114" width="198" height="30" rx="6" fill="#e2e8f0" stroke="#475569"/>
+<text x="723.0" y="133" font-size="12" font-weight="normal" fill="#111827" text-anchor="middle">Outside assistants over MCP</text>
+<rect x="832" y="114" width="147" height="30" rx="6" fill="#e2e8f0" stroke="#475569" stroke-dasharray="5 3"/>
+<text x="905.5" y="133" font-size="12" font-weight="normal" fill="#111827" text-anchor="middle">Future applications</text>
+<text x="24" y="176" font-size="11" font-weight="bold" fill="#2563eb" text-anchor="start">CORE SUBDOMAINS: where Knowledge Store is different</text>
+<rect x="24" y="186" width="412" height="124" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+<text x="36" y="207" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">Ontology</text>
+<text x="424" y="207" font-size="10" font-weight="bold" fill="#2563eb" text-anchor="end">BC-002 · core</text>
+<text x="36" y="230" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">slices</text>
+<rect x="80" y="220" width="59" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="109.5" y="232" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">discover</text>
+<rect x="145" y="220" width="82" height="17" rx="8.5" fill="#ffffff" stroke="#1f2937" stroke-dasharray="3 2"/>
+<text x="186.0" y="232" font-size="10" font-weight="normal" fill="#111827" text-anchor="middle">review draft</text>
+<rect x="233" y="220" width="99" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="282.5" y="232" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">publish version</text>
+<rect x="80" y="242" width="110" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="135.0" y="254" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">record candidates</text>
+<rect x="196" y="242" width="48" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="220.0" y="254" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">render</text>
+<text x="36" y="274" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">ports</text>
+<text x="80" y="276" font-size="10" font-weight="normal" fill="#6b7280" text-anchor="start">none of its own: it uses Platform services&#x27; contract</text>
+<text x="36" y="298" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="start">runs in: the sweep, the CLI</text>
+<rect x="448" y="186" width="412" height="124" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+<text x="460" y="207" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">Extraction</text>
+<text x="848" y="207" font-size="10" font-weight="bold" fill="#2563eb" text-anchor="end">BC-003 · core</text>
+<text x="460" y="230" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">slices</text>
+<rect x="504" y="220" width="88" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="548.0" y="232" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">extract facts</text>
+<rect x="598" y="220" width="82" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="639.0" y="232" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">ground facts</text>
+<rect x="686" y="220" width="71" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="721.5" y="232" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">SHACL gate</text>
+<rect x="504" y="242" width="105" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="556.5" y="254" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">delta extraction</text>
+<rect x="615" y="242" width="76" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="653.0" y="254" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">table cells</text>
+<text x="460" y="274" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">ports</text>
+<text x="504" y="276" font-size="10" font-weight="normal" fill="#6b7280" text-anchor="start">none of its own: it uses Platform services&#x27; contract</text>
+<text x="460" y="298" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="start">runs in: the sweep</text>
+<rect x="872" y="186" width="412" height="168" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+<text x="884" y="207" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">Knowledge Graph</text>
+<text x="1272" y="207" font-size="10" font-weight="bold" fill="#2563eb" text-anchor="end">BC-004 · core</text>
+<text x="884" y="230" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">slices</text>
+<rect x="928" y="220" width="99" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="977.5" y="232" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">keep the record</text>
+<rect x="1033" y="220" width="110" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="1088.0" y="232" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">build projections</text>
+<rect x="1149" y="220" width="99" height="17" rx="8.5" fill="#ffffff" stroke="#1f2937" stroke-dasharray="3 2"/>
+<text x="1198.5" y="232" font-size="10" font-weight="normal" fill="#111827" text-anchor="middle">concept browser</text>
+<rect x="928" y="242" width="76" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="966.0" y="254" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">graph tools</text>
+<rect x="1010" y="242" width="93" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="1056.5" y="254" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">passage search</text>
+<text x="884" y="274" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">ports</text>
+<rect x="928" y="264" width="71" height="17" rx="2" fill="#f8fafc" stroke="#475569" stroke-dasharray="2 2"/>
+<text x="963.5" y="276" font-size="10" font-weight="normal" fill="#334155" text-anchor="middle">GraphStore</text>
+<rect x="1005" y="264" width="59" height="17" rx="2" fill="#f8fafc" stroke="#475569" stroke-dasharray="2 2"/>
+<text x="1034.5" y="276" font-size="10" font-weight="normal" fill="#334155" text-anchor="middle">RdfStore</text>
+<rect x="1070" y="264" width="82" height="17" rx="2" fill="#f8fafc" stroke="#475569" stroke-dasharray="2 2"/>
+<text x="1111.0" y="276" font-size="10" font-weight="normal" fill="#334155" text-anchor="middle">PassageIndex</text>
+<text x="884" y="296" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">adapters</text>
+<rect x="928" y="286" width="99" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="977.5" y="298" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">in-memory index</text>
+<rect x="1033" y="286" width="53" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="1059.5" y="298" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">Neptune</text>
+<rect x="1092" y="286" width="42" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="1113.0" y="298" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">Neo4j</text>
+<rect x="1140" y="286" width="71" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="1175.5" y="298" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">Apache AGE</text>
+<rect x="928" y="308" width="71" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="963.5" y="320" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">Bedrock KB</text>
+<rect x="1005" y="308" width="53" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="1031.5" y="320" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">keyword</text>
+<text x="884" y="342" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="start">runs in: graph and passage tools, the sweep</text>
+<rect x="1296" y="186" width="412" height="124" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+<text x="1308" y="207" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">Answering</text>
+<text x="1696" y="207" font-size="10" font-weight="bold" fill="#2563eb" text-anchor="end">BC-005 · core</text>
+<text x="1308" y="230" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">slices</text>
+<rect x="1352" y="220" width="36" height="17" rx="8.5" fill="#ffffff" stroke="#1f2937" stroke-dasharray="3 2"/>
+<text x="1370.0" y="232" font-size="10" font-weight="normal" fill="#111827" text-anchor="middle">chat</text>
+<rect x="1394" y="220" width="82" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="1435.0" y="232" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">check claims</text>
+<rect x="1482" y="220" width="48" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="1506.0" y="232" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">valves</text>
+<rect x="1536" y="220" width="71" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="1571.5" y="232" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">show steps</text>
+<text x="1308" y="252" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">ports</text>
+<rect x="1352" y="242" width="88" height="17" rx="2" fill="#f8fafc" stroke="#475569" stroke-dasharray="2 2"/>
+<text x="1396.0" y="254" font-size="10" font-weight="normal" fill="#334155" text-anchor="middle">ClaimVerifier</text>
+<rect x="1446" y="242" width="88" height="17" rx="2" fill="#f8fafc" stroke="#475569" stroke-dasharray="2 2"/>
+<text x="1490.0" y="254" font-size="10" font-weight="normal" fill="#334155" text-anchor="middle">ToolCatalogue</text>
+<text x="1308" y="274" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">adapters</text>
+<rect x="1352" y="264" width="128" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="1416.0" y="276" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">Strands on AgentCore</text>
+<rect x="1486" y="264" width="65" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="1518.5" y="276" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">MCP tools</text>
+<rect x="1557" y="264" width="105" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="1609.5" y="276" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">entailment model</text>
+<text x="1308" y="298" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="start">runs in: the chat agent</text>
+<text x="24" y="376" font-size="11" font-weight="bold" fill="#0d9488" text-anchor="start">SUPPORTING SUBDOMAINS: needed, not differentiating</text>
+<rect x="24" y="386" width="412" height="124" rx="7" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.4"/>
+<text x="36" y="407" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">Ingestion</text>
+<text x="424" y="407" font-size="10" font-weight="bold" fill="#0d9488" text-anchor="end">BC-001 · supporting</text>
+<text x="36" y="430" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">slices</text>
+<rect x="80" y="420" width="93" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="126.5" y="432" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">ingest sources</text>
+<rect x="179" y="420" width="99" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="228.5" y="432" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">refine passages</text>
+<rect x="284" y="420" width="76" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="322.0" y="432" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">read tables</text>
+<rect x="366" y="420" width="42" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="387.0" y="432" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">sweep</text>
+<text x="36" y="452" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">ports</text>
+<rect x="80" y="442" width="88" height="17" rx="2" fill="#f8fafc" stroke="#475569" stroke-dasharray="2 2"/>
+<text x="124.0" y="454" font-size="10" font-weight="normal" fill="#334155" text-anchor="middle">SourceAdapter</text>
+<rect x="174" y="442" width="48" height="17" rx="2" fill="#f8fafc" stroke="#475569" stroke-dasharray="2 2"/>
+<text x="198.0" y="454" font-size="10" font-weight="normal" fill="#334155" text-anchor="middle">Parser</text>
+<text x="36" y="474" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">adapters</text>
+<rect x="80" y="464" width="71" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="115.5" y="476" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">S3 uploads</text>
+<rect x="157" y="464" width="65" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="189.5" y="476" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">web pages</text>
+<rect x="228" y="464" width="65" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="260.5" y="476" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">PDF, HTML</text>
+<rect x="299" y="464" width="59" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="328.5" y="476" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">plug-ins</text>
+<text x="36" y="498" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="start">runs in: the sweep</text>
+<rect x="448" y="386" width="412" height="168" rx="7" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.4"/>
+<text x="460" y="407" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">Evaluation</text>
+<text x="848" y="407" font-size="10" font-weight="bold" fill="#0d9488" text-anchor="end">BC-007 · supporting</text>
+<text x="460" y="430" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">slices</text>
+<rect x="504" y="420" width="65" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="536.5" y="432" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">run a set</text>
+<rect x="575" y="420" width="122" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="636.0" y="432" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">compare to baseline</text>
+<rect x="703" y="420" width="82" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="744.0" y="432" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">release gate</text>
+<rect x="504" y="442" width="65" height="17" rx="8.5" fill="#ffffff" stroke="#1f2937" stroke-dasharray="3 2"/>
+<text x="536.5" y="454" font-size="10" font-weight="normal" fill="#111827" text-anchor="middle">scorecard</text>
+<text x="460" y="474" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">ports</text>
+<rect x="504" y="464" width="59" height="17" rx="2" fill="#f8fafc" stroke="#475569" stroke-dasharray="2 2"/>
+<text x="533.5" y="476" font-size="10" font-weight="normal" fill="#334155" text-anchor="middle">Answerer</text>
+<rect x="569" y="464" width="76" height="17" rx="2" fill="#f8fafc" stroke="#475569" stroke-dasharray="2 2"/>
+<text x="607.0" y="476" font-size="10" font-weight="normal" fill="#334155" text-anchor="middle">TruthSource</text>
+<rect x="651" y="464" width="88" height="17" rx="2" fill="#f8fafc" stroke="#475569" stroke-dasharray="2 2"/>
+<text x="695.0" y="476" font-size="10" font-weight="normal" fill="#334155" text-anchor="middle">ClaimVerifier</text>
+<rect x="745" y="464" width="48" height="17" rx="2" fill="#f8fafc" stroke="#475569" stroke-dasharray="2 2"/>
+<text x="769.0" y="476" font-size="10" font-weight="normal" fill="#334155" text-anchor="middle">Grader</text>
+<rect x="504" y="486" width="59" height="17" rx="2" fill="#f8fafc" stroke="#475569" stroke-dasharray="2 2"/>
+<text x="533.5" y="498" font-size="10" font-weight="normal" fill="#334155" text-anchor="middle">RunStore</text>
+<text x="460" y="518" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">adapters</text>
+<rect x="504" y="508" width="71" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="539.5" y="520" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">in-process</text>
+<rect x="581" y="508" width="59" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="610.5" y="520" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">chat API</text>
+<rect x="646" y="508" width="93" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="692.5" y="520" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">eval framework</text>
+<rect x="745" y="508" width="76" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="783.0" y="520" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">model judge</text>
+<text x="460" y="542" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="start">runs in: the runner, CI</text>
+<rect x="872" y="386" width="412" height="124" rx="7" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.4"/>
+<text x="884" y="407" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">Access</text>
+<text x="1272" y="407" font-size="10" font-weight="bold" fill="#0d9488" text-anchor="end">BC-006 · supporting</text>
+<text x="884" y="430" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">slices</text>
+<rect x="928" y="420" width="53" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="954.5" y="432" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">sign-in</text>
+<rect x="987" y="420" width="42" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="1008.0" y="432" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">scope</text>
+<rect x="1035" y="420" width="48" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="1059.0" y="432" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">quotas</text>
+<rect x="1089" y="420" width="71" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="1124.5" y="432" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">chat state</text>
+<rect x="1166" y="420" width="71" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="1201.5" y="432" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">site grant</text>
+<text x="884" y="452" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">ports</text>
+<rect x="928" y="442" width="65" height="17" rx="2" fill="#f8fafc" stroke="#475569" stroke-dasharray="2 2"/>
+<text x="960.5" y="454" font-size="10" font-weight="normal" fill="#334155" text-anchor="middle">ChatState</text>
+<rect x="999" y="442" width="48" height="17" rx="2" fill="#f8fafc" stroke="#475569" stroke-dasharray="2 2"/>
+<text x="1023.0" y="454" font-size="10" font-weight="normal" fill="#334155" text-anchor="middle">Claims</text>
+<text x="884" y="474" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">adapters</text>
+<rect x="928" y="464" width="59" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="957.5" y="476" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">DynamoDB</text>
+<rect x="993" y="464" width="53" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="1019.5" y="476" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">MongoDB</text>
+<rect x="1052" y="464" width="48" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="1076.0" y="476" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">memory</text>
+<rect x="1106" y="464" width="53" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="1132.5" y="476" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">Cognito</text>
+<text x="884" y="498" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="start">runs in: portal API, chat page, interceptor</text>
+<text x="24" y="576" font-size="11" font-weight="bold" fill="#ea580c" text-anchor="start">GENERIC SUBDOMAIN: bought or shared, every context uses it</text>
+<rect x="24" y="586" width="412" height="124" rx="7" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+<text x="36" y="607" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">Platform services</text>
+<text x="424" y="607" font-size="10" font-weight="bold" fill="#ea580c" text-anchor="end">BC-008 · generic</text>
+<text x="36" y="630" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">slices</text>
+<rect x="80" y="620" width="36" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="98.0" y="632" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">lake</text>
+<rect x="122" y="620" width="82" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="163.0" y="632" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">model access</text>
+<rect x="210" y="620" width="76" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="248.0" y="632" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">cost ledger</text>
+<rect x="292" y="620" width="31" height="17" rx="3" fill="#ffffff" stroke="#9ca3af"/>
+<text x="307.5" y="632" font-size="10" font-weight="normal" fill="#374151" text-anchor="middle">CLI</text>
+<text x="36" y="652" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">ports</text>
+<rect x="80" y="642" width="42" height="17" rx="2" fill="#f8fafc" stroke="#475569" stroke-dasharray="2 2"/>
+<text x="101.0" y="654" font-size="10" font-weight="normal" fill="#334155" text-anchor="middle">Store</text>
+<rect x="128" y="642" width="76" height="17" rx="2" fill="#f8fafc" stroke="#475569" stroke-dasharray="2 2"/>
+<text x="166.0" y="654" font-size="10" font-weight="normal" fill="#334155" text-anchor="middle">ModelClient</text>
+<text x="36" y="674" font-size="9" font-weight="normal" fill="#6b7280" text-anchor="start">adapters</text>
+<rect x="80" y="664" width="25" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="92.5" y="676" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">S3</text>
+<rect x="111" y="664" width="82" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="152.0" y="676" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">local folder</text>
+<rect x="199" y="664" width="53" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="225.5" y="676" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">Bedrock</text>
+<rect x="258" y="664" width="88" height="17" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="302.0" y="676" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="middle">Anthropic API</text>
+<text x="36" y="698" font-size="10" font-weight="normal" fill="#4b5563" text-anchor="start">runs in: the CLI; a library in every image</text>
+<text x="24" y="736" font-size="11" font-weight="bold" fill="#374151" text-anchor="start">HOW THE CONTEXTS MEET</text>
+<text x="24" y="756" font-size="11" font-weight="normal" fill="#4b5563" text-anchor="start">Ingestion supplies passages and tables to Extraction (customer and supplier); the lake layout is the contract.</text>
+<text x="24" y="773" font-size="11" font-weight="normal" fill="#4b5563" text-anchor="start">Ontology publishes each released version as a published language that Extraction, Knowledge Graph and Answering conform to.</text>
+<text x="24" y="790" font-size="11" font-weight="normal" fill="#4b5563" text-anchor="start">Extraction supplies SHACL-valid facts to Knowledge Graph, which keeps them as the record and opens its read tools as an open host service to Answering.</text>
+<text x="24" y="807" font-size="11" font-weight="normal" fill="#4b5563" text-anchor="start">Evaluation is downstream of Answering and Knowledge Graph, and shares the ClaimVerifier with Answering, so the eval measures what production enforces.</text>
+<text x="24" y="824" font-size="11" font-weight="normal" fill="#4b5563" text-anchor="start">Access holds who may ask and read what; Answering and Knowledge Graph filter by the scope it supplies. Platform services is used by every context through its contract.</text>
+<line x1="24" y1="857" x2="1696" y2="857" stroke="#cbd5e1"/>
+<rect x="24" y="873" width="16" height="13" rx="2" fill="#dbeafe" stroke="#2563eb"/>
+<text x="46" y="884" font-size="11" font-weight="normal" fill="#374151" text-anchor="start">core subdomain</text>
+<rect x="194" y="873" width="16" height="13" rx="2" fill="#ccfbf1" stroke="#0d9488"/>
+<text x="216" y="884" font-size="11" font-weight="normal" fill="#374151" text-anchor="start">supporting subdomain</text>
+<rect x="364" y="873" width="16" height="13" rx="2" fill="#ffedd5" stroke="#ea580c"/>
+<text x="386" y="884" font-size="11" font-weight="normal" fill="#374151" text-anchor="start">generic subdomain</text>
+<rect x="534" y="872" width="40" height="16" rx="8" fill="#fff" stroke="#1f2937" stroke-dasharray="3 2"/>
+<text x="580" y="884" font-size="11" font-weight="normal" fill="#374151" text-anchor="start">proposed feature with a UI (a pn- element)</text>
+<rect x="862" y="872" width="40" height="16" rx="3" fill="#fff" stroke="#9ca3af"/>
+<text x="908" y="884" font-size="11" font-weight="normal" fill="#374151" text-anchor="start">slice without a UI</text>
+<rect x="1046" y="872" width="40" height="16" rx="2" fill="#f8fafc" stroke="#475569" stroke-dasharray="2 2"/>
+<text x="1092" y="884" font-size="11" font-weight="normal" fill="#374151" text-anchor="start">port (a Protocol the context owns)</text>
+<rect x="1326" y="872" width="40" height="16" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+<text x="1372" y="884" font-size="11" font-weight="normal" fill="#374151" text-anchor="start">adapter</text>
+<text x="24" y="907" font-size="11" font-weight="normal" fill="#4b5563" text-anchor="start">Decisions: ADR-024 (the kit), ADR-046 (contexts, slices and ports), ADR-047 (knowledge contexts on Knowledge Store), ADR-048 (the evaluation framework). Contexts are BC-001 to BC-008 in knowledge-store&#x27;s architecture pages.</text>
+</svg>

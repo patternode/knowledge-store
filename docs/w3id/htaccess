@@ -20,17 +20,17 @@ Options +FollowSymLinks
 RewriteEngine on
 
 # A specific release of the core vocabulary or its shapes
-RewriteRule ^core/([0-9]+\.[0-9]+\.[0-9]+)/shapes$ https://raw.githubusercontent.com/patternode/knowledge-store/core-v$1/src/knowledge_store/ontology/core-shapes.ttl [R=303,L]
-RewriteRule ^core/([0-9]+\.[0-9]+\.[0-9]+)/?$ https://raw.githubusercontent.com/patternode/knowledge-store/core-v$1/src/knowledge_store/ontology/core.ttl [R=303,L]
+RewriteRule ^core/([0-9]+\.[0-9]+\.[0-9]+)/shapes$ https://raw.githubusercontent.com/patternode/knowledge-store/core-v$1/src/knowledge_store/ontology/domain/core-shapes.ttl [R=303,L]
+RewriteRule ^core/([0-9]+\.[0-9]+\.[0-9]+)/?$ https://raw.githubusercontent.com/patternode/knowledge-store/core-v$1/src/knowledge_store/ontology/domain/core.ttl [R=303,L]
 
 # The latest shapes
-RewriteRule ^core/shapes$ https://raw.githubusercontent.com/patternode/knowledge-store/main/src/knowledge_store/ontology/core-shapes.ttl [R=303,L]
+RewriteRule ^core/shapes$ https://raw.githubusercontent.com/patternode/knowledge-store/main/src/knowledge_store/ontology/domain/core-shapes.ttl [R=303,L]
 
 # The latest vocabulary: Turtle (or N-Triples) for RDF clients, the documentation page otherwise
 RewriteCond %{HTTP_ACCEPT} text/turtle [OR]
 RewriteCond %{HTTP_ACCEPT} application/x-turtle [OR]
 RewriteCond %{HTTP_ACCEPT} application/n-triples
-RewriteRule ^core/?$ https://raw.githubusercontent.com/patternode/knowledge-store/main/src/knowledge_store/ontology/core.ttl [R=303,L]
+RewriteRule ^core/?$ https://raw.githubusercontent.com/patternode/knowledge-store/main/src/knowledge_store/ontology/domain/core.ttl [R=303,L]
 RewriteRule ^core/?$ https://github.com/patternode/knowledge-store/blob/main/docs/core-vocabulary.md [R=303,L]
 
 # Anything else under the space: the project

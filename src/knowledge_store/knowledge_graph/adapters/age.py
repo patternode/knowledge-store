@@ -1,0 +1,161 @@
+"""The graph projection in PostgreSQL with Apache AGE (any PostgreSQL with the
+extension).
+
+AGE holds each loaded graph as a graph of its own, so a load creates one and a drop removes it.
+AGE gives a vertex one label, so every node is :Entity and its classes are in `types`; each
+relation is an edge label. The schema is the age/schema.sql rendition. Loading writes the label
+tables with plain SQL (the fast path AGE documents for bulk loads); queries use openCypher with
+their values passed as parameters.
+
+    AGE_DSN     a libpq connection string: host=... dbname=... user=...
+    AGE_LOAD    0 where the server preloads the extension, so LOAD 'age' is not run
+    AGE_READERS roles granted read access to each graph loaded, comma-separated
+
+The loader runs as an administrator: it creates the extension and each graph. The readers get
+only USAGE and SELECT, on AGE's catalog and on each graph as it is loaded.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import threading
+
+from knowledge_store.kernel.identifiers import safe_name
+
+
+def _agtype(value):
+    """AGE prints a scalar as its JSON text; a value may come back as a string or already parsed."""
+    return json.loads(value) if isinstance(value, str) else value
+
+
+class AgeStore:
+    name = "age"
+    rendition = "age/schema.sql"
+
+    def __init__(self, dsn: str, *, load_extension: bool = True, readers=()):
+        self.dsn, self.load_extension = dsn, load_extension
+        self.readers = [r for r in readers if r]
+        self._local = threading.local()
+
+    @classmethod
+    def from_env(cls) -> "AgeStore":
+        return cls(os.environ["AGE_DSN"], load_extension=os.environ.get("AGE_LOAD") != "0",
+                   readers=[r.strip() for r in os.environ.get("AGE_READERS", "").split(",")])
+
+    def _conn(self):
+        """One connection per thread; a closed connection is reopened."""
+        import psycopg
+        c = getattr(self._local, "conn", None)
+        if c is None or c.closed:
+            c = psycopg.connect(self.dsn, autocommit=True)
+            if self.load_extension:
+                c.execute("LOAD 'age'")
+            c.execute('SET search_path = ag_catalog, "$user", public')
+            self._local.conn = c
+        return c
+
+    def _cypher(self, graph: str, query: str, columns: str, params: dict) -> list[tuple]:
+        """A Cypher query with its values as an agtype parameter; the graph name is ours and the
+        query text constant, so nothing from a caller reaches the query text."""
+        sql = f"SELECT * FROM cypher('{safe_name(graph)}', $$ {query} $$, %s) AS ({columns})"
+        return self._conn().execute(sql, (json.dumps(params),)).fetchall()
+
+    def key_for(self, collection, version, built_at):
+        c = hashlib.sha256(collection.encode()).hexdigest()[:8]
+        k = hashlib.sha256(f"{collection}\0{version}\0{built_at}".encode()).hexdigest()[:16]
+        return f"ks_{c}_{k}"
+
+    def load(self, key, nodes, edges, schema):
+        g = safe_name(key)
+        conn = self._conn()
+        conn.execute("CREATE EXTENSION IF NOT EXISTS age")
+        with conn.transaction():
+            for stmt in schema.replace("{graph}", g).split(";\n"):
+                stmt = "\n".join(line for line in stmt.splitlines() if not line.strip().startswith("--")).strip()
+                if stmt:
+                    conn.execute(stmt)
+            have = {r[0] for r in conn.execute(
+                "SELECT l.name FROM ag_catalog.ag_label l JOIN ag_catalog.ag_graph g ON l.graph = g.graphid "
+                "WHERE g.name = %s", (g,))}
+            for rtype in sorted({e["type"] for e in edges} - have):
+                conn.execute("SELECT create_elabel(%s, %s)", (g, safe_name(rtype)))
+            ids: dict[str, str] = {}
+            with conn.cursor() as cur:
+                cur.executemany(f'INSERT INTO "{g}"."Entity" (properties) VALUES (%s::agtype) RETURNING id',
+                                [(json.dumps(n["props"]),) for n in nodes], returning=True)
+                for n in nodes:
+                    ids[n["props"]["id"]] = str(cur.fetchone()[0])
+                    cur.nextset()
+            by_type: dict[str, list] = {}
+            for e in edges:
+                by_type.setdefault(e["type"], []).append((ids[e["s"]], ids[e["o"]], json.dumps(e["props"])))
+            with conn.cursor() as cur:
+                for rtype, rows in by_type.items():
+                    cur.executemany(f'INSERT INTO "{g}"."{safe_name(rtype)}" (start_id, end_id, properties) '
+                                    "VALUES (%s::graphid, %s::graphid, %s::agtype)", rows)
+            self._grant(conn, g)
+            n = conn.execute(f'SELECT count(*) FROM "{g}"."Entity"').fetchone()[0]
+            m = conn.execute(f'SELECT count(*) FROM "{g}"."_ag_label_edge"').fetchone()[0]
+        return {"nodes": n, "edges": m}
+
+    def _grant(self, conn, graph: str) -> None:
+        from psycopg import sql
+        for r in self.readers:
+            if not conn.execute("SELECT 1 FROM pg_roles WHERE rolname = %s", (r,)).fetchone():
+                raise RuntimeError(f"AGE_READERS names {r!r}, which is not a role")
+            who = sql.Identifier(r)
+            for stmt in ("GRANT USAGE ON SCHEMA {s} TO {r}", "GRANT SELECT ON ALL TABLES IN SCHEMA {s} TO {r}"):
+                for schema in ("ag_catalog", graph):
+                    conn.execute(sql.SQL(stmt).format(s=sql.Identifier(schema), r=who))
+
+    def drop(self, key):
+        conn = self._conn()
+        if conn.execute("SELECT 1 FROM ag_catalog.ag_graph WHERE name = %s", (key,)).fetchone():
+            conn.execute("SELECT drop_graph(%s, true)", (safe_name(key),))
+
+    def keys(self, collection):
+        c = hashlib.sha256(collection.encode()).hexdigest()[:8]
+        rows = self._conn().execute("SELECT name FROM ag_catalog.ag_graph WHERE name LIKE %s", (f"ks_{c}_%",))
+        return sorted(r[0] for r in rows)
+
+    def bind(self, key):
+        return _Bound(self, key)
+
+    def close(self):
+        c = getattr(self._local, "conn", None)
+        if c is not None:
+            c.close()
+
+
+_FIELDS = ("id", "name", "type", "aliases", "docs", "links", "scope", "public_type", "public_types", "public_aliases",
+           "public_docs", "public_links")
+_NODE_COLUMNS = ", ".join(f"{f} agtype" for f in _FIELDS)
+_COLUMNS = "s agtype, o agtype, p agtype, scope agtype, " + _NODE_COLUMNS.replace("scope agtype", "nscope agtype")
+
+
+def _returned(v: str) -> str:
+    """The node fields, read off the variable v, in _FIELDS order."""
+    return ", ".join(f"{v}.{f}" for f in _FIELDS)
+
+
+class _Bound:
+    def __init__(self, store: AgeStore, key: str):
+        self.store, self.key = store, key
+
+    def node(self, node_id):
+        rows = self.store._cypher(
+            self.key, f"MATCH (n:Entity {{id: $id}}) RETURN {_returned('n')}", _NODE_COLUMNS, {"id": node_id})
+        return dict(zip(_FIELDS, map(_agtype, rows[0]))) if rows else None
+
+    def adjacent(self, ids, private):
+        out = []
+        params = {"ids": list(dict.fromkeys(ids))}
+        for pattern, s, o in (("(x:Entity)-[r]->(y:Entity)", "x", "y"), ("(y:Entity)-[r]->(x:Entity)", "y", "x")):
+            q = (f"MATCH {pattern} WHERE x.id IN $ids "
+                 f"RETURN {s}.id, {o}.id, r.p, r.scope, {_returned('y')}")
+            for row in self.store._cypher(self.key, q, _COLUMNS, params):
+                v = [_agtype(x) for x in row]
+                out.append(({"s": v[0], "o": v[1], "p": v[2], "scope": v[3]}, dict(zip(_FIELDS, v[4:]))))
+        return [(e, n) for e, n in out if private or (e["scope"] == "public" and n["scope"] == "public")]

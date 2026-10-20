@@ -55,11 +55,12 @@ Model access, the cost ledger, the command line and deployment: the generic serv
 
 ## Where the model lives today
 
-- `llm.py, ledger.py (one Converse-shaped client over Bedrock or the Anthropic API, with every call priced into the ledger)`
-- `cli.py (the knowledge-store command), sparql_lock.py`
-- `infra/ (the Terraform module and its submodules, the stack, the launch stack, the bootstrap), Dockerfile, Dockerfile.agent, scripts/`
+- `platform_services/ports.py` (Store, PrefixStore, ModelClient), `platform_services/domain/layout.py`, `platform_services/slices/` (collections, deployment configuration)
+- `platform_services/adapters/` (store: S3 and a local folder; llm: one Converse-shaped client over Bedrock or the Anthropic API; ledger: every call priced)
+- `kernel/` (contracts, settings, identifiers, values, the SPARQL parser lock) and `apps/cli.py` (the knowledge-store command)
+- `infra/` (the Terraform module and its submodules, the stack, the launch stack, the bootstrap), Dockerfile, Dockerfile.agent, scripts/
 
-The shared kernel in all but name: llm.py and ledger.py are imported by ingestion, extraction, answering and the portal. Deployment is Terraform with mocked tests and a CloudFormation entry point.
+A generic subdomain with a contract of its own, not a kernel: the lake, model access and the ledger are used through `platform_services`, and the kernel (`kernel/`) holds only value types and helpers. Deployment is Terraform with mocked tests and a CloudFormation entry point.
 
 ## Relationships with other contexts
 

@@ -59,10 +59,8 @@ Extraction runs, assertions, grounding of facts, SHACL validation, table snapsho
 
 ## Where the model lives today
 
-- `extract/schema.py, extractor.py, validate.py, rdf.py (the tool schema from the ontology, the per-document loop, the checks, the RDF with provenance)`
-- `pipeline/extract.py (full and delta extraction over silver)`
-- `structured/bind.py (snapshots into gold with cells)`
-- `values.py (one canonical form for literals), claims.py is not here: scope is BC-006's rule`
+- `extraction/domain/` (rdf: facts with provenance; validate: the grounding and SHACL checks)
+- `extraction/slices/` (extractor: the per-document loop; extract: full and delta extraction over silver; bind_tables: table snapshots into gold with cells)
 
 One named graph per document per version; two repairs then salvage; pySHACL with rdfs inference under a parser lock. Bind keeps its own copy of the version chain so a tool Lambda can walk it without the ontology parser, a small duplication that marks where the context boundary falls.
 

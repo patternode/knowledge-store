@@ -28,7 +28,7 @@ interfaces:
 mandatory_subabbs: [iam, observability, governance]
 cross_cutting: false
 references:
-  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/pipeline/run.py (the sweep)", ref: "main" }
+  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/apps/sweep.py (the sweep)", ref: "main" }
 provenance:
   origin: ai-generated
   review_state: ai-raw
@@ -161,7 +161,7 @@ Schedule, workers and sources are deployment inputs. The sweep is the only write
 
 | Where | What |
 |---|---|
-| Code | `src/knowledge_store/pipeline/run.py (the sweep), ingest.py, refine.py, extract.py, project.py, load.py; adapters/; refine/; ontology/discover.py, review.py, writer.py, versions.py, renditions.py, provided.py, candidates.py; extract/; structured/mapping.py, bind.py; graph/; llm.py, ledger.py; infra/modules/pipeline` |
+| Code | `src/knowledge_store/apps/sweep.py (the sweep), ingest.py, refine.py, extract.py, project.py, load.py; adapters/; refine/; ontology/slices/discover.py, review.py, writer.py, versions.py, renditions.py, provided.py, candidates.py; extract/; ontology/domain/mapping.py, bind.py; graph/; llm.py, ledger.py; infra/modules/pipeline` |
 | Capabilities | CAP-002, CAP-003, CAP-004, CAP-005, CAP-006, CAP-007 |
 | Context | BC-001 |
 

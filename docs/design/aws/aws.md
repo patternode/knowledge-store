@@ -89,7 +89,7 @@ The model's answer is never shown as written. It is a list of claims, each with 
 A failed citation goes back to the agent once (`grounding_repairs`), with the reason. What still
 fails is removed. A claim left without a citation is removed. When no claim is left, the answer
 says the sources cannot answer the question, and lists what was missing. The checks are in
-[`agent/grounding.py`](../../../src/knowledge_store/agent/grounding.py) and are tested without a model.
+[`answering/domain/grounding.py`](../../../src/knowledge_store/answering/domain/grounding.py) and are tested without a model.
 
 ## Valves
 
@@ -139,7 +139,7 @@ AWS Context Ontology Accelerator fits a later live source, is
 
 An evaluation set is a YAML file of questions, each with the facts a right answer states, a
 near miss it must not state, the documents it should cite, and whether the sources can answer it
-at all ([format](../../../src/knowledge_store/evals/score.py); examples for the space-missions
+at all ([format](../../../src/knowledge_store/evaluation/domain/score.py); examples for the space-missions
 corpus and the Sherlock Holmes stories are in [`examples/evals`](../../../examples/evals/)). Scoring is
 deterministic, with no model as judge:
 
@@ -157,9 +157,9 @@ passage it rests on) and a false negative (the sources answer it and the agent d
 
 ```bash
 # the agent in-process against a lake (your AWS credentials call Bedrock)
-python -m knowledge_store.evals examples/evals/space-missions.yaml --lake s3://<lake> --model <model id> --yes
+python -m knowledge_store.apps.evaluate examples/evals/space-missions.yaml --lake s3://<lake> --model <model id> --yes
 # the deployed chat, as a signed-in person (an access token in KS_TOKEN)
-python -m knowledge_store.evals examples/evals/space-missions.yaml --api https://<portal> --yes
+python -m knowledge_store.apps.evaluate examples/evals/space-missions.yaml --api https://<portal> --yes
 ```
 
 Every question is a model run, so a run costs money; without `--yes` the command prints its

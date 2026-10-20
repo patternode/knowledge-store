@@ -27,7 +27,7 @@ interfaces:
 mandatory_subabbs: [iam, observability, governance]
 cross_cutting: false
 references:
-  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/tools/gateway.py (passages toolset)", ref: "main" }
+  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/knowledge_graph/adapters/gateway.py (passages toolset)", ref: "main" }
 provenance:
   origin: ai-generated
   review_state: ai-raw
@@ -106,7 +106,7 @@ The schema is uploaded with the release; the fallback is a stated behaviour, not
 
 | Where | What |
 |---|---|
-| Code | `src/knowledge_store/tools/gateway.py (passages toolset); tools/passages.py` |
+| Code | `src/knowledge_store/knowledge_graph/adapters/gateway.py (passages toolset); knowledge_graph/adapters/passages.py` |
 | Capabilities | CAP-006, CAP-009 |
 | Context | BC-004 |
 

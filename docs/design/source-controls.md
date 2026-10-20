@@ -33,20 +33,20 @@ re-derives it, guesses it, or holds a separate list of who may read what. The ru
 Each source has a `scope`, `public` or `private`, set in the deployment's configuration
 (`collections.<id>.sources[].scope`). A caller is private when their token says so: a person in
 the `private-readers` group, a person with one of `site_sign_in.private_roles`, or an application
-with the `tools.private` scope ([`claims.py`](../../src/knowledge_store/claims.py)). The scope
+with the `tools.private` scope ([`claims.py`](../../src/knowledge_store/access/domain/claims.py)). The scope
 travels with the content through every layer:
 
 | Layer | Where the scope is held | Set by | Read by |
 |---|---|---|---|
 | Source configuration | `config/sources.json`, from Terraform | the deployer | ingest |
-| Bronze | `meta.json` beside the bytes: `scope`, with `source`, `source_uri`, `source_key` and the adapter's `metadata` | [`pipeline/ingest.py`](../../src/knowledge_store/pipeline/ingest.py), from the source | refine |
-| Silver | the document record's `scope`; passages belong to the document | [`pipeline/refine.py`](../../src/knowledge_store/pipeline/refine.py), copied from bronze | projection, the passage tools, the Knowledge Base sync |
-| Gold | `ks:scope` on the `ks:Document` of each document's graph, and on each row and cell of a bound table | [`extract/rdf.py`](../../src/knowledge_store/extract/rdf.py), [`structured/bind.py`](../../src/knowledge_store/structured/bind.py) | projection, Neptune |
-| Projection | each document, passage, entity name and candidate evidence tagged with its document's scope; a term seen only in private documents is private | [`pipeline/project.py`](../../src/knowledge_store/pipeline/project.py) | the portal API, the in-memory tools |
-| Neptune | the document's `ks:scope` in its named graph; each name and type is answered with the scope of the graph that states it | the loader | the graph tools' fixed SPARQL ([`graph/sparql.py`](../../src/knowledge_store/graph/sparql.py)) |
-| Knowledge Base | `scope` in each passage's metadata, with `collection`, `doc` and `passage_id` | [`pipeline/load.py`](../../src/knowledge_store/pipeline/load.py) | `Retrieve` with a `scope = public` filter for a public caller, and the hit checked again in code ([`tools/passages.py`](../../src/knowledge_store/tools/passages.py)) |
+| Bronze | `meta.json` beside the bytes: `scope`, with `source`, `source_uri`, `source_key` and the adapter's `metadata` | [`ingestion/slices/ingest.py`](../../src/knowledge_store/ingestion/slices/ingest.py), from the source | refine |
+| Silver | the document record's `scope`; passages belong to the document | [`ingestion/slices/refine.py`](../../src/knowledge_store/ingestion/slices/refine.py), copied from bronze | projection, the passage tools, the Knowledge Base sync |
+| Gold | `ks:scope` on the `ks:Document` of each document's graph, and on each row and cell of a bound table | [`extraction/domain/rdf.py`](../../src/knowledge_store/extraction/domain/rdf.py), [`extraction/slices/bind_tables.py`](../../src/knowledge_store/extraction/slices/bind_tables.py) | projection, Neptune |
+| Projection | each document, passage, entity name and candidate evidence tagged with its document's scope; a term seen only in private documents is private | [`knowledge_graph/slices/project.py`](../../src/knowledge_store/knowledge_graph/slices/project.py) | the portal API, the in-memory tools |
+| Neptune | the document's `ks:scope` in its named graph; each name and type is answered with the scope of the graph that states it | the loader | the graph tools' fixed SPARQL ([`knowledge_graph/adapters/sparql.py`](../../src/knowledge_store/knowledge_graph/adapters/sparql.py)) |
+| Knowledge Base | `scope` in each passage's metadata, with `collection`, `doc` and `passage_id` | [`knowledge_graph/adapters/loading.py`](../../src/knowledge_store/knowledge_graph/adapters/loading.py) | `Retrieve` with a `scope = public` filter for a public caller, and the hit checked again in code ([`knowledge_graph/adapters/passages.py`](../../src/knowledge_store/knowledge_graph/adapters/passages.py)) |
 | Candidates and drafts | each piece of evidence tagged with its document's scope | projection | the portal withholds private evidence, and drafts and requests altogether, from public callers |
-| The answer | each citation is read back as the caller; a passage the caller may not read fails the citation and the claim is dropped | [`agent/grounding.py`](../../src/knowledge_store/agent/grounding.py) | the person |
+| The answer | each citation is read back as the caller; a passage the caller may not read fails the citation and the claim is dropped | [`answering/domain/grounding.py`](../../src/knowledge_store/answering/domain/grounding.py) | the person |
 | A document link | the document's scope, checked before the link is signed | the portal API | the person |
 
 The enforcement is one boolean, `caller_private`, written into every tool call by the Gateway's
@@ -133,7 +133,7 @@ Everything downstream reads bronze, so what an adapter does not say here is neve
 
 ### The envelope
 
-Every item carries these, as [`adapters/base.py`](../../src/knowledge_store/adapters/base.py)
+Every item carries these, as [`ingestion/ports.py`](../../src/knowledge_store/ingestion/ports.py)
 defines them today:
 
 | Field | Required | Rule |
@@ -449,7 +449,7 @@ place of `caller_private`:
 ```
 
 How a token yields it is configuration, as the claim names are today
-([`claims.py`](../../src/knowledge_store/claims.py)): a mapping from Cognito groups, website roles
+([`claims.py`](../../src/knowledge_store/access/domain/claims.py)): a mapping from Cognito groups, website roles
 or application scopes to a clearance level, and the groups as they are. A deployment that
 declares no scale maps `private-readers`, the private roles and `tools.private` to the second
 level and everyone else to the first, which is today's rule exactly.
@@ -519,7 +519,7 @@ leaves a deployment with no controls declared behaving as it does today.
    `caller_private` is derived from it for compatibility.
 2. `controls` in `SourceItem.metadata`, bronze `meta.json` and the silver document record; the
    S3 adapter reads tags and user metadata; the effective values computed in refine.
-3. Core vocabulary 1.2.0 and its shapes; `extract/rdf.py` and `structured/bind.py` write the
+3. Core vocabulary 1.2.0 and its shapes; `extraction/domain/rdf.py` and `extraction/slices/bind_tables.py` write the
    controls; the provenance gate requires a classification.
 4. The projection and `visible(item, caller)`; the portal API views; the in-memory tools.
 5. The interceptor writes the entitlement; the Gateway's tool schemas declare it; the graph and

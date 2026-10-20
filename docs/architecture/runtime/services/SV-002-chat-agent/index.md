@@ -15,8 +15,8 @@ part_of: BC-005
 composes_contexts: [BC-005, BC-004]
 runtime_type: container
 repo: { url: "https://github.com/patternode/knowledge-store", path: "." }
-module_path: "src/knowledge_store/agent/app.py"
-packages: ["knowledge_store.agent", "knowledge_store.workbench", "knowledge_store.tools (local mode only)"]
+module_path: "src/knowledge_store/apps/agent.py"
+packages: ["knowledge_store.apps.agent", "knowledge_store.answering", "knowledge_store.access (agent_quota)", "knowledge_store.knowledge_graph (local mode only)"]
 deployed_to: [DN-005]
 run_by: "PRD-001; invoked by the portal as the person"
 provenance:
@@ -35,7 +35,7 @@ The agent on AgentCore Runtime: admits the caller, prompts with the ontology, ru
 | Context | BC-005; composes BC-005, BC-004 as built |
 | Realises | SBB-006 |
 | Node | DN-005 |
-| Code | `src/knowledge_store/agent/app.py (entry: python -m knowledge_store.agent.app, port 8080, /invocations)` |
+| Code | `src/knowledge_store/apps/agent.py (entry: python -m knowledge_store.apps.agent, port 8080, /invocations)` |
 | Talks to | The Gateway over MCP with the caller's token; Bedrock models and the guardrail; the chat table for its daily count. |
 | Stores | Writes agent# keys of the chat table only. |
 | Role | <name>-agent-runtime: pull its image, invoke the agent model, apply the guardrail, update agent# items, logs, traces, metrics. |

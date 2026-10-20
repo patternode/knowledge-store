@@ -24,7 +24,7 @@ interfaces:
 mandatory_subabbs: [iam, observability, governance]
 cross_cutting: false
 references:
-  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/cli.py", ref: "main" }
+  - { type: source, repo: "patternode/knowledge-store", path: "src/knowledge_store/apps/cli.py", ref: "main" }
 provenance:
   origin: ai-generated
   review_state: ai-raw
@@ -101,7 +101,7 @@ Publishing and activating a version are commands a person runs, logged in the ve
 
 | Where | What |
 |---|---|
-| Code | `src/knowledge_store/cli.py; ontology/versions.py (publish, activate); ontology/candidates.py (propose); ledger.py (report); portal_api/local.py` |
+| Code | `src/knowledge_store/apps/cli.py; ontology/slices/versions.py (publish, activate); ontology/slices/candidates.py (propose); ledger.py (report); apps/local_portal.py` |
 | Capabilities | CAP-002, CAP-003, CAP-004, CAP-005, CAP-007, CAP-008, CAP-010, CAP-013 |
 | Context | BC-008 |
 

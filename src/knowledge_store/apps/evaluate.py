@@ -1,0 +1,106 @@
+"""Run an evaluation set against the agent and write a report.
+
+    python -m knowledge_store.apps.evaluate <set.yaml> --lake <uri>               the agent in process, on that lake
+    python -m knowledge_store.apps.evaluate <set.yaml> --api <url> [--token-env]  the deployed chat API, as a person
+    ... --out build/eval            where runs and baselines are kept (a folder, or s3://bucket for the lake's private/evals)
+    ... --only q01,q07              a subset
+    ... --verifier lexical|hhem|guardrail|none
+                                    check every claim against what it cites (default lexical)
+    ... --runner plain|inspect      Inspect AI adds its log and viewer (the evals extra)
+    ... --gate [--keep-baseline]    compare with the set's baseline and fail on a regression
+    ... --max-tokens N              stop before a question once N tokens are spent
+    ... --yes                       agree to the model spend; without it, the estimate is printed and nothing runs
+
+Every question is a model run of several calls, so a run costs money: ESTIMATE_USD_PER_QUESTION
+is a planning figure for a Sonnet-class model (about 60,000 input and 3,000 output tokens a
+question); the report records the tokens actually used when the agent reports them.
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import sys
+from pathlib import Path
+
+from knowledge_store.evaluation import (DirRunStore, HttpAnswerer, InProcessAnswerer, InspectRunner, LakeRunStore,
+                                        LexicalVerifier, Rules, gate, load_set, report, run)
+
+ESTIMATE_USD_PER_QUESTION = 0.25
+
+
+def verifier_for(name: str):
+    if name == "none":
+        return None
+    if name == "hhem":
+        from knowledge_store.evaluation import HhemVerifier
+        return HhemVerifier()
+    if name == "guardrail":
+        from knowledge_store.answering import Guardrail
+        g = Guardrail.from_env()
+        if g is None:
+            raise SystemExit("--verifier guardrail needs GUARDRAIL_ID")
+        return g
+    return LexicalVerifier()
+
+
+def store_for(out: str):
+    if out.startswith("s3://"):
+        from knowledge_store.platform_services import store_from_uri
+        return LakeRunStore(store_from_uri(out))
+    return DirRunStore(out)
+
+
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(prog="python -m knowledge_store.apps.evaluate", description=__doc__.split("\n\n")[0])
+    ap.add_argument("set", type=Path)
+    ap.add_argument("--lake", default=os.environ.get("LAKE_URI"))
+    ap.add_argument("--api", help="the deployed chat API's base URL (the portal URL)")
+    ap.add_argument("--token-env", default="KS_TOKEN", help="environment variable holding the caller's access token")
+    ap.add_argument("--model", default=os.environ.get("AGENT_MODEL_ID"))
+    ap.add_argument("--out", default="build/eval")
+    ap.add_argument("--only")
+    ap.add_argument("--verifier", default="lexical", choices=["lexical", "hhem", "guardrail", "none"])
+    ap.add_argument("--runner", default="plain", choices=["plain", "inspect"])
+    ap.add_argument("--gate", action="store_true")
+    ap.add_argument("--keep-baseline", action="store_true")
+    ap.add_argument("--max-accuracy-drop", type=float, default=0.0)
+    ap.add_argument("--max-tokens", type=int)
+    ap.add_argument("--yes", action="store_true")
+    a = ap.parse_args(argv)
+    ev = load_set(a.set)
+    only = a.only.split(",") if a.only else None
+    n = len([q for q in ev.questions if not only or q.id in only])
+    if not a.yes:
+        print(f"{n} questions, each a model run of several calls: about {n * ESTIMATE_USD_PER_QUESTION:.2f} USD "
+              f"at {ESTIMATE_USD_PER_QUESTION} USD a question. Re-run with --yes to go ahead.")
+        return 2
+    if a.api:
+        token = os.environ.get(a.token_env)
+        if not token:
+            print(f"set {a.token_env} to an access token for the person to ask as")
+            return 2
+        ask = HttpAnswerer(a.api, token, ev.collection)
+    else:
+        if not a.lake:
+            print("give --lake (or set LAKE_URI), or --api")
+            return 2
+        if not a.model:
+            print("give --model (or set AGENT_MODEL_ID)")
+            return 2
+        ask = InProcessAnswerer(a.lake, ev.collection, a.model)
+    store = store_for(a.out)
+    runner = InspectRunner(str(Path(a.out) / "inspect-logs")) if a.runner == "inspect" else None
+    out = run(ev, ask, only=only, verifier=verifier_for(a.verifier), runner=runner, max_tokens=a.max_tokens)
+    result = gate(out, store, Rules(max_accuracy_drop=a.max_accuracy_drop), keep=a.keep_baseline) if a.gate else None
+    text = report(out, result)
+    where = store.save(f"{ev.name}-{out['when'][:19].replace(':', '')}", out, text)
+    print(text)
+    print(f"written to {where}")
+    if result is not None and not result.passed:
+        return 3
+    return 0 if out["summary"]["all"]["errors"] == 0 else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

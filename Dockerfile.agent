@@ -14,4 +14,4 @@ COPY src ./src
 USER agent
 EXPOSE 8080
 # opentelemetry-instrument sends traces to AgentCore Observability (CloudWatch).
-CMD ["opentelemetry-instrument", "python", "-m", "knowledge_store.agent.app"]
+CMD ["opentelemetry-instrument", "python", "-m", "knowledge_store.apps.agent"]

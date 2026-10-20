@@ -60,10 +60,10 @@ Sources, documents, passages and the lake's layers: getting content in, keeping 
 
 ## Where the model lives today
 
-- `adapters/ (the source adapter protocol and the three built-in adapters)`
-- `pipeline/ingest.py, pipeline/refine.py, pipeline/run.py (the sweep, its lock, rounds and status)`
-- `refine/ (parsers, HTML text, chunking)`
-- `store.py, layout.py, collections.py, config.py (the lake port, its key layout, collections and their configuration)`
+- `ingestion/domain/` (chunking into passages, HTML text, the parsers chosen by format)
+- `ingestion/slices/ingest.py, refine.py` (bronze from a source's items; silver documents and passages)
+- `ingestion/ports.py` (SourceAdapter) and `ingestion/adapters/` (S3 landing, a local folder, web pages; the registry and the `knowledge_store.adapters` entry points)
+- `apps/sweep.py`: the sweep that runs every context in turn is a composition root, not part of this context
 
 The sweep composes every stage in one process and calls into BC-002, BC-003 and BC-004 directly; the lake port (Store) is the one boundary every context shares. Terraform writes the collection configuration into the lake, so configuration is an input, not something this context owns.
 

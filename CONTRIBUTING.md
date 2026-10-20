@@ -6,7 +6,7 @@ Thanks for your interest. Issues and pull requests are welcome.
 
 - For anything larger than a small fix, open an issue first so the approach can be agreed.
 - Keep the core domain-agnostic: no code may name a term from any one domain's ontology. Domain behaviour belongs in an ontology, a profile, or an adapter package.
-- New source types belong in their own package, registered through the `knowledge_store.adapters` entry point, unless they are generally useful.
+- New source types belong in their own package, registered through the `knowledge_store.ingestion.adapters.registry` entry point, unless they are generally useful.
 
 ## Development
 
@@ -21,7 +21,7 @@ The stack itself is the module in `infra/modules/knowledge-store`; `infra/stack`
 
 The documentation site is built with [Docusaurus](https://docusaurus.io/) from the repository's own Markdown (`npm ci`, then `npm run build`; `npm run start` previews it). The build is strict: a broken link, anchor or image fails it, and CI builds it on every pull request. A relative link to a file that is not a page (code, Terraform, a sample document) becomes a link to that file on GitHub, so write links as they read on GitHub. Which Markdown files are pages is decided in `site/src/remark-repo-links.cjs`; a merge to `main` publishes the site.
 
-The tests run offline with a fake model (`tests/fake_llm.py`). Please add a test with every change in behaviour.
+The tests run offline with a fake model (`tests/fake_llm.py`). Please add a test with every change in behaviour. The same `pytest` run checks the code's structure (import-linter and `tests/test_architecture.py`); [AGENTS.md](AGENTS.md#code-layout) says how the code is laid out by bounded context.
 
 ## Pull requests
 

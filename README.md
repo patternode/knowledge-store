@@ -220,7 +220,7 @@ A source is an adapter type plus options, set in `sources` in terraform.tfvars:
 An adapter only lists items (each with a version that changes when the item does) and fetches
 bytes. Ingest does the rest: skipping what it has seen, content-addressing, and the manifest.
 Parsing is chosen by format, separately, so adapters never parse. To add a source, implement
-`items()` and `fetch()` (see `src/knowledge_store/adapters/base.py`) and register it in your
+`items()` and `fetch()` (see `src/knowledge_store/ingestion/ports.py`) and register it in your
 own package:
 
 ```toml
@@ -244,7 +244,7 @@ Measure the agent against questions with known answers, including some the sourc
 answer, which it must decline:
 
 ```bash
-python -m knowledge_store.evals examples/evals/space-missions.yaml --lake <lake> --model <model id> --yes
+python -m knowledge_store.apps.evaluate examples/evals/space-missions.yaml --lake <lake> --model <model id> --yes
 ```
 
 The Sherlock Holmes stories have a set too, `examples/evals/sherlock-holmes.yaml`, for the `holmes`
@@ -260,7 +260,7 @@ passed the citation checks, expected sources cited, and declines. See
 pip install -e ".[dev]"     # or -e . with no extras: the core and its tests need no cloud
 pytest
 knowledge-store --lake ./build/lake ingest       # with config/sources.json pointing at local_dir
-python -m knowledge_store.portal_api.local --lake ./build/lake
+python -m knowledge_store.apps.local_portal --lake ./build/lake
 ```
 
 Model calls need `LLM_PROVIDER` and `EXTRACTION_MODEL_ID`. The provider is `anthropic` (with
