@@ -21,7 +21,7 @@ from knowledge_store.knowledge_graph.slices.table_query import describe
 from knowledge_store.knowledge_graph.adapters import gateway
 from test_structured import _landing
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 SET = ROOT / "examples/evals/space-missions.yaml"
 
 

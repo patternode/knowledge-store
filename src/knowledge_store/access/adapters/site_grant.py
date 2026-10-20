@@ -14,7 +14,7 @@ X-Site-Grant, and the portal API verifies it here, in place of the identity prov
 
 The portal Lambda ships with the standard library only, so the signature is checked with the
 P-256 arithmetic below: verification only, with public parameters, every input range-checked.
-tests/test_site_grant.py checks it against the cryptography package's signatures, good and bad.
+tests/access/contracts/test_site_grant.py checks it against the cryptography package's signatures, good and bad.
 """
 
 from __future__ import annotations

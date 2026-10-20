@@ -44,6 +44,17 @@ where = ["src"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+# Test files share names across contexts (tests/<context>/unit/test_<module>.py).
+addopts = "--import-mode=importlib"
+markers = [
+    "unit: a domain rule, pure",
+    "slice: a use case through in-memory fakes of its ports",
+    "contract: a port contract run against every adapter, or a context contract",
+    "architecture: the boundaries",
+    "deployable: a composition root end to end",
+    "ctx_ingestion", "ctx_ontology", "ctx_extraction", "ctx_knowledge_graph", "ctx_answering",
+    "ctx_access", "ctx_evaluation", "ctx_platform_services", "ctx_kernel",
+]
 
 # Contexts, slices and ports (patternode-architecture ADR-046): the boundaries, checked by
 # `lint-imports`, which tests/test_architecture.py runs, so `pytest` fails on a violation.

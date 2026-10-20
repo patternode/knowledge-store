@@ -200,7 +200,7 @@ def tool_use(name, args, i="t1"):
 def test_a_sample_question_may_link_a_table_without_putting_the_url_in_the_question():
     from pathlib import Path
     from knowledge_store.platform_services.slices.config import profile_from_dict
-    root = Path(__file__).resolve().parents[1]
+    root = Path(__file__).resolve().parents[3]
     profile = profile_from_dict(json.loads((root / "examples/space-missions/profile.json").read_text()))
     samples = profile.sample_questions()
     assert [q["text"] for q in samples] == [

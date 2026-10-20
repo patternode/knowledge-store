@@ -9,7 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-SRC = Path(__file__).resolve().parents[1] / "src"
+SRC = Path(__file__).resolve().parents[2] / "src"
 
 CLOUD_SDKS = ("boto3", "botocore", "pymongo", "neo4j", "psycopg", "jwt")
 

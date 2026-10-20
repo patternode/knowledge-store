@@ -13,7 +13,7 @@ from knowledge_store.apps import evaluate as cli  # noqa: E402
 from knowledge_store.evaluation import load_set, report, run  # noqa: E402
 from knowledge_store.evaluation.domain import score  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 SET = ROOT / "examples/evals/space-missions.yaml"
 
 

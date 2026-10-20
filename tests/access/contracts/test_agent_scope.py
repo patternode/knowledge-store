@@ -14,7 +14,7 @@ from knowledge_store.knowledge_graph.adapters import gateway
 from knowledge_store.access.adapters import gateway_interceptor as interceptor
 from test_review_fixes import mixed  # noqa: F401  (fixture: a collection with public and private sources)
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 
 
 def token(claims: dict) -> str:

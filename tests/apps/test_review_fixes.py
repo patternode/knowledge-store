@@ -20,7 +20,7 @@ from knowledge_store.platform_services.adapters.store import LocalStore
 from knowledge_store.platform_services.ports import put_json
 from test_lifecycle import DOCS, PROFILE
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def test_every_module_the_stack_uses_exists_and_is_not_ignored():

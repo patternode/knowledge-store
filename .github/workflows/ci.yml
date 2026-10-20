@@ -40,7 +40,7 @@ jobs:
           python-version: "3.12"
       - run: docker compose -f tests/emulators.yml up -d --wait
       - run: pip install -e ".[dev]"
-      - run: pytest -q -rs tests/test_ports.py tests/test_graph.py tests/test_docstore.py
+      - run: pytest -q -rs tests/platform_services/contracts/test_ports.py tests/knowledge_graph/contracts/test_graph.py tests/knowledge_graph/contracts/test_docstore.py
   terraform:
     runs-on: ubuntu-latest
     steps:

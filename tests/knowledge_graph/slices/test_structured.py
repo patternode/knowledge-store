@@ -27,7 +27,7 @@ from knowledge_store.ontology.domain.mapping import Mapping, Table, load as load
 from knowledge_store.knowledge_graph.slices.table_query import aggregate, lookup_rows, values_equal
 from knowledge_store.knowledge_graph.adapters import gateway
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 ONTO = ROOT / "examples/space-missions/ontology"
 CORPUS = ROOT / "examples/space-missions"
 
