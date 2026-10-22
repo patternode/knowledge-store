@@ -14,7 +14,7 @@ from knowledge_store.platform_services import SourceConfig, layout
 from knowledge_store.platform_services.adapters.store import LocalStore
 from test_ingest import FakeSource
 
-PROSE = b"# Annual review\n\n" + b"The company grew its revenue in every region this year. " * 3
+PROSE = b"# Annual review\n\n" + (b"The company grew its revenue in every region this year. " * 3).rstrip()
 
 
 @pytest.fixture
@@ -35,7 +35,8 @@ def test_a_document_is_refined_into_silver_with_its_passages(lake):
     assert rows == [{"doc_id": doc_id, "status": "refined", "passages": 1}]
     doc = load_doc(lake, doc_id)
     assert doc["title"] == "Annual review" and doc["parser"] == "markdown@1" and doc["scope"] == "private"
-    assert doc["chunker"] == "chunk@1" and doc["passages"] == 1
+    assert doc["chunker"] == "chunk@1" and doc["conformer"] == "conform@1" and doc["passages"] == 1
+    assert "conform" not in doc["metadata"]
     assert [p.doc_id for p in load_passages(lake, doc_id)] == [doc_id]
     assert silver_doc_ids(lake) == [doc_id]
 
@@ -102,3 +103,21 @@ def test_refine_one_merges_parser_metadata_into_the_source_metadata(lake):
 def test_an_unknown_extension_is_parsed_by_its_content_type(lake):
     _ingest(lake, {"notes.xyz": PROSE}, content_type="text/plain")
     assert refine_all(lake)[0]["status"] == "refined"
+
+
+def test_refine_conforms_the_text_and_the_title_and_records_the_rules(lake):
+    body = (
+        "# Review of 14 July 2023\n\n"
+        "Revenue was $1,200.50 on 13/01/2024 at 3:30 PM, up 12 percent. "
+        "The other date stayed 01/02/2024 and the call was at 3:30.\n"
+    )
+    ids = _ingest(lake, {"review.md": body.encode()})
+    assert refine_all(lake)[0]["status"] == "refined"
+    doc = load_doc(lake, ids["review.md"])
+    assert doc["conformer"] == "conform@1"
+    assert doc["title"] == "Review of 2023-07-14"
+    assert "$1200.5" in doc["text"] and "2024-01-13T15:30" in doc["text"] and "12%" in doc["text"]
+    assert "01/02/2024" in doc["text"] and "3:30" in doc["text"]
+    rules = {row["rule"]: row for row in doc["metadata"]["conform"]}
+    assert rules["date"]["applied"] >= 1 and rules["number"]["applied"] >= 1
+    assert "$1200.5" in load_passages(lake, ids["review.md"])[0].text

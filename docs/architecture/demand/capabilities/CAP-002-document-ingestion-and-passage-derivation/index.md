@@ -6,7 +6,7 @@ description: "Getting content in from configured sources, keeping one immutable 
 version: 0.1.0
 status: draft
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-23
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 level: L2
@@ -17,9 +17,9 @@ components:
   processes:
     - "Configure sources per collection (type, options, scope)"
     - "Upload to landing or point at a source"
-    - "Sweep: ingest to bronze, refine to silver, skip mapped tables"
+    - "Sweep: ingest to bronze, refine to silver (conform, then chunk), skip mapped tables"
     - "Add a source type through the adapter entry point"
-  technology: "Source adapters behind one protocol, the lake with its layers, parsers by format, deterministic chunking"
+  technology: "Source adapters behind one protocol, the lake with its layers, parsers by format, a domain-agnostic conformance of dates, times and numbers, deterministic chunking"
 maturity:
   current: 4
   target: 4
@@ -75,7 +75,7 @@ A citation is only as stable as the thing it points at. Ingestion keeps the byte
 
 ## 4  What the implementation does today
 
-Three adapters (S3 landing, local directory, HTTPS URLs) and the entry point for more. Bronze is keyed by sha256; silver holds parsed text and passages of about 1,800 characters with ids derived from the document and the chunk. A mapped table is ingested but never refined. Sizes are capped at ingest (20 MB, PDFs 100 MB; HTTP 50 MB).
+Three adapters (S3 landing, local directory, HTTPS URLs) and the entry point for more. Bronze is keyed by sha256. Silver holds the parsed text in one canonical form (dates, times and numbers rewritten only where the reading is unambiguous) and passages of about 1,800 characters with ids derived from the document and the chunk. A mapped table is ingested but never refined. Sizes are capped at ingest (20 MB, PDFs 100 MB; HTTP 50 MB).
 
 ## 5  Maturity
 

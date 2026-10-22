@@ -7,7 +7,7 @@ description: "One container that takes a collection from uploaded bytes to publi
 version: 0.2.0
 status: active
 created: 2026-10-16
-last_modified: 2026-10-17
+last_modified: 2026-10-23
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 category: "Processing"
@@ -71,6 +71,7 @@ The components below are the boxes of this container's component diagram, which 
 - **Built-in adapters.** S3 landing (the default, per collection), local directory, HTTPS URLs with public-address and redirect checks (folded from ABB-001 Source adapters)
 - **Registry.** Built-ins first, then entry points, chosen by the source's type (folded from ABB-001 Source adapters)
 - **Parsers.** By extension then content type: text, markdown, HTML (table rows kept on one line), JSON (flattened), PDF; size caps (folded from ABB-003 Document refinement)
+- **Conformance.** Before chunking, silver text is one form that does not depend on an ontology: Unicode folding, then dates, times and numbers where the reading is unambiguous. The silver document records conform@1. Bronze stays as uploaded. A conformer change is applied by --reparse
 - **Chunking.** About 1,800 characters, at most 3,000, with an id from the document id, the sequence and the chunk hash; a chunker version string (folded from ABB-003 Document refinement)
 - **Skip rules.** Unsupported, failed, empty, or mapped (a table the mapping names is not prose) (folded from ABB-003 Document refinement)
 - **Stages in order.** ingest, provided ontology, refine, discover (when no version), extract, bind, candidates, project, load graph, load documents, load SPARQL, sync passages, status (folded from ABB-004 Sweep orchestration)
