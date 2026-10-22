@@ -4,10 +4,10 @@ id: ABB-021
 title: "ABB-021 Evaluation runner"
 short_name: "EVAL"
 description: "The command that runs a set of questions against a lake or a deployed chat, scores each answer deterministically against the facts it must and must not state and the sources it should cite, and reports."
-version: 0.2.0
+version: 0.3.0
 status: active
 created: 2026-10-16
-last_modified: 2026-10-17
+last_modified: 2026-10-22
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 category: "Evaluation"
@@ -38,7 +38,7 @@ provenance:
 | ABB ID | ABB-021 |
 | ABB Name | Evaluation runner |
 | Short Name | EVAL |
-| Version | 0.2.0 |
+| Version | 0.3.0 |
 | Status | draft, reversed from the implementation at 0.3.0, recalibrated to container grain |
 | Category | Evaluation |
 | Bounded context | BC-007 |
@@ -63,11 +63,12 @@ The components below are the boxes of this container's component diagram, which 
 - **Set loader.** Validation of ids, kinds and fields
 - **Targets.** In-process with local tools; the API with a person's token
 - **Scorer.** Word-boundary matching with case and dashes folded; order; abstention
-- **Report.** Overall and per question, with a cost estimate before a run
+- **Grader.** Optional: a model's judgement of correctness and faithfulness (DeepEval), reported beside the score
+- **Report.** Overall and per question, with a cost estimate before a run, and the grader's verdicts when one ran
 
 ### 2.3  Attributes
 
-- **Determinism.** No model judges
+- **Determinism.** No model judges in the score; a grader's verdict is reported beside it (ADR-013)
 - **Cost awareness.** An estimate before a run
 
 ### 2.4  Semantic
@@ -117,3 +118,4 @@ Realised as a command on an operator's machine (SBB-019).
 |---|---|---|
 | 0.1.0 | 2026-10-16 | Reversed from the implementation |
 | 0.2.0 | 2026-10-17 | Recalibrated to container grain |
+| 0.3.0 | 2026-10-22 | An optional model grader beside the score (ADR-013) |

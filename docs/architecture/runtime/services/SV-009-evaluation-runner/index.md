@@ -7,7 +7,7 @@ description: "Runs an evaluation set against a lake in process or against the de
 version: 0.1.0
 status: active
 created: 2026-10-16
-last_modified: 2026-10-16
+last_modified: 2026-10-22
 owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [SBB-019]
@@ -36,8 +36,8 @@ Runs an evaluation set against a lake in process or against the deployed chat as
 | Realises | SBB-019 |
 | Node | DN-014 |
 | Code | `src/knowledge_store/apps/evaluate.py (python -m knowledge_store.apps.evaluate)` |
-| Talks to | The agent in process, or POST /api/chat with a person's token. |
-| Stores | build/eval/<name>-<timestamp>/ locally. |
+| Talks to | The agent in process, or POST /api/chat with a person's token; with the grader, the judge model on Bedrock or the Anthropic API. Confident AI only when asked (`--upload-to-confident`). |
+| Stores | build/eval/<name>-<timestamp>/ locally, and DeepEval's test runs under build/eval/deepeval/. |
 | Role | The evaluator's credentials or token. |
 | Run by | evaluators |
 

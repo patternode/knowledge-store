@@ -42,7 +42,7 @@ The baseline scorer (`src/knowledge_store/evals/score.py` at `097658e`) had thre
 | Every claim is checked by a claim verifier, the same port Answering uses in production | `evaluation/slices/run_set.py`, `evaluation/adapters/verifiers.py` | unsupported claims on any question, now counted as their own measure | |
 | The lexical verifier checks years, and the source sentence that best matches a claim must agree with it on negation | `verifiers.LexicalVerifier` | "Juno was not launched on an Atlas V", "launched … in 2016" against a source that says 2011 | supported claims, figures and years |
 | The report counts false answers, false abstentions and unsupported claims separately, with 95% intervals | `score.summarise` | the old single "false positive" that mixed right declines in | |
-| A model grader, when an application adds one, is reported beside the score and never changes it | `run_set.run` | a lenient judge passing a wrong answer | |
+| A model grader (DeepEval's G-Eval and faithfulness, ADR-013), when a run asks for one, is reported beside the score and never changes it | `run_set.run` | a lenient judge passing a wrong answer | |
 
 Two of the changes made in this branch before the review let false positives in, and the review found them with the corpus. Matching a figure at the answer's own rounding passed "$2 billion" for 2.4 billion until the 5% cap. Treating any decline as right passed a decline followed by a guess until verified claims were counted against it. The lexical verifier ignored "not" (a stop word) and never checked years until the review.
 

@@ -254,6 +254,19 @@ The scoring needs no model as judge: facts stated, near misses avoided, the shar
 passed the citation checks, expected sources cited, and declines. See
 [docs/design/aws/aws.md](docs/design/aws/aws.md#evaluation).
 
+[DeepEval](https://github.com/confident-ai/deepeval) is the evaluation framework (the `evals`
+extra). `--runner deepeval` records the run as a DeepEval test run beside the report, and
+`--grader deepeval` adds a model's judgement of each answer (G-Eval correctness against the
+expected answer, and faithfulness to the cited passages), reported beside the score and never
+folded into it. The judge is called through the platform's model client (`--judge-model`), so
+nothing goes to OpenAI, and a run goes to Confident AI only with `--upload-to-confident`:
+
+```bash
+pip install -e ".[evals]"
+python -m knowledge_store.apps.evaluate examples/evals/space-missions.yaml --lake <lake> --model <model id> \
+  --runner deepeval --grader deepeval --judge-model <judge model id> --yes
+```
+
 ## Run it locally
 
 ```bash

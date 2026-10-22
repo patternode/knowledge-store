@@ -21,9 +21,9 @@ neo4j = ["neo4j>=5.20"]
 age = ["psycopg[binary]>=3.2"]
 # The chat agent (as in Dockerfile.agent) and the evaluation runner.
 agent = ["boto3>=1.40", "strands-agents>=1.50", "bedrock-agentcore>=1.20", "mcp>=1.20,<3", "pydantic>=2", "pyyaml>=6"]
-# The evaluation runner's options (patternode-architecture ADR-048): Inspect AI as a runner, pinned
-# because it changes weekly; HHEM-2.1-Open as a local claim verifier (CPU is enough).
-evals = ["inspect-ai==0.3.282", "pyyaml>=6"]
+# The evaluation runner's options (ADR-013): DeepEval as a runner and a model grader, pinned because
+# its metrics' prompts change between releases; HHEM-2.1-Open as a local claim verifier (CPU is enough).
+evals = ["deepeval==4.3.1", "pyyaml>=6"]
 verify = ["transformers>=4.44", "torch>=2.3"]
 dev = ["pytest>=8", "pytest-cov>=5", "moto>=5", "import-linter>=2.1", "knowledge-store[aws,mongo,neo4j,age,agent,evals]"]
 

@@ -63,10 +63,10 @@ Evaluation sets, runs and scores: knowing whether the answers are right without 
 
 - `evaluation/domain/` (sets: the format; score: the measures; numeric: figures at their stated rounding; compare: the baseline gate)
 - `evaluation/ports.py` (Answerer, TruthSource, ClaimVerifier, Grader, RunStore, Runner)
-- `evaluation/slices/` (run_set, gate) and `evaluation/adapters/` (answerers, set_files, run_store, report, verifiers, inspect_runner)
+- `evaluation/slices/` (run_set, gate) and `evaluation/adapters/` (answerers, set_files, run_store, report, verifiers, deepeval_cases, deepeval_grader, deepeval_runner)
 - `apps/evaluate.py` (the command) and `examples/evals/` (the space-missions and Sherlock Holmes sets)
 
-Runs are started by hand and cost a model call per question; the two shipped sets are the evidence the capabilities cite. The measures, the claim verifier and the gate are patternode-architecture ADR-048; the score itself stays free of model judges.
+Runs are started by hand and cost a model call per question; the two shipped sets are the evidence the capabilities cite. The measures, the claim verifier and the gate are patternode-architecture ADR-048; the score itself stays free of model judges. DeepEval is the evaluation framework (ADR-013): an optional runner that records each run as a DeepEval test run, and a model grader (G-Eval correctness and faithfulness) reported beside the score.
 
 ## Relationships with other contexts
 

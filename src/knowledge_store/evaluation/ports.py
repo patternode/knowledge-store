@@ -6,9 +6,9 @@
                    set): checks that need data the set file does not hold
     ClaimVerifier  whether a passage supports a claim; Answering's port, shared so that an
                    evaluation measures what production enforces
-    Grader         an optional model judge, kept apart from the deterministic score
+    Grader         an optional model judge (DeepEval), reported beside the deterministic score
     RunStore       where runs and baselines are kept
-    Runner         what drives the questions: a plain loop, or Inspect AI for its logs and viewer
+    Runner         what drives the questions: a plain loop, or DeepEval for its test-run record
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ class TruthSource(Protocol):
 
 class Grader(Protocol):
     def grade(self, question: Question, result: dict) -> dict:
-        """{"verdict": "pass" | "partial" | "fail", "explanation": str, ...}."""
+        """{"verdict": "pass" | "partial" | "fail" | "skipped", "explanation": str, ...}."""
 
 
 class RunStore(Protocol):

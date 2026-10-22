@@ -165,6 +165,8 @@ python -m knowledge_store.apps.evaluate examples/evals/space-missions.yaml --api
 Every question is a model run, so a run costs money; without `--yes` the command prints its
 estimate and stops. Reports go to `build/eval/`.
 
+DeepEval is the evaluation framework ([ADR-013](../../architecture/decisions/ADR-013-deepeval-is-the-evaluation-framework-beside-the-deterministic-score.md)). `--runner deepeval` records each run as a DeepEval test run under `build/eval/deepeval/`, with the score as one of its metrics. `--grader deepeval` adds a model's judgement of each answer, G-Eval correctness against the expected answer and its facts and faithfulness to the cited passages, shown in the report's Grader section and never folded into the score. The judge model (`--judge-model`) is called through Bedrock or the Anthropic API like every other model call, so its spend is in the call ledger; DeepEval's telemetry is off, and a run leaves the account for Confident AI only with `--upload-to-confident`.
+
 ## Costs
 
 | Item | Cost |

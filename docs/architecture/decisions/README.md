@@ -18,6 +18,7 @@ A consideration is an open question with more than one credible answer; a decisi
 | [ADR-010 Scope is the one access control today, stated per source](ADR-010-scope-is-the-one-access-control-today-stated-per-source.md) | BC-006, ABB-020 |
 | [ADR-011 The code is cut by bounded context, and a deployable splits off only on a trigger](ADR-011-the-code-is-cut-by-bounded-context-and-deployables-split-on-a-trigger.md) | BC-001 to BC-008, SV-001 to SV-006, SV-009 |
 | [ADR-012 Evaluation counts false answers and unsupported claims, and gates releases on a baseline](ADR-012-evaluation-counts-false-answers-and-unsupported-claims-and-gates-releases.md) | BC-007, BC-005, SV-009, ABB-021 |
+| [ADR-013 DeepEval is the evaluation framework, beside the deterministic score](ADR-013-deepeval-is-the-evaluation-framework-beside-the-deterministic-score.md) | BC-007, SV-009, ABB-021, SBB-019 |
 
 ## Considerations
 
