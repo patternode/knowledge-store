@@ -1,17 +1,23 @@
 """Canonical text, before any ontology is involved.
 
 Refine runs this on the parsed text. The bronze bytes stay as they were. The silver
-document and its passages are this form, so a date, a time and a number are written one
-way whatever the file called them. The reading of a number and of a written date is
-kernel.values, the same reading a table cell uses.
+document and its passages are this form, so a date, a time, a time period and a number
+are written one way whatever the file called them. The reading of a number and of a
+written date is kernel.values, the same reading a table cell uses.
+
+A time period is an ISO 8601 interval (2023-07-14/2023-07-20, 09:00/17:00) or a
+duration (PT2H, P3D, P14D/P30D). A month written with its year is that month (2023-07).
+Milliseconds are decimal seconds, which is the ISO duration form.
 
 Only forms that are unambiguous are rewritten. A numeric date that could be day-first or
 month-first is left as written. A clock without am/pm, a zone, or an hour of 13 or more
-(or 00) is left as written, unless it sits against a date. A bare year is not a date.
-Words such as yes and no are not booleans. A hyphenated range is rewritten on each side.
-Thousands separators are commas and the dedicated group spaces. Parentheses mark
-a loss only when the amount has a currency sign or a grouping separator.
-Nothing here is a class, a synonym or a unit from a domain.
+(or 00) is left as written, unless it sits against a date or in a range where the other
+end fixes the reading. A bare year is not a date. A quarter, a fiscal year and a half
+stay as written, because the calendar they use is not fixed. A business day is not a
+fixed length. Words such as yes and no are not booleans. A hyphenated range of numbers
+is rewritten on each side. Thousands separators are commas and the dedicated group
+spaces. Parentheses mark a loss only when the amount has a currency sign or a grouping
+separator. Nothing here is a class, a synonym or a unit from a domain.
 """
 
 from __future__ import annotations
@@ -21,6 +27,7 @@ import re
 import unicodedata
 from collections import Counter
 from dataclasses import dataclass
+from decimal import Decimal
 
 from knowledge_store.kernel.values import canonical
 
@@ -57,6 +64,46 @@ _AFTER_DATE = re.compile(rf"(?:\s*,?\s+at\s+|\s*,\s*|\s+){_CLOCK}{_ZONE}\b", re.
 # first clock leaves the zone for a second pass, so the form would not be stable.
 _RANGE = re.compile(rf"\s*[-–—]\s*{_CLOCK}{_ZONE}\b", re.IGNORECASE)
 _TIME = re.compile(rf"\b{_CLOCK}{_ZONE}\b", re.IGNORECASE)
+# A second clock, so a range can be read as one interval. Groups stay in fives.
+# The colon lookbehind keeps a span from starting on the seconds of "10:22:00".
+_CLOCK_SPAN = re.compile(
+    rf"(?<!:)\b{_CLOCK}{_ZONE}\s*(?:to|–|—|-)\s*{_CLOCK}{_ZONE}\b", re.IGNORECASE)
+_JOIN = re.compile(r"(?:\s+(?:to|through|until)\s+|\s*[–—]\s*|\s+-\s+)", re.IGNORECASE)
+_JOIN_AND = re.compile(r"\s+and\s+", re.IGNORECASE)
+_PREFIX = re.compile(r"(?<!\w)(between|from)\s+$", re.IGNORECASE)
+_MONTH_YEAR = re.compile(
+    rf"\b(?P<m>{_MONTH})(?P<dot>\.)?[ \t]+(?P<y>\d{{4}})\b",
+    re.IGNORECASE)
+_DAY_BEFORE = re.compile(r"\b\d{1,2}(?:st|nd|rd|th)?[ \t]$", re.IGNORECASE)
+_SHARED_HEAD = re.compile(
+    rf"\b(\d{{1,2}}){_ORD}\s*[-–—]\s*(\d{{1,2}}){_ORD}\s+(?:of\s+)?({_MONTH})\.?,?\s+(\d{{4}})\b",
+    re.IGNORECASE)
+_SHARED_TAIL = re.compile(
+    rf"\b({_MONTH})\.?\s+(\d{{1,2}}){_ORD}\s*[-–—]\s*(\d{{1,2}}){_ORD},?\s+(\d{{4}})\b",
+    re.IGNORECASE)
+_UNIT = (
+    r"milliseconds?|minutes?|mins?|seconds?|secs?|hours?|hrs?|"
+    r"months?|years?|weeks?|days?|ms")
+_QTY = r"(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?"
+_DUR_RANGE = re.compile(
+    rf"(?<![\w.$€£¥\-−–])(?P<a>{_QTY})\s*(?:to|–|—|-)\s*(?P<b>{_QTY})\s*-?\s*(?P<u>{_UNIT})\b",
+    re.IGNORECASE)
+_DUR_LEAD = re.compile(
+    rf"(?<![\w.$€£¥\-−–])(?P<q>{_QTY})\s*-?\s*(?P<u>{_UNIT})\b",
+    re.IGNORECASE)
+_DUR_ATOM = re.compile(rf"(?P<q>{_QTY})\s*-?\s*(?P<u>{_UNIT})\b", re.IGNORECASE)
+_DUR_GAP = re.compile(r"\s*,?\s*(?:and\s+)?", re.IGNORECASE)
+_KIND = {
+    "ms": (0, "ms"), "millisecond": (0, "ms"), "milliseconds": (0, "ms"),
+    "sec": (1, "S"), "secs": (1, "S"), "second": (1, "S"), "seconds": (1, "S"),
+    "min": (2, "M"), "mins": (2, "M"), "minute": (2, "M"), "minutes": (2, "M"),
+    "hr": (3, "H"), "hrs": (3, "H"), "hour": (3, "H"), "hours": (3, "H"),
+    "day": (4, "D"), "days": (4, "D"),
+    "week": (5, "W"), "weeks": (5, "W"),
+    "month": (6, "Mo"), "months": (6, "Mo"),
+    "year": (7, "Y"), "years": (7, "Y"),
+}
+_LONG = {name.lower() for name in _LONG_MONTHS}
 _NUMBER = re.compile(
     r"(?<![\w.])(?:(?P<open>\()\s*)?(?P<sign>[-−–]\s*)?(?P<cur>[$€£¥]\s*)?"
     r"(?P<body>\d{1,3}(?:[,\u00a0\u202f\u2009\u2007]\d{3})+(?:\.\d+)?"
@@ -185,14 +232,17 @@ def _note(counts: Counter, examples: dict[str, list], rule: str, example: str) -
 
 def _literals(text: str) -> tuple[str, list[tuple[int, int, str, str, str]]]:
     found: list[tuple[int, int, str, str, str]] = []
+    _durations(text, found)
+    _intervals(text, found, _date_starts(text), _point_at)
+    _shared_days(text, found)
     for m in _DATE.finditer(text):
+        if _overlaps(m.start(), m.end(), found):
+            continue
         iso = _date(m)
         if iso is None:
             continue
         new, end = _attach(text, m.end(), iso)
-        old = text[m.start():end]
-        if new != old:
-            found.append((m.start(), end, old, new, "date"))
+        _keep(found, m.start(), end, text[m.start():end], new)
     for m in _NUMDATE.finditer(text):
         if _overlaps(m.start(), m.end(), found):
             continue
@@ -200,9 +250,7 @@ def _literals(text: str) -> tuple[str, list[tuple[int, int, str, str, str]]]:
         if iso is None:
             continue
         new, end = _attach(text, m.end(), iso)
-        old = text[m.start():end]
-        if new != old:
-            found.append((m.start(), end, old, new, "date"))
+        _keep(found, m.start(), end, text[m.start():end], new)
     for m in _ISODATE.finditer(text):
         if _overlaps(m.start(), m.end(), found):
             continue
@@ -213,9 +261,26 @@ def _literals(text: str) -> tuple[str, list[tuple[int, int, str, str, str]]]:
         new, end = _attach(text, m.end(), iso)
         if end == m.end():
             continue
-        old = text[m.start():end]
-        if new != old:
-            found.append((m.start(), end, old, new, "date"))
+        _keep(found, m.start(), end, text[m.start():end], new)
+    _intervals(text, found, [m.start() for m in _MONTH_YEAR.finditer(text)], _month_at)
+    for m in _MONTH_YEAR.finditer(text):
+        if _overlaps(m.start(), m.end(), found):
+            continue
+        parsed = _month_at(text, m.start())
+        if parsed is None:
+            continue
+        iso, end = parsed
+        _keep(found, m.start(), end, text[m.start():end], iso, "period")
+    for m in _CLOCK_SPAN.finditer(text):
+        if _overlaps(m.start(), m.end(), found):
+            continue
+        new = _clock_span(m)
+        if new and new != m.group():
+            _keep(found, m.start(), m.end(), m.group(), new)
+        else:
+            # Hold the whole range. Rewriting only the end that carries am/pm
+            # would leave a 24-hour range for the next pass.
+            found.append((m.start(), m.end(), m.group(), m.group(), "period"))
     for m in _TIME.finditer(text):
         if _overlaps(m.start(), m.end(), found):
             continue
@@ -228,14 +293,19 @@ def _literals(text: str) -> tuple[str, list[tuple[int, int, str, str, str]]]:
         new = _number(m)
         if new and new != m.group():
             found.append((m.start(), m.end(), m.group(), new, "number"))
-    found.sort(key=lambda item: item[0])
+    found.sort(key=lambda item: (item[0], -(item[1] - item[0])))
     parts, at = [], 0
-    for start, end, _, new, _ in found:
+    kept = []
+    for start, end, old, new, rule in found:
+        if start < at:
+            continue
         parts.append(text[at:start])
         parts.append(new)
         at = end
+        if new != old:
+            kept.append((start, end, old, new, rule))
     parts.append(text[at:])
-    return "".join(parts), found
+    return "".join(parts), kept
 
 
 def _overlaps(start: int, end: int, found: list[tuple[int, int, str, str, str]]) -> bool:
@@ -260,13 +330,20 @@ def _attach(text: str, end: int, iso: str) -> tuple[str, int]:
     if not clock:
         return iso, end
     end = after.end()
-    span = f"{iso}T{clock}"
     ranged = _RANGE.match(text, end)
     if ranged is not None:
         other = _clock(ranged, attached=True)
         if other:
-            return f"{span}-{other}", ranged.end()
-    return span, end
+            clock, other = _share_zone(clock, other)
+            return f"{iso}T{clock}/{iso}T{other}", ranged.end()
+    return f"{iso}T{clock}", end
+
+
+def _keep(found: list, start: int, end: int, old: str, new: str, rule: str = "date") -> None:
+    if new and new != old and not _overlaps(start, end, found):
+        if "/" in new:
+            rule = "period"
+        found.append((start, end, old, new, rule))
 
 
 def _date(m: re.Match) -> str | None:
@@ -299,11 +376,14 @@ def _numeric_date(day_or_month: str, month_or_day: str, year: str) -> str | None
         return None
 
 
-def _clock(m: re.Match, *, attached: bool) -> str | None:
-    hour, minute = int(m.group(1)), int(m.group(2))
-    second = int(m.group(3)) if m.group(3) else None
-    ampm = (m.group(4) or "").lower().replace(".", "").strip()
-    zone = _zone(m.group(5))
+def _clock(m: re.Match, *, attached: bool, offset: int = 0) -> str | None:
+    def group(index: int) -> str | None:
+        return m.group(offset + index)
+
+    hour, minute = int(group(1)), int(group(2))
+    second = int(group(3)) if group(3) else None
+    ampm = (group(4) or "").lower().replace(".", "").strip()
+    zone = _zone(group(5))
     if ampm:
         if not 1 <= hour <= 12:
             return None
@@ -313,7 +393,7 @@ def _clock(m: re.Match, *, attached: bool) -> str | None:
             hour = hour if hour == 12 else hour + 12
     elif not 0 <= hour <= 23:
         return None
-    elif not attached and zone == "" and hour < 13 and not (hour == 0 and len(m.group(1)) == 2):
+    elif not attached and zone == "" and hour < 13 and not (hour == 0 and len(group(1) or "") == 2):
         return None
     if zone is None:
         return None
@@ -321,6 +401,255 @@ def _clock(m: re.Match, *, attached: bool) -> str | None:
     if second is not None:
         text += f":{second:02d}"
     return text + zone
+
+
+def _share_zone(clock: str, other: str) -> tuple[str, str]:
+    left, right = _zone_suffix(clock), _zone_suffix(other)
+    if right and not left:
+        clock += right
+    elif left and not right:
+        other += left
+    return clock, other
+
+
+def _zone_suffix(value: str) -> str:
+    matched = re.search(r"(Z|[+-]\d{2}:\d{2})$", value)
+    return matched.group(1) if matched else ""
+
+
+def _clock_span(m: re.Match) -> str | None:
+    # "15:22:00-07:00" is an offset already written in canonical form. The hyphen
+    # is glued and only the left clock has seconds.
+    if m.group(3) and not m.group(8) and re.search(r"\d-\d", m.group()):
+        return None
+    left_zone, right_zone = m.group(5), m.group(10)
+    # A zone written once on a range applies to both clocks.
+    if left_zone and not right_zone:
+        right_zone = left_zone
+    elif right_zone and not left_zone:
+        left_zone = right_zone
+    left = _clock(_zoned(m, 0, left_zone), attached=False)
+    right = _clock(_zoned(m, 5, right_zone), attached=False)
+    hours = (int(m.group(1)), int(m.group(6)))
+    forced = bool(left_zone or right_zone) or any(
+        hour >= 13 or (hour == 0 and len(m.group(index)) == 2)
+        for hour, index in zip(hours, (1, 6)))
+    if (left is None or right is None) and forced:
+        left = _clock(_zoned(m, 0, left_zone), attached=True)
+        right = _clock(_zoned(m, 5, right_zone), attached=True)
+    if not left or not right:
+        return None
+    return f"{left}/{right}"
+
+
+class _zoned:
+    """A match whose zone group is the one the range shares."""
+
+    def __init__(self, match: re.Match, offset: int, zone: str | None):
+        self.match = match
+        self.offset = offset
+        self.zone = zone
+
+    def group(self, index: int) -> str | None:
+        if index == 5:
+            return self.zone
+        return self.match.group(self.offset + index)
+
+
+def _date_starts(text: str) -> list[int]:
+    starts = []
+    for pattern in (_DATE, _NUMDATE, _ISODATE):
+        starts.extend(m.start() for m in pattern.finditer(text))
+    return sorted(set(starts))
+
+
+def _intervals(text: str, found: list, starts: list[int], parse_at) -> None:
+    for pos in starts:
+        if _overlaps(pos, pos + 1, found):
+            continue
+        point = parse_at(text, pos)
+        if point is None:
+            continue
+        iso, end = point
+        prefix = _PREFIX.search(text[:pos])
+        between = bool(prefix and prefix.group(1).lower() == "between")
+        start = prefix.start() if prefix else pos
+        if prefix and _overlaps(start, pos, found):
+            start, between = pos, False
+        join = _JOIN.match(text, end)
+        if join is None and between:
+            join = _JOIN_AND.match(text, end)
+        if join is None:
+            continue
+        other = parse_at(text, join.end())
+        if other is None or _overlaps(start, other[1], found):
+            continue
+        _keep(found, start, other[1], text[start:other[1]], f"{iso}/{other[0]}")
+
+
+def _point_at(text: str, pos: int) -> tuple[str, int] | None:
+    dated = _leading_date(text, pos)
+    if dated is None:
+        return None
+    iso, end = dated
+    after = _AFTER_DATE.match(text, end)
+    if after is not None:
+        clock = _clock(after, attached=True)
+        if clock and _RANGE.match(text, after.end()) is None:
+            return f"{iso}T{clock}", after.end()
+    return iso, end
+
+
+def _leading_date(text: str, pos: int) -> tuple[str, int] | None:
+    written = _DATE.match(text, pos)
+    if written is not None:
+        iso = _date(written)
+        if iso is not None:
+            return iso, written.end()
+    numeric = _NUMDATE.match(text, pos)
+    if numeric is not None:
+        iso = _numeric_date(numeric.group(1), numeric.group(3), numeric.group(4))
+        if iso is not None:
+            return iso, numeric.end()
+    iso_match = _ISODATE.match(text, pos)
+    if iso_match is not None:
+        try:
+            iso = dt.date(int(iso_match.group(1)), int(iso_match.group(2)),
+                          int(iso_match.group(3))).isoformat()
+        except ValueError:
+            return None
+        return iso, iso_match.end()
+    return None
+
+
+def _month_at(text: str, pos: int) -> tuple[str, int] | None:
+    if _DAY_BEFORE.search(text[:pos]):
+        return None
+    matched = _MONTH_YEAR.match(text, pos)
+    if matched is None:
+        return None
+    name = matched.group("m")
+    if matched.group("dot") and name.lower() in _LONG:
+        return None
+    number = _month_number(name)
+    if number is None:
+        return None
+    return f"{int(matched.group('y')):04d}-{number:02d}", matched.end()
+
+
+def _month_number(name: str) -> int | None:
+    key = "sep" if name.lower().startswith("sept") else name.lower()[:3]
+    for index, full in enumerate(_LONG_MONTHS, start=1):
+        if full.lower().startswith(key):
+            return index
+    return None
+
+
+def _shared_days(text: str, found: list) -> None:
+    for matched in _SHARED_HEAD.finditer(text):
+        _shared(found, matched, matched.group(1), matched.group(2), matched.group(3), matched.group(4))
+    for matched in _SHARED_TAIL.finditer(text):
+        _shared(found, matched, matched.group(2), matched.group(3), matched.group(1), matched.group(4))
+
+
+def _shared(found: list, matched: re.Match, day: str, other: str, month: str, year: str) -> None:
+    if _overlaps(matched.start(), matched.end(), found):
+        return
+    number = _month_number(month)
+    if number is None:
+        return
+    start = _on_calendar(year, number, day)
+    end = _on_calendar(year, number, other)
+    if start is None or end is None:
+        return
+    _keep(found, matched.start(), matched.end(), matched.group(), f"{start}/{end}")
+
+
+def _on_calendar(year: str, month: int, day: str) -> str | None:
+    try:
+        return dt.date(int(year), month, int(day)).isoformat()
+    except ValueError:
+        return None
+
+
+def _durations(text: str, found: list) -> None:
+    for matched in _DUR_RANGE.finditer(text):
+        if _overlaps(matched.start(), matched.end(), found):
+            continue
+        start = _iso_duration([(matched.group("a"), matched.group("u"))])
+        end = _iso_duration([(matched.group("b"), matched.group("u"))])
+        if start and end:
+            _keep(found, matched.start(), matched.end(), matched.group(), f"{start}/{end}", "period")
+    cursor = 0
+    while True:
+        matched = _DUR_LEAD.search(text, cursor)
+        if matched is None:
+            return
+        if _overlaps(matched.start(), matched.end(), found):
+            cursor = matched.end()
+            continue
+        parts = [(matched.group("q"), matched.group("u"))]
+        end = matched.end()
+        while True:
+            gap = _DUR_GAP.match(text, end)
+            if gap is None or gap.end() == end:
+                break
+            nxt = _DUR_ATOM.match(text, gap.end())
+            if nxt is None:
+                break
+            rank = _KIND.get(nxt.group("u").lower())
+            previous = _KIND.get(parts[-1][1].lower())
+            if rank is None or previous is None or rank[0] >= previous[0]:
+                # "2 hours 1 day" is out of order, so neither part is rewritten.
+                if rank is not None and previous is not None and rank[0] > previous[0]:
+                    parts = []
+                    end = nxt.end()
+                break
+            parts.append((nxt.group("q"), nxt.group("u")))
+            end = nxt.end()
+        iso = _iso_duration(parts) if parts else None
+        if iso:
+            _keep(found, matched.start(), end, text[matched.start():end], iso, "period")
+        cursor = end
+
+
+def _iso_duration(parts: list[tuple[str, str]]) -> str | None:
+    kinds = []
+    for raw, unit in parts:
+        qty = canonical(raw, "decimal")
+        kind = _KIND.get(unit.lower())
+        if qty is None or kind is None:
+            return None
+        kinds.append((kind[0], kind[1], qty))
+    if any(kind == "W" for _, kind, _ in kinds) and len(kinds) != 1:
+        return None
+    if len(kinds) == 1 and kinds[0][1] == "W":
+        return f"P{kinds[0][2]}W"
+    ranks = [rank for rank, _, _ in kinds]
+    if ranks != sorted(ranks, reverse=True) or len(ranks) != len(set(ranks)):
+        return None
+    date, time = [], []
+    seconds: Decimal | None = None
+    for _, kind, qty in kinds:
+        if kind == "ms":
+            seconds = (seconds or Decimal(0)) + Decimal(qty) / Decimal(1000)
+            continue
+        if kind == "S":
+            seconds = (seconds or Decimal(0)) + Decimal(qty)
+            continue
+        designator = "M" if kind == "Mo" else kind
+        (date if kind in ("Y", "Mo", "D") else time).append(f"{qty}{designator}")
+    if seconds is not None:
+        text = canonical(seconds, "decimal")
+        if text is None:
+            return None
+        time.append(f"{text}S")
+    if not date and not time:
+        return None
+    written = "P" + "".join(date)
+    if time:
+        written += "T" + "".join(time)
+    return written
 
 
 def _zone(raw: str | None) -> str | None:

@@ -131,11 +131,57 @@ def test_fenced_code_is_not_rewritten():
     assert "Due 2024-01-13." in text
 
 
-def test_a_clock_range_against_a_date_is_one_span_and_stays():
+def test_a_clock_range_against_a_date_is_one_interval_and_stays():
     source = "During (~2026-03-12 09:15-09:35 UTC) requests moved."
-    assert _text(source) == "During (~2026-03-12T09:15-09:35Z) requests moved."
+    assert _text(source) == "During (~2026-03-12T09:15Z/2026-03-12T09:35Z) requests moved."
     assert _text("Logged 2026-03-12 09:27 and 2026-03-12 15:20.") == (
         "Logged 2026-03-12T09:27 and 2026-03-12T15:20.")
+    assert _text("Window 2026-10-07 02:00 - 05:00 UTC.") == (
+        "Window 2026-10-07T02:00Z/2026-10-07T05:00Z.")
+    once = _text(source)
+    assert conform(once).text == once and conform(once).rules == ()
+
+
+def test_a_time_period_is_an_iso_interval_or_a_duration():
+    assert _text("Closed from 14 July 2023 to 20 July 2023.") == "Closed 2023-07-14/2023-07-20."
+    assert _text("Window 2024-04-29 to 2024-04-30.") == "Window 2024-04-29/2024-04-30."
+    assert _text("Window 2025-02-15 through 2025-05-31.") == "Window 2025-02-15/2025-05-31."
+    assert _text("Closed between 2025-01-01 and 2025-06-30.") == "Closed 2025-01-01/2025-06-30."
+    assert _text("Due 13/01/2024 to 20/01/2024.") == "Due 2024-01-13/2024-01-20."
+    assert _text("Due 01/02/2024 to 03/04/2024.") == "Due 01/02/2024 to 03/04/2024."
+    assert _text("Away 14-20 July 2023.") == "Away 2023-07-14/2023-07-20."
+    assert _text("Away July 14-20, 2023.") == "Away 2023-07-14/2023-07-20."
+    assert _text("Noted in June 2027.") == "Noted in 2027-06."
+    assert _text("Noted in Sept. 2021.") == "Noted in 2021-09."
+    assert _text("Met on 4 May 2027.") == "Met on 2027-05-04."
+    assert _text("Sent Tue, 4 May 2027 09:12:00 -0700.") == "Sent Tue, 2027-05-04T09:12:00-07:00."
+    assert _text("Sent 2027-05-04T09:12:00-07:00.") == "Sent 2027-05-04T09:12:00-07:00."
+    assert _text("Sent 2028-10-18T15:22:00-07:00.") == "Sent 2028-10-18T15:22:00-07:00."
+    assert _text("Ran 09:12:00-09:35:00 UTC.") == "Ran 09:12:00Z/09:35:00Z."
+    assert _text("From June 2027 to August 2027.") == "2027-06/2027-08."
+    assert _text("Ran for 2 hours.") == "Ran for PT2H."
+    assert _text("Ran for 1.50 hours.") == "Ran for PT1.5H."
+    assert _text("Ran for 1 hour 26 minutes.") == "Ran for PT1H26M."
+    assert _text("Ran for 2 hours and 12 minutes.") == "Ran for PT2H12M."
+    assert _text("Lasted 1 day 2 hours.") == "Lasted P1DT2H."
+    assert _text("Lasted 2 weeks.") == "Lasted P2W."
+    assert _text("Lasted 1 week 2 days.") == "Lasted 1 week 2 days."
+    assert _text("Lasted 2 hours 1 day.") == "Lasted 2 hours 1 day."
+    assert _text("Wait 200 ms.") == "Wait PT0.2S."
+    assert _text("Wait 6ms.") == "Wait PT0.006S."
+    assert _text("Hold for 6-12 hours.") == "Hold for PT6H/PT12H."
+    assert _text("Keep 14–30 days.") == "Keep P14D/P30D."
+    assert _text("A 2-hour window.") == "A PT2H window."
+    assert _text("SLA is 7 business days.") == "SLA is 7 business days."
+    assert _text("In Q3 FY26 and in 2021.") == "In Q3 FY26 and in 2021."
+    assert _text("Open 09:00-17:00.") == "Open 09:00/17:00."
+    assert _text("Open 09:00-12:00.") == "Open 09:00-12:00."
+    assert _text("Gap 03:00-06:00 UTC.") == "Gap 03:00Z/06:00Z."
+    assert _text("Call 3:30 PM to 5:00 PM.") == "Call 15:30/17:00."
+    assert _text("Call 3:30 PM to 5:00.") == "Call 3:30 PM to 5:00."
+    assert _text("Thu, Oct 6 — 2:00–2:45 PM PT (5:00 PM ET).") == (
+        "Thu, Oct 6 — 2:00–2:45 PM PT (17:00 ET).")
+    source = "Closed from 14 July 2023 to 20 July 2023, ran 2 hours in June 2027."
     once = _text(source)
     assert conform(once).text == once and conform(once).rules == ()
 
