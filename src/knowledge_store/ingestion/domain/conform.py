@@ -17,7 +17,10 @@ stay as written, because the calendar they use is not fixed. A business day is n
 fixed length. Words such as yes and no are not booleans. A hyphenated range of numbers
 is rewritten on each side. Thousands separators are commas and the dedicated group
 spaces. Parentheses mark a loss only when the amount has a currency sign or a grouping
-separator. Nothing here is a class, a synonym or a unit from a domain.
+separator. Quotes, dashes, ellipsis and ligatures fold to ASCII. A link's scheme
+and host, an email's domain and a UUID are written in one case. An exact fraction
+and a scientific number use the same decimal form as any other number. Fenced code
+is left as written. Nothing here is a class, a synonym or a unit from a domain.
 """
 
 from __future__ import annotations
@@ -28,6 +31,7 @@ import unicodedata
 from collections import Counter
 from dataclasses import dataclass
 from decimal import Decimal
+from urllib.parse import urlsplit, urlunsplit
 
 from knowledge_store.kernel.values import canonical
 
@@ -68,7 +72,9 @@ _TIME = re.compile(rf"\b{_CLOCK}{_ZONE}\b", re.IGNORECASE)
 # The colon lookbehind keeps a span from starting on the seconds of "10:22:00".
 _CLOCK_SPAN = re.compile(
     rf"(?<!:)\b{_CLOCK}{_ZONE}\s*(?:to|–|—|-)\s*{_CLOCK}{_ZONE}\b", re.IGNORECASE)
-_JOIN = re.compile(r"(?:\s+(?:to|through|until)\s+|\s*[–—]\s*|\s+-\s+)", re.IGNORECASE)
+# A hyphen is included because quotes and dashes are folded to ASCII before this runs.
+# The match is only tried at the end of a date, so the hyphens inside an ISO date stay.
+_JOIN = re.compile(r"(?:\s+(?:to|through|until)\s+|\s*[–—-]\s*)", re.IGNORECASE)
 _JOIN_AND = re.compile(r"\s+and\s+", re.IGNORECASE)
 _PREFIX = re.compile(r"(?<!\w)(between|from)\s+$", re.IGNORECASE)
 _MONTH_YEAR = re.compile(
@@ -111,6 +117,31 @@ _NUMBER = re.compile(
     r"(?:\s*(?P<pct>%|percent|per\s+cent))?(?:\s*(?P<close>\)))?(?![\w])(?!\.\d)",
     re.IGNORECASE)
 _FENCE = re.compile(r"```.*?```", re.DOTALL)
+_QUOTES = {
+    "\u2018": "'", "\u2019": "'", "\u201a": "'", "\u201b": "'",
+    "\u201c": '"', "\u201d": '"', "\u201e": '"', "\u201f": '"',
+}
+_DASHES = {
+    "\u2010": "-", "\u2011": "-", "\u2012": "-", "\u2013": "-", "\u2014": "-",
+    "\u2015": "-", "\u2212": "-",
+}
+_LIGATURES = {"\ufb00": "ff", "\ufb01": "fi", "\ufb02": "fl", "\ufb03": "ffi", "\ufb04": "ffl"}
+# Terminating decimals only. A third and a sixth do not have one exact decimal.
+_FRAC = {
+    "½": "0.5", "¼": "0.25", "¾": "0.75",
+    "⅕": "0.2", "⅖": "0.4", "⅗": "0.6", "⅘": "0.8",
+    "⅛": "0.125", "⅜": "0.375", "⅝": "0.625", "⅞": "0.875",
+}
+# A decimal mantissa, or an integer with a signed exponent. "550e8400" is a UUID piece.
+_SCI = re.compile(
+    r"(?<![\w.])(?:(\d+\.\d+)[eE]([+-]?\d+)|(\d+)[eE]([+-]\d+))(?![\w])")
+_URL = re.compile(r"https?://[^\s<>\[\]\"']+", re.IGNORECASE)
+_EMAIL = re.compile(
+    r"(?<![\w.+-])([\w.+-]+)@((?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,})\b")
+_UUID = re.compile(
+    r"(?<![\w-])((?:urn:uuid:)?)(\{?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-"
+    r"[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(\}?)(?![\w-])",
+    re.IGNORECASE)
 
 _DROP = {"\u00ad", "\u200b", "\u200c", "\u200d", "\ufeff"}
 
@@ -180,7 +211,7 @@ def _fold(text: str) -> tuple[str, Counter, dict[str, list]]:
             i += 1
             continue
         # Tab and newline stay. Other controls, unpaired surrogates and non-characters
-        # are not text. Emoji and punctuation stay: a passage is what grounding checks.
+        # are not text. Emoji stays. Quote and dash folding is outside fenced code.
         if _dropped_char(ch):
             _note(counts, examples, "control", repr(ch))
             i += 1
@@ -231,7 +262,10 @@ def _note(counts: Counter, examples: dict[str, list], rule: str, example: str) -
 
 
 def _literals(text: str) -> tuple[str, list[tuple[int, int, str, str, str]]]:
+    text, notes = _punctuation(text)
     found: list[tuple[int, int, str, str, str]] = []
+    _identifiers(text, found)
+    _scientific(text, found)
     _durations(text, found)
     _intervals(text, found, _date_starts(text), _point_at)
     _shared_days(text, found)
@@ -305,7 +339,7 @@ def _literals(text: str) -> tuple[str, list[tuple[int, int, str, str, str]]]:
         if new != old:
             kept.append((start, end, old, new, rule))
     parts.append(text[at:])
-    return "".join(parts), kept
+    return "".join(parts), notes + kept
 
 
 def _overlaps(start: int, end: int, found: list[tuple[int, int, str, str, str]]) -> bool:
@@ -570,6 +604,127 @@ def _on_calendar(year: str, month: int, day: str) -> str | None:
         return dt.date(int(year), month, int(day)).isoformat()
     except ValueError:
         return None
+
+
+def _punctuation(text: str) -> tuple[str, list]:
+    """ASCII quotes, dashes, ellipsis and ligatures, and an exact fraction."""
+    notes = []
+    out: list[str] = []
+    i, n = 0, len(text)
+    while i < n:
+        ch = text[i]
+        if ch in _QUOTES or ch in _DASHES:
+            repl = _QUOTES[ch] if ch in _QUOTES else _DASHES[ch]
+            notes.append((0, 0, ch, repl, "punctuation"))
+            out.append(repl)
+            i += 1
+            continue
+        if ch == "\u2026":
+            notes.append((0, 0, ch, "...", "punctuation"))
+            out.append("...")
+            i += 1
+            continue
+        if ch in _LIGATURES:
+            repl = _LIGATURES[ch]
+            notes.append((0, 0, ch, repl, "punctuation"))
+            out.append(repl)
+            i += 1
+            continue
+        if ch in _FRAC:
+            j = i
+            while j > 0 and text[j - 1].isdigit():
+                j -= 1
+            if j < i:
+                del out[-(i - j):]
+            whole = text[j:i] or "0"
+            new = canonical(Decimal(whole) + Decimal(_FRAC[ch]), "decimal")
+            old = text[j:i + 1]
+            if new and new != old:
+                notes.append((0, 0, old, new, "number"))
+                out.append(new)
+            else:
+                out.append(old)
+            i += 1
+            continue
+        out.append(ch)
+        i += 1
+    return "".join(out), notes
+
+
+def _identifiers(text: str, found: list) -> None:
+    for matched in _URL.finditer(text):
+        raw = matched.group()
+        core = raw
+        while core and core[-1] in ".,;:!?":
+            core = core[:-1]
+        if core.endswith(")") and core.count("(") < core.count(")"):
+            core = core[:-1]
+        if not core or _overlaps(matched.start(), matched.start() + len(core), found):
+            continue
+        new = _canon_url(core)
+        end = matched.start() + len(core)
+        if new and new != core:
+            found.append((matched.start(), end, core, new, "link"))
+        else:
+            found.append((matched.start(), end, core, core, "link"))
+    for matched in _EMAIL.finditer(text):
+        if _overlaps(matched.start(), matched.end(), found):
+            continue
+        domain = matched.group(2).lower()
+        if domain == matched.group(2):
+            continue
+        found.append((matched.start(), matched.end(), matched.group(),
+                      f"{matched.group(1)}@{domain}", "email"))
+    for matched in _UUID.finditer(text):
+        if _overlaps(matched.start(), matched.end(), found):
+            continue
+        prefix, open_, body, close = matched.group(1), matched.group(2), matched.group(3), matched.group(4)
+        if open_ and not close or close and not open_:
+            body_text = matched.group()
+            new = body_text.lower()
+        else:
+            new = f"{prefix.lower()}{open_}{body.lower()}{close}"
+        if new != matched.group():
+            found.append((matched.start(), matched.end(), matched.group(), new, "uuid"))
+        else:
+            found.append((matched.start(), matched.end(), matched.group(), matched.group(), "uuid"))
+
+
+def _canon_url(raw: str) -> str | None:
+    try:
+        parts = urlsplit(raw)
+    except ValueError:
+        return None
+    scheme = parts.scheme.lower()
+    if scheme not in {"http", "https"} or not parts.hostname:
+        return None
+    host = parts.hostname.lower()
+    if ":" in host:
+        host = f"[{host}]"
+    try:
+        port = parts.port
+    except ValueError:
+        return None
+    netloc = host
+    if port and not ((scheme == "http" and port == 80) or (scheme == "https" and port == 443)):
+        netloc = f"{host}:{port}"
+    if parts.username:
+        auth = parts.username if parts.password is None else f"{parts.username}:{parts.password}"
+        netloc = f"{auth}@{netloc}"
+    return urlunsplit((scheme, netloc, parts.path, parts.query, parts.fragment))
+
+
+def _scientific(text: str, found: list) -> None:
+    for matched in _SCI.finditer(text):
+        if _overlaps(matched.start(), matched.end(), found):
+            continue
+        body = matched.group(1) or matched.group(3)
+        exponent = int(matched.group(2) if matched.group(1) else matched.group(4))
+        if not -18 <= exponent <= 18:
+            continue
+        new = canonical(Decimal(body) * (Decimal(10) ** exponent), "decimal")
+        if new and new != matched.group():
+            found.append((matched.start(), matched.end(), matched.group(), new, "number"))
 
 
 def _durations(text: str, found: list) -> None:

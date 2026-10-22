@@ -180,7 +180,7 @@ def test_a_time_period_is_an_iso_interval_or_a_duration():
     assert _text("Call 3:30 PM to 5:00 PM.") == "Call 15:30/17:00."
     assert _text("Call 3:30 PM to 5:00.") == "Call 3:30 PM to 5:00."
     assert _text("Thu, Oct 6 — 2:00–2:45 PM PT (5:00 PM ET).") == (
-        "Thu, Oct 6 — 2:00–2:45 PM PT (17:00 ET).")
+        "Thu, Oct 6 - 2:00-2:45 PM PT (17:00 ET).")
     source = "Closed from 14 July 2023 to 20 July 2023, ran 2 hours in June 2027."
     once = _text(source)
     assert conform(once).text == once and conform(once).rules == ()
@@ -191,6 +191,24 @@ def test_control_characters_and_noncharacters_are_dropped_and_emoji_stays():
     assert _text("a\uffffb\ud800c") == "abc"
     assert _text("ok \U0001f600") == "ok \U0001f600"
     assert "control" in _rules("a\x07b")
+
+
+def test_punctuation_fractions_and_identifiers_are_one_form_outside_a_fence():
+    assert _text("It\u2019s a \u201cquoted\u201d span\u2026") == 'It\'s a "quoted" span...'
+    assert _text("A well\u2014known file and 10\u201320.") == "A well-known file and 10-20."
+    assert _text("Use \ufb01le names.") == "Use file names."
+    assert _text("Add 2\u00bd and \u00bc.") == "Add 2.5 and 0.25."
+    assert _text("About 1.5e6 and 1e-3.") == "About 1500000 and 0.001."
+    assert _text("Keep 6e30 and 550e8400 whole.") == "Keep 6e30 and 550e8400 whole."
+    assert _text("See HTTPS://Example.COM:443/Path/A.") == "See https://example.com/Path/A."
+    assert _text("Version https://example.com/v1.20 stays.") == "Version https://example.com/v1.20 stays."
+    assert _text("Mail Alice@Example.COM today.") == "Mail Alice@example.com today."
+    assert _text("Id URN:UUID:550E8400-E29B-41D4-A716-446655440000.") == (
+        "Id urn:uuid:550e8400-e29b-41d4-a716-446655440000.")
+    fence = "```\nIt\u2019s a \u201cquoted\u201d \u2014 span\n```\n"
+    assert _text(fence) == fence
+    once = _text("It\u2019s 2\u00bd at HTTPS://Example.COM/a.")
+    assert conform(once).text == once and conform(once).rules == ()
 
 
 def test_a_plain_decimal_loses_trailing_zeros_and_a_version_does_not():
