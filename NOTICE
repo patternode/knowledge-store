@@ -6,4 +6,6 @@ Apache License 2.0 by its copyright holder.
 
 examples/sherlock-holmes/fetch.py downloads public-domain texts from Project Gutenberg;
 the texts themselves are not part of this distribution.
+examples/enterprise-rag-bench/fetch.py downloads part of EnterpriseRAG-Bench (MIT License,
+Copyright (c) 2026 DanswerAI, Inc.); the documents and questions are not part of this distribution.
 examples/space-missions/ is an original sample corpus dedicated to the public domain (CC0).
