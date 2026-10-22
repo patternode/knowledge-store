@@ -26,3 +26,6 @@ docs/architecture/**/dist/
 .import_linter_cache/
 .coverage
 coverage.json
+
+# DeepEval writes its last run here when no cache folder is set
+.deepeval/
