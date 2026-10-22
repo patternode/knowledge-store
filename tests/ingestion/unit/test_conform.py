@@ -77,10 +77,24 @@ def test_numbers_use_the_same_canonical_form_as_a_table_cell():
     assert _text("A loss of ($1,200.50).") == "A loss of -$1200.5."
     assert _text("Down −1,200.") == "Down -1200."
     assert _text("Down -1,200.") == "Down -1200."
-    assert _text("Total 1 234 567.") == "Total 1234567."
     assert _text("Total 1\u00a0234.") == "Total 1234."
     assert _text("Total 1\u00a0234\u00a0567.") == "Total 1234567."
     assert _text("Kept 12% and 15:30 and 2023-07-14.") == "Kept 12% and 15:30 and 2023-07-14."
+
+
+def test_a_regular_space_is_not_a_thousands_separator():
+    assert _text("Total 1 234 567.") == "Total 1 234 567."
+    assert _text("Phone +1 415 555 0199.") == "Phone +1 415 555 0199."
+    assert conform("Phone +1 415 555 0199.").rules == ()
+
+
+def test_parentheses_are_a_loss_only_with_currency_or_a_grouping_separator():
+    assert _text("A loss of (1,200).") == "A loss of -1200."
+    assert _text("A loss of (1\u00a0234).") == "A loss of -1234."
+    assert _text("Next release (1.4).") == "Next release (1.4)."
+    assert _text("Python SDK (3.11).") == "Python SDK (3.11)."
+    assert _text("Share of payloads (0.5%).") == "Share of payloads (0.5%)."
+    assert _text("Driver roll (535.23).") == "Driver roll (535.23)."
 
 
 def test_plain_integers_versions_lists_and_a_parenthetical_count_stay():
@@ -115,6 +129,27 @@ def test_fenced_code_is_not_rewritten():
     assert "Paid $1200." in text
     assert "```\nPaid $1,200 on 14 July 2023 at 3:30 PM.\n```" in text
     assert "Due 2024-01-13." in text
+
+
+def test_a_clock_range_against_a_date_is_one_span_and_stays():
+    source = "During (~2026-03-12 09:15-09:35 UTC) requests moved."
+    assert _text(source) == "During (~2026-03-12T09:15-09:35Z) requests moved."
+    assert _text("Logged 2026-03-12 09:27 and 2026-03-12 15:20.") == (
+        "Logged 2026-03-12T09:27 and 2026-03-12T15:20.")
+    once = _text(source)
+    assert conform(once).text == once and conform(once).rules == ()
+
+
+def test_control_characters_and_noncharacters_are_dropped_and_emoji_stays():
+    assert _text("a\x07b\x00c\td\n") == "abc\td\n"
+    assert _text("a\uffffb\ud800c") == "abc"
+    assert _text("ok \U0001f600") == "ok \U0001f600"
+    assert "control" in _rules("a\x07b")
+
+
+def test_a_plain_decimal_loses_trailing_zeros_and_a_version_does_not():
+    assert _text("Score 1.20 and build 1.0.") == "Score 1.2 and build 1."
+    assert _text("Version 1.2.3.") == "Version 1.2.3."
 
 
 def test_the_same_text_is_unchanged_the_second_time():

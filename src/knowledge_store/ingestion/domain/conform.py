@@ -9,6 +9,8 @@ Only forms that are unambiguous are rewritten. A numeric date that could be day-
 month-first is left as written. A clock without am/pm, a zone, or an hour of 13 or more
 (or 00) is left as written, unless it sits against a date. A bare year is not a date.
 Words such as yes and no are not booleans. A hyphenated range is rewritten on each side.
+Thousands separators are commas and the dedicated group spaces. Parentheses mark
+a loss only when the amount has a currency sign or a grouping separator.
 Nothing here is a class, a synonym or a unit from a domain.
 """
 
@@ -26,8 +28,8 @@ CONFORMER_VERSION = "conform@1"
 
 _EXAMPLES = 3
 
-# Spaces that are thousands separators, not word spaces. A single one is enough.
-# A regular space needs two groups, so "1 234" stays two numbers.
+# Dedicated group spaces are thousands separators. A single one is enough.
+# A regular space is a word space, so "1 234 567" and a telephone number stay.
 _GROUP_SPACES = "\u00a0\u202f\u2009\u2007"
 
 _LONG_MONTHS = ("January", "February", "March", "April", "May", "June", "July", "August",
@@ -45,15 +47,19 @@ _ISODATE = re.compile(r"\b(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b")
 # Groups: hour, minute, second, am/pm, zone. The space before am/pm sits inside that
 # group, so a clock does not swallow the space that follows it.
 _CLOCK = r"(\d{1,2}):([0-5]\d)(?::([0-5]\d))?(\s*[ap]\.?m\.?)?"
-_ZONE = r"(?:\s*(Z|UTC|GMT|[+-]\d{2}:?\d{2}))?"
+# A hyphen and HH:MM is a clock range ("09:15-09:35"), so it is not an offset.
+# Offsets are a name, a plus sign, or four digits with no colon ("-0500").
+_ZONE = r"(?:\s*(Z|UTC|GMT|[+]\d{2}:?\d{2}|-\d{4}))?"
 # No caret: match() is already anchored at the index it is given, and a caret would
 # mean the start of the document instead.
 _AFTER_DATE = re.compile(rf"(?:\s*,?\s+at\s+|\s*,\s*|\s+){_CLOCK}{_ZONE}\b", re.IGNORECASE)
+# A range shares the date: "2026-03-12 09:15-09:35 UTC" is one span. Taking only the
+# first clock leaves the zone for a second pass, so the form would not be stable.
+_RANGE = re.compile(rf"\s*[-–—]\s*{_CLOCK}{_ZONE}\b", re.IGNORECASE)
 _TIME = re.compile(rf"\b{_CLOCK}{_ZONE}\b", re.IGNORECASE)
 _NUMBER = re.compile(
     r"(?<![\w.])(?:(?P<open>\()\s*)?(?P<sign>[-−–]\s*)?(?P<cur>[$€£¥]\s*)?"
-    r"(?P<body>\d{1,3}(?:[ \u00a0\u202f\u2009\u2007]\d{3}){2,}(?:\.\d+)?"
-    r"|\d{1,3}(?:[,\u00a0\u202f\u2009\u2007]\d{3})+(?:\.\d+)?"
+    r"(?P<body>\d{1,3}(?:[,\u00a0\u202f\u2009\u2007]\d{3})+(?:\.\d+)?"
     r"|\d+\.\d+|\d+)"
     r"(?:\s*(?P<pct>%|percent|per\s+cent))?(?:\s*(?P<close>\)))?(?![\w])(?!\.\d)",
     re.IGNORECASE)
@@ -124,6 +130,12 @@ def _fold(text: str) -> tuple[str, Counter, dict[str, list]]:
             continue
         if ch in _DROP:
             _note(counts, examples, "invisible", repr(ch))
+            i += 1
+            continue
+        # Tab and newline stay. Other controls, unpaired surrogates and non-characters
+        # are not text. Emoji and punctuation stay: a passage is what grounding checks.
+        if _dropped_char(ch):
+            _note(counts, examples, "control", repr(ch))
             i += 1
             continue
         if ch in _GROUP_SPACES:
@@ -230,6 +242,16 @@ def _overlaps(start: int, end: int, found: list[tuple[int, int, str, str, str]])
     return any(start < have_end and end > have_start for have_start, have_end, *_ in found)
 
 
+def _dropped_char(ch: str) -> bool:
+    if ch in "\t\n":
+        return False
+    category = unicodedata.category(ch)
+    if category in ("Cc", "Cs"):
+        return True
+    code = ord(ch)
+    return 0xFDD0 <= code <= 0xFDEF or (code & 0xFFFE) == 0xFFFE
+
+
 def _attach(text: str, end: int, iso: str) -> tuple[str, int]:
     after = _AFTER_DATE.match(text, end)
     if after is None:
@@ -237,7 +259,14 @@ def _attach(text: str, end: int, iso: str) -> tuple[str, int]:
     clock = _clock(after, attached=True)
     if not clock:
         return iso, end
-    return f"{iso}T{clock}", after.end()
+    end = after.end()
+    span = f"{iso}T{clock}"
+    ranged = _RANGE.match(text, end)
+    if ranged is not None:
+        other = _clock(ranged, attached=True)
+        if other:
+            return f"{span}-{other}", ranged.end()
+    return span, end
 
 
 def _date(m: re.Match) -> str | None:
@@ -311,16 +340,16 @@ def _zone(raw: str | None) -> str | None:
 
 def _number(m: re.Match) -> str | None:
     body = m.group("body")
-    if " " in body and not re.fullmatch(r"\d{1,3}(?: \d{3}){2,}(?:\.\d+)?", body):
-        return None
     open_, close = m.group("open"), m.group("close")
     if (open_ is None) != (close is None):
         return None
     sign = (m.group("sign") or "").strip()
     cur = (m.group("cur") or "").strip()
     pct = m.group("pct")
-    if open_ and not ("," in body or "." in body or cur or " " in body
-                      or any(ch in body for ch in _GROUP_SPACES)):
+    # "(1.4)" and "(0.5%)" are parentheticals. A loss needs a currency sign or a
+    # thousands separator, as in "($1,200)" and "(1,200)".
+    grouped = "," in body or any(ch in body for ch in _GROUP_SPACES)
+    if open_ and not (grouped or cur):
         return None
     compact = "".join(ch for ch in body if ch not in f", {_GROUP_SPACES}")
     digits = canonical(compact, "decimal")
@@ -342,7 +371,7 @@ def _worth(body: str, sign: str, cur: str, pct: str | None, compact: str, built:
            m: re.Match) -> bool:
     if cur or m.group("open") or (pct and pct != "%"):
         return True
-    if " " in body or any(ch in body for ch in f",{_GROUP_SPACES}"):
+    if any(ch in body for ch in f",{_GROUP_SPACES}"):
         return True
     # An empty sign is a substring of every string, so membership has to be a real character.
     if sign in ("−", "–"):
