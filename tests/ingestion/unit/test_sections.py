@@ -73,9 +73,9 @@ def test_table_rows_pack_between_rows_and_a_long_row_breaks_on_cells():
     assert [p.text for p in passages] == ["code: A1 | name: Ada", "code: A2 | name: Grace"]
     long = "code: A1 | note: " + ("word " * 30)
     pieces = chunk_document(long.strip(), DOC, parser="table@1", target=40, max_chars=48)
-    assert pieces[0].text.startswith("code: A1")
-    assert all("code: A1" not in p.text or p is pieces[0] for p in pieces)
-    assert " ".join(p.text for p in pieces).count("code: A1") == 1
+    assert pieces[0].text == "code: A1"
+    assert all("code: A1" not in p.text for p in pieces[1:])
+    assert all(long[p.char_start:p.char_end].strip() == p.text for p in pieces)
 
 
 def test_pdf_pages_are_conformed_and_packed_apart():

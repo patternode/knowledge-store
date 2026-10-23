@@ -14,7 +14,7 @@ from knowledge_store.ingestion.domain.chunk import (
     SECTION_CHUNKER, Passage, chunk_document, chunk_regions,
 )
 from knowledge_store.ingestion.domain.conform import CONFORMER_VERSION, conform
-from knowledge_store.ingestion.domain.conform.log import _EXAMPLES
+from knowledge_store.ingestion.domain.conform.log import EXAMPLE_LIMIT
 from knowledge_store.ingestion.domain.parsing import ParseResult
 
 
@@ -34,8 +34,9 @@ def silver_body(parsed: ParseResult, doc_id: str) -> SilverBody:
     A document with parts, such as a PDF page, is conformed and packed per part.
     """
     title = conform(parsed.title).text if parsed.title else None
+    parts = [part for part in parsed.parts if part and part.strip()]
     if parsed.parts:
-        done = [conform(part) for part in parsed.parts]
+        done = [conform(part) for part in parts]
         text, regions = _join([item.text for item in done])
         passages = chunk_regions(text, regions, doc_id, parser=parsed.parser)
         rules = _merge(item.rules for item in done)
@@ -51,7 +52,7 @@ def _join(parts: list[str]) -> tuple[str, list[tuple[int, int]]]:
     regions: list[tuple[int, int]] = []
     at = 0
     for text in parts:
-        if not text:
+        if not text or not text.strip():
             continue
         if chunks:
             chunks.append("\n\n")
@@ -71,7 +72,7 @@ def _merge(groups) -> tuple[dict, ...]:
             counts[name] = counts.get(name, 0) + row["applied"]
             held = examples.setdefault(name, [])
             for example in row["examples"]:
-                if example not in held and len(held) < _EXAMPLES:
+                if example not in held and len(held) < EXAMPLE_LIMIT:
                     held.append(example)
     return tuple({"rule": name, "applied": counts[name], "examples": examples[name]}
                  for name in sorted(counts) if counts[name])

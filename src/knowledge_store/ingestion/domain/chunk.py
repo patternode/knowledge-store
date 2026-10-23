@@ -153,39 +153,55 @@ def _mk_from(passage: Passage) -> Passage:
 
 
 def _chunk_rows(text: str, doc_id: str, target: int, max_chars: int) -> list[Passage]:
-    """One block per row. A row longer than the cap breaks on the cell separator."""
+    """One block per row. A row longer than the cap breaks between cells, never through one."""
     blocks: list[tuple[int, int]] = []
     pos = 0
     for line in text.split("\n"):
-        start = text.find(line, pos)
-        if start < 0:
-            continue
-        end = start + len(line)
+        start, end = pos, pos + len(line)
         pos = end + 1
         if not line.strip():
             continue
-        if len(line) <= max_chars:
+        if end - start <= max_chars:
             blocks.append((start, end))
         else:
             blocks.extend(_split_row(text, start, end, max_chars))
     return _pack(text, blocks, doc_id, target, 0)
 
 
-def _split_row(text: str, start: int, end: int, max_chars: int) -> list[tuple[int, int]]:
-    blocks: list[tuple[int, int]] = []
+def _cells(text: str, start: int, end: int) -> list[tuple[int, int]]:
+    cells: list[tuple[int, int]] = []
     cursor = start
-    while end - cursor > max_chars:
-        window_end = min(end, cursor + max_chars)
-        cut = text.rfind(" | ", cursor + 1, window_end)
-        if cut <= cursor:
-            cut = window_end
-            cursor_next = cut
+    while cursor < end:
+        found = text.find(" | ", cursor, end)
+        if found < 0:
+            cells.append((cursor, end))
+            break
+        cells.append((cursor, found))
+        cursor = found + 3
+    return cells
+
+
+def _split_row(text: str, start: int, end: int, max_chars: int) -> list[tuple[int, int]]:
+    """Pack whole cells up to the cap. A cell longer than the cap is split on its own."""
+    blocks: list[tuple[int, int]] = []
+    buf_s: int | None = None
+    buf_e = start
+    for cell_s, cell_e in _cells(text, start, end):
+        if cell_e - cell_s > max_chars:
+            if buf_s is not None:
+                blocks.append((buf_s, buf_e))
+                buf_s = None
+            blocks.extend(_hard_blocks(text, cell_s, cell_e, max_chars))
+            continue
+        if buf_s is None:
+            buf_s, buf_e = cell_s, cell_e
+        elif cell_e - buf_s <= max_chars:
+            buf_e = cell_e
         else:
-            cursor_next = cut + 3
-        blocks.append((cursor, cut))
-        cursor = cursor_next
-    if cursor < end:
-        blocks.append((cursor, end))
+            blocks.append((buf_s, buf_e))
+            buf_s, buf_e = cell_s, cell_e
+    if buf_s is not None:
+        blocks.append((buf_s, buf_e))
     return blocks
 
 

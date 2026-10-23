@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from collections import Counter
 
-_EXAMPLES = 3
+EXAMPLE_LIMIT = 3
+_EXAMPLES = EXAMPLE_LIMIT
 
 def _record(found, counts: Counter, examples: dict[str, list]) -> None:
     for _, _, old, new, rule in found:

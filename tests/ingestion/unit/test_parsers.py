@@ -1,5 +1,6 @@
 """Ingestion domain: format parsers."""
 
+import io
 import json
 
 import pytest
@@ -51,6 +52,36 @@ def test_a_tsv_uses_tabs_and_a_repeated_header_is_numbered():
     r = parse(b"name\tname\nAda\tLovelace\n", ".tsv")
     assert r.text == "name: Ada | name (2): Lovelace"
     assert r.title == "Ada"
+
+
+def test_a_csv_extension_wins_over_a_plain_content_type_and_ignores_case():
+    r = parse(b"title,note\nReport,body\n", ".CSV", "text/plain")
+    assert r.parser == "table@1" and r.title == "Report"
+
+
+def test_a_csv_without_an_extension_uses_its_content_type():
+    r = parse(b"a,b\n1,2\n", ".bin", "text/csv; charset=utf-8")
+    assert r.parser == "table@1" and r.text == "a: 1 | b: 2"
+
+
+def test_a_tab_file_without_an_extension_uses_its_content_type():
+    r = parse(b"a\tb\n1\t2\n", "", "text/tab-separated-values")
+    assert r.parser == "table@1" and r.text == "a: 1 | b: 2"
+
+
+def test_a_csv_with_a_byte_order_mark_or_utf16_decodes():
+    assert parse("\ufeffa,b\n1,2\n".encode("utf-8"), ".csv").text == "a: 1 | b: 2"
+    assert parse("name\nAda\n".encode("utf-16"), ".csv").text == "name: Ada"
+
+
+def test_a_csv_without_a_title_column_uses_its_first_row_as_the_title():
+    r = parse(b"amount,note\n10,rent\n", ".csv")
+    assert r.title == "amount: 10 | note: rent"
+
+
+def test_a_header_only_csv_has_no_text_and_no_title():
+    r = parse(b"amount,when\n", ".csv")
+    assert r.text == "" and r.title is None and r.parser == "table@1"
 
 
 def test_markdown_takes_its_first_heading_as_title():
@@ -135,7 +166,6 @@ def test_pdf_without_pypdf_is_unsupported(monkeypatch):
 
 def _pdf(text: str | None, title: str | None = None) -> bytes:
     pypdf = pytest.importorskip("pypdf")
-    import io
     w = pypdf.PdfWriter()
     w.add_blank_page(width=200, height=200)
     if title:
@@ -148,6 +178,21 @@ def _pdf(text: str | None, title: str | None = None) -> bytes:
 def test_a_pdf_with_no_text_layer_is_unsupported():
     with pytest.raises(UnsupportedFormat, match="no text layer"):
         parse_pdf(_pdf(None))
+
+
+def test_a_blank_pdf_page_is_not_a_part_and_the_page_count_keeps_it(monkeypatch):
+    pypdf = pytest.importorskip("pypdf")
+    calls = iter(["First page of the filing.", "", "Third page of the filing."])
+    monkeypatch.setattr(pypdf.PageObject, "extract_text", lambda self, *a, **k: next(calls))
+    writer = pypdf.PdfWriter()
+    for _ in range(3):
+        writer.add_blank_page(width=200, height=200)
+    buf = io.BytesIO()
+    writer.write(buf)
+    parsed = parse_pdf(buf.getvalue())
+    assert parsed.metadata == {"pages": 3}
+    assert parsed.parts == ("First page of the filing.", "Third page of the filing.")
+    assert parsed.text == "First page of the filing.\n\nThird page of the filing."
 
 
 def test_a_pdf_with_text_returns_its_pages(monkeypatch):
