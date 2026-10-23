@@ -93,3 +93,16 @@ def test_the_deepeval_runner_refuses_to_upload_unasked(tmp_path, monkeypatch):
 def test_the_deepeval_version_is_pinned():
     from knowledge_store.evaluation.adapters.deepeval_cases import DEEPEVAL_VERSION
     assert DEEPEVAL_VERSION.count(".") == 2
+
+
+def test_a_row_metric_reads_its_row_and_refuses_a_question_it_has_no_row_for():
+    import asyncio
+    pytest.importorskip("deepeval")
+    from deepeval.errors import MissingTestCaseParamsError
+    from deepeval.test_case import LLMTestCase
+    from knowledge_store.evaluation.adapters.deepeval_runner import _metric
+    Metric = _metric("score", lambda row: (row["score"], row["correct"], "why") if row else None, 0.5)
+    m = Metric({"a": {"score": 1.0, "correct": True}})
+    assert asyncio.run(m.a_measure(LLMTestCase(name="a", input="?", actual_output="x"))) == 1.0 and m.is_successful()
+    with pytest.raises(MissingTestCaseParamsError):
+        m.measure(LLMTestCase(name="zz", input="?", actual_output="x"))

@@ -110,3 +110,17 @@ def test_completeness_is_judged_over_the_answer_facts_alone():
 def test_no_answer_facts_means_no_completeness_metric():
     g = grader(ScriptedClient(), faithfulness=False).grade(Q, {"answer": "Atlas V", "sources": SOURCES})
     assert set(g["metrics"]) == {"correctness"}
+
+
+def test_the_judge_makes_the_platform_client_on_first_use_and_answers_asynchronously(monkeypatch):
+    import asyncio
+    import knowledge_store.platform_services as ps
+
+    class Plain:
+        def converse(self, modelId, messages, inferenceConfig):
+            return {"output": {"message": {"content": [{"text": f"ok {modelId}"}]}}}
+
+    monkeypatch.setattr(ps, "runtime_client", lambda: Plain(), raising=False)
+    j = judge("judge-model")
+    assert j.generate("hello") == "ok judge-model"
+    assert asyncio.run(j.a_generate("hello")) == "ok judge-model"
