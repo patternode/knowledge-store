@@ -115,6 +115,22 @@ def test_an_unreadable_date_never_matches():
     assert not tq._cmp("eq", "someday", "date", "2023-07-14")
 
 
+def test_a_duration_that_cannot_be_read_never_matches_and_not_equal_is_read():
+    assert tq._cmp("eq", "PT2H", "duration", "two hours") is False
+    assert tq._cmp("neq", "PT2H", "duration", "PT3H") is True
+    assert tq._cmp("neq", "2023-07-14/2023-07-20", "interval", "14 July 2023/20 July 2023") is False
+
+
+def test_the_cell_cache_is_emptied_once_it_holds_more_than_sixty_four_snapshots(lake):
+    import time
+    tq._cache.clear()
+    for i in range(65):
+        tq._cache[f"snapshot-{i}"] = (time.monotonic(), [])
+    assert tq._read_cells(lake, "gold/no-such-snapshot.jsonl") == []
+    assert len(tq._cache) == 1
+    tq._cache.clear()
+
+
 def test_a_date_and_time_orders_and_a_duration_only_matches():
     assert tq._cmp("lt", "2023-07-14T15:30Z", "dateTime", "2023-07-14T16:00Z")
     assert tq._cmp("eq", "PT2.0H", "duration", "PT2H")

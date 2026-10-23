@@ -17,7 +17,9 @@ stay as written, because the calendar they use is not fixed. A business day is n
 fixed length. Words such as yes and no are not booleans. A hyphenated range of numbers
 is rewritten on each side. Thousands separators are commas and the dedicated group
 spaces. Parentheses mark a loss only when the amount has a currency sign or a grouping
-separator. Quotes, dashes, ellipsis and ligatures fold to ASCII. A link's scheme
+separator. A decimal keeps its digits as written: 0.70 and 3.10 are not shortened,
+because 3.10 is a version as often as a number. Quotes, dashes, ellipsis and ligatures
+fold to ASCII. A link's scheme
 and host, an email's domain and a UUID are written in one case. An exact fraction
 and a scientific number use the same decimal form as any other number. An
 information size is a number and a symbol (8 MB, 10 MiB, 256 B). The B is

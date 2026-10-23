@@ -161,3 +161,27 @@ def test_an_interval_needs_two_sides():
         parse_value("2023-07-14", "interval")
     with pytest.raises(ValueError, match="clock"):
         parse_value("25:00/17:00", "interval")
+
+
+
+@pytest.mark.parametrize("text", ["2024-13-45T10:00", "2024-01-01Tnoon"])
+def test_a_date_and_time_that_does_not_parse_is_refused(text):
+    with pytest.raises(ValueError, match="not a date and time"):
+        parse_value(text, "dateTime")
+    assert canonical(text, "dateTime") is None
+
+
+def test_an_interval_side_that_is_not_a_month_a_clock_or_a_date_is_refused():
+    with pytest.raises(ValueError, match="not a month"):
+        parse_value("2024-13/2024-14", "interval")
+    with pytest.raises(ValueError, match="not a date, a time or a duration"):
+        parse_value("soon/later", "interval")
+
+
+def test_an_interval_of_clocks_keeps_seconds_that_are_not_zero():
+    assert canonical("09:00:30/17:00:00", "interval") == "09:00:30/17:00"
+
+
+def test_a_duration_with_a_t_and_no_time_part_is_refused():
+    with pytest.raises(ValueError, match="no time part"):
+        parse_value("P1DT", "duration")

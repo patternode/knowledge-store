@@ -84,7 +84,7 @@ def test_an_unmapped_csv_is_refined_as_rows_and_the_passages_stay_put(lake):
     assert refine_all(lake)[0]["status"] == "refined"
     doc = load_doc(lake, doc_id)
     assert doc["parser"] == "table@1" and doc["title"] == "Quarterly note"
-    assert "$1200.5" in doc["text"] and "2023-07-14" in doc["text"]
+    assert "$1200.50" in doc["text"] and "2023-07-14" in doc["text"]
     assert "01/02/2024" in doc["text"] and "Ada" in doc["text"] and "Grace" in doc["text"]
     passages = load_passages(lake, doc_id)
     lines = doc["text"].splitlines()
@@ -92,7 +92,7 @@ def test_an_unmapped_csv_is_refined_as_rows_and_the_passages_stay_put(lake):
         assert doc["text"][passage.char_start:passage.char_end].strip() == passage.text
         for line in passage.text.splitlines():
             assert line in lines
-    assert any("$1200.5" in p.text and "See you. Then later." in p.text for p in passages)
+    assert any("$1200.50" in p.text and "See you. Then later." in p.text for p in passages)
     first = [p.passage_id for p in passages]
     assert [r["status"] for r in refine_all(lake, reparse=True)] == ["refined"]
     assert [p.passage_id for p in load_passages(lake, doc_id)] == first
@@ -148,8 +148,8 @@ def test_refine_conforms_the_text_and_the_title_and_records_the_rules(lake):
     doc = load_doc(lake, ids["review.md"])
     assert doc["conformer"] == "conform@1"
     assert doc["title"] == "Review of 2023-07-14"
-    assert "$1200.5" in doc["text"] and "2024-01-13T15:30" in doc["text"] and "12%" in doc["text"]
+    assert "$1200.50" in doc["text"] and "2024-01-13T15:30" in doc["text"] and "12%" in doc["text"]
     assert "01/02/2024" in doc["text"] and "3:30" in doc["text"]
     rules = {row["rule"]: row for row in doc["metadata"]["conform"]}
     assert rules["date"]["applied"] >= 1 and rules["number"]["applied"] >= 1
-    assert "$1200.5" in load_passages(lake, ids["review.md"])[0].text
+    assert "$1200.50" in load_passages(lake, ids["review.md"])[0].text

@@ -100,7 +100,7 @@ def test_pdf_pages_are_conformed_and_packed_apart():
     finally:
         monkeypatch.undo()
     assert [p.text for p in body.passages] == [
-        "Paid $1200.5 on page one of the filing.",
+        "Paid $1200.50 on page one of the filing.",
         "Page two stands on its own and must not join page one.",
     ]
     assert body.rules and body.rules[0]["rule"] == "number"

@@ -134,7 +134,7 @@ def test_a_long_page_splits_inside_itself_and_the_next_page_stays_whole():
 def test_one_part_is_the_document_and_blank_parts_add_nothing():
     parsed = ParseResult("wrong", None, "pdf@1", parts=("Paid $1,200.50 today.",))
     body = silver_body(parsed, DOC)
-    assert body.text == "Paid $1200.5 today."
+    assert body.text == "Paid $1200.50 today."
     assert body.passages[0].text == body.text
     blank = silver_body(ParseResult("ignored", None, "pdf@1", parts=("  ", "")), DOC)
     assert blank.text == "" and blank.passages == [] and blank.rules == ()
@@ -153,6 +153,6 @@ def test_a_table_row_is_conformed_inside_the_row_and_stays_one_passage():
         'amount: $1,200.50 | when: 14 July 2023 | note: See you. Then later.',
         "Quarterly note", "table@1")
     body = silver_body(parsed, DOC)
-    assert body.passages[0].text == "amount: $1200.5 | when: 2023-07-14 | note: See you. Then later."
+    assert body.passages[0].text == "amount: $1200.50 | when: 2023-07-14 | note: See you. Then later."
     assert body.text == body.passages[0].text
     assert conform(body.text).text == body.text

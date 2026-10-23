@@ -75,14 +75,14 @@ def test_a_clock_against_a_date_joins_it():
     assert _text("Met 01/02/2024 at 3:30 PM.") == "Met 01/02/2024 at 15:30."
 
 
-def test_numbers_use_the_same_canonical_form_as_a_table_cell():
-    assert _text("Paid $1,200.50.") == "Paid $1200.5."
+def test_numbers_fold_separators_signs_and_percent_words():
+    assert _text("Paid $1,200.50.") == "Paid $1200.50."
     assert _text("Paid €1,200.") == "Paid €1200."
     assert _text("Up 12 percent.") == "Up 12%."
     assert _text("Up 12 per cent.") == "Up 12%."
     assert _text("Up 12 %.") == "Up 12%."
     assert _text("A loss of ($1,200).") == "A loss of -$1200."
-    assert _text("A loss of ($1,200.50).") == "A loss of -$1200.5."
+    assert _text("A loss of ($1,200.50).") == "A loss of -$1200.50."
     assert _text("Down −1,200.") == "Down -1200."
     assert _text("Down -1,200.") == "Down -1200."
     assert _text("Total 1\u00a0234.") == "Total 1234."
@@ -245,9 +245,11 @@ def test_an_information_size_is_a_number_and_a_symbol():
     assert conform(once).text == once and conform(once).rules == ()
 
 
-def test_a_plain_decimal_loses_trailing_zeros_and_a_version_does_not():
-    assert _text("Score 1.20 and build 1.0.") == "Score 1.2 and build 1."
+def test_a_decimal_keeps_its_digits_as_written():
+    source = "Score 1.20 and build 1.0 on Python 3.10 with CUDA 12.0."
+    assert _text(source) == source
     assert _text("Version 1.2.3.") == "Version 1.2.3."
+    assert _text("Paid $1,200.50, up 0.50 percent.") == "Paid $1200.50, up 0.50%."
 
 
 def test_the_same_text_is_unchanged_the_second_time():

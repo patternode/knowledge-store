@@ -48,9 +48,11 @@ def _number(m: re.Match) -> str | None:
     if open_ and not (grouped or cur):
         return None
     compact = "".join(ch for ch in body if ch not in f", {_GROUP_SPACES}")
-    digits = canonical(compact, "decimal")
-    if digits is None:
+    if canonical(compact, "decimal") is None:
         return None
+    # The digits stay as written: 0.70 and 3.10 are not rewritten to 0.7 and 3.1, because
+    # the second is a version as often as a number, and a trailing zero costs a reader nothing.
+    digits = compact
     negative = bool(sign) or bool(open_)
     if negative and not digits.startswith("-"):
         digits = "-" + digits
@@ -71,11 +73,7 @@ def _worth(body: str, sign: str, cur: str, pct: str | None, compact: str, built:
     # An empty sign is a substring of every string, so membership has to be a real character.
     if sign in ("−", "–"):
         return True
-    if pct == "%" and built != m.group():
-        return True
-    if "." in body:
-        return canonical(compact, "decimal") not in (None, compact)
-    return False
+    return pct == "%" and built != m.group()
 
 
 def _claim_numbers(text: str, found: list) -> None:
