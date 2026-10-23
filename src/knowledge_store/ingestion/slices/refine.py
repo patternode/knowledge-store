@@ -1,4 +1,4 @@
-"""Refine: bronze -> silver. Parse, conform, then chunk into passages.
+"""Refine: bronze -> silver. Parse, conform, section, then chunk into passages.
 
 A document is refined once; the silver document's presence is the marker. A parser,
 conformer or chunker upgrade is applied by --reparse, deliberately, because new passage
@@ -17,9 +17,9 @@ import json
 import logging
 
 from knowledge_store.platform_services import layout
-from knowledge_store.ingestion.domain.conform import CONFORMER_VERSION, conform
 from knowledge_store.ingestion.domain.parsing import UnsupportedFormat, parse
-from knowledge_store.ingestion.domain.chunk import CHUNKER_VERSION, Passage, chunk_text
+from knowledge_store.ingestion.domain.chunk import Passage
+from knowledge_store.ingestion.domain.steps import silver_body
 from knowledge_store.platform_services import Store, put_json
 from knowledge_store.ingestion.slices.ingest import bronze_objects
 
@@ -37,25 +37,23 @@ def refine_one(lake: Store, meta: dict) -> dict:
         return {"doc_id": doc_id, "status": "unsupported", "reason": str(e)}
     except Exception as e:  # a malformed file is recorded, not fatal
         return {"doc_id": doc_id, "status": "parse_failed", "reason": repr(e)[:500]}
-    conformed = conform(res.text)
-    if len(conformed.text.strip()) < MIN_TEXT_CHARS:
+    body = silver_body(res, doc_id)
+    if len(body.text.strip()) < MIN_TEXT_CHARS:
         return {"doc_id": doc_id, "status": "empty", "reason": f"under {MIN_TEXT_CHARS} characters of text"}
-    passages = chunk_text(conformed.text, doc_id)
     lake.put(layout.passages_key(doc_id),
-             "\n".join(json.dumps(p.to_dict()) for p in passages).encode(), "application/x-ndjson")
+             "\n".join(json.dumps(p.to_dict()) for p in body.passages).encode(), "application/x-ndjson")
     meta_out = {**meta.get("metadata", {}), **res.metadata}
-    if conformed.rules:
-        meta_out["conform"] = [dict(rule) for rule in conformed.rules]
-    title = conform(res.title).text if res.title else None
+    if body.rules:
+        meta_out["conform"] = [dict(rule) for rule in body.rules]
     doc = {
-        "doc_id": doc_id, "title": title or meta.get("name"), "source": meta["source"],
+        "doc_id": doc_id, "title": body.title or meta.get("name"), "source": meta["source"],
         "scope": meta.get("scope", "public"), "source_uri": meta.get("source_uri"),
         "name": meta.get("name"), "metadata": meta_out,
-        "parser": res.parser, "conformer": CONFORMER_VERSION, "chunker": CHUNKER_VERSION,
-        "chars": len(conformed.text), "passages": len(passages), "text": conformed.text,
+        "parser": res.parser, "conformer": body.conformer, "chunker": body.chunker,
+        "chars": len(body.text), "passages": len(body.passages), "text": body.text,
     }
     put_json(lake, layout.doc_key(doc_id), doc)  # written last: its presence marks the document refined
-    return {"doc_id": doc_id, "status": "refined", "passages": len(passages)}
+    return {"doc_id": doc_id, "status": "refined", "passages": len(body.passages)}
 
 
 def refine_all(lake: Store, *, reparse: bool = False, limit: int | None = None,

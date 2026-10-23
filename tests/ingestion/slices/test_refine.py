@@ -35,7 +35,7 @@ def test_a_document_is_refined_into_silver_with_its_passages(lake):
     assert rows == [{"doc_id": doc_id, "status": "refined", "passages": 1}]
     doc = load_doc(lake, doc_id)
     assert doc["title"] == "Annual review" and doc["parser"] == "markdown@1" and doc["scope"] == "private"
-    assert doc["chunker"] == "chunk@1" and doc["conformer"] == "conform@1" and doc["passages"] == 1
+    assert doc["chunker"] == "chunk@2" and doc["conformer"] == "conform@1" and doc["passages"] == 1
     assert "conform" not in doc["metadata"]
     assert [p.doc_id for p in load_passages(lake, doc_id)] == [doc_id]
     assert silver_doc_ids(lake) == [doc_id]

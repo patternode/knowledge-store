@@ -15,6 +15,14 @@ def test_the_conformer_version_is_recorded():
     assert CONFORMER_VERSION == "conform@1"
 
 
+def test_literal_families_run_as_separate_modules_in_one_order():
+    from knowledge_store.ingestion.domain.conform import RULES
+    assert RULES == (
+        "punctuation", "identifiers", "scientific", "periods",
+        "dates", "clocks", "sizes", "numbers",
+    )
+
+
 def test_a_month_name_date_becomes_iso():
     assert _text("Filed on 14 July 2023.") == "Filed on 2023-07-14."
     assert _text("Filed on July 14, 2023.") == "Filed on 2023-07-14."

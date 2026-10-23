@@ -32,6 +32,10 @@ def test_block_elements_break_lines():
     assert html_to_text("<p>One</p><p>Two</p>") == "One\n\nTwo"
 
 
+def test_a_heading_is_written_as_a_markdown_heading():
+    assert html_to_text("<h2>Costs</h2><p>Rent was due.</p>") == "## Costs\n\nRent was due."
+
+
 def test_entities_and_non_breaking_spaces_are_decoded():
     assert html_to_text("<p>A&amp;B&nbsp;C</p>") == "A&B C"
 
