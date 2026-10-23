@@ -2,6 +2,10 @@
 
     python -m knowledge_store.apps.evaluate <set.yaml> --lake <uri>               the agent in process, on that lake
     python -m knowledge_store.apps.evaluate <set.yaml> --api <url> [--token-env]  the deployed chat API, as a person
+    python -m knowledge_store.apps.evaluate <set.yaml> --answers <file.jsonl>     another system's answers, scored and
+                                    graded alike (one JSON object a line: question_id, answer, document_ids;
+                                    --answers-index maps its document ids to the set's source names and
+                                    --documents is the folder their text is read from)
     ... --out build/eval            where runs and baselines are kept (a folder, or s3://bucket for the lake's private/evals)
     ... --only q01,q07              a subset
     ... --verifier lexical|hhem|guardrail|none
@@ -28,8 +32,8 @@ import os
 import sys
 from pathlib import Path
 
-from knowledge_store.evaluation import (DirRunStore, HttpAnswerer, InProcessAnswerer, LakeRunStore, LexicalVerifier,
-                                        Rules, gate, load_set, report, run)
+from knowledge_store.evaluation import (DirRunStore, FileAnswerer, HttpAnswerer, InProcessAnswerer, LakeRunStore,
+                                        LexicalVerifier, Rules, gate, load_answer_index, load_set, report, run)
 
 ESTIMATE_USD_PER_QUESTION = 0.25
 ESTIMATE_USD_PER_GRADE = 0.05
@@ -62,6 +66,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("set", type=Path)
     ap.add_argument("--lake", default=os.environ.get("LAKE_URI"))
     ap.add_argument("--api", help="the deployed chat API's base URL (the portal URL)")
+    ap.add_argument("--answers", help="another system's answers, one JSON object a line")
+    ap.add_argument("--answers-index", help="its document ids to the set's source names (JSON object or lines)")
+    ap.add_argument("--documents", help="the folder the cited documents are read from, for the grader")
     ap.add_argument("--token-env", default="KS_TOKEN", help="environment variable holding the caller's access token")
     ap.add_argument("--model", default=os.environ.get("AGENT_MODEL_ID"))
     ap.add_argument("--out", default="build/eval")
@@ -80,7 +87,7 @@ def main(argv: list[str] | None = None) -> int:
     ev = load_set(a.set)
     only = a.only.split(",") if a.only else None
     n = len([q for q in ev.questions if not only or q.id in only])
-    per = ESTIMATE_USD_PER_QUESTION + (ESTIMATE_USD_PER_GRADE if a.grader != "none" else 0)
+    per = (0 if a.answers else ESTIMATE_USD_PER_QUESTION) + (ESTIMATE_USD_PER_GRADE if a.grader != "none" else 0)
     if not a.yes:
         print(f"{n} questions, each a model run of several calls: about {n * per:.2f} USD "
               f"at {per} USD a question. Re-run with --yes to go ahead.")
@@ -89,7 +96,10 @@ def main(argv: list[str] | None = None) -> int:
     if a.grader == "deepeval" and not judge_model:
         print("give --judge-model (or set JUDGE_MODEL_ID) for the grader")
         return 2
-    if a.api:
+    if a.answers:
+        index = load_answer_index(a.answers_index) if a.answers_index else None
+        ask = FileAnswerer(a.answers, index=index, documents=a.documents)
+    elif a.api:
         token = os.environ.get(a.token_env)
         if not token:
             print(f"set {a.token_env} to an access token for the person to ask as")

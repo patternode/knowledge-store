@@ -1,9 +1,11 @@
 """DeepEval as the Grader: a model's judgement of each answer, reported beside the score.
 
-Two DeepEval metrics, each run only when the question gives it something to judge:
+Three DeepEval metrics, each run only when the question gives it something to judge:
 
     correctness    G-Eval against the set's expected answer and, when the set gives them, its
                    answer facts (context.answer_facts): every fact stated, nothing contradicted
+    completeness   G-Eval over the answer facts alone: the share of them the answer states, the
+                   partial credit EnterpriseRAG-Bench reports beside correctness
     faithfulness   whether the claims in the answer are supported by the passages it cites
 
 The verdict is pass when every metric that ran passed, fail when none did, partial otherwise,
@@ -27,6 +29,15 @@ CORRECTNESS_STEPS = [
     "Penalise heavily any statement in the actual output that contradicts the expected output or a listed fact.",
     "Penalise each listed fact, or each part of the expected output, that the actual output leaves out.",
     "Do not penalise wording, order, or extra detail that contradicts nothing.",
+]
+
+
+COMPLETENESS_STEPS = [
+    "The context lists the facts a complete answer states. For each listed fact, decide whether the actual output "
+    "states it, in any words.",
+    "The score is the share of listed facts the actual output states: all of them is 10, none is 0, half is 5.",
+    "Do not penalise extra detail, wording or order, and do not judge whether the output is right: only which "
+    "listed facts it states.",
 ]
 
 
@@ -97,6 +108,10 @@ class DeepEvalGrader:
             params = [P.INPUT, P.ACTUAL_OUTPUT, P.EXPECTED_OUTPUT] + ([P.CONTEXT] if case.context else [])
             out["correctness"] = GEval(name="Correctness", evaluation_steps=CORRECTNESS_STEPS, evaluation_params=params,
                                        model=self.model, threshold=self.threshold, async_mode=False)
+        if question.answerable and case.context:
+            out["completeness"] = GEval(name="Completeness", evaluation_steps=COMPLETENESS_STEPS,
+                                        evaluation_params=[P.INPUT, P.ACTUAL_OUTPUT, P.CONTEXT],
+                                        model=self.model, threshold=self.threshold, async_mode=False)
         if self.faithfulness and case.retrieval_context and case.actual_output:
             out["faithfulness"] = FaithfulnessMetric(model=self.model, threshold=self.threshold, async_mode=False)
         return out

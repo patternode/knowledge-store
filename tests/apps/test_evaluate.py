@@ -108,3 +108,20 @@ def test_stores_by_destination(tmp_path, monkeypatch):
     monkeypatch.setattr(ps, "store_from_uri", lambda uri: ("store", uri), raising=False)
     s = evaluate.store_for("s3://bucket")
     assert isinstance(s, LakeRunStore) and s.store == ("store", "s3://bucket")
+
+
+def test_another_systems_answers_are_scored_from_a_file(set_file, answers, tmp_path, capsys):
+    rows = [{"question_id": "q1", "answer": "Juno launched on an Atlas V.", "document_ids": ["dsid_j"]},
+            {"question_id": "q2", "answer": "Lockheed Martin built it.", "document_ids": []}]
+    (tmp_path / "onyx.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+    (tmp_path / "index.json").write_text(json.dumps({"dsid_j": "missions/juno.json"}), encoding="utf-8")
+    assert evaluate.main([set_file, "--answers", str(tmp_path / "onyx.jsonl"), "--answers-index",
+                          str(tmp_path / "index.json"), "--documents", str(tmp_path), "--out",
+                          str(tmp_path / "out")]) == 2
+    assert "about 0.00 USD" in capsys.readouterr().out
+    code = evaluate.main([set_file, "--answers", str(tmp_path / "onyx.jsonl"), "--answers-index",
+                          str(tmp_path / "index.json"), "--out", str(tmp_path / "out"), "--yes"])
+    assert code == 0 and answers[1].made == []
+    run = json.loads(next((tmp_path / "out").rglob("results.json")).read_text(encoding="utf-8"))
+    assert run["summary"]["all"]["correct"] == 2
+    assert run["results"][0]["result"]["sources"][0]["name"] == "missions/juno.json"

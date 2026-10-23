@@ -1,10 +1,16 @@
-"""Answerers: Knowledge Store's agent in process, or its chat API as a signed-in person.
+"""Answerers: Knowledge Store's agent in process, its chat API as a signed-in person, or another
+system's answers read from a file.
 
 In process runs the same agent code against a lake with the tools in process
 (answering's answer_locally): the graph from Neptune when NEPTUNE_ENDPOINT is set, else from
 the projection; passages from the Knowledge Base when KNOWLEDGE_BASE_ID is set, else by keyword.
 It calls the model with your credentials. Against the API, each question counts against that
 person's daily quota.
+
+From a file, nothing is asked: the answers were made elsewhere (Onyx, or any system that cannot
+be called from here) and are read in the form the EnterpriseRAG-Bench harness takes, one JSON
+object a line with question_id, answer and document_ids. The same set, verifier and grader then
+judge every system alike.
 """
 
 from __future__ import annotations
@@ -13,6 +19,7 @@ import json
 import time
 import urllib.parse
 import urllib.request
+from pathlib import Path
 
 from knowledge_store.evaluation.domain.sets import Question
 
@@ -25,6 +32,51 @@ class InProcessAnswerer:
     def __call__(self, q: Question) -> dict:
         from knowledge_store.answering import answer_locally
         return answer_locally(self.root, self.collection, q.question, private=q.private, model_id=self.model_id)
+
+
+class FileAnswerer:
+    """Another system's answers. `index` maps its document ids to the set's source names (the
+    benchmark's uuid_index.json, or a documents.jsonl); `documents` is the folder holding those
+    files, so each cited document's text is what the grader's faithfulness metric reads."""
+
+    def __init__(self, path: str | Path, *, index: dict[str, str] | None = None, documents: str | Path | None = None):
+        self.answers: dict[str, dict] = {}
+        for line in Path(path).read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                row = json.loads(line)
+                self.answers[str(row["question_id"])] = row
+        self.index = dict(index or {})
+        self.documents = Path(documents) if documents else None
+
+    def __call__(self, q: Question) -> dict:
+        row = self.answers.get(q.id)
+        if row is None:
+            return {"error": "not in the answers file", "abstained": True}
+        answer = str(row.get("answer") or "")
+        sources = []
+        for n, doc in enumerate(row.get("document_ids") or [], start=1):
+            name = self.index.get(str(doc), str(doc))
+            source = {"n": n, "name": name, "doc": str(doc)}
+            if self.documents is not None and (self.documents / name).is_file():
+                source["text"] = (self.documents / name).read_text(encoding="utf-8", errors="replace")
+            sources.append(source)
+        return {"answer": answer, "abstained": not answer.strip(), "sources": sources, "claims": [], "usage": {}}
+
+
+def load_answer_index(path: str | Path) -> dict[str, str]:
+    """Document id to path: a JSON object (uuid_index.json), or JSON lines with an id and a path."""
+    text = Path(path).read_text(encoding="utf-8")
+    try:
+        return {str(k): str(v) for k, v in json.loads(text).items()}
+    except json.JSONDecodeError:
+        pass  # JSON lines, one document a line
+    out = {}
+    for line in text.splitlines():
+        if line.strip():
+            row = json.loads(line)
+            key = next(row[k] for k in ("id", "doc_id", "document_id") if k in row)
+            out[str(key)] = str(next(row[k] for k in ("path", "file", "name") if k in row))
+    return out
 
 
 class HttpAnswerer:

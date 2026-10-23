@@ -75,3 +75,9 @@ def test_a_cited_landing_key_hits_the_expected_document():
               "sources": [{"name": "landing/redwood/confluence/sre/runbook-a.json"}],
               "grounding": {"claims_proposed": 1, "claims_shown": 1}}
     assert score.score(q, result)["source_hit"]
+
+
+def test_the_document_index_names_each_fetched_file_by_its_benchmark_id():
+    index = {"dsid_b": "slack/eng/b.json", "dsid_a": "jira/a.json", "dsid_c": "jira/c.json"}
+    assert fetch.document_index(["slack/eng/b.json", "jira/a.json"], index) == [
+        {"doc_id": "dsid_a", "path": "jira/a.json"}, {"doc_id": "dsid_b", "path": "slack/eng/b.json"}]

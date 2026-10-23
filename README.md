@@ -260,14 +260,27 @@ passed the citation checks, expected sources cited, and declines. See
 [DeepEval](https://github.com/confident-ai/deepeval) is the evaluation framework (the `evals`
 extra). `--runner deepeval` records the run as a DeepEval test run beside the report, and
 `--grader deepeval` adds a model's judgement of each answer (G-Eval correctness against the
-expected answer, and faithfulness to the cited passages), reported beside the score and never
-folded into it. The judge is called through the platform's model client (`--judge-model`), so
-nothing goes to OpenAI, and a run goes to Confident AI only with `--upload-to-confident`:
+expected answer, completeness as the share of the answer facts stated, and faithfulness to the
+cited passages), reported beside the score and never folded into it. The judge is called through
+the platform's model client (`--judge-model`), so nothing goes to OpenAI, and a run goes to
+Confident AI only with `--upload-to-confident`:
 
 ```bash
 pip install -e ".[evals]"
 python -m knowledge_store.apps.evaluate examples/evals/space-missions.yaml --lake <lake> --model <model id> \
   --runner deepeval --grader deepeval --judge-model <judge model id> --yes
+```
+
+Another system's answers are scored and graded by the same set and judge, so two systems can be
+compared on the same questions. `--answers` takes them in the form the EnterpriseRAG-Bench harness
+takes, one JSON object a line with `question_id`, `answer` and `document_ids`; `--answers-index`
+maps its document ids to the set's source names and `--documents` is the folder their text is read
+from, so faithfulness is judged against what it cited:
+
+```bash
+python -m knowledge_store.apps.evaluate examples/enterprise-rag-bench/data/enterprise-rag-bench.yaml \
+  --answers onyx.jsonl --answers-index documents.jsonl --documents examples/enterprise-rag-bench/data/documents \
+  --grader deepeval --judge-model <judge model id> --yes
 ```
 
 ## Run it locally
