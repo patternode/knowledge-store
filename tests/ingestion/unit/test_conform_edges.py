@@ -40,18 +40,18 @@ def test_a_link_claimed_earlier_is_not_claimed_again():
 
 
 def test_an_email_or_uuid_inside_a_link_belongs_to_the_link():
-    source = "http://x.example/?e=Bob@Example.COM&id=550E8400-E29B-41D4-A716-446655440000"
+    source = "http://x.example/?e=Bob@Example.COM&id=550E8400-E29B-41D4-A716-44665544000A"
     assert _text(source) == source.replace("http://x.example", "http://x.example")
     assert "email" not in _rules(source) and "uuid" not in _rules(source)
 
 
 def test_a_lowercase_email_and_uuid_are_held_as_they_are():
-    source = "mail bob@example.com about 550e8400-e29b-41d4-a716-446655440000."
+    source = "mail bob@example.com about 550e8400-e29b-41d4-a716-44665544000a."
     assert _text(source) == source and conform(source).rules == ()
 
 
 def test_a_uuid_with_one_brace_is_lowered_whole():
-    assert _text("id {550E8400-E29B-41D4-A716-446655440000 here") == "id {550e8400-e29b-41d4-a716-446655440000 here"
+    assert _text("id {550E8400-E29B-41D4-A716-44665544000A here") == "id {550e8400-e29b-41d4-a716-44665544000a here"
 
 
 def test_a_link_with_no_host_or_a_bad_port_stays():

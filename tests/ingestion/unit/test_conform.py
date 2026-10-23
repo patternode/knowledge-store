@@ -211,8 +211,8 @@ def test_punctuation_fractions_and_identifiers_are_one_form_outside_a_fence():
     assert _text("See HTTPS://Example.COM:443/Path/A.") == "See https://example.com/Path/A."
     assert _text("Version https://example.com/v1.20 stays.") == "Version https://example.com/v1.20 stays."
     assert _text("Mail Alice@Example.COM today.") == "Mail Alice@example.com today."
-    assert _text("Id URN:UUID:550E8400-E29B-41D4-A716-446655440000.") == (
-        "Id urn:uuid:550e8400-e29b-41d4-a716-446655440000.")
+    assert _text("Id URN:UUID:550E8400-E29B-41D4-A716-44665544000A.") == (
+        "Id urn:uuid:550e8400-e29b-41d4-a716-44665544000a.")
     fence = "```\nIt\u2019s a \u201cquoted\u201d \u2014 span\n```\n"
     assert _text(fence) == fence
     once = _text("It\u2019s 2\u00bd at HTTPS://Example.COM/a.")
