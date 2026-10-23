@@ -12,6 +12,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Callable
 
+from knowledge_store.ingestion.domain.delimited import table_text
 from knowledge_store.ingestion.domain.html_text import html_title_and_text
 
 
@@ -25,6 +26,8 @@ class ParseResult:
     title: str | None
     parser: str
     metadata: dict = field(default_factory=dict)
+    # Independent pieces, conformed and packed apart. A PDF has one entry per page.
+    parts: tuple[str, ...] = ()
 
 
 def _decode(data: bytes) -> str:
@@ -47,6 +50,15 @@ def _first_line_title(text: str) -> str | None:
 def parse_text(data: bytes) -> ParseResult:
     text = _decode(data).replace("\r\n", "\n")
     return ParseResult(text, _first_line_title(text), "text@1")
+
+
+def parse_csv(data: bytes, *, tab: bool = False) -> ParseResult:
+    body, title = table_text(_decode(data), tab=tab)
+    return ParseResult(body, title or _first_line_title(body), "table@1")
+
+
+def parse_tsv(data: bytes) -> ParseResult:
+    return parse_csv(data, tab=True)
 
 
 def parse_markdown(data: bytes) -> ParseResult:
@@ -87,16 +99,19 @@ def parse_pdf(data: bytes) -> ParseResult:
     except ImportError as e:
         raise UnsupportedFormat("PDF needs the pypdf package (pip install pypdf)") from e
     reader = PdfReader(io.BytesIO(data))
-    pages = [(p.extract_text() or "").strip() for p in reader.pages]
-    text = "\n\n".join(p for p in pages if p)
+    pages = tuple((p.extract_text() or "").strip() for p in reader.pages)
+    kept = tuple(page for page in pages if page)
+    text = "\n\n".join(kept)
     if not text.strip():
         raise UnsupportedFormat("PDF has no text layer (scanned?); OCR is not built in yet")
     meta_title = (reader.metadata.title if reader.metadata else None) or None
-    return ParseResult(text, meta_title or _first_line_title(text), "pdf@1", {"pages": len(pages)})
+    return ParseResult(text, meta_title or _first_line_title(text), "pdf@1",
+                       {"pages": len(pages)}, kept)
 
 
 PARSERS: dict[str, Callable[[bytes], ParseResult]] = {
-    ".txt": parse_text, ".text": parse_text, ".csv": parse_text, ".tsv": parse_text, ".log": parse_text,
+    ".txt": parse_text, ".text": parse_text, ".log": parse_text,
+    ".csv": parse_csv, ".tsv": parse_tsv,
     ".md": parse_markdown, ".markdown": parse_markdown,
     ".html": parse_html, ".htm": parse_html, ".xhtml": parse_html,
     ".json": parse_json,
@@ -109,7 +124,8 @@ MAX_BYTES = 20 * 2**20
 MAX_BYTES_BY_PARSER: dict[Callable[[bytes], ParseResult], int] = {parse_pdf: 100 * 2**20}
 
 CONTENT_TYPES = {"text/plain": ".txt", "text/markdown": ".md", "text/html": ".html",
-                 "application/json": ".json", "application/pdf": ".pdf", "text/csv": ".csv"}
+                 "application/json": ".json", "application/pdf": ".pdf", "text/csv": ".csv",
+                 "text/tab-separated-values": ".tsv"}
 
 
 def parse(data: bytes, ext: str, content_type: str | None = None) -> ParseResult:

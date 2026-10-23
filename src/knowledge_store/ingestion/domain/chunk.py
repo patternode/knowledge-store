@@ -103,10 +103,12 @@ def chunk_document(text: str, doc_id: str, *, parser: str,
                    target: int = TARGET_CHARS, max_chars: int = MAX_CHARS) -> list[Passage]:
     """Pack passages for one parsed document.
 
-    Markdown and HTML cut on headings and fences. Every other parser packs paragraphs,
-    which is chunk@1. The silver document records SECTION_CHUNKER either way, because
-    this is the step refine runs.
+    Markdown and HTML cut on headings and fences. A table packs one row at a time.
+    Every other parser packs paragraphs, which is chunk@1. The silver document records
+    SECTION_CHUNKER either way, because this is the step refine runs.
     """
+    if parser == "table@1":
+        return _chunk_rows(text, doc_id, target, max_chars)
     if parser not in _HEADED_PARSERS:
         return chunk_text(text, doc_id, target=target, max_chars=max_chars)
     passages: list[Passage] = []
@@ -118,6 +120,73 @@ def chunk_document(text: str, doc_id: str, *, parser: str,
             blocks = _keep_heading(text, blocks, max_chars)
         passages.extend(_pack(text, blocks, doc_id, target, len(passages)))
     return [p for p in passages if p.text]
+
+
+def chunk_regions(text: str, regions: list[tuple[int, int]], doc_id: str, *,
+                  parser: str, target: int = TARGET_CHARS,
+                  max_chars: int = MAX_CHARS) -> list[Passage]:
+    """Pack each region on its own, so a page or a part never joins the next one."""
+    passages: list[Passage] = []
+    for start, end in regions:
+        local = chunk_document(text[start:end], doc_id, parser=parser, target=target, max_chars=max_chars)
+        for passage in local:
+            passages.append(_shift(passage, start, len(passages)))
+    return [p for p in passages if p.text]
+
+
+def _shift(passage: Passage, start: int, seq: int) -> Passage:
+    moved = Passage(
+        passage_id="", doc_id=passage.doc_id, seq=seq,
+        char_start=passage.char_start + start, char_end=passage.char_end + start,
+        content_hash=passage.content_hash, text=passage.text,
+    )
+    return _mk_from(moved)
+
+
+def _mk_from(passage: Passage) -> Passage:
+    """Rebuild the id from the sequence. The content hash stays."""
+    return Passage(
+        passage_id=f"{passage.doc_id[:16]}-p{passage.seq:03d}-{passage.content_hash[:10]}",
+        doc_id=passage.doc_id, seq=passage.seq, char_start=passage.char_start,
+        char_end=passage.char_end, content_hash=passage.content_hash, text=passage.text,
+    )
+
+
+def _chunk_rows(text: str, doc_id: str, target: int, max_chars: int) -> list[Passage]:
+    """One block per row. A row longer than the cap breaks on the cell separator."""
+    blocks: list[tuple[int, int]] = []
+    pos = 0
+    for line in text.split("\n"):
+        start = text.find(line, pos)
+        if start < 0:
+            continue
+        end = start + len(line)
+        pos = end + 1
+        if not line.strip():
+            continue
+        if len(line) <= max_chars:
+            blocks.append((start, end))
+        else:
+            blocks.extend(_split_row(text, start, end, max_chars))
+    return _pack(text, blocks, doc_id, target, 0)
+
+
+def _split_row(text: str, start: int, end: int, max_chars: int) -> list[tuple[int, int]]:
+    blocks: list[tuple[int, int]] = []
+    cursor = start
+    while end - cursor > max_chars:
+        window_end = min(end, cursor + max_chars)
+        cut = text.rfind(" | ", cursor + 1, window_end)
+        if cut <= cursor:
+            cut = window_end
+            cursor_next = cut
+        else:
+            cursor_next = cut + 3
+        blocks.append((cursor, cut))
+        cursor = cursor_next
+    if cursor < end:
+        blocks.append((cursor, end))
+    return blocks
 
 
 def _region_blocks(text: str, start: int, end: int, max_chars: int) -> list[tuple[int, int]]:

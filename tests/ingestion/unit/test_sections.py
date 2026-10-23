@@ -1,5 +1,7 @@
 """Ingestion domain: sections before passages are packed."""
 
+import pytest
+
 from knowledge_store.ingestion.domain.chunk import (
     CHUNKER_VERSION, SECTION_CHUNKER, chunk_document, chunk_text,
 )
@@ -62,6 +64,46 @@ def test_a_fence_is_not_split_across_the_prose_around_it():
     fence = next(p for p in passages if "line one" in p.text)
     assert "line two" in fence.text
     assert "Before." not in fence.text and "After." not in fence.text
+
+
+def test_table_rows_pack_between_rows_and_a_long_row_breaks_on_cells():
+    from knowledge_store.ingestion.domain.chunk import chunk_document
+    short = "code: A1 | name: Ada\ncode: A2 | name: Grace"
+    passages = chunk_document(short, DOC, parser="table@1", target=20, max_chars=80)
+    assert [p.text for p in passages] == ["code: A1 | name: Ada", "code: A2 | name: Grace"]
+    long = "code: A1 | note: " + ("word " * 30)
+    pieces = chunk_document(long.strip(), DOC, parser="table@1", target=40, max_chars=48)
+    assert pieces[0].text.startswith("code: A1")
+    assert all("code: A1" not in p.text or p is pieces[0] for p in pieces)
+    assert " ".join(p.text for p in pieces).count("code: A1") == 1
+
+
+def test_pdf_pages_are_conformed_and_packed_apart():
+    pypdf = pytest.importorskip("pypdf")
+    import io
+    from knowledge_store.ingestion.domain.parsers import parse_pdf
+    from knowledge_store.ingestion.domain.steps import silver_body
+    writer = pypdf.PdfWriter()
+    writer.add_blank_page(width=200, height=200)
+    writer.add_blank_page(width=200, height=200)
+    buf = io.BytesIO()
+    writer.write(buf)
+    pages = iter([
+        "Paid $1,200.50 on page one of the filing.",
+        "Page two stands on its own and must not join page one.",
+    ])
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setattr(pypdf.PageObject, "extract_text", lambda self, *a, **k: next(pages))
+    try:
+        parsed = parse_pdf(buf.getvalue())
+        body = silver_body(parsed, DOC)
+    finally:
+        monkeypatch.undo()
+    assert [p.text for p in body.passages] == [
+        "Paid $1200.5 on page one of the filing.",
+        "Page two stands on its own and must not join page one.",
+    ]
+    assert body.rules and body.rules[0]["rule"] == "number"
 
 
 def test_html_headings_pack_as_sections():

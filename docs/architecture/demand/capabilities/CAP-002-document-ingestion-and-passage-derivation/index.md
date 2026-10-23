@@ -75,7 +75,7 @@ A citation is only as stable as the thing it points at. Ingestion keeps the byte
 
 ## 4  What the implementation does today
 
-Three adapters (S3 landing, local directory, HTTPS URLs) and the entry point for more. Bronze is keyed by sha256. Silver holds the parsed text in one canonical form (dates, times and numbers rewritten only where the reading is unambiguous) and passages of about 1,800 characters with ids derived from the document and the chunk. A mapped table is ingested but never refined. Sizes are capped at ingest (20 MB, PDFs 100 MB; HTTP 50 MB).
+Three adapters (S3 landing, local directory, HTTPS URLs) and the entry point for more. Bronze is keyed by sha256. Silver holds the parsed text in one canonical form (dates, times and numbers rewritten only where the reading is unambiguous) and passages of about 1,800 characters with ids derived from the document and the chunk. A mapped table is ingested but never refined. An unmapped CSV or TSV is refined as one self-contained row per line, and each PDF page is packed on its own. Sizes are capped at ingest (20 MB, PDFs 100 MB; HTTP 50 MB).
 
 ## 5  Maturity
 

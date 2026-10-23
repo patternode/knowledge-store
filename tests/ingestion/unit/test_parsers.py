@@ -39,6 +39,20 @@ def test_a_title_is_capped_at_200_characters():
     assert len(parse_text(b"x" * 500).title) == 200
 
 
+def test_a_csv_row_carries_its_column_names_and_a_quoted_newline_stays_in_the_cell():
+    raw = b'title,note\nmemo,"line one\nline two, still"\n\n,\n'
+    r = parse(raw, ".csv")
+    assert r.parser == "table@1"
+    assert r.text == "title: memo | note: line one line two, still"
+    assert r.title == "memo"
+
+
+def test_a_tsv_uses_tabs_and_a_repeated_header_is_numbered():
+    r = parse(b"name\tname\nAda\tLovelace\n", ".tsv")
+    assert r.text == "name: Ada | name (2): Lovelace"
+    assert r.title == "Ada"
+
+
 def test_markdown_takes_its_first_heading_as_title():
     r = parse_markdown(b"intro\n# The Heading \nbody")
     assert r.title == "The Heading" and r.parser == "markdown@1"
@@ -142,3 +156,4 @@ def test_a_pdf_with_text_returns_its_pages(monkeypatch):
     r = parse_pdf(_pdf(None, title="Doc Title"))
     assert r.text == "Page text\nmore" and r.title == "Doc Title"
     assert r.parser == "pdf@1" and r.metadata == {"pages": 1}
+    assert r.parts == ("Page text\nmore",)
