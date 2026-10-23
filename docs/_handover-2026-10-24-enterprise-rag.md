@@ -9,10 +9,10 @@ Two repositories. Architecture decisions stay in patternode-architecture. This w
 
 | Repository | Checkout on this machine | Branch | Remote |
 |---|---|---|---|
-| patternode/knowledge-store | `/tmp/knowledge-store` | `cursor/conform-literals-9e3d` | Push to this repository was refused. `cursor[bot]` can read it and cannot write it (403). Base is `main` at `36f56d2` (`chore(main): release 0.5.0`). |
+| patternode/knowledge-store | `/tmp/knowledge-store` | `cursor/conform-literals-9e3d` | Pushed on 24 October 2026 by the session that took this over. Pull request patternode/knowledge-store#111 into `main`. Base is `main` at `36f56d2` (`chore(main): release 0.5.0`). |
 | patternode/patternode-platform | `/workspace` | `cursor/enterprise-rag-bench-9e3d` | Already on origin. Pull request [patternode/patternode-platform#579](https://github.com/patternode/patternode-platform/pull/579) into `develop`. |
 
-The knowledge-store commits are mirrored as branches on patternode-platform so they are not stuck on this machine. They are the knowledge-store tree, not platform code. Do not open a pull request from either mirror into `develop`.
+The knowledge-store commits were mirrored as branches on patternode-platform so they were not stuck on this machine. They are the knowledge-store tree, not platform code. Do not open a pull request from either mirror into `develop`. The conformer mirror has been pushed back to knowledge-store and is in the pull request above; the mirror branch can be deleted once that pull request merges.
 
 | Mirror branch on patternode-platform | Knowledge-store branch it carries |
 |---|---|
@@ -132,6 +132,7 @@ Rules that were pinned because the corpus would have been damaged without them:
 - `UTF-8 bytes` stays. `100Gb` stays.
 - A month written with its year is that month (`2023-07`). Milliseconds are decimal seconds.
 - Words such as yes and no are not booleans.
+- A decimal keeps its digits as written. `0.70` stays `0.70` and `3.10` stays `3.10`, because `Python 3.10` is a version as often as a number, and `1.0 -> 1` was changing `CUDA 12.0` and `Release 2.0` in the corpus. The rewrite only folds thousands separators, signs, currency spacing, percent words and parenthetical losses. A table cell's stored form (`kernel/values.py`, `canonical`) still drops trailing zeros, and comparisons are numeric, so `1200.50` in a passage and `1200.5` in a cell are equal. Changed on 24 October 2026 by the session that took this over, after running the conformer over the 722 documents.
 
 Unmapped CSV and TSV (`table@1`, `ingestion/domain/delimited.py`): a mapped table is bound later and is never refined as prose. A file no mapping names becomes one line per data row, `column: value | column: value`. The first row is the header. A column named title wins over one named name. A repeated header gets a distinct label (`name`, `name (2)`). A blank header becomes `column N`. A cell that contains the row separator is written with a slash, so a later split stays on the real cell boundary. Empty rows are dropped. Extra cells past the header become `column N`.
 
@@ -154,7 +155,7 @@ Upload, only after this collection is on the applied deploy revision:
 ```powershell
 Set-Location deployments/knowledge-store
 $env:AWS_PROFILE = "earnings-lab"
-aws s3 sync corpora/enterprise-rag/documents s3://knowledge-store-lake-100995727882/landing/enterprise-rag/
+aws s3 sync corpora/enterprise-rag/documents s3://<lake bucket>/landing/enterprise-rag/
 ```
 
 The upload starts a sweep. One sweep at a time, via an S3 lock. The stages in `src/knowledge_store/apps/sweep.py` are implemented, including extraction and graph load: ingest, refine, discover or publish a provided ontology, extract, bind tables, candidate register, project, then load graph, documents, SPARQL and passages. A collection does not reach extraction without an active ontology.
@@ -171,7 +172,7 @@ The draft is `ontology/drafts/<id>/` as `ontology.ttl`, `shapes.ttl` and `report
 A person then curates it. Commands from `deployments/knowledge-store/ontology/README.md` and knowledge-store `docs/deploy/aws/README.md` section 12:
 
 ```bash
-export LAKE_URI=s3://knowledge-store-lake-100995727882
+export LAKE_URI=s3://<lake bucket>
 aws s3 ls $LAKE_URI/collections/enterprise-rag/ontology/drafts/
 knowledge-store -c enterprise-rag ontology pull <draft id> ontology/enterprise-rag/
 # edit ontology/enterprise-rag/ontology.ttl and set owl:versionInfo to "1.0.0"
@@ -195,9 +196,9 @@ The lab Terraform pin is `ref=v0.3.0` in `deployments/knowledge-store/main.tf`. 
 - The conformer, `table@1` and per-page PDF packing are not in the image either.
 - The extraction model and the chat model in this account are `us.anthropic.claude-sonnet-4-5-20250929-v1:0`. Bedrock in this account serves Sonnet 4.5, not Sonnet 5. That was checked 29 September 2026 and is commented in `main.tf`. Do not switch the id as part of taking this over.
 
-Account `100995727882`, region `us-east-1`, SSO profile `earnings-lab` (`aws sso login --profile earnings-lab`). Lake bucket `s3://knowledge-store-lake-100995727882`. State bucket `patternode-tfstate-100995727882-us-east-1`. Credentials come from the profile. No secret belongs in tfvars. Bedrock is IAM.
+The lab's AWS account (its id, the lake bucket and the state bucket are in platform `deployments/knowledge-store/main.tf` and its `backend.hcl`), region `us-east-1`, SSO profile `earnings-lab` (`aws sso login --profile earnings-lab`). Credentials come from the profile. No secret belongs in tfvars. Bedrock is IAM.
 
-This cloud agent VM had no AWS CLI and no `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` or `AWS_SESSION_TOKEN` when last checked. Dashboard secrets apply to the next agent, not to an agent that is already running. An `AWS_SESSION_TOKEN` exported from SSO expires. The user was told to put those three values in the environment secrets and start a new agent, and to set `AWS_REGION=us-east-1` in the agent. Do not create a new IAM user. Do not lecture about rotating or protecting a key. Give the command that sets it and stop.
+This cloud agent VM had no AWS CLI and no `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` or `AWS_SESSION_TOKEN` when last checked. On 24 October 2026 the next session found `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` set, but to the agent proxy's placeholders (a value starting `prox`), which AWS rejects (`InvalidClientTokenId`): a SigV4-signed request cannot have its key swapped by the proxy. The keys have to be ordinary environment variables of the agent, with `AWS_SESSION_TOKEN` when they come from SSO, and `AWS_REGION=us-east-1`. Nothing was uploaded. Dashboard secrets apply to the next agent, not to an agent that is already running. An `AWS_SESSION_TOKEN` exported from SSO expires. The user was told to put those three values in the environment secrets and start a new agent, and to set `AWS_REGION=us-east-1` in the agent. Do not create a new IAM user. Do not lecture about rotating or protecting a key. Give the command that sets it and stop.
 
 Nothing has been uploaded to the lake in this work. No enterprise ontology has been authored or discovered. No `measures-v1.0.0` git tag exists, so the w3id version redirect for measures does not resolve yet. `docs/w3id/htaccess` and `docs/w3id/README.md` already describe `/measures` and `/measures/<semver>` the same way as core. Copying that `.htaccess` into perma-id/w3id.org is a separate pull request, and it should wait until the tag exists.
 
@@ -235,6 +236,13 @@ Result: 734 passed, 12 skipped, in about 16 seconds. The skips include the 722-d
 
 An earlier run of `tests/ontology tests/extraction tests/answering` after the measures commit reported 586 passed and 2 skipped. That command was not repeated for this handover.
 
+On 24 October 2026 the session that took this over ran, from a fresh clone with a venv holding the core, `dev` test packages, `boto3`, `httpx` and `anthropic` but not `strands-agents`, `bedrock-agentcore` or `inspect-ai`:
+
+- the whole suite with `--cov`, then `python tests/check_coverage.py`: 1866 passed, 39 skipped. Every context this branch touches is at or above its floor: ingestion/domain 100% (it was 93.6% before `test_conform_edges.py`), kernel 98.3%, knowledge_graph/slices 98.5%, platform_services/adapters 97.1%. answering/adapters, apps and evaluation/adapters read below floor in that venv only because their tests skip without `strands-agents`, `bedrock-agentcore`, `inspect-ai` and `transformers`; CI installs them
+- the 722-document conformer check, `ENTERPRISE_RAG_DOCUMENTS` pointing at the corpus extracted from platform branch `cursor/enterprise-rag-bench-9e3d`: 1 passed, before and after the number-rule change
+- `npm ci && npm run build`: the documentation site builds with no broken link
+- a local lake (`knowledge-store --lake <dir> -c enterprise-rag ingest`, then `refine`) over the same 722 documents, with the lab's collection config written by hand under `collections/enterprise-rag/config/`: 722 stored, 722 refined, 3,152 passages (1 to 20 per document), none skipped. The conformer changed 669 of the 722: punctuation 9,360 rewrites in 516 documents, periods 2,764 in 535, dates 962 in 165, numbers 300 in 100 (before the trailing-zero change), trailing spaces 206 in 85, clocks 154 in 64, sizes 97 in 46. Discovery was not run locally: no model credential reaches this environment.
+
 ## Platform pull request 579
 
 [patternode/patternode-platform#579](https://github.com/patternode/patternode-platform/pull/579), branch `cursor/enterprise-rag-bench-9e3d`, base `develop`.
@@ -257,10 +265,10 @@ The license of the corpus is MIT, Copyright (c) 2026 DanswerAI, Inc. The license
 
 In this order.
 
-1. Push `cursor/conform-literals-9e3d` to patternode/knowledge-store. This session could not: the token writes to patternode-platform and gets 403 on knowledge-store. The commits are on the platform mirror branch named above. Open the pull request into `develop`. Do not open it into `main`. On 24 October 2026, just after 3:00 AM NZDT, knowledge-store had no `develop` branch. Its only integration branch on the remote was `main`. No pull request was opened. Do not open `cursor/ks-conform-literals-9e3d` as a pull request into patternode-platform `develop`: that branch is the knowledge-store tree. Platform pull request 579 is already into `develop` and stays the corpus change. When knowledge-store has a `develop` to target, the title is the changelog line after a squash. `feat` bumps the minor version. Release Please writes `pyproject.toml`, `__version__`, `.release-please-manifest.json` and `CHANGELOG.md` from pulls that reach `main`. Do not edit those by hand. The description must cite a reason: an issue, a thread, an improvement, an ADR, or a line `No reference:` and why. There is no IMP, issue or ADR for this work yet. Use `No reference:` and say the user asked for literal conformance and a measures ontology to build the enterprise RAG ontology on. Fill `.github/pull_request_template.md`. Say that deployments need a release before any of this runs, and that the agent image changes only if answering code changed. The value-kinds work touches `table_query.py` and renditions. The measures work does not change the chat agent. The conformer changes what silver text extraction will see once the pipeline image is rebuilt.
-2. If the grader should ship, open that pull request into `develop` as well, not into `main`. It is independent. Leave it until asked.
+1. Done on 24 October 2026: `cursor/conform-literals-9e3d` is pushed to patternode/knowledge-store and is pull request patternode/knowledge-store#111 into `main`. The earlier note here said `develop`; that repository's `AGENTS.md` retired `develop` ("open nothing into `develop`"), its CI and Release Please follow `main`, and it has no `develop` branch, so `main` is the base. Do not open `cursor/ks-conform-literals-9e3d` as a pull request into patternode-platform `develop`: that branch is the knowledge-store tree. Platform pull request 579 is already into `develop` and stays the corpus change. The title is the changelog line after a squash. `feat` bumps the minor version. Release Please writes `pyproject.toml`, `__version__`, `.release-please-manifest.json` and `CHANGELOG.md` from pulls that reach `main`. Do not edit those by hand. The description must cite a reason: an issue, a thread, an improvement, an ADR, or a line `No reference:` and why. There is no IMP, issue or ADR for this work yet. Use `No reference:` and say the user asked for literal conformance and a measures ontology to build the enterprise RAG ontology on. Fill `.github/pull_request_template.md`. Say that deployments need a release before any of this runs, and that the agent image changes only if answering code changed. The value-kinds work touches `table_query.py` and renditions. The measures work does not change the chat agent. The conformer changes what silver text extraction will see once the pipeline image is rebuilt.
+2. If the grader should ship, open that pull request into `main` as well. It is independent. Leave it until asked. Note that patternode/knowledge-store#110 (`cursor/deepeval-evaluation-framework-9469`, open into `main`) already proposes DeepEval as the evaluation framework with a runner and a model grader, so the grader branch may be superseded by it; compare before opening.
 3. Do not merge, promote or deploy. `master: patternode-platform` merges the platform pull request. Knowledge-store merges are that repository's own maintainers and Release Please. Tell the master session the platform pull request is ready only when CI is green. The ready note names the pull request, says what it changes, and says what shipping needs.
-4. Release Please on knowledge-store follows `main`. A pull request that lands only on `develop` does not cut a tag. The lab pin moves only after a release tag contains this work. Then, in platform, move `ref=v0.3.0` to that tag in a pull request into `develop`, promote `deploy`, and have Dermot apply. Until that apply, an upload tests `v0.3.0`.
+4. Release Please on knowledge-store follows `main`: merging the pull request adds it to the open release pull request, and merging that cuts the tag. The lab pin moves only after a release tag contains this work. Then, in platform, move `ref=v0.3.0` to that tag in a pull request into `develop`, promote `deploy`, and have Dermot apply. Until that apply, an upload tests `v0.3.0`.
 5. Only after the collection is on the applied revision, upload the 722 documents. Expect the first sweep to discover a draft and stop at `awaiting_curation`.
 6. If the applied image is still `v0.3.0`, the draft will not use the measures ontology. If the applied image contains this branch, the draft should use Metric, Quantity, Instant and Period as domain or range and should not redeclare them. Check the draft for that before publishing.
 7. Curate the draft under `ontology/enterprise-rag/`, set `owl:versionInfo` to `1.0.0`, diff, and publish with `--activate`. That is what starts extraction, projection and the graph load.
