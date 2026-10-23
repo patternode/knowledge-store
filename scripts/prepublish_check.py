@@ -24,7 +24,7 @@ from pathlib import Path
 
 CHECKS = {
     "account id": re.compile(r"(?<![0-9a-f])(?!123456789012)\d{12}(?![0-9])"),
-    "email": re.compile(r"[A-Za-z0-9._%+-]+@(?!example\.(?:org|com)\b)[A-Za-z0-9.-]+\.[A-Za-z]{2,}"),
+    "email": re.compile(r"[A-Za-z0-9._%+-]+@(?!(?i:example\.(?:org|com))\b)[A-Za-z0-9.-]+\.[A-Za-z]{2,}"),
     "credential": re.compile(r"AKIA[0-9A-Z]{16}|sk-ant-[A-Za-z0-9_-]{10,}|gh[pousr]_[A-Za-z0-9]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----"),
     "local path": re.compile(r"\b[A-Z]:\\\\?[A-Za-z]|/Users/[a-z]|/home/[a-z]"),
 }
