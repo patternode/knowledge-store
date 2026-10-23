@@ -210,12 +210,9 @@ def _region_blocks(text: str, start: int, end: int, max_chars: int) -> list[tupl
     blocks: list[tuple[int, int]] = []
     pos = 0
     for para in region.split("\n\n"):
-        rel = region.find(para, pos)
-        if rel < 0:
-            continue
-        abs_s = start + rel
+        abs_s = start + pos
         abs_e = abs_s + len(para)
-        pos = rel + len(para)
+        pos += len(para) + 2
         if not para.strip():
             continue
         if abs_e - abs_s <= max_chars:
@@ -263,8 +260,6 @@ def _keep_heading(text: str, blocks: list[tuple[int, int]], max_chars: int) -> l
     if room <= 1:
         return blocks
     fitted = _hard_blocks(text, b0, b1, room)
-    if not fitted:
-        return blocks
     head_end = fitted[0][1]
     return [(h0, head_end), *fitted[1:], *blocks[2:]]
 

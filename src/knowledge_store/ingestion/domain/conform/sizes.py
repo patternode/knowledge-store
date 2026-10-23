@@ -30,8 +30,6 @@ def _sizes(text: str, found: list) -> None:
             continue
         left = _size_amount(matched.group("a"), left_unit or right_unit)
         right = _size_amount(matched.group("b"), right_unit)
-        if left is None or right is None:
-            continue
         new = f"{left}-{right}"
         old = matched.group()
         found.append((matched.start(), matched.end(), old, new if new != old else old, "size"))
@@ -39,16 +37,11 @@ def _sizes(text: str, found: list) -> None:
         if _overlaps(matched.start(), matched.end(), found):
             continue
         new = _size_amount(matched.group("num"), matched.group("unit"))
-        if new is None:
-            continue
         old = matched.group()
         found.append((matched.start(), matched.end(), old, new if new != old else old, "size"))
 
-def _size_amount(num: str, unit: str) -> str | None:
-    digits = canonical(num, "decimal")
-    if digits is None:
-        return None
-    return f"{digits} {_size_symbol(unit)}"
+def _size_amount(num: str, unit: str) -> str:
+    return f"{canonical(num, 'decimal')} {_size_symbol(unit)}"
 
 def _size_symbol(unit: str) -> str:
     if unit == "B" or unit.lower() in ("byte", "bytes"):

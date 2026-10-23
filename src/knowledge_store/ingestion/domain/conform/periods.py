@@ -103,10 +103,7 @@ def _iso_duration(parts: list[tuple[str, str]]) -> str | None:
         designator = "M" if kind == "Mo" else kind
         (date if kind in ("Y", "Mo", "D") else time).append(f"{qty}{designator}")
     if seconds is not None:
-        text = canonical(seconds, "decimal")
-        if text is None:
-            return None
-        time.append(f"{text}S")
+        time.append(f"{canonical(seconds, 'decimal')}S")
     if not date and not time:
         return None
     written = "P" + "".join(date)

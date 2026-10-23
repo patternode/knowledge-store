@@ -58,11 +58,8 @@ def _punctuation(text: str) -> tuple[str, list]:
             whole = text[j:i] or "0"
             new = canonical(Decimal(whole) + Decimal(_FRAC[ch]), "decimal")
             old = text[j:i + 1]
-            if new and new != old:
-                notes.append((0, 0, old, new, "number"))
-                out.append(new)
-            else:
-                out.append(old)
+            notes.append((0, 0, old, new, "number"))
+            out.append(new)
             i += 1
             continue
         out.append(ch)

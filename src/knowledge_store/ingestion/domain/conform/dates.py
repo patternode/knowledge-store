@@ -76,11 +76,7 @@ def _date(m: re.Match) -> str | None:
     return canonical(written, "date")
 
 def _month(name: str) -> str:
-    key = name.lower()[:3]
-    for full in _LONG_MONTHS:
-        if full.lower().startswith(key):
-            return full
-    return name
+    return _LONG_MONTHS[_month_number(name) - 1]
 
 def _numeric_date(day_or_month: str, month_or_day: str, year: str) -> str | None:
     a, b, y = int(day_or_month), int(month_or_day), int(year)
@@ -166,17 +162,12 @@ def _month_at(text: str, pos: int) -> tuple[str, int] | None:
     name = matched.group("m")
     if matched.group("dot") and name.lower() in _LONG:
         return None
-    number = _month_number(name)
-    if number is None:
-        return None
-    return f"{int(matched.group('y')):04d}-{number:02d}", matched.end()
+    return f"{int(matched.group('y')):04d}-{_month_number(name):02d}", matched.end()
 
-def _month_number(name: str) -> int | None:
+def _month_number(name: str) -> int:
+    """The month a written name means. The name comes from the month pattern, so it is one."""
     key = "sep" if name.lower().startswith("sept") else name.lower()[:3]
-    for index, full in enumerate(_LONG_MONTHS, start=1):
-        if full.lower().startswith(key):
-            return index
-    return None
+    return next(index for index, full in enumerate(_LONG_MONTHS, start=1) if full.lower().startswith(key))
 
 def _shared_days(text: str, found: list) -> None:
     for matched in _SHARED_HEAD.finditer(text):
@@ -188,8 +179,6 @@ def _shared(found: list, matched: re.Match, day: str, other: str, month: str, ye
     if _overlaps(matched.start(), matched.end(), found):
         return
     number = _month_number(month)
-    if number is None:
-        return
     start = _on_calendar(year, number, day)
     end = _on_calendar(year, number, other)
     if start is None or end is None:

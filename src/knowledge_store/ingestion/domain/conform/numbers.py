@@ -48,8 +48,6 @@ def _number(m: re.Match) -> str | None:
     if open_ and not (grouped or cur):
         return None
     compact = "".join(ch for ch in body if ch not in f", {_GROUP_SPACES}")
-    if canonical(compact, "decimal") is None:
-        return None
     # The digits stay as written: 0.70 and 3.10 are not rewritten to 0.7 and 3.1, because
     # the second is a version as often as a number, and a trailing zero costs a reader nothing.
     digits = compact
@@ -69,9 +67,6 @@ def _worth(body: str, sign: str, cur: str, pct: str | None, compact: str, built:
     if cur or m.group("open") or (pct and pct != "%"):
         return True
     if any(ch in body for ch in f",{_GROUP_SPACES}"):
-        return True
-    # An empty sign is a substring of every string, so membership has to be a real character.
-    if sign in ("−", "–"):
         return True
     return pct == "%" and built != m.group()
 
