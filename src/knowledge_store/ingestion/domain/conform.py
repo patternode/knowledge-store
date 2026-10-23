@@ -19,7 +19,11 @@ is rewritten on each side. Thousands separators are commas and the dedicated gro
 spaces. Parentheses mark a loss only when the amount has a currency sign or a grouping
 separator. Quotes, dashes, ellipsis and ligatures fold to ASCII. A link's scheme
 and host, an email's domain and a UUID are written in one case. An exact fraction
-and a scientific number use the same decimal form as any other number. Fenced code
+and a scientific number use the same decimal form as any other number. An
+information size is a number and a symbol (8 MB, 10 MiB, 256 B). The B is
+uppercase, or the word is byte. A lowercase b stays, so a bit form stays. A bare
+B on its own stays, because it also means a billion. A hyphenated tag stays.
+Decimal and binary prefixes are not converted into each other. Fenced code
 is left as written. Nothing here is a class, a synonym or a unit from a domain.
 """
 
@@ -142,6 +146,16 @@ _UUID = re.compile(
     r"(?<![\w-])((?:urn:uuid:)?)(\{?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-"
     r"[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(\}?)(?![\w-])",
     re.IGNORECASE)
+# Uppercase B is bytes. A lowercase b is a bit form ("100Gb", "100 Mbps").
+# A bare B is also a billion ("70B"), so it is only read inside a range whose
+# other side names a real unit ("512B-8MB"). A hyphen before the number is a
+# tag ("A100-40GB", "UTF-8 bytes"), not a quantity.
+_SIZE_UNIT = r"(?:[Bb]ytes?|[kK]iB|[KMGTPE]iB|[KMGTPE]IB|[kK]B|MB|GB|TB|PB|EB)"
+_SIZE_RANGE = re.compile(
+    rf"(?<![\w.-])(?P<a>{_QTY})(?:\s*(?P<ua>{_SIZE_UNIT}|B))?\s*-\s*"
+    rf"(?P<b>{_QTY})\s*(?P<ub>{_SIZE_UNIT}|B)\b")
+_SIZE = re.compile(
+    rf"(?<![\w.-])(?P<num>{_QTY})\s*(?P<unit>{_SIZE_UNIT})\b")
 
 _DROP = {"\u00ad", "\u200b", "\u200c", "\u200d", "\ufeff"}
 
@@ -321,6 +335,7 @@ def _literals(text: str) -> tuple[str, list[tuple[int, int, str, str, str]]]:
         new = _clock(m, attached=False)
         if new and new != m.group():
             found.append((m.start(), m.end(), m.group(), new, "time"))
+    _sizes(text, found)
     for m in _NUMBER.finditer(text):
         if _overlaps(m.start(), m.end(), found):
             continue
@@ -712,6 +727,45 @@ def _canon_url(raw: str) -> str | None:
         auth = parts.username if parts.password is None else f"{parts.username}:{parts.password}"
         netloc = f"{auth}@{netloc}"
     return urlunsplit((scheme, netloc, parts.path, parts.query, parts.fragment))
+
+
+def _sizes(text: str, found: list) -> None:
+    for matched in _SIZE_RANGE.finditer(text):
+        if _overlaps(matched.start(), matched.end(), found):
+            continue
+        left_unit, right_unit = matched.group("ua"), matched.group("ub")
+        if right_unit == "B" and (left_unit is None or left_unit == "B"):
+            continue
+        left = _size_amount(matched.group("a"), left_unit or right_unit)
+        right = _size_amount(matched.group("b"), right_unit)
+        if left is None or right is None:
+            continue
+        new = f"{left}-{right}"
+        old = matched.group()
+        found.append((matched.start(), matched.end(), old, new if new != old else old, "size"))
+    for matched in _SIZE.finditer(text):
+        if _overlaps(matched.start(), matched.end(), found):
+            continue
+        new = _size_amount(matched.group("num"), matched.group("unit"))
+        if new is None:
+            continue
+        old = matched.group()
+        found.append((matched.start(), matched.end(), old, new if new != old else old, "size"))
+
+
+def _size_amount(num: str, unit: str) -> str | None:
+    digits = canonical(num, "decimal")
+    if digits is None:
+        return None
+    return f"{digits} {_size_symbol(unit)}"
+
+
+def _size_symbol(unit: str) -> str:
+    if unit == "B" or unit.lower() in ("byte", "bytes"):
+        return "B"
+    if len(unit) == 3 and unit[1].lower() == "i":
+        return f"{unit[0].upper()}iB"
+    return f"{unit[0].upper()}B"
 
 
 def _scientific(text: str, found: list) -> None:

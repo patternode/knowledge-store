@@ -211,6 +211,32 @@ def test_punctuation_fractions_and_identifiers_are_one_form_outside_a_fence():
     assert conform(once).text == once and conform(once).rules == ()
 
 
+def test_an_information_size_is_a_number_and_a_symbol():
+    assert _text("Cache 8MB and 10MiB and 256 bytes.") == "Cache 8 MB and 10 MiB and 256 B."
+    assert _text("File 1.0 GB and prompt 2kB.") == "File 1 GB and prompt 2 KB."
+    assert _text("Lists for 512B-8MB ranges.") == "Lists for 512 B-8 MB ranges."
+    assert _text("Hangs after 50-200MB.") == "Hangs after 50 MB-200 MB."
+    assert _text("Dropped from 16.8GB to 12.1GB.") == "Dropped from 16.8 GB to 12.1 GB."
+    assert _text("About ~5.3GB and 1,024 KB.") == "About ~5.3 GB and 1024 KB."
+    assert _text("Export 0.5-1.2TB/day.") == "Export 0.5 TB-1.2 TB/day."
+    assert _text("Limit 4 GiB and 10 MiB.") == "Limit 4 GiB and 10 MiB."
+    assert _text("Rate 60 GB/hour and 100Gb rack.") == "Rate 60 GB/hour and 100Gb rack."
+    assert _text("Link 100 Mbps and 10 Mb.") == "Link 100 Mbps and 10 Mb."
+    assert _text("Models 7B, 13B and 1.5B tokens.") == "Models 7B, 13B and 1.5B tokens."
+    assert _text("Hash UTF-8 bytes and a 512B marker.") == "Hash UTF-8 bytes and a 512B marker."
+    assert _text("Pool A100-40GB and tag a100-80gb and t4-16gb.") == (
+        "Pool A100-40GB and tag a100-80gb and t4-16gb.")
+    assert _text("Keep 32k context, a 5m window and $0.9k.") == (
+        "Keep 32k context, a 5m window and $0.9k.")
+    assert _text("Ratio 12.4 MiB/1.2 MiB.") == "Ratio 12.4 MiB/1.2 MiB."
+    fence = "```\n8MB and 256 bytes\n```\n"
+    assert _text(fence) == fence
+    assert _rules("Cache 8MB.")["size"]["examples"] == ["8MB -> 8 MB"]
+    assert "size" not in _rules("Limit 4 GiB.")
+    once = _text("Cache 8MB, 512B-8MB, and 256 bytes on A100-40GB.")
+    assert conform(once).text == once and conform(once).rules == ()
+
+
 def test_a_plain_decimal_loses_trailing_zeros_and_a_version_does_not():
     assert _text("Score 1.20 and build 1.0.") == "Score 1.2 and build 1."
     assert _text("Version 1.2.3.") == "Version 1.2.3."

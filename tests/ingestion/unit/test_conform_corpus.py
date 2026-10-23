@@ -16,6 +16,14 @@ from knowledge_store.ingestion.domain.conform import conform
 
 _PHONE = re.compile(r"\+\d(?: \d{3}){2,}(?: \d+)?")
 _PAREN_AMOUNT = re.compile(r"\(\d+\.\d+%?\)")
+# Bit rates, billions, hyphenated tags and the "UTF-8 bytes" phrase stay.
+_KEPT = (
+    re.compile(r"100Gb"),
+    re.compile(r"UTF-8 bytes"),
+    re.compile(r"A100-40GB"),
+    re.compile(r"a100-80gb"),
+    re.compile(r"\b70B\b"),
+)
 
 pytestmark = pytest.mark.skipif(
     not os.environ.get("ENTERPRISE_RAG_DOCUMENTS"),
@@ -37,6 +45,9 @@ def test_every_cited_document_conforms_once_and_keeps_no_control_characters():
             assert once.text.count(phone) == source.count(phone), path.name
         for amount in _PAREN_AMOUNT.findall(source):
             assert once.text.count(amount) == source.count(amount), path.name
+        for kept in _KEPT:
+            for hit in kept.findall(source):
+                assert once.text.count(hit) == source.count(hit), path.name
 
 
 def unicat(ch: str) -> bool:

@@ -5,8 +5,8 @@ conformer or chunker upgrade is applied by --reparse, deliberately, because new 
 ids mean the document's gold facts cite passages that no longer exist and it must be
 re-extracted.
 
-Conformance is generic. It rewrites dates, times and numbers into one form and does not
-consult an ontology. The bronze bytes stay as uploaded.
+Conformance is generic. It rewrites dates, times, time periods, numbers and information
+sizes into one form and does not consult an ontology. The bronze bytes stay as uploaded.
 """
 
 from __future__ import annotations
