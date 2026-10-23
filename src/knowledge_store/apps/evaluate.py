@@ -6,14 +6,19 @@
     ... --only q01,q07              a subset
     ... --verifier lexical|hhem|guardrail|none
                                     check every claim against what it cites (default lexical)
-    ... --runner plain|inspect      Inspect AI adds its log and viewer (the evals extra)
+    ... --runner plain|deepeval     DeepEval records the run as a test run under --out (the evals extra)
+    ... --grader none|deepeval      a model's judgement of correctness and faithfulness, beside the score
+    ... --judge-model ID            the grader's model (default JUDGE_MODEL_ID, else --model)
+    ... --upload-to-confident       let DeepEval send the run to Confident AI, outside the account
     ... --gate [--keep-baseline]    compare with the set's baseline and fail on a regression
     ... --max-tokens N              stop before a question once N tokens are spent
     ... --yes                       agree to the model spend; without it, the estimate is printed and nothing runs
 
 Every question is a model run of several calls, so a run costs money: ESTIMATE_USD_PER_QUESTION
 is a planning figure for a Sonnet-class model (about 60,000 input and 3,000 output tokens a
-question); the report records the tokens actually used when the agent reports them.
+question); the report records the tokens actually used when the agent reports them. The grader
+adds ESTIMATE_USD_PER_GRADE a question (a G-Eval call and four faithfulness calls); its calls are
+in the call ledger.
 """
 
 from __future__ import annotations
@@ -23,10 +28,11 @@ import os
 import sys
 from pathlib import Path
 
-from knowledge_store.evaluation import (DirRunStore, HttpAnswerer, InProcessAnswerer, InspectRunner, LakeRunStore,
-                                        LexicalVerifier, Rules, gate, load_set, report, run)
+from knowledge_store.evaluation import (DirRunStore, HttpAnswerer, InProcessAnswerer, LakeRunStore, LexicalVerifier,
+                                        Rules, gate, load_set, report, run)
 
 ESTIMATE_USD_PER_QUESTION = 0.25
+ESTIMATE_USD_PER_GRADE = 0.05
 
 
 def verifier_for(name: str):
@@ -61,7 +67,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--out", default="build/eval")
     ap.add_argument("--only")
     ap.add_argument("--verifier", default="lexical", choices=["lexical", "hhem", "guardrail", "none"])
-    ap.add_argument("--runner", default="plain", choices=["plain", "inspect"])
+    ap.add_argument("--runner", default="plain", choices=["plain", "deepeval"])
+    ap.add_argument("--grader", default="none", choices=["none", "deepeval"])
+    ap.add_argument("--judge-model", default=os.environ.get("JUDGE_MODEL_ID"))
+    ap.add_argument("--upload-to-confident", action="store_true")
     ap.add_argument("--gate", action="store_true")
     ap.add_argument("--keep-baseline", action="store_true")
     ap.add_argument("--max-accuracy-drop", type=float, default=0.0)
@@ -71,9 +80,14 @@ def main(argv: list[str] | None = None) -> int:
     ev = load_set(a.set)
     only = a.only.split(",") if a.only else None
     n = len([q for q in ev.questions if not only or q.id in only])
+    per = ESTIMATE_USD_PER_QUESTION + (ESTIMATE_USD_PER_GRADE if a.grader != "none" else 0)
     if not a.yes:
-        print(f"{n} questions, each a model run of several calls: about {n * ESTIMATE_USD_PER_QUESTION:.2f} USD "
-              f"at {ESTIMATE_USD_PER_QUESTION} USD a question. Re-run with --yes to go ahead.")
+        print(f"{n} questions, each a model run of several calls: about {n * per:.2f} USD "
+              f"at {per} USD a question. Re-run with --yes to go ahead.")
+        return 2
+    judge_model = a.judge_model or a.model
+    if a.grader == "deepeval" and not judge_model:
+        print("give --judge-model (or set JUDGE_MODEL_ID) for the grader")
         return 2
     if a.api:
         token = os.environ.get(a.token_env)
@@ -90,8 +104,16 @@ def main(argv: list[str] | None = None) -> int:
             return 2
         ask = InProcessAnswerer(a.lake, ev.collection, a.model)
     store = store_for(a.out)
-    runner = InspectRunner(str(Path(a.out) / "inspect-logs")) if a.runner == "inspect" else None
-    out = run(ev, ask, only=only, verifier=verifier_for(a.verifier), runner=runner, max_tokens=a.max_tokens)
+    runner = grader = None
+    if a.runner == "deepeval":
+        from knowledge_store.evaluation import DeepEvalRunner
+        local = Path("build/eval") if a.out.startswith("s3://") else Path(a.out)  # DeepEval writes to a folder
+        runner = DeepEvalRunner(str(local / "deepeval"), identifier=ev.name, upload=a.upload_to_confident)
+    if a.grader == "deepeval":
+        from knowledge_store.evaluation import DeepEvalGrader
+        grader = DeepEvalGrader(judge_model)
+    out = run(ev, ask, only=only, verifier=verifier_for(a.verifier), grader=grader, runner=runner,
+              max_tokens=a.max_tokens)
     result = gate(out, store, Rules(max_accuracy_drop=a.max_accuracy_drop), keep=a.keep_baseline) if a.gate else None
     text = report(out, result)
     where = store.save(f"{ev.name}-{out['when'][:19].replace(':', '')}", out, text)

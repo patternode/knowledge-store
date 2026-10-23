@@ -1,4 +1,4 @@
-"""BC-007 Evaluation: question sets, runs and scores, without a model as judge.
+"""BC-007 Evaluation: question sets, runs and scores, without a model as judge in the score.
 
 This module is the context's contract: other contexts import only the names below.
 """
@@ -7,6 +7,8 @@ from knowledge_store.kernel.contract import lazy
 
 _EXPORTS: dict[str, str] = {
     "Answerer": "ports",
+    "DeepEvalGrader": "adapters.deepeval_grader",
+    "DeepEvalRunner": "adapters.deepeval_runner",
     "DirRunStore": "adapters.run_store",
     "EvalSet": "domain.sets",
     "Gate": "domain.compare",
@@ -14,7 +16,6 @@ _EXPORTS: dict[str, str] = {
     "HhemVerifier": "adapters.verifiers",
     "HttpAnswerer": "adapters.answerers",
     "InProcessAnswerer": "adapters.answerers",
-    "InspectRunner": "adapters.inspect_runner",
     "KINDS": "domain.sets",
     "LakeRunStore": "adapters.run_store",
     "LexicalVerifier": "adapters.verifiers",

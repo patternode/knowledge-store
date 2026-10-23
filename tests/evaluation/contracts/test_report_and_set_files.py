@@ -81,3 +81,12 @@ def test_a_set_file_that_is_not_a_set_is_refused(tmp_path):
     p.write_text("collection: c\nquestions:\n- {id: a, question: '?'}\n", encoding="utf-8")
     with pytest.raises(ValueError):
         load_set(p)
+
+
+def test_the_report_shows_the_grader_beside_the_score_when_one_ran():
+    assert "## Grader" not in report(out_of([scored("a", "Atlas V")]))
+    rows = [{**scored("a", "Atlas V"), "grade": {"verdict": "pass"}}, {**scored("b", "no"), "grade": {"verdict": "fail"}}]
+    text = report(out_of(rows))
+    assert "## Grader" in text and "| pass | 1 |" in text and "| fail | 1 |" in text
+    assert "| Missing or forbidden | Grade |" in text and text.count("|---") >= 9
+    assert "| b | lookup | no | 0.0 |" in text and "| fail |\n" in text

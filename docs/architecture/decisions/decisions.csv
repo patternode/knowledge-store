@@ -11,3 +11,4 @@ ADR-009,"A mapped table stays a file, bound at a snapshot into gold",active,BC-0
 ADR-010,"Scope is the one access control today, stated per source",active,BC-006 ABB-020,CN-002,ADR-010-scope-is-the-one-access-control-today-stated-per-source.md
 ADR-011,"The code is cut by bounded context, and a deployable splits off only on a trigger",active,BC-001 BC-002 BC-003 BC-004 BC-005 BC-006 BC-007 BC-008,CN-006,ADR-011-the-code-is-cut-by-bounded-context-and-deployables-split-on-a-trigger.md
 ADR-012,"Evaluation counts false answers and unsupported claims, and gates releases on a baseline",active,BC-007 BC-005,,ADR-012-evaluation-counts-false-answers-and-unsupported-claims-and-gates-releases.md
+ADR-013,"DeepEval is the evaluation framework, beside the deterministic score",active,BC-007 ABB-021 SBB-019,,ADR-013-deepeval-is-the-evaluation-framework-beside-the-deterministic-score.md

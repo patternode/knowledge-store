@@ -17,4 +17,4 @@ SBB-015,Passage tools on Lambda behind the AgentCore Gateway,active,ABB-025,tool
 SBB-016,Tool gateway on Amazon Bedrock AgentCore Gateway,active,ABB-026,,Amazon Bedrock AgentCore Gateway,aws,managed,sbbs/SBB-016-tool-gateway-on-amazon-bedrock-agentcore-gateway/index.md
 SBB-017,Call interceptor on Lambda,active,ABB-027,agent-interceptor,AWS Lambda,aws,managed,sbbs/SBB-017-call-interceptor-on-lambda/index.md
 SBB-018,Chat page on CloudFront,active,ABB-018,chat-page,Amazon CloudFront; Amazon S3 (the site bucket),aws,managed,sbbs/SBB-018-chat-page-on-cloudfront/index.md
-SBB-019,Evaluation runner on Python,active,ABB-021,evaluation-runner,Python 3.12,none,self-hosted,sbbs/SBB-019-evaluation-runner-on-python/index.md
+SBB-019,Evaluation runner on Python,active,ABB-021,evaluation-runner,Python 3.12; DeepEval 4.3.1,none,self-hosted,sbbs/SBB-019-evaluation-runner-on-python/index.md

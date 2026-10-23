@@ -32,10 +32,15 @@ def report(out: dict, gate=None) -> str:
             lines.append(f"- Now right, wrong in the baseline: {', '.join(gate.fixed)}")
     lines += ["", "## By kind", "", "| Kind | Questions | Correct | Mean score | Grounded |", "|---|---|---|---|---|"]
     for k, b in out["summary"].items():
-        if k not in ("all", "families"):
+        if k not in ("all", "families", "graded"):
             lines.append(f"| {k} | {b['questions']} | {b['correct']} | {b['mean_score']} | {b['grounded']} |")
-    lines += ["", "## Questions", "", "| Id | Kind | Correct | Score | Grounded | Unsupported | Source | Missing or forbidden |",
-              "|---|---|---|---|---|---|---|---|"]
+    graded = out["summary"].get("graded")
+    if graded:
+        lines += ["", "## Grader", "", "A model's judgement, reported beside the score and never folded into it.", "",
+                  "| Verdict | Questions |", "|---|---|"]
+        lines += [f"| {v} | {n} |" for v, n in graded.items()]
+    head = "| Id | Kind | Correct | Score | Grounded | Unsupported | Source | Missing or forbidden |"
+    lines += ["", "## Questions", "", head + (" Grade |" if graded else ""), "|---" * (9 if graded else 8) + "|"]
     for r in out["rows"]:
         why = ", ".join(r.get("missing") or []) + (f" (said {', '.join(r['forbidden'])})" if r.get("forbidden") else "")
         if r.get("false_answer"):
@@ -46,6 +51,7 @@ def report(out: dict, gate=None) -> str:
         if r.get("error"):
             why = f"error: {r['error'][:80]}"
         unsup = "" if r.get("unsupported") is None else str(r["unsupported"])
+        grade = f" {(r.get('grade') or {}).get('verdict', '')} |" if graded else ""
         lines.append(f"| {r['id']} | {r['kind']} | {'yes' if r['correct'] else 'no'} | {r['score']} | {r['grounded']} | {unsup} | "
-                     f"{'' if r['source_hit'] is None else ('yes' if r['source_hit'] else 'no')} | {why} |")
+                     f"{'' if r['source_hit'] is None else ('yes' if r['source_hit'] else 'no')} | {why} |{grade}")
     return "\n".join(lines) + "\n"

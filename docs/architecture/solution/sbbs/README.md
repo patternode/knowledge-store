@@ -165,7 +165,7 @@ The command line installed from the package on an operator's machine, running th
 
 The evaluation runner as a command in the same package, run by an evaluator against a lake or a deployed chat.
 
-<ul className="ks-card__products"><li>Python 3.12</li></ul>
+<ul className="ks-card__products"><li>Python 3.12</li><li>DeepEval 4.3.1</li></ul>
 
 </div>
 </div>
