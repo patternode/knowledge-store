@@ -2,6 +2,7 @@
 @prefix rr:  <http://www.w3.org/ns/r2rml#> .
 @prefix o:   <https://example.org/missions#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix kv:  <https://w3id.org/knowledge-store/values#> .
 
 <#MissionMap>
     rr:logicalTable [ rr:tableName "missions" ] ;

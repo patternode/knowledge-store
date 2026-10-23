@@ -9,8 +9,9 @@ What the lab reads from the file:
     owl:Ontology              with owl:versionInfo, owl:versionIRI, owl:priorVersion
 
 Terms are named by their local name (the part after # or the last /), which must be unique
-across classes and properties: it is what the model writes in the tool call. Only terms in
-the ontology's own namespace are extracted into; imported or aligned terms are ignored.
+across classes and properties: it is what the model writes in the tool call. Terms in the
+ontology's own namespace are extracted into. An import of the measures ontology brings its
+four classes in as well. Any other imported term is ignored.
 """
 
 from __future__ import annotations
@@ -24,10 +25,20 @@ from rdflib.namespace import SKOS
 
 KL = Namespace("https://w3id.org/knowledge-store/core#")
 KV = Namespace("https://w3id.org/knowledge-store/values#")
+MEASURES_IRI = "https://w3id.org/knowledge-store/measures"
+MEASURES_NS = "https://w3id.org/knowledge-store/measures#"
 PACKAGE_DIR = Path(__file__).resolve().parent
 CORE_TTL = PACKAGE_DIR / "core.ttl"
 CORE_SHAPES = PACKAGE_DIR / "core-shapes.ttl"
 VALUES_TTL = PACKAGE_DIR / "values.ttl"
+MEASURES_TTL = PACKAGE_DIR / "measures.ttl"
+# The four classes a domain ontology builds on. It imports them. It does not redeclare them.
+FOUNDATION_CLASSES = frozenset({"Metric", "Quantity", "Instant", "Period"})
+_FOUNDATION_IRIS = (
+    "https://w3id.org/knowledge-store/measures",
+    "https://w3id.org/knowledge-store/values",
+    "https://w3id.org/knowledge-store/core",
+)
 
 # The value kinds an attribute can take. dateTime is a point in time with a clock,
 # duration and interval are the two period shapes, and a quantity is a decimal or
@@ -206,8 +217,20 @@ def _namespace(g: Graph, onto: URIRef | None) -> str:
     return max(counts, key=counts.get) if counts else ""
 
 
-def from_graph(g: Graph) -> OntologySpec:
-    onto = next((s for s in g.subjects(RDF.type, OWL.Ontology) if isinstance(s, URIRef)), None)
+def _foundation(iri: str) -> bool:
+    s = str(iri).rstrip("/")
+    return any(s == base or s.startswith(base + "/") for base in _FOUNDATION_IRIS)
+
+
+def _own_ontology(g: Graph) -> URIRef | None:
+    """The ontology this file is, when a foundation ontology has been parsed in beside it."""
+    ontos = [s for s in g.subjects(RDF.type, OWL.Ontology) if isinstance(s, URIRef)]
+    own = [s for s in ontos if not _foundation(str(s))]
+    return (own or ontos or [None])[0]
+
+
+def from_graph(g: Graph, *, also: tuple[str, ...] = ()) -> OntologySpec:
+    onto = _own_ontology(g)
     ns = _namespace(g, onto)
     spec = OntologySpec(
         namespace=ns,
@@ -220,8 +243,16 @@ def from_graph(g: Graph) -> OntologySpec:
         graph=g,
     )
 
+    namespaces = (ns, *also)
+
     def mine(s) -> bool:
-        return isinstance(s, URIRef) and str(s).startswith(ns) and not g.value(s, OWL.deprecated)
+        return isinstance(s, URIRef) and str(s).startswith(namespaces) and not g.value(s, OWL.deprecated)
+
+    def put(bucket: dict, local: str, term) -> None:
+        held = bucket.get(local)
+        if held is not None and held.iri != term.iri:
+            raise ValueError(f"ontology local names must be unique across classes and properties: {local}")
+        bucket[local] = term
 
     def base(s) -> dict:
         return {"iri": str(s), "local": local_name(s),
@@ -232,25 +263,29 @@ def from_graph(g: Graph) -> OntologySpec:
     for s in set(g.subjects(RDF.type, OWL.Class)):
         if mine(s):
             parents = tuple(sorted(local_name(o) for o in g.objects(s, RDFS.subClassOf) if mine(o)))
-            spec.classes[local_name(s)] = ClassTerm(**base(s), parents=parents)
+            put(spec.classes, local_name(s), ClassTerm(**base(s), parents=parents))
     for s in set(g.subjects(RDF.type, OWL.ObjectProperty)):
         if mine(s):
-            spec.relations[local_name(s)] = PropertyTerm(
+            put(spec.relations, local_name(s), PropertyTerm(
                 **base(s), kind="relation",
                 domain=tuple(sorted(local_name(o) for o in g.objects(s, RDFS.domain) if mine(o))),
-                range=tuple(sorted(local_name(o) for o in g.objects(s, RDFS.range) if mine(o))))
+                range=tuple(sorted(local_name(o) for o in g.objects(s, RDFS.range) if mine(o)))))
     for s in set(g.subjects(RDF.type, OWL.DatatypeProperty)):
         if mine(s):
             rng = g.value(s, RDFS.range)
             unit = next((str(o) for o in g.objects(s, KV.unit)), "")
-            spec.attributes[local_name(s)] = PropertyTerm(
+            put(spec.attributes, local_name(s), PropertyTerm(
                 **base(s), kind="attribute",
                 domain=tuple(sorted(local_name(o) for o in g.objects(s, RDFS.domain) if mine(o))),
-                range=(_XSD_KIND.get(rng, "string"),), unit=unit)
+                range=(_XSD_KIND.get(rng, "string"),), unit=unit))
     clash = set(spec.classes) & (set(spec.relations) | set(spec.attributes)) | set(spec.relations) & set(spec.attributes)
     if clash:
         raise ValueError(f"ontology local names must be unique across classes and properties: {sorted(clash)}")
     return spec
+
+
+def _imports_measures(g: Graph) -> bool:
+    return any(str(o).rstrip("/").startswith(MEASURES_IRI) for o in g.objects(None, OWL.imports))
 
 
 def load(path: str | Path | None = None, *, data: bytes | str | None = None) -> OntologySpec:
@@ -259,7 +294,12 @@ def load(path: str | Path | None = None, *, data: bytes | str | None = None) -> 
         g.parse(data=data, format="turtle")
     else:
         g.parse(str(path), format="turtle")
-    return from_graph(g)
+    also: tuple[str, ...] = ()
+    # The bundled file is what an import names. Nothing is fetched for it.
+    if _imports_measures(g) and not str(_own_ontology(g) or "").rstrip("/").startswith(MEASURES_IRI):
+        g.parse(MEASURES_TTL, format="turtle")
+        also = (MEASURES_NS,)
+    return from_graph(g, also=also)
 
 
 def empty(namespace: str = "https://example.org/ontology/lab#") -> OntologySpec:

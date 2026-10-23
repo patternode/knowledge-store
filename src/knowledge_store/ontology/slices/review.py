@@ -110,8 +110,15 @@ class _Draft:
         key = model.normalise(str(name or ""))
         return next((t for t in self.d[kind] if model.normalise(t["name"]) == key), None)
 
+    def resolved_class(self, name) -> str | None:
+        found = self.find("classes", name)
+        if found:
+            return found["name"]
+        key = model.normalise(str(name or ""))
+        return next((n for n in model.FOUNDATION_CLASSES if model.normalise(n) == key), None)
+
     def is_class(self, name) -> bool:
-        return self.find("classes", name) is not None
+        return self.resolved_class(name) is not None
 
     def ancestors(self, name: str) -> set[str]:
         seen: set[str] = set()
@@ -183,9 +190,10 @@ class _Draft:
         if op in ("set_domain", "set_range"):
             if kind == "classes" or (op == "set_range" and kind != "relations"):
                 return f"{op} does not apply to {kind}"
-            if not self.is_class(value):
+            resolved = self.resolved_class(value)
+            if resolved is None:
                 return f"no class named {value!r}"
-            t["domain" if op == "set_domain" else "range"] = self.find("classes", value)["name"]
+            t["domain" if op == "set_domain" else "range"] = resolved
             return None
         if kind != "attributes":
             return "set_datatype applies to attributes"

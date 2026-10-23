@@ -17,3 +17,5 @@ Source: [`src/knowledge_store/ontology/domain/values.ttl`](../src/knowledge_stor
 `kv:unit` is an annotation on the attribute, so every value of that attribute shares the unit. A metric stays a metric: it is a query, and it already carries its own unit.
 
 A quarter, a fiscal year, a half, a bare year and a business day stay strings. The calendar they use is not fixed, so they are not these kinds.
+
+A domain ontology that needs a number whose metric or unit varies, or a stretch of time with a start and an end, imports the [measures ontology](measures-ontology.md). These kinds are the ranges that ontology uses.

@@ -78,6 +78,9 @@ Design the ontology:
   a datatype (string, decimal, integer, date, dateTime, duration, interval, boolean, anyURI).
   A decimal or an integer that is a quantity also names its unit. A dateTime is a point in time
   with a clock. A duration is one length (PT2H). An interval is a start and an end (2023-07-14/2023-07-20).
+- Metric, Quantity, Instant and Period are already defined by the measures ontology. A magnitude
+  whose metric or unit varies is a Quantity of a Metric. A point in time is an Instant. A stretch
+  of time is a Period. Use those names as a domain or a range. Do not declare them again as classes.
 - Aim for roughly {target} classes. Say what you rejected and why.
 {existing}"""
 

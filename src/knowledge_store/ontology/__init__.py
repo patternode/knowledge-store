@@ -1,6 +1,6 @@
 """BC-002 Ontology: the model, discovery, review, released versions, renditions and the candidate register.
 
-Three vocabularies, kept apart: the core vocabulary (core.ttl, namespace ks:), fixed by the lab, which says where a fact came from and which code may name; the values vocabulary (values.ttl, namespace kv:), the datatypes and units a domain attribute may use; and the domain ontology discovered or authored for a deployment, which code never names. The tool schema, the prompt vocabulary, validation and the RDF typing are all derived from the loaded file.
+The lab ships three shared vocabularies, kept apart from the domain ontology a deployment authors. The core vocabulary (core.ttl, namespace ks:) says where a fact came from, and code may name it. The values vocabulary (values.ttl, namespace kv:) is the datatypes and units a domain attribute may use. The measures ontology (measures.ttl, namespace km:) is the quantities, metrics, instants and periods a domain ontology imports and builds on. The domain ontology says what the documents are about, and code never names its terms. The tool schema, the prompt vocabulary, validation and the RDF typing are all derived from the loaded file.
 
 This module is the context's contract: other contexts import only the names below.
 """

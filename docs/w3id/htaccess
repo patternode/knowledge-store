@@ -26,6 +26,16 @@ RewriteRule ^core/([0-9]+\.[0-9]+\.[0-9]+)/?$ https://raw.githubusercontent.com/
 # The latest shapes
 RewriteRule ^core/shapes$ https://raw.githubusercontent.com/patternode/knowledge-store/main/src/knowledge_store/ontology/domain/core-shapes.ttl [R=303,L]
 
+# A specific release of the measures ontology
+RewriteRule ^measures/([0-9]+\.[0-9]+\.[0-9]+)/?$ https://raw.githubusercontent.com/patternode/knowledge-store/measures-v$1/src/knowledge_store/ontology/domain/measures.ttl [R=303,L]
+
+# The latest measures ontology: Turtle (or N-Triples) for RDF clients, the documentation page otherwise
+RewriteCond %{HTTP_ACCEPT} text/turtle [OR]
+RewriteCond %{HTTP_ACCEPT} application/x-turtle [OR]
+RewriteCond %{HTTP_ACCEPT} application/n-triples
+RewriteRule ^measures/?$ https://raw.githubusercontent.com/patternode/knowledge-store/main/src/knowledge_store/ontology/domain/measures.ttl [R=303,L]
+RewriteRule ^measures/?$ https://github.com/patternode/knowledge-store/blob/main/docs/measures-ontology.md [R=303,L]
+
 # The latest vocabulary: Turtle (or N-Triples) for RDF clients, the documentation page otherwise
 RewriteCond %{HTTP_ACCEPT} text/turtle [OR]
 RewriteCond %{HTTP_ACCEPT} application/x-turtle [OR]
