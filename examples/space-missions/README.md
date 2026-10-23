@@ -25,9 +25,7 @@ become passages. A question that asks the catalog cites the cell.
 `launchedOn`. Launch vehicle and date also appear in the prose, often under a shorter name
 ("an Atlas V rocket" in the Juno document, `Atlas V 551` in the vehicle table). The column
 `sample_cost_million_usd` appears only in the catalog. Those figures are round numbers made up
-for this example. They are not real budgets. The ontology attribute is `sampleCost`, an integer
-whose unit is `million USD`. A cruise a document states, such as ten years, is `cruiseDuration`,
-an ISO 8601 duration. Neither is a class.
+for this example. They are not real budgets.
 
 `atlas_v_launches` counts rows whose `vehicle_family` is `Atlas V`: Curiosity, Perseverance,
 OSIRIS-REx, Juno, and New Horizons, which is 5.

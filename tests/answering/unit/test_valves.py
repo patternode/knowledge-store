@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from knowledge_store.answering.domain import valves
 
-MISSION = {"type": "Mission", "columns": [{"attribute": "sampleCost"}, {"attribute": "vehicleFamily"}]}
+MISSION = {"type": "Mission", "columns": [{"attribute": "sampleCostMillionUsd"}, {"attribute": "vehicleFamily"}]}
 
 
 def test_a_limit_comes_from_its_setting(monkeypatch):
@@ -36,7 +36,7 @@ def test_a_collection_with_no_mapping_gets_no_table_questions():
 
 
 def test_a_question_is_offered_only_when_every_attribute_it_needs_is_mapped():
-    only_cost = {"types": [{"type": "Mission", "columns": [{"attribute": "sampleCost"}]}]}
+    only_cost = {"types": [{"type": "Mission", "columns": [{"attribute": "sampleCostMillionUsd"}]}]}
     qs = valves.table_questions(only_cost)
     assert "What sample cost does the catalog give Juno?" in qs
     assert "What total sample cost does the catalog give the Atlas V missions?" not in qs
@@ -49,7 +49,7 @@ def test_both_attributes_mapped_offers_the_combined_question():
 
 
 def test_an_attribute_on_another_type_does_not_count():
-    qs = valves.table_questions({"types": [{"type": "LaunchVehicle", "columns": [{"attribute": "sampleCost"}]}]})
+    qs = valves.table_questions({"types": [{"type": "LaunchVehicle", "columns": [{"attribute": "sampleCostMillionUsd"}]}]})
     assert "What sample cost does the catalog give Juno?" not in qs
 
 

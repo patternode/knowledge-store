@@ -2,15 +2,13 @@
 @prefix owl:  <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
-@prefix kv:   <https://w3id.org/knowledge-store/values#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 
 <https://example.org/missions> a owl:Ontology ;
     rdfs:label "Space missions sample"@en ;
-    owl:versionInfo "2.0.0" ;
-    owl:versionIRI <https://example.org/missions/2.0.0> ;
-    owl:priorVersion <https://example.org/missions/1.0.0> ;
-    rdfs:comment "Ontology for the space-missions sample: prose documents, plus a catalog of the same missions as tables. A quantity names its unit, and a stated cruise is a duration."@en .
+    owl:versionInfo "1.0.0" ;
+    owl:versionIRI <https://example.org/missions/1.0.0> ;
+    rdfs:comment "Ontology for the space-missions sample: prose documents, plus a catalog of the same missions as tables."@en .
 
 o:Mission a owl:Class ;
     rdfs:label "Mission"@en ;
@@ -55,18 +53,11 @@ o:target a owl:DatatypeProperty ;
     rdfs:domain o:Mission ;
     rdfs:range xsd:string .
 
-o:sampleCost a owl:DatatypeProperty ;
-    rdfs:label "sampleCost"@en ;
-    skos:definition "An invented sample cost. It is not a real budget, and no prose document in the corpus states it. The number is millions of US dollars. No single QUDT unit is that scale, so the unit is named in words."@en ;
+o:sampleCostMillionUsd a owl:DatatypeProperty ;
+    rdfs:label "sampleCostMillionUsd"@en ;
+    skos:definition "An invented sample cost in millions of US dollars. It is not a real budget, and no prose document in the corpus states it."@en ;
     rdfs:domain o:Mission ;
-    rdfs:range xsd:integer ;
-    kv:unit "million USD" .
-
-o:cruiseDuration a owl:DatatypeProperty ;
-    rdfs:label "cruiseDuration"@en ;
-    skos:definition "The cruise a document states for the mission, as an ISO 8601 duration, when the document states one. A cruise of ten years is P10Y."@en ;
-    rdfs:domain o:Mission ;
-    rdfs:range xsd:duration .
+    rdfs:range xsd:integer .
 
 o:vehicleId a owl:DatatypeProperty ;
     rdfs:label "vehicleId"@en ;

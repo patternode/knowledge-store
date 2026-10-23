@@ -220,8 +220,8 @@ def test_a_row_carries_each_value_with_its_cell_id(lake):
 
 
 def test_rows_filter_numbers_and_dates_in_their_datatype(lake):
-    cheap = tq.lookup_rows(lake, "Mission", [{"attribute": "sampleCost", "op": "lt", "value": "100"}], limit=100)
-    assert cheap["total"] and all(int(r["values"]["sampleCost"]["value"]) < 100 for r in cheap["rows"])
+    cheap = tq.lookup_rows(lake, "Mission", [{"attribute": "sampleCostMillionUsd", "op": "lt", "value": "100"}], limit=100)
+    assert cheap["total"] and all(int(r["values"]["sampleCostMillionUsd"]["value"]) < 100 for r in cheap["rows"])
     recent = tq.lookup_rows(lake, "Mission", [{"attribute": "launchDate", "op": "gte", "value": "1 January 2020"}], limit=100)
     assert recent["total"] and all(r["values"]["launchDate"]["value"] >= "2020-01-01" for r in recent["rows"])
 
@@ -265,10 +265,10 @@ def test_a_named_metric_is_recomputed_with_its_id(lake):
 
 def test_a_named_sum_and_average_are_recomputed(lake):
     assert tq.aggregate(lake, metric="cheap_cost")["figure"] == tq.aggregate(
-        lake, type_name="Mission", op="sum", attribute="sampleCost",
+        lake, type_name="Mission", op="sum", attribute="sampleCostMillionUsd",
         filters=[{"attribute": "sample_cost_million_usd", "op": "lt", "value": "200"}])["figure"]
     assert tq.aggregate(lake, metric="mars_avg_cost")["figure"] == tq.aggregate(
-        lake, type_name="Mission", op="avg", attribute="sampleCost",
+        lake, type_name="Mission", op="avg", attribute="sampleCostMillionUsd",
         filters=[{"attribute": "target", "value": "Mars"}])["figure"]
 
 
@@ -296,7 +296,7 @@ def test_a_metric_on_its_own_snapshot_is_recomputed(lake):
 
 
 def test_an_ad_hoc_count_sum_min_and_max(lake):
-    base = {"type_name": "Mission", "attribute": "sampleCost"}
+    base = {"type_name": "Mission", "attribute": "sampleCostMillionUsd"}
     count = tq.aggregate(lake, type_name="Mission", op="count")
     assert count["figure"] == 18 and count["rows"] == 18 and count["id"].startswith("m:count:")
     lo, hi = tq.aggregate(lake, op="min", **base)["figure"], tq.aggregate(lake, op="max", **base)["figure"]
@@ -310,7 +310,7 @@ def test_an_ad_hoc_figure_groups_by_one_column(lake):
 
 
 def test_a_grouped_sum_reduces_each_group(lake):
-    out = tq.aggregate(lake, type_name="Mission", op="sum", attribute="sampleCost", group_by="target")
+    out = tq.aggregate(lake, type_name="Mission", op="sum", attribute="sampleCostMillionUsd", group_by="target")
     assert all("figure" in g for g in out["groups"]) and out["group_by"] == "target"
 
 

@@ -62,21 +62,21 @@ ATLAS = [{"attribute": "vehicleFamily", "op": "eq", "value": "Atlas V"}]
 
 def test_two_totals_over_one_snapshot_have_two_ids(tmp_path):
     _, lake, _ = _bound(tmp_path)
-    atlas = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCost", filters=ATLAS)
-    every = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCost")
+    atlas = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCostMillionUsd", filters=ATLAS)
+    every = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCostMillionUsd")
     assert atlas["snapshot"] == every["snapshot"] and atlas["id"] != every["id"]
     assert atlas["id"].startswith("m:sum:") and atlas["figure"] != every["figure"]
     # the same request gives the same id, whatever order the filters come in
-    again = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCost",
+    again = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCostMillionUsd",
                       filters=[dict(reversed(list(ATLAS[0].items())))])
     assert again["id"] == atlas["id"]
 
 
 def test_a_wrong_total_cannot_borrow_another_citations_figure(tmp_path):
     root, lake, _ = _bound(tmp_path)
-    atlas = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCost", filters=ATLAS)
-    every = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCost")
-    adhoc = dict(mapped_type="Mission", attribute="sampleCost")
+    atlas = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCostMillionUsd", filters=ATLAS)
+    every = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCostMillionUsd")
+    adhoc = dict(mapped_type="Mission", attribute="sampleCostMillionUsd")
     # the reviewed failure: the Atlas V total stated as the all-missions figure, beside a true claim
     stated = GroundedAnswer(answerable=True, claims=[
         Claim(text="The Atlas V missions cost this much in total.",
@@ -96,16 +96,16 @@ def test_a_wrong_total_cannot_borrow_another_citations_figure(tmp_path):
 
 def test_a_citation_whose_filters_do_not_match_its_id_is_refused(tmp_path):
     root, lake, _ = _bound(tmp_path)
-    atlas = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCost", filters=ATLAS)
-    every = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCost")
+    atlas = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCostMillionUsd", filters=ATLAS)
+    every = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCostMillionUsd")
     # the unfiltered figure, under the filtered figure's id: the recomputation is not that id
     lying = _answer(Citation(metric_id=atlas["id"], figure=str(every["figure"]), mapped_type="Mission",
-                             attribute="sampleCost"))
+                             attribute="sampleCostMillionUsd"))
     kept, failures = check(lying, {}, {}, agent_app._metrics(Tools(root), "missions", lying))
     assert not kept and "do not match the id" in failures[0]["reason"]
     # an old-style id with no digest says nothing of what it was computed over
     bare = _answer(Citation(metric_id=f"m:sum/{atlas['snapshot']}", figure=str(atlas["figure"]),
-                            mapped_type="Mission", attribute="sampleCost"))
+                            mapped_type="Mission", attribute="sampleCostMillionUsd"))
     assert not check(bare, {}, {}, agent_app._metrics(Tools(root), "missions", bare))[0]
 
 
@@ -155,13 +155,13 @@ def test_numbers_and_dates_written_their_own_way_are_read_as_values(tmp_path):
     _edit(corpus / "tables/missions.csv", "2023-07-14,Moon,90", "2023-07-14,Moon,$90")
     root, lake, report = _bound(tmp_path, corpus=corpus)
     assert report["misses"] == []
-    every = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCost")
+    every = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCostMillionUsd")
     assert isinstance(every["figure"], int) and "skipped" not in every
-    big = lookup_rows(lake, "Mission", [{"attribute": "sampleCost", "op": "gt", "value": "2,000"}])
+    big = lookup_rows(lake, "Mission", [{"attribute": "sampleCostMillionUsd", "op": "gt", "value": "2,000"}])
     assert "Perseverance" in {r["values"]["name"]["value"] for r in big["rows"]}
     dated = lookup_rows(lake, "Mission", [{"attribute": "launchDate", "op": "eq", "value": "2020-07-30"}])
     assert [r["values"]["name"]["value"] for r in dated["rows"]] == ["Perseverance"]
-    cost = dated["rows"][0]["values"]["sampleCost"]
+    cost = dated["rows"][0]["values"]["sampleCostMillionUsd"]
     cell = lookup_rows(lake, "", cell_ids=[cost["cell"]])["cells"][0]
     assert cell["value"] == "2700"   # stored canonical
     assert values_equal("2,700", cell["value"], "integer") and values_equal("14 July 2023", "2023-07-14", "date")
@@ -173,10 +173,10 @@ def test_a_value_that_is_not_its_type_is_skipped_never_summed_and_never_cited(tm
     _edit(corpus / "tables/missions.csv", "2023-07-14,Moon,90", "2023-07-14,Moon,ninety")
     root, lake, report = _bound(tmp_path, corpus=corpus)
     assert any(m.get("column") == "sample_cost_million_usd" for m in report["misses"])
-    total = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCost")
+    total = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCostMillionUsd")
     assert total["skipped"] == 1 and total["figure"] is not None
     row = lookup_rows(lake, "Mission", [{"attribute": "name", "op": "eq", "value": "Chandrayaan-3"}])["rows"][0]
-    bad = row["values"]["sampleCost"]
+    bad = row["values"]["sampleCostMillionUsd"]
     cell = lookup_rows(lake, "", cell_ids=[bad["cell"]])["cells"]
     kept, failures = check(_answer(Citation(cell_id=bad["cell"], value="ninety")), {}, {bad["cell"]: {**cell[0], "invalid": True}})
     assert not kept and "valid value" in failures[0]["reason"]
@@ -195,7 +195,7 @@ def test_a_column_mapped_in_a_later_version_gets_its_cells(tmp_path):
     assert lookup_rows(lake, "Mission", [{"attribute": "target", "op": "eq", "value": "Mars"}]).get("total", 0) == 0
     added = tmp_path / "added"
     shutil.copytree(ONTO, added)
-    _set_version(added, "2.1.0")
+    _set_version(added, "1.1.0")
     assert versions.publish(lake, added, by="test", activate=True)["kind"] == "additive"
     report = bind(lake)
     assert report["written"] >= 1
@@ -248,7 +248,7 @@ def test_a_table_made_private_after_the_first_bind_is_rebound_private(tmp_path):
     assert lookup_rows(lake, "LaunchVehicle")["total"] > 0
     private = _copy(tmp_path / "private")
     _edit(private / "mappings.yaml", "class: LaunchVehicle\n    key:", "class: LaunchVehicle\n    scope: private\n    key:")
-    _set_version(private, "3.0.0")
+    _set_version(private, "2.0.0")
     versions.publish(lake, private, by="test", activate=True)
     bind(lake)
     assert "total" not in lookup_rows(lake, "LaunchVehicle")  # now hidden from a public caller
