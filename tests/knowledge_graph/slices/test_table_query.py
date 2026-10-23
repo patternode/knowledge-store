@@ -115,6 +115,13 @@ def test_an_unreadable_date_never_matches():
     assert not tq._cmp("eq", "someday", "date", "2023-07-14")
 
 
+def test_a_date_and_time_orders_and_a_duration_only_matches():
+    assert tq._cmp("lt", "2023-07-14T15:30Z", "dateTime", "2023-07-14T16:00Z")
+    assert tq._cmp("eq", "PT2.0H", "duration", "PT2H")
+    assert tq._cmp("lt", "PT2H", "duration", "PT10H") is False
+    assert tq.values_equal("14 July 2023/20 July 2023", "2023-07-14/2023-07-20", "interval")
+
+
 @pytest.mark.parametrize("op,expected", [("eq", False), ("neq", True), ("lt", True), ("lte", True), ("gt", False),
                                          ("gte", False), ("prefix", False)])
 def test_text_compares_as_text(op, expected):

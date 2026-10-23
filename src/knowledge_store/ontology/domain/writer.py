@@ -4,7 +4,7 @@ The definition is plain data:
 
     {"classes":    [{"name", "label", "definition", "synonyms", "parent"}],
      "relations":  [{"name", "label", "definition", "synonyms", "domain", "range"}],
-     "attributes": [{"name", "label", "definition", "synonyms", "domain", "datatype"}]}
+     "attributes": [{"name", "label", "definition", "synonyms", "domain", "datatype", "unit"}]}
 
 The output is meant for a person to edit, so it is written by hand rather than serialised by
 rdflib: one block per term, in a stable order, with the evidence counts as comments.
@@ -17,7 +17,11 @@ import re
 
 from knowledge_store.ontology.domain.model import DATATYPES, OntologySpec
 
-XSD_NAME = {k: f"xsd:{k}" for k in DATATYPES}
+def datatype_name(kind: str) -> str:
+    """The prefixed name of a value kind. An interval is a values datatype, not an XML Schema one."""
+    if kind == "interval":
+        return "kv:interval"
+    return f"xsd:{kind}"
 
 
 def class_name(s: str) -> str:
@@ -32,6 +36,12 @@ def property_name(s: str) -> str:
     """lowerCamelCase local name for a property."""
     c = class_name(s)
     return c[:1].lower() + c[1:]
+
+
+def _unit(unit: str) -> str:
+    if unit.startswith(("http://", "https://")):
+        return f"<{unit}>"
+    return '"' + unit.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
 def _lit(s: str) -> str:
@@ -73,8 +83,9 @@ def normalise_definition(defn: dict) -> dict:
         n = property_name(a["name"])
         dom = [class_name(x) for x in _as_list(a.get("domain")) if class_name(x) in classes]
         dtp = a.get("datatype") if a.get("datatype") in DATATYPES else "string"
+        unit = (a.get("unit") or "") if dtp in ("decimal", "integer") else ""
         if n and n not in attrs and n not in rels and n not in classes:
-            attrs[n] = {**a, "name": n, "domain": dom, "datatype": dtp}
+            attrs[n] = {**a, "name": n, "domain": dom, "datatype": dtp, "unit": unit}
     return {"classes": list(classes.values()), "relations": list(rels.values()), "attributes": list(attrs.values())}
 
 
@@ -98,6 +109,7 @@ def ontology_ttl(defn: dict, *, namespace: str, version: str, label: str, commen
         "@prefix owl:  <http://www.w3.org/2002/07/owl#> .",
         "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .",
         "@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .",
+        "@prefix kv:   <https://w3id.org/knowledge-store/values#> .",
         "@prefix skos: <http://www.w3.org/2004/02/skos/core#> .",
         "",
         f"<{onto}> a owl:Ontology ;",
@@ -122,7 +134,9 @@ def ontology_ttl(defn: dict, *, namespace: str, version: str, label: str, commen
     if d["attributes"]:
         out += ["# " + "=" * 70, "# Attributes", "# " + "=" * 70, ""]
     for a in sorted(d["attributes"], key=lambda x: x["name"]):
-        extra = [f"rdfs:domain o:{x}" for x in a["domain"]] + [f"rdfs:range {XSD_NAME[a['datatype']]}"]
+        extra = [f"rdfs:domain o:{x}" for x in a["domain"]] + [f"rdfs:range {datatype_name(a['datatype'])}"]
+        if a.get("unit"):
+            extra.append(f"kv:unit {_unit(a['unit'])}")
         note = f"seen in {ev[a['name']]} documents" if a["name"] in ev else ""
         out += [_block(f"o:{a['name']}", "owl:DatatypeProperty", a, extra, note), ""]
     return "\n".join(out)
@@ -137,7 +151,7 @@ def _merge(prior: OntologySpec, d: dict) -> dict:
             for p in prior.relations.values()}
     attrs = {p.local: {"name": p.local, "label": p.label, "definition": p.definition,
                        "synonyms": list(p.alt_labels), "domain": list(p.domain),
-                       "datatype": p.range[0] if p.range else "string"}
+                       "datatype": p.range[0] if p.range else "string", "unit": p.unit}
              for p in prior.attributes.values()}
     for src, dst in ((d["classes"], classes), (d["relations"], rels), (d["attributes"], attrs)):
         for t in src:
@@ -154,7 +168,8 @@ def shapes_ttl(spec: OntologySpec) -> str:
     an attribute's value of its datatype. Written out so a curator can tighten it by hand."""
     ns = spec.namespace
     out = [f"@prefix o:  <{ns}> .", "@prefix sh: <http://www.w3.org/ns/shacl#> .",
-           "@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .", "",
+           "@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .",
+           "@prefix kv: <https://w3id.org/knowledge-store/values#> .", "",
            "# Generated from the ontology's domains and ranges. Edit freely; it is published with the version.", ""]
     for p in sorted(spec.relations.values(), key=lambda t: t.local):
         if len(p.range) == 1:
@@ -164,6 +179,6 @@ def shapes_ttl(spec: OntologySpec) -> str:
     for p in sorted(spec.attributes.values(), key=lambda t: t.local):
         kind = p.range[0] if p.range else "string"
         out += [f"o:{p.local}DatatypeShape a sh:NodeShape ;", f"    sh:targetSubjectsOf o:{p.local} ;",
-                f"    sh:property [ sh:path o:{p.local} ; sh:datatype {XSD_NAME[kind]} ;",
+                f"    sh:property [ sh:path o:{p.local} ; sh:datatype {datatype_name(kind)} ;",
                 f"                  sh:message \"{p.local} must be a {kind}\" ] .", ""]
     return "\n".join(out)

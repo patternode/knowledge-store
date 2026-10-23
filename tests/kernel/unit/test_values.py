@@ -101,3 +101,63 @@ def test_number_reads_an_integer_kind():
 
 def test_number_is_none_for_text():
     assert number("twelve") is None
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("2023-07-14T15:30", dt.datetime(2023, 7, 14, 15, 30)),
+    ("2023-07-14T15:30:45", dt.datetime(2023, 7, 14, 15, 30, 45)),
+])
+def test_a_date_and_time_keeps_its_clock(text, expected):
+    assert parse_value(text, "dateTime") == expected
+
+
+def test_a_date_and_time_in_utc_or_an_offset_is_aware():
+    utc = parse_value("2023-07-14T15:30Z", "dateTime")
+    offset = parse_value("2023-07-14T15:30+13:00", "dateTime")
+    assert utc.utcoffset() == dt.timedelta(0)
+    assert offset.utcoffset() == dt.timedelta(hours=13)
+
+
+def test_a_date_alone_is_not_a_date_and_time():
+    with pytest.raises(ValueError, match="date and time"):
+        parse_value("2023-07-14", "dateTime")
+
+
+def test_canonical_writes_a_date_and_time_without_zero_seconds():
+    assert canonical("2023-07-14T15:30:00Z", "dateTime") == "2023-07-14T15:30Z"
+    assert canonical("2023-07-14T15:30:45+13:00", "dateTime") == "2023-07-14T15:30:45+13:00"
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("PT2H", "PT2H"), ("PT2.0H", "PT2H"), ("P3D", "P3D"), ("P2W", "P2W"),
+    ("PT0.200S", "PT0.2S"), ("P1Y2M3DT4H", "P1Y2M3DT4H"),
+])
+def test_a_duration_is_an_iso_duration(text, expected):
+    assert parse_value(text, "duration") == expected
+    assert canonical(text, "duration") == expected
+
+
+@pytest.mark.parametrize("text", ["2 hours", "P", "PT", "P2WT3H"])
+def test_a_duration_that_is_not_iso_is_refused(text):
+    with pytest.raises(ValueError, match="duration|week"):
+        parse_value(text, "duration")
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("2023-07-14/2023-07-20", "2023-07-14/2023-07-20"),
+    ("14 July 2023/20 July 2023", "2023-07-14/2023-07-20"),
+    ("2023-07/2023-08", "2023-07/2023-08"),
+    ("09:00/17:00", "09:00/17:00"),
+    ("09:00:00Z/17:30+13:00", "09:00Z/17:30+13:00"),
+    ("PT2H/PT4H", "PT2H/PT4H"),
+    ("2023-07-14T15:30:00Z/2023-07-14T17:00Z", "2023-07-14T15:30Z/2023-07-14T17:00Z"),
+])
+def test_an_interval_is_a_start_and_an_end(text, expected):
+    assert canonical(text, "interval") == expected
+
+
+def test_an_interval_needs_two_sides():
+    with pytest.raises(ValueError, match="interval"):
+        parse_value("2023-07-14", "interval")
+    with pytest.raises(ValueError, match="clock"):
+        parse_value("25:00/17:00", "interval")

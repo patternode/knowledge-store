@@ -23,15 +23,21 @@ from rdflib import OWL, RDF, RDFS, XSD, Graph, Literal, Namespace, URIRef
 from rdflib.namespace import SKOS
 
 KL = Namespace("https://w3id.org/knowledge-store/core#")
+KV = Namespace("https://w3id.org/knowledge-store/values#")
 PACKAGE_DIR = Path(__file__).resolve().parent
 CORE_TTL = PACKAGE_DIR / "core.ttl"
 CORE_SHAPES = PACKAGE_DIR / "core-shapes.ttl"
+VALUES_TTL = PACKAGE_DIR / "values.ttl"
 
-# The value kinds an attribute can take, and the xsd datatypes they map to.
+# The value kinds an attribute can take. dateTime is a point in time with a clock,
+# duration and interval are the two period shapes, and a quantity is a decimal or
+# an integer whose unit is recorded on the attribute. dateTime is not a date.
 DATATYPES = {"string": XSD.string, "decimal": XSD.decimal, "integer": XSD.integer,
-             "date": XSD.date, "boolean": XSD.boolean, "anyURI": XSD.anyURI}
-_XSD_KIND = {v: k for k, v in DATATYPES.items()} | {XSD.double: "decimal", XSD.float: "decimal",
-                                                     XSD.dateTime: "date", XSD.int: "integer"}
+             "date": XSD.date, "dateTime": XSD.dateTime, "duration": XSD.duration,
+             "interval": KV.interval, "boolean": XSD.boolean, "anyURI": XSD.anyURI}
+_XSD_KIND = {v: k for k, v in DATATYPES.items()} | {
+    XSD.double: "decimal", XSD.float: "decimal", XSD.int: "integer", XSD.long: "integer",
+    KV.Interval: "interval"}
 
 
 def local_name(iri: str) -> str:
@@ -61,6 +67,7 @@ class PropertyTerm(Term):
     domain: tuple[str, ...] = ()            # local class names; empty means any class
     range: tuple[str, ...] = ()             # class locals for a relation; one kind for an attribute
     kind: str = "relation"                  # relation or attribute
+    unit: str = ""                          # a quantity's unit, once for the attribute
 
 
 @dataclass
@@ -161,7 +168,9 @@ class OntologySpec:
         if attrs:
             parts += ["", "## Attributes (use as `property`, with a literal value)"]
             for p in sorted(attrs, key=lambda t: t.local):
-                sig = f" [{'|'.join(p.domain) or 'any'}: {p.range[0] if p.range else 'string'}]"
+                kind = p.range[0] if p.range else "string"
+                unit = f" {p.unit}" if p.unit else ""
+                sig = f" [{'|'.join(p.domain) or 'any'}: {kind}{unit}]"
                 parts.append(line(p, sig))
         return "\n".join(parts)
 
@@ -233,10 +242,11 @@ def from_graph(g: Graph) -> OntologySpec:
     for s in set(g.subjects(RDF.type, OWL.DatatypeProperty)):
         if mine(s):
             rng = g.value(s, RDFS.range)
+            unit = next((str(o) for o in g.objects(s, KV.unit)), "")
             spec.attributes[local_name(s)] = PropertyTerm(
                 **base(s), kind="attribute",
                 domain=tuple(sorted(local_name(o) for o in g.objects(s, RDFS.domain) if mine(o))),
-                range=(_XSD_KIND.get(rng, "string"),))
+                range=(_XSD_KIND.get(rng, "string"),), unit=unit)
     clash = set(spec.classes) & (set(spec.relations) | set(spec.attributes)) | set(spec.relations) & set(spec.attributes)
     if clash:
         raise ValueError(f"ontology local names must be unique across classes and properties: {sorted(clash)}")

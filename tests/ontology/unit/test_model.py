@@ -57,6 +57,29 @@ def test_attributes_have_a_value_kind(s):
     assert s.attributes["motto"].range == ("string",) and s.attributes["motto"].domain == ()
 
 
+def test_a_date_and_time_is_not_read_as_a_date_and_a_quantity_keeps_its_unit():
+    ttl = """
+    @prefix o: <https://example.org/space#> .
+    @prefix owl: <http://www.w3.org/2002/07/owl#> .
+    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+    @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+    @prefix kv: <https://w3id.org/knowledge-store/values#> .
+    <https://example.org/space> a owl:Ontology .
+    o:liftoff a owl:DatatypeProperty ; rdfs:range xsd:dateTime .
+    o:cruise a owl:DatatypeProperty ; rdfs:range xsd:duration .
+    o:window a owl:DatatypeProperty ; rdfs:range kv:interval .
+    o:cost a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+        kv:unit <http://qudt.org/vocab/unit/USD> .
+    """
+    loaded = model.load(data=ttl)
+    assert loaded.attributes["liftoff"].range == ("dateTime",)
+    assert loaded.attributes["cruise"].range == ("duration",)
+    assert loaded.attributes["window"].range == ("interval",)
+    assert loaded.attributes["cost"].range == ("decimal",)
+    assert loaded.attributes["cost"].unit == "http://qudt.org/vocab/unit/USD"
+    assert "decimal http://qudt.org/vocab/unit/USD" in loaded.vocabulary_prompt()
+
+
 def test_a_name_used_by_a_class_and_a_property_is_refused():
     bad = TTL + "\no:Mission a owl:DatatypeProperty .\n"
     with pytest.raises(ValueError, match="unique"):
