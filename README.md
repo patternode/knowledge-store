@@ -249,6 +249,9 @@ python -m knowledge_store.apps.evaluate examples/evals/space-missions.yaml --lak
 
 The Sherlock Holmes stories have a set too, `examples/evals/sherlock-holmes.yaml`, for the `holmes`
 collection that [examples/sherlock-holmes/fetch.py](examples/sherlock-holmes/fetch.py) fills.
+[examples/enterprise-rag-bench](examples/enterprise-rag-bench/README.md) fetches a slice of
+EnterpriseRAG-Bench, an invented company's wikis, tickets and threads, and writes its 490
+questions as a set, with the company's people and projects as a reference for the graph.
 
 The scoring needs no model as judge: facts stated, near misses avoided, the share of claims that
 passed the citation checks, expected sources cited, and declines. See

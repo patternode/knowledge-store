@@ -45,3 +45,4 @@ Optional, installed only with the extra that names them (see the README's Instal
 
 - `examples/space-missions/`: original text written for this project, dedicated to the public domain (CC0 1.0).
 - `examples/sherlock-holmes/fetch.py` downloads stories by Arthur Conan Doyle from Project Gutenberg. The stories are in the public domain. The script removes Project Gutenberg's header and footer, and the texts are not distributed with this repository.
+- `examples/enterprise-rag-bench/fetch.py` downloads part of EnterpriseRAG-Bench (https://github.com/onyx-dot-app/EnterpriseRAG-Bench), Copyright (c) 2026 DanswerAI, Inc., under the MIT License. The documents and questions are not distributed with this repository.

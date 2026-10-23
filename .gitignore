@@ -11,6 +11,7 @@ backend.hcl
 terraform.tfvars
 .build/
 examples/sherlock-holmes/stories/
+examples/enterprise-rag-bench/data/
 !infra/stack/.terraform.lock.hcl
 # The documentation site (Docusaurus): dependencies, cache and output.
 node_modules/
