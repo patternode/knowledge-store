@@ -17,3 +17,5 @@ Source: [`src/knowledge_store/ontology/domain/values.ttl`](../src/knowledge_stor
 `kv:unit` is an annotation on the attribute, so every value of that attribute shares the unit. A metric stays a metric: it is a query, and it already carries its own unit.
 
 A quarter, a fiscal year, a half, a bare year and a business day stay strings. The calendar they use is not fixed, so they are not these kinds.
+
+The space-missions sample uses the kinds on its own attributes. `launchDate` is an `xsd:date`. `sampleCost` is an integer whose `kv:unit` is `million USD`: the catalog stores whole millions, and no single QUDT unit is that scale. `cruiseDuration` is an `xsd:duration` for a cruise a document states, such as `P10Y`. The column in the CSV is still `sample_cost_million_usd`. The unit lives on the attribute.

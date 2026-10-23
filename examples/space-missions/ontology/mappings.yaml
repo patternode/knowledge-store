@@ -20,7 +20,7 @@ tables:
       vehicle_family: {attribute: vehicleFamily}
       launch_date: {attribute: launchDate, datatype: xsd:date}
       target: {attribute: target}
-      sample_cost_million_usd: {attribute: sampleCostMillionUsd, datatype: xsd:integer}
+      sample_cost_million_usd: {attribute: sampleCost, datatype: xsd:integer}
       vehicle_id: {relation: launchedOn, range: LaunchVehicle, match: vehicleId}
   launch_vehicles:
     location: tables/launch_vehicles.csv

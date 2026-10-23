@@ -63,13 +63,13 @@ class TableQuery(NamedTuple):
 # is told to answer that question from the table, citing the cell or the figure.
 TABLE_QUERIES: tuple[TableQuery, ...] = (
     TableQuery("What sample cost does the catalog give Juno?",
-               type_name="Mission", attributes=("sampleCostMillionUsd",)),
+               type_name="Mission", attributes=("sampleCost",)),
     TableQuery("Which missions launched on an Atlas V?",
                type_name="Mission", attributes=("vehicleFamily",)),
     TableQuery("How many catalogued missions launched on an Atlas V?",
                metric="atlas_v_launches"),
     TableQuery("What total sample cost does the catalog give the Atlas V missions?",
-               type_name="Mission", attributes=("sampleCostMillionUsd", "vehicleFamily")),
+               type_name="Mission", attributes=("sampleCost", "vehicleFamily")),
     TableQuery("What name does the catalog give the launch vehicle atlas-v-551?",
                type_name="LaunchVehicle", attributes=("name",)),
 )

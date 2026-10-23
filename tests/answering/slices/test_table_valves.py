@@ -102,7 +102,7 @@ def test_the_bound_catalog_adds_every_table_question_to_the_prompt(tmp_path):
 def test_a_table_query_is_grounded_against_the_cell_or_the_figure(tmp_path):
     root, lake = _bound(tmp_path)
     cost = lookup_rows(lake, "Mission", [{"attribute": "name", "op": "eq", "value": "Juno"}])
-    cell = cost["rows"][0]["values"]["sampleCostMillionUsd"]
+    cell = cost["rows"][0]["values"]["sampleCost"]
     question = valves.TABLE_QUERIES[0].question
     guard = RecordingGuardrail()
     stated = GroundedAnswer(answerable=True, claims=[Claim(

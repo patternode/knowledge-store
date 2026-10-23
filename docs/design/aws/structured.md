@@ -67,7 +67,7 @@ tables:
     key: [mission_id]
     columns:
       name: {attribute: name}
-      sample_cost_million_usd: {attribute: sampleCostMillionUsd, datatype: xsd:integer}
+      sample_cost_million_usd: {attribute: sampleCost, datatype: xsd:integer}
       vehicle_id: {relation: launchedOn, range: LaunchVehicle, match: vehicleId}
 ```
 

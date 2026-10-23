@@ -36,10 +36,7 @@ def _copy(tmp: Path, version: str | None = None) -> Path:
     dest = tmp / "onto"
     shutil.copytree(ONTO, dest)
     if version:
-        ttl = (dest / "ontology.ttl").read_text()
-        ttl = ttl.replace('owl:versionInfo "1.0.0"', f'owl:versionInfo "{version}"')
-        ttl = ttl.replace("https://example.org/missions/1.0.0", f"https://example.org/missions/{version}")
-        (dest / "ontology.ttl").write_text(ttl)
+        _set_version(dest, version)
     return dest
 
 
@@ -88,6 +85,11 @@ def _collection(tmp: Path):
 
 def test_publish_checks_the_mapping_and_writes_the_same_rendition_twice(tmp_path):
     spec, ttl, shapes = renditions.read_master(ONTO)
+    assert spec.version == "2.0.0"
+    assert spec.attributes["sampleCost"].range == ("integer",)
+    assert spec.attributes["sampleCost"].unit == "million USD"
+    assert spec.attributes["cruiseDuration"].range == ("duration",)
+    assert "sampleCostMillionUsd" not in spec.attributes
     mapping = load_mapping(ONTO, spec)
     assert mapping is not None and {t.logical_table for t in mapping.tables} == {"missions", "launch_vehicles"}
     one, two = renditions.render_all(spec, ttl, shapes, mapping), renditions.render_all(spec, ttl, shapes, mapping)
@@ -101,9 +103,10 @@ def test_publish_checks_the_mapping_and_writes_the_same_rendition_twice(tmp_path
     manifest = versions.publish(lake, ONTO, by="test", activate=True)
     assert manifest["kind"] == "initial"
     assert "mappings.yaml" in manifest["sha256"] and "metrics.osi.yaml" in manifest["sha256"]
-    pre = layout.ontology_version_prefix("1.0.0")
+    pre = layout.ontology_version_prefix("2.0.0")
     assert lake.get(f"{pre}/renditions/r2rml/mapping.ttl") == one["r2rml/mapping.ttl"]
-    assert "Mapped tables" in lake.get(f"{pre}/renditions/agent/ontology.md").decode()
+    agent = lake.get(f"{pre}/renditions/agent/ontology.md").decode()
+    assert "Mapped tables" in agent and "million USD" in agent and "cruiseDuration" in agent
 
 
 def test_a_class_the_ontology_lacks_is_refused(tmp_path):
@@ -117,14 +120,14 @@ def test_an_identical_ontology_and_mapping_is_refused(tmp_path):
     lake = LocalStore(tmp_path / "lake")
     versions.publish(lake, _copy(tmp_path / "a"), activate=True)
     with pytest.raises(ValueError, match="identical"):
-        versions.publish(lake, _copy(tmp_path / "b", "1.0.1"))
+        versions.publish(lake, _copy(tmp_path / "b", "2.0.1"))
 
 
 def test_mapping_bumps_follow_the_change(tmp_path):
     lake = LocalStore(tmp_path / "lake")
     versions.publish(lake, _copy(tmp_path / "base"), activate=True)
 
-    wording = _copy(tmp_path / "wording", "1.0.1")
+    wording = _copy(tmp_path / "wording", "2.0.1")
     _edit(wording / "metrics.osi.yaml",
           "How many catalogued missions launched on a vehicle in the Atlas V family.",
           "How many catalogued missions launched on a vehicle in the Atlas V family. Wording only.")
@@ -133,25 +136,25 @@ def test_mapping_bumps_follow_the_change(tmp_path):
 
     added = tmp_path / "added"
     shutil.copytree(wording, added)
-    _set_version(added, "1.0.2")
+    _set_version(added, "2.0.2")
     (added / "metrics.osi.yaml").write_text((added / "metrics.osi.yaml").read_text() + _NEW_METRIC)
     with pytest.raises(ValueError, match="needs a minor bump"):
         versions.publish(lake, added)
     minor = tmp_path / "minor"
     shutil.copytree(added, minor)
-    _set_version(minor, "1.1.0")
+    _set_version(minor, "2.1.0")
     published = versions.publish(lake, minor, activate=True)
     assert published["kind"] == "additive" and published["delta_terms"] == []
 
     semantic = tmp_path / "semantic"
     shutil.copytree(minor, semantic)
-    _set_version(semantic, "1.2.0")
+    _set_version(semantic, "2.2.0")
     _edit(semantic / "mappings.yaml", "key: [mission_id]", "key: [name]")
     with pytest.raises(ValueError, match="needs a major bump"):
         versions.publish(lake, semantic)
     major = tmp_path / "major"
     shutil.copytree(semantic, major)
-    _set_version(major, "2.0.0")
+    _set_version(major, "3.0.0")
     assert versions.publish(lake, major, activate=True)["kind"] == "semantic"
 
 
@@ -187,7 +190,7 @@ def test_the_catalog_is_bound_skipped_and_queried(tmp_path):
 
     juno = lookup_rows(lake, "Mission", [{"attribute": "name", "op": "eq", "value": "Juno"}])
     assert juno["total"] == 1
-    cost = juno["rows"][0]["values"]["sampleCostMillionUsd"]
+    cost = juno["rows"][0]["values"]["sampleCost"]
     assert cost["value"] == "1100"
     assert cost["cell"] == f"c:missions-tables/{juno['snapshot']}/missions/juno/sample_cost_million_usd"
     vehicle = juno["rows"][0]["values"]["launchedOn"]
@@ -201,7 +204,7 @@ def test_the_catalog_is_bound_skipped_and_queried(tmp_path):
     adhoc = aggregate(lake, type_name="Mission", op="count",
                       filters=[{"attribute": "vehicleFamily", "op": "eq", "value": "Atlas V"}])
     assert adhoc["figure"] == 5
-    total = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCostMillionUsd",
+    total = aggregate(lake, type_name="Mission", op="sum", attribute="sampleCost",
                       filters=[{"attribute": "vehicleFamily", "op": "eq", "value": "Atlas V"}])
     assert total["figure"] == 7800
     capped = lookup_rows(lake, "Mission", limit=2)
@@ -220,10 +223,10 @@ def test_the_catalog_is_bound_skipped_and_queried(tmp_path):
     assert {t["type"] for t in described["types"]} == {"Mission", "LaunchVehicle"}
 
     counts = project.project(lake)
-    ents = json.loads(lake.get(layout.index_key("1.0.0", "entities")))
+    ents = json.loads(lake.get(layout.index_key("2.0.0", "entities")))
     mission = next(e for e in ents if e["label"] == "Juno")
     rocket = next(e for e in ents if e["label"] == "Atlas V 551")
-    assert any(a["p"] == "sampleCostMillionUsd" and a["v"] == "1100" for a in mission["attributes"])
+    assert any(a["p"] == "sampleCost" and a["v"] == "1100" for a in mission["attributes"])
     assert any(r["p"] == "launchedOn" and r["o"] == rocket["id"] for r in mission["out"])
     assert mission["passages"] == [] and mission["scope"] == "public"
     assert counts["entities"] == len(ents)
@@ -238,7 +241,7 @@ def test_a_cited_figure_is_recomputed(tmp_path):
     ingest_source(lake, SourceConfig("missions-tables", "local_dir",
                                      {"path": str(CORPUS), "pattern": "tables/*.csv"}))
     assert bind(lake)["misses"] == []
-    cost = lookup_rows(lake, "Mission", [{"attribute": "name", "op": "eq", "value": "Juno"}])["rows"][0]["values"]["sampleCostMillionUsd"]
+    cost = lookup_rows(lake, "Mission", [{"attribute": "name", "op": "eq", "value": "Juno"}])["rows"][0]["values"]["sampleCost"]
     cell = lookup_rows(lake, "", cell_ids=[cost["cell"]])["cells"][0]
     kept, failures = check(GroundedAnswer(answerable=True, claims=[Claim(
         text="The catalog gives Juno a sample cost of 1100.",
@@ -306,7 +309,7 @@ def test_the_sweep_finds_catalog_csvs_in_the_landing_folder(tmp_path, layout_nam
     assert first["bind"]["written"] == 2 and first["bind"]["missing"] == [] and first["refined"] == 0, rounds
     assert last["bind"]["unchanged"] == 2 and last["bind"]["missing"] == []
     juno = lookup_rows(lake, "Mission", [{"attribute": "name", "op": "eq", "value": "Juno"}])
-    assert juno["rows"][0]["values"]["sampleCostMillionUsd"]["value"] == "1100"
+    assert juno["rows"][0]["values"]["sampleCost"]["value"] == "1100"
     assert refine.silver_doc_ids(lake) == []
 
 
