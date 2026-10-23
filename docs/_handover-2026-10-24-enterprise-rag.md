@@ -1,8 +1,9 @@
 # Handover: enterprise RAG collection, literal conformance, and the measures ontology
 
 Written 24 October 2026, early morning NZDT, for the session that takes this work over.
-This file is named with a leading underscore so the documentation site does not publish it.
-The site treats the whole repository as its page tree, and `**/_*.md` is excluded.
+In the knowledge-store repository this file is `docs/_handover-2026-10-24-enterprise-rag.md`.
+The leading underscore keeps it off the documentation site, which treats the whole repository as its page tree and excludes `**/_*.md`.
+On the platform branch the same text is `deployments/knowledge-store/handover-2026-10-24.md`.
 
 Two repositories. Architecture decisions stay in patternode-architecture. This work did not add an ADR there.
 
@@ -219,7 +220,7 @@ All times NZDT. All are on top of `36f56d2`. Signed-off-by is present. They are 
 | `b815296` | 23 Oct 2026, 17:59 | Revert that sample change. Keep the unit-is-semantic rule. |
 | `5a1cfe5` | 23 Oct 2026, 18:02 | Measures ontology, loader, writer, review, discovery prompt. |
 
-Two documentation commits follow `5a1cfe5` and add this handover. The diff of the code against `main`, before those notes, is 53 files, about 3198 insertions and 92 deletions. The revert pair is in the history on purpose. Do not squash those two away locally. A squash merge of the pull request will fold them, which is fine: the tree at the tip does not contain the sample retrofit.
+Documentation commits follow `5a1cfe5` and add this handover. Read the branch tip, not only the table above. The diff of the code against `main`, before those notes, is 53 files, about 3198 insertions and 92 deletions. The revert pair is in the history on purpose. Do not squash those two away locally. A squash merge of the pull request will fold them, which is fine: the tree at the tip does not contain the sample retrofit.
 
 ## Tests run for this handover
 
@@ -236,14 +237,15 @@ An earlier run of `tests/ontology tests/extraction tests/answering` after the me
 
 ## Platform pull request 579
 
-[patternode/patternode-platform#579](https://github.com/patternode/patternode-platform/pull/579), branch `cursor/enterprise-rag-bench-9e3d`, base `develop`. Two commits:
+[patternode/patternode-platform#579](https://github.com/patternode/patternode-platform/pull/579), branch `cursor/enterprise-rag-bench-9e3d`, base `develop`.
 
 | Commit | When (NZDT) | What |
 |---|---|---|
 | `c1b7da8a` | 23 Oct 2026, 10:32 | Add the enterprise-rag collection and the 722 documents. |
 | `cf2261f5` | 24 Oct 2026, 12:56 | Skip Checkov CKV_TF_1 on the release-tag module pin. The pin is a tag on purpose. |
+| `391a4b96` | 24 Oct 2026, 02:36 | Add this handover on the platform branch. |
 
-The working tree was clean. Nothing in this handover changes that branch. The module source stays `ref=v0.3.0`. Moving the pin is a later change, after a knowledge-store release that contains this work.
+The module source stays `ref=v0.3.0`. Moving the pin is a later change, after a knowledge-store release that contains this work.
 
 The license of the corpus is MIT, Copyright (c) 2026 DanswerAI, Inc. The license file sits beside the corpus. The paper is arXiv:2605.05253.
 
