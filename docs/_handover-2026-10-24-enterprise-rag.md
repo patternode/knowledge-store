@@ -8,8 +8,28 @@ Two repositories. Architecture decisions stay in patternode-architecture. This w
 
 | Repository | Checkout on this machine | Branch | Remote |
 |---|---|---|---|
-| patternode/knowledge-store | `/tmp/knowledge-store` | `cursor/conform-literals-9e3d` | Pushed from this handover. Base is `main` at `36f56d2` (`chore(main): release 0.5.0`, tag line v0.5.0). |
+| patternode/knowledge-store | `/tmp/knowledge-store` | `cursor/conform-literals-9e3d` | Push to this repository was refused. `cursor[bot]` can read it and cannot write it (403). Base is `main` at `36f56d2` (`chore(main): release 0.5.0`). |
 | patternode/patternode-platform | `/workspace` | `cursor/enterprise-rag-bench-9e3d` | Already on origin. Pull request [patternode/patternode-platform#579](https://github.com/patternode/patternode-platform/pull/579) into `develop`. |
+
+The knowledge-store commits are mirrored as branches on patternode-platform so they are not stuck on this machine. They are the knowledge-store tree, not platform code. Do not open a pull request from either mirror into `develop`.
+
+| Mirror branch on patternode-platform | Knowledge-store branch it carries |
+|---|---|
+| `cursor/ks-conform-literals-9e3d` | `cursor/conform-literals-9e3d` |
+| `cursor/ks-deepeval-grader-9e3d` | `cursor/deepeval-grader-9e3d` |
+
+To put them back on knowledge-store, from a clone whose credentials can push there:
+
+```bash
+git fetch https://github.com/patternode/patternode-platform.git \
+  cursor/ks-conform-literals-9e3d:cursor/conform-literals-9e3d
+git push origin cursor/conform-literals-9e3d
+git fetch https://github.com/patternode/patternode-platform.git \
+  cursor/ks-deepeval-grader-9e3d:cursor/deepeval-grader-9e3d
+git push origin cursor/deepeval-grader-9e3d
+```
+
+The commit hashes are the same as on this machine. A copy of this handover is also on the platform pull request branch, under `deployments/knowledge-store/handover-2026-10-24.md`.
 
 A second knowledge-store branch, `cursor/deepeval-grader-9e3d`, is one commit on the same `main` and is not part of the ontology line. It is described at the end.
 
@@ -199,7 +219,7 @@ All times NZDT. All are on top of `36f56d2`. Signed-off-by is present. They are 
 | `b815296` | 23 Oct 2026, 17:59 | Revert that sample change. Keep the unit-is-semantic rule. |
 | `5a1cfe5` | 23 Oct 2026, 18:02 | Measures ontology, loader, writer, review, discovery prompt. |
 
-The diff against `main` is 53 files, about 3198 insertions and 92 deletions. The revert pair is in the history on purpose. Do not squash those two away locally. A squash merge of the pull request will fold them, which is fine: the tree at the tip does not contain the sample retrofit.
+Two documentation commits follow `5a1cfe5` and add this handover. The diff of the code against `main`, before those notes, is 53 files, about 3198 insertions and 92 deletions. The revert pair is in the history on purpose. Do not squash those two away locally. A squash merge of the pull request will fold them, which is fine: the tree at the tip does not contain the sample retrofit.
 
 ## Tests run for this handover
 
@@ -235,7 +255,7 @@ The license of the corpus is MIT, Copyright (c) 2026 DanswerAI, Inc. The license
 
 In this order.
 
-1. Open a pull request from `cursor/conform-literals-9e3d` into knowledge-store `main`. Pull requests in that repository go to `main`, not `develop`. The title is the changelog line after a squash. `feat` bumps the minor version. Release Please writes `pyproject.toml`, `__version__`, `.release-please-manifest.json` and `CHANGELOG.md`. Do not edit those by hand. The description must cite a reason: an issue, a thread, an improvement, an ADR, or a line `No reference:` and why. There is no IMP, issue or ADR for this work yet. Use `No reference:` and say the user asked for literal conformance and a measures ontology to build the enterprise RAG ontology on. Fill `.github/pull_request_template.md`. Say that deployments need a release before any of this runs, and that the agent image changes only if answering code changed. The value-kinds work touches `table_query.py` and renditions. The measures work does not change the chat agent. The conformer changes what silver text extraction will see once the pipeline image is rebuilt.
+1. Push `cursor/conform-literals-9e3d` to patternode/knowledge-store. This session could not: the token writes to patternode-platform and gets 403 on knowledge-store. The commits are on the platform mirror branch named above. Then open a pull request into knowledge-store `main`. Pull requests in that repository go to `main`, not `develop`. The title is the changelog line after a squash. `feat` bumps the minor version. Release Please writes `pyproject.toml`, `__version__`, `.release-please-manifest.json` and `CHANGELOG.md`. Do not edit those by hand. The description must cite a reason: an issue, a thread, an improvement, an ADR, or a line `No reference:` and why. There is no IMP, issue or ADR for this work yet. Use `No reference:` and say the user asked for literal conformance and a measures ontology to build the enterprise RAG ontology on. Fill `.github/pull_request_template.md`. Say that deployments need a release before any of this runs, and that the agent image changes only if answering code changed. The value-kinds work touches `table_query.py` and renditions. The measures work does not change the chat agent. The conformer changes what silver text extraction will see once the pipeline image is rebuilt.
 2. Open a pull request from `cursor/deepeval-grader-9e3d` into `main` if that grader should ship. It is independent.
 3. Do not merge, promote or deploy. `master: patternode-platform` merges the platform pull request. Knowledge-store merges are that repository's own maintainers and Release Please. Tell the master session the platform pull request is ready only when CI is green. The ready note names the pull request, says what it changes, and says what shipping needs.
 4. After the knowledge-store pull request merges, wait for the Release Please pull request, merge that, and take the new tag. Then, in platform, move `ref=v0.3.0` to that tag in a pull request, promote `deploy`, and have Dermot apply. Until that apply, an upload tests `v0.3.0`.
