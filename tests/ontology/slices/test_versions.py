@@ -30,6 +30,8 @@ def _spec(ttl=TTL):
     (lambda t: t.replace("rdfs:range o:Target", "rdfs:range o:Mission"), "semantic"),
     (lambda t: t.replace("o:motto a owl:DatatypeProperty .", ""), "removal"),
     (lambda t: t.replace("o:motto a owl:DatatypeProperty .", "o:motto a owl:ObjectProperty ."), "semantic"),
+    (lambda t: t.replace("o:motto a owl:DatatypeProperty .",
+                         'o:motto a owl:DatatypeProperty ; kv:unit "million USD" .'), "semantic"),
 ])
 def test_diff_classifies_the_change(change, kind):
     assert versions.diff(_spec(), _spec(change(TTL))).kind == kind

@@ -111,6 +111,13 @@ def test_a_later_edit_sees_an_earlier_one():
     assert len(applied) == 1 and "named 'Moon'" in skipped[0]["skipped"]
 
 
+def test_a_relation_may_point_at_a_measure_without_declaring_it():
+    d, applied, skipped = _apply({"op": "set_range", "kind": "relations", "term": "orbits", "value": "Quantity"})
+    assert not skipped and len(applied) == 1
+    assert next(r for r in d["relations"] if r["name"] == "orbits")["range"] == "Quantity"
+    assert all(c["name"] != "Quantity" for c in d["classes"])
+
+
 def test_a_draft_missing_a_kind_is_completed():
     d, _, _ = review.apply_edits({"classes": [{"name": "A"}]}, [])
     assert d == {"classes": [{"name": "A"}], "relations": [], "attributes": []}

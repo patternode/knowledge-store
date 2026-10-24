@@ -75,7 +75,12 @@ Design the ontology:
   Proposals seen once, or with low stability, are usually noise; keep them only if clearly central.
 - Arrange classes in a shallow hierarchy with parents where one class is a kind of another.
 - Every relation needs a domain and a range among your classes. Every attribute needs a domain and
-  a datatype (string, decimal, integer, date, boolean).
+  a datatype (string, decimal, integer, date, dateTime, duration, interval, boolean, anyURI).
+  A decimal or an integer that is a quantity also names its unit. A dateTime is a point in time
+  with a clock. A duration is one length (PT2H). An interval is a start and an end (2023-07-14/2023-07-20).
+- Metric, Quantity, Instant and Period are already defined by the measures ontology. A magnitude
+  whose metric or unit varies is a Quantity of a Metric. A point in time is an Instant. A stretch
+  of time is a Period. Use those names as a domain or a range. Do not declare them again as classes.
 - Aim for roughly {target} classes. Say what you rejected and why.
 {existing}"""
 
@@ -94,7 +99,8 @@ def _propose_tool() -> dict:
                     "subject_type": {"type": "string"}, "object_type": {"type": "string"}})},
                 "attributes": {"type": "array", "items": item({
                     "entity_type": {"type": "string"},
-                    "datatype": {"type": "string", "enum": list(model.DATATYPES)}})},
+                    "datatype": {"type": "string", "enum": list(model.DATATYPES)},
+                    "unit": {"type": "string", "description": "The unit of a decimal or integer quantity. A QUDT unit IRI when one is exact."}})},
             }}}}}
 
 
@@ -113,7 +119,8 @@ def _define_tool() -> dict:
                     "attributes": {"type": "array", "items": {"type": "object",
                                    "required": ["name", "definition", "domain", "datatype"],
                                    "properties": {**term, "domain": {"type": "string"},
-                                                  "datatype": {"type": "string", "enum": list(model.DATATYPES)}}}},
+                                                  "datatype": {"type": "string", "enum": list(model.DATATYPES)},
+                                                  "unit": {"type": "string"}}}},
                     "rejected": {"type": "array", "items": {"type": "object", "required": ["name", "reason"],
                                  "properties": {"name": {"type": "string"}, "reason": {"type": "string"}}}},
                 }}}}}

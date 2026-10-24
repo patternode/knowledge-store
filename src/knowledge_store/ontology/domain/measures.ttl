@@ -1,0 +1,122 @@
+@prefix km:   <https://w3id.org/knowledge-store/measures#> .
+@prefix kv:   <https://w3id.org/knowledge-store/values#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+# -----------------------------------------------------------------------------
+# Measures: the ontology a domain ontology is built from.
+#
+# Four classes. A metric is a defined measure. A quantity is one number of one
+# metric, in one unit. An instant is a point in time. A period is a stretch of
+# time. A domain ontology imports this and adds the things the documents are
+# about. Those things point at a quantity, an instant or a period. They do not
+# subclass them to mean "this thing is a number" or "this thing is a time".
+#
+# Aligned to QUDT and OWL-Time by rdfs:seeAlso. The terms live in this
+# namespace so a collection can use them without importing those graphs.
+# A quarter, a fiscal year or a bare year is a period only once its start and
+# end are known. Until then it stays a string on the domain ontology.
+# -----------------------------------------------------------------------------
+
+<https://w3id.org/knowledge-store/measures>
+    a owl:Ontology ;
+    rdfs:label "Knowledge Store measures"@en ;
+    owl:versionInfo "1.0.0" ;
+    owl:versionIRI <https://w3id.org/knowledge-store/measures/1.0.0> ;
+    owl:imports <https://w3id.org/knowledge-store/values> ;
+    rdfs:comment "Quantities, metrics, points in time and periods. A domain ontology imports this and adds what the documents are about."@en .
+
+km:Metric a owl:Class ;
+    rdfs:label "Metric"@en ;
+    skos:definition "A defined measure that a quantity is a value of. Revenue is a metric. 1200 USD is not."@en ;
+    rdfs:seeAlso <http://qudt.org/schema/qudt/QuantityKind> .
+
+km:Quantity a owl:Class ;
+    rdfs:label "Quantity"@en ;
+    skos:definition "One magnitude: a number, the unit it is in, and the metric it is a value of."@en ;
+    rdfs:seeAlso <http://qudt.org/schema/qudt/Quantity> .
+
+km:Instant a owl:Class ;
+    rdfs:label "Instant"@en ;
+    skos:definition "A point in time. A day is a date. A moment with a clock is a date and time. The two are not the same value."@en ;
+    rdfs:seeAlso <http://www.w3.org/2006/time#Instant> .
+
+km:Period a owl:Class ;
+    rdfs:label "Period"@en ;
+    skos:definition "A stretch of time. It can name its start and end, a duration, or both."@en ;
+    rdfs:seeAlso <http://www.w3.org/2006/time#Interval> .
+
+km:valueOf a owl:ObjectProperty ;
+    rdfs:label "valueOf"@en ;
+    skos:definition "The metric this quantity is a value of."@en ;
+    rdfs:domain km:Quantity ;
+    rdfs:range km:Metric .
+
+km:during a owl:ObjectProperty ;
+    rdfs:label "during"@en ;
+    skos:definition "The period a quantity holds over."@en ;
+    rdfs:domain km:Quantity ;
+    rdfs:range km:Period .
+
+km:at a owl:ObjectProperty ;
+    rdfs:label "at"@en ;
+    skos:definition "The instant a quantity is stated at."@en ;
+    rdfs:domain km:Quantity ;
+    rdfs:range km:Instant .
+
+km:beginning a owl:ObjectProperty ;
+    rdfs:label "beginning"@en ;
+    skos:definition "The instant the period starts."@en ;
+    rdfs:domain km:Period ;
+    rdfs:range km:Instant ;
+    rdfs:seeAlso <http://www.w3.org/2006/time#hasBeginning> .
+
+km:end a owl:ObjectProperty ;
+    rdfs:label "end"@en ;
+    skos:definition "The instant the period ends."@en ;
+    rdfs:domain km:Period ;
+    rdfs:range km:Instant ;
+    rdfs:seeAlso <http://www.w3.org/2006/time#hasEnd> .
+
+km:numericValue a owl:DatatypeProperty ;
+    rdfs:label "numericValue"@en ;
+    skos:definition "The number, without its unit."@en ;
+    rdfs:domain km:Quantity ;
+    rdfs:range xsd:decimal ;
+    rdfs:seeAlso <http://qudt.org/schema/qudt/numericValue> .
+
+km:unit a owl:DatatypeProperty ;
+    rdfs:label "unit"@en ;
+    skos:definition "The unit of this quantity. A QUDT unit IRI when one is exact."@en ;
+    rdfs:domain km:Quantity ;
+    rdfs:range xsd:anyURI ;
+    rdfs:seeAlso <http://qudt.org/schema/qudt/hasUnit> .
+
+km:onDate a owl:DatatypeProperty ;
+    rdfs:label "onDate"@en ;
+    skos:definition "The calendar day of an instant, when the documents state a day and no clock."@en ;
+    rdfs:domain km:Instant ;
+    rdfs:range xsd:date ;
+    rdfs:seeAlso <http://www.w3.org/2006/time#inXSDDate> .
+
+km:atTime a owl:DatatypeProperty ;
+    rdfs:label "atTime"@en ;
+    skos:definition "The instant with a clock, when the documents state one."@en ;
+    rdfs:domain km:Instant ;
+    rdfs:range xsd:dateTime ;
+    rdfs:seeAlso <http://www.w3.org/2006/time#inXSDDateTimeStamp> .
+
+km:duration a owl:DatatypeProperty ;
+    rdfs:label "duration"@en ;
+    skos:definition "How long the period lasts, as an ISO 8601 duration, when the documents state a length."@en ;
+    rdfs:domain km:Period ;
+    rdfs:range xsd:duration ;
+    rdfs:seeAlso <http://www.w3.org/2006/time#hasXSDDuration> .
+
+km:interval a owl:DatatypeProperty ;
+    rdfs:label "interval"@en ;
+    skos:definition "The period as one start/end literal, when both ends are stated and a pair of instants is not used."@en ;
+    rdfs:domain km:Period ;
+    rdfs:range kv:interval .

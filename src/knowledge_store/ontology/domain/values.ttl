@@ -1,0 +1,37 @@
+@prefix kv:   <https://w3id.org/knowledge-store/values#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+# -----------------------------------------------------------------------------
+# Knowledge Store value kinds.
+#
+# Shared by every deployment, and kept apart from the core vocabulary: core says
+# where a fact came from, and this says what shape a value has. A domain ontology
+# uses these as the range of an attribute and as its unit. It does not subclass them.
+# A point in time is xsd:date or xsd:dateTime. A duration is xsd:duration. An
+# interval is the datatype below. A quantity is xsd:decimal or xsd:integer with
+# kv:unit on the attribute. The conformer does not read this file.
+# -----------------------------------------------------------------------------
+
+<https://w3id.org/knowledge-store/values>
+    a owl:Ontology ;
+    rdfs:label "Knowledge Store value kinds"@en ;
+    owl:versionInfo "1.0.0" ;
+    owl:versionIRI <https://w3id.org/knowledge-store/values/1.0.0> ;
+    rdfs:comment "Value kinds for domain attributes. Aligned to XML Schema, ISO 8601, OWL-Time and QUDT, and written in this namespace."@en .
+
+kv:interval a rdfs:Datatype ;
+    rdfs:label "interval"@en ;
+    rdfs:comment "An ISO 8601 time interval, start/end. Each side is a date, a date and time, a month, a clock or a duration."@en ;
+    rdfs:seeAlso <http://www.w3.org/2006/time#Interval> .
+
+kv:Interval a owl:Class ;
+    rdfs:label "Interval"@en ;
+    rdfs:comment "The class an interval value describes. Domain attributes that hold one use the kv:interval datatype, not this class as a parent."@en ;
+    rdfs:seeAlso <http://www.w3.org/2006/time#Interval> .
+
+kv:unit a owl:AnnotationProperty ;
+    rdfs:label "unit"@en ;
+    rdfs:comment "The unit of a quantity attribute, written once on the attribute. A QUDT unit IRI when one is exact. The value stays a decimal or an integer."@en ;
+    rdfs:seeAlso <http://qudt.org/schema/qudt/hasUnit> .

@@ -95,7 +95,9 @@ def _agent_md(spec: model.OntologySpec, mapping=None) -> str:
     if spec.attributes:
         lines += ["", "## Attributes"]
         for p in sorted(spec.attributes.values(), key=lambda t: t.local):
-            lines.append(f"- {p.local} ({p.range[0] if p.range else 'string'}) of {'|'.join(p.domain) or 'any'}. {p.definition}".rstrip())
+            kind = p.range[0] if p.range else "string"
+            unit = f", {p.unit}" if p.unit else ""
+            lines.append(f"- {p.local} ({kind}{unit}) of {'|'.join(p.domain) or 'any'}. {p.definition}".rstrip())
     from knowledge_store.ontology.domain.mapping import agent_lines
     lines += agent_lines(mapping)
     return "\n".join(lines) + "\n"
@@ -108,9 +110,15 @@ def _agent_json(spec: model.OntologySpec) -> dict:
             "relations": [{"name": p.local, "label": p.label, "definition": p.definition, "synonyms": list(p.alt_labels),
                            "domain": list(p.domain), "range": list(p.range)}
                           for p in sorted(spec.relations.values(), key=lambda t: t.local)],
-            "attributes": [{"name": p.local, "label": p.label, "definition": p.definition, "synonyms": list(p.alt_labels),
-                            "domain": list(p.domain), "datatype": p.range[0] if p.range else "string"}
-                           for p in sorted(spec.attributes.values(), key=lambda t: t.local)]}
+            "attributes": [_attribute_json(p) for p in sorted(spec.attributes.values(), key=lambda t: t.local)]}
+
+
+def _attribute_json(p: model.PropertyTerm) -> dict:
+    row = {"name": p.local, "label": p.label, "definition": p.definition, "synonyms": list(p.alt_labels),
+           "domain": list(p.domain), "datatype": p.range[0] if p.range else "string"}
+    if p.unit:
+        row["unit"] = p.unit
+    return row
 
 
 def _neo4j_mapping(spec: model.OntologySpec) -> dict:

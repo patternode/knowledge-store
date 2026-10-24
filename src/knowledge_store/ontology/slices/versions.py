@@ -12,7 +12,7 @@ taxonomy:
     descriptive  labels, synonyms, definitions, or the     patch   no re-extraction
                  ontology's own label or comment
     additive     new classes or properties, nothing else   minor   delta extraction of the new terms
-    semantic     parents, domains or ranges changed        major   full re-extraction
+    semantic     parents, domains, ranges or a unit changed major   full re-extraction
     removal      a term removed or deprecated              major   full re-extraction
 
 A new subclass of an existing class counts as additive: entity IRIs are keyed by root class
@@ -82,6 +82,8 @@ def diff(old: model.OntologySpec, new: model.OntologySpec) -> Diff:
             semantic.append(f"{k}: parents {sorted(x.parents)} -> {sorted(y.parents)}")
         if isinstance(x, model.PropertyTerm) and (set(x.domain) != set(y.domain) or set(x.range) != set(y.range)):
             semantic.append(f"{k}: signature {list(x.domain)}->{list(x.range)} to {list(y.domain)}->{list(y.range)}")
+        if isinstance(x, model.PropertyTerm) and x.unit != y.unit:
+            semantic.append(f"{k}: unit {x.unit or '(none)'} -> {y.unit or '(none)'}")
         if (x.label, set(x.alt_labels), x.definition) != (y.label, set(y.alt_labels), y.definition):
             descriptive.append(k)
     # The ontology's own label and comment describe it, as a term's do; its version IRI changes

@@ -12,6 +12,7 @@ import re
 from html.parser import HTMLParser
 
 _BLOCK = {"p", "div", "br", "li", "h1", "h2", "h3", "h4", "h5", "h6", "tr", "table", "section"}
+_HEADING = {"h1": "#", "h2": "##", "h3": "###", "h4": "####", "h5": "#####", "h6": "######"}
 _SKIP = {"script", "style", "head", "title"}
 
 
@@ -36,6 +37,8 @@ class _Extractor(HTMLParser):
             self.cell = []
         elif tag == "tr":
             self.row = []
+        elif tag in _HEADING:
+            self.parts.append("\n" + _HEADING[tag] + " ")
         elif tag in _BLOCK:
             self.parts.append("\n")
 
@@ -53,6 +56,8 @@ class _Extractor(HTMLParser):
             if self.row:
                 self.parts.append("\n" + _join_row(self.row) + "\n")
             self.row = []
+        elif tag in _HEADING:
+            self.parts.append("\n")
         elif tag in _BLOCK:
             self.parts.append("\n")
 

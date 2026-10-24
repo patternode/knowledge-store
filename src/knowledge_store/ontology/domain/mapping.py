@@ -20,8 +20,11 @@ if TYPE_CHECKING:
 
 _XSD = {"xsd:string": "string", "xsd:integer": "integer", "xsd:int": "integer", "xsd:long": "integer",
         "xsd:decimal": "decimal", "xsd:double": "decimal", "xsd:float": "decimal", "xsd:date": "date",
+        "xsd:dateTime": "dateTime", "xsd:duration": "duration", "kv:interval": "interval",
+        "https://w3id.org/knowledge-store/values#interval": "interval",
         "xsd:boolean": "boolean", "string": "string", "integer": "integer", "decimal": "decimal",
-        "date": "date", "boolean": "boolean"}
+        "date": "date", "dateTime": "dateTime", "duration": "duration", "interval": "interval",
+        "boolean": "boolean"}
 _NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 _SELECT = re.compile(r"^\s*select\b", re.IGNORECASE)
 _UNSAFE = re.compile(r"[;]|--|/\*|\b(insert|update|delete|drop|alter|create|grant|copy|call)\b", re.IGNORECASE)
@@ -34,7 +37,7 @@ class Column:
     relation: str = ""
     range: str = ""
     match: str = ""
-    datatype: str = ""          # the attribute's kind: string, integer, decimal, date, boolean
+    datatype: str = ""          # string, integer, decimal, date, dateTime, duration, interval, boolean
 
     def to_json(self) -> dict:
         out = {"name": self.name}
@@ -347,9 +350,12 @@ def r2rml(spec: model.OntologySpec, mapping: Mapping) -> str:
         "@prefix rr:  <http://www.w3.org/ns/r2rml#> .",
         f"@prefix o:   <{prefix}> .",
         "@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .",
+        "@prefix kv:  <https://w3id.org/knowledge-store/values#> .",
         "",
     ]
-    xsd = {"integer": "xsd:integer", "decimal": "xsd:decimal", "date": "xsd:date", "boolean": "xsd:boolean"}
+    xsd = {"integer": "xsd:integer", "decimal": "xsd:decimal", "date": "xsd:date",
+           "dateTime": "xsd:dateTime", "duration": "xsd:duration", "interval": "kv:interval",
+           "boolean": "xsd:boolean"}
     for table in mapping.tables:
         lines.append(f"<#{table.class_name}Map>")
         lines.append(f'    rr:logicalTable [ rr:tableName "{table.logical_table}" ] ;')

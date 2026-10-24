@@ -112,12 +112,21 @@ def _cmp(op: str, stored: str, datatype: str, value: str) -> bool:
         if a is None or b is None:
             return False
         return {"eq": a == b, "neq": a != b, "lt": a < b, "lte": a <= b, "gt": a > b, "gte": a >= b}[op]
-    if datatype == "date":
-        stored, value = canonical(stored, "date"), canonical(value, "date")
+    if datatype in ("date", "dateTime"):
+        stored, value = canonical(stored, datatype), canonical(value, datatype)
         if stored is None or value is None:
             return False
         return {"eq": stored == value, "neq": stored != value, "lt": stored < value, "lte": stored <= value,
                 "gt": stored > value, "gte": stored >= value}[op]
+    if datatype in ("duration", "interval"):
+        stored, value = canonical(stored, datatype), canonical(value, datatype)
+        if stored is None or value is None:
+            return False
+        if op == "eq":
+            return stored == value
+        if op == "neq":
+            return stored != value
+        return False
     if op == "eq":
         return stored == str(value)
     if op == "neq":
@@ -379,12 +388,13 @@ def describe_figure(fig: dict) -> str:
 
 
 def values_equal(stated: str, stored: str, datatype: str) -> bool:
-    """A cited value against the cell. Numbers compare as numbers ("7,800" is 7800), dates as
-    dates ("14 July 2023" is 2023-07-14), anything else as the same text."""
+    """A cited value against the cell. Numbers compare as numbers ("7,800" is 7800), a point
+    in time compares as a date or a date and time, a period compares in its ISO form, and
+    anything else compares as the same text."""
     if datatype in ("integer", "decimal"):
         a, b = number(stated, "decimal"), number(stored, "decimal")
         return a is not None and a == b
-    if datatype == "date":
-        a, b = canonical(stated, "date"), canonical(stored, "date")
+    if datatype in ("date", "dateTime", "duration", "interval"):
+        a, b = canonical(stated, datatype), canonical(stored, datatype)
         return a is not None and a == b
     return str(stated).strip() == str(stored).strip()

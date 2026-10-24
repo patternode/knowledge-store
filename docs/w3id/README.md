@@ -8,8 +8,10 @@ Permanent identifiers for [Knowledge Store](https://github.com/patternode/knowle
 | `https://w3id.org/knowledge-store/core` | The latest core vocabulary: Turtle for RDF clients (`Accept: text/turtle`), its documentation page for browsers |
 | `https://w3id.org/knowledge-store/core/<version>` | A release of the core vocabulary, from git tag `core-v<version>` |
 | `https://w3id.org/knowledge-store/core/shapes` | The latest core SHACL shapes (`/core/<version>/shapes` for a release) |
+| `https://w3id.org/knowledge-store/measures` | The latest measures ontology: Turtle for RDF clients (`Accept: text/turtle`), its documentation page for browsers |
+| `https://w3id.org/knowledge-store/measures/<version>` | A release of the measures ontology, from git tag `measures-v<version>` |
 
-The core vocabulary's namespace is `https://w3id.org/knowledge-store/core#`.
+The core vocabulary's namespace is `https://w3id.org/knowledge-store/core#`. The measures ontology's namespace is `https://w3id.org/knowledge-store/measures#`.
 
 ## Contact
 

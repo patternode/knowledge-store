@@ -54,6 +54,37 @@ def test_a_revision_keeps_the_prior_terms_and_adds_synonyms_only_to_them():
     assert s.attributes["launchYear"].range == ("integer",)
 
 
+def test_a_quantity_and_an_interval_are_written_with_the_values_vocabulary():
+    defn = {"classes": [{"name": "Mission"}],
+            "attributes": [
+                {"name": "cost", "domain": "Mission", "datatype": "decimal",
+                 "unit": "http://qudt.org/vocab/unit/USD"},
+                {"name": "window", "domain": "Mission", "datatype": "interval", "unit": "days"},
+                {"name": "liftoff", "domain": "Mission", "datatype": "dateTime"}]}
+    ttl = writer.ontology_ttl(defn, namespace=NS, version="0.1.0", label="New")
+    s = model.load(data=ttl)
+    assert s.attributes["cost"].unit == "http://qudt.org/vocab/unit/USD"
+    assert s.attributes["window"].range == ("interval",) and s.attributes["window"].unit == ""
+    assert s.attributes["liftoff"].range == ("dateTime",)
+    assert "kv:unit <http://qudt.org/vocab/unit/USD>" in ttl
+    assert "sh:datatype kv:interval" in writer.shapes_ttl(s)
+    assert "sh:datatype xsd:dateTime" in writer.shapes_ttl(s)
+
+
+def test_a_relation_to_a_quantity_imports_the_measures_ontology_and_does_not_redeclare_it():
+    defn = {"classes": [{"name": "Book"}, {"name": "Quantity", "definition": "should be dropped"}],
+            "relations": [{"name": "pricedAt", "domain": "Book", "range": "Quantity"}]}
+    ttl = writer.ontology_ttl(defn, namespace=NS, version="0.1.0", label="Books")
+    assert "owl:imports <https://w3id.org/knowledge-store/measures>" in ttl
+    assert "rdfs:range km:Quantity" in ttl and "o:Quantity" not in ttl
+    s = model.load(data=ttl)
+    assert s.classes["Book"].iri.startswith("https://example.org/new")
+    assert s.classes["Quantity"].iri == "https://w3id.org/knowledge-store/measures#Quantity"
+    assert s.relations["pricedAt"].range == ("Quantity",)
+    assert "numericValue" in s.attributes and "km:Quantity" in writer.shapes_ttl(s)
+    assert "o:numericValue" not in writer.shapes_ttl(s)
+
+
 def test_shapes_check_single_ranges_and_every_attribute_and_parse():
     shapes = writer.shapes_ttl(spec())
     Graph().parse(data=shapes, format="turtle")
