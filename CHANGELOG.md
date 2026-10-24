@@ -4,6 +4,13 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 From 0.2.0 on, releases are made by Release Please from the pull requests merged to `main`: a pull request's title is its line here, and the release pull request adds the next section, bumps the version and, when merged, tags `vX.Y.Z` and publishes the GitHub Release. The rules are in [CONTRIBUTING.md](CONTRIBUTING.md#releases). Do not add lines here by hand.
 
+## [0.7.1](https://github.com/patternode/knowledge-store/compare/v0.7.0...v0.7.1) (2026-10-24)
+
+
+### Fixed
+
+* **ontology:** let a domain property keep a name the measures ontology also uses ([#115](https://github.com/patternode/knowledge-store/issues/115)) ([5feb032](https://github.com/patternode/knowledge-store/commit/5feb032c5423fd8fffc9fc29975834e0cf438f9d))
+
 ## [0.7.0](https://github.com/patternode/knowledge-store/compare/v0.6.0...v0.7.0) (2026-10-24)
 
 
