@@ -73,6 +73,14 @@ python -m knowledge_store.apps.evaluate examples/enterprise-rag-bench/data/enter
 
 `fetch.py` writes `documents.jsonl`, the id-to-path index of the slice, beside the set.
 
+To compare the graph with passage search alone, run the same agent with `--tools passages` after
+`knowledge-store -c enterprise-rag embed` has written the lake's vectors (README, "Evaluate"):
+
+```bash
+python -m knowledge_store.apps.evaluate examples/enterprise-rag-bench/data/enterprise-rag-bench.yaml --lake <lake> \
+  --model <model id> --tools passages --runner deepeval --grader deepeval --judge-model <judge model id> --yes
+```
+
 The set has the benchmark's questions except its 10 `high_level` ones, which have no gold
 documents and summarise the whole corpus. Its types map to this repository's kinds:
 

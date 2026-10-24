@@ -283,6 +283,19 @@ python -m knowledge_store.apps.evaluate examples/enterprise-rag-bench/data/enter
   --grader deepeval --judge-model <judge model id> --yes
 ```
 
+The same agent can also be run on passage search alone, without the graph, the tables or the
+ontology in its prompt (`--tools passages`): the arm the graph is compared against, on the same
+questions and judge. Without a Knowledge Base, passage search is by keyword over the passages the
+graph cites, so a lake is embedded first; `knowledge-store embed` writes one vector per silver
+passage (Titan Text Embeddings V2 on Bedrock, the Knowledge Base's model) to
+`silver/vectors/passages.jsonl`, and search uses them whenever `KNOWLEDGE_BASE_ID` is not set:
+
+```bash
+knowledge-store --lake <lake> -c <collection> embed
+python -m knowledge_store.apps.evaluate examples/evals/space-missions.yaml --lake <lake> --model <model id> \
+  --tools passages --grader deepeval --judge-model <judge model id> --yes
+```
+
 ## Run it locally
 
 ```bash

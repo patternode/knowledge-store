@@ -73,8 +73,8 @@ def in_process(monkeypatch, tmp_path):
         import knowledge_store.answering as answering
         seen = []
 
-        def answer_locally(root, collection, question, *, private, model_id):
-            seen.append((collection, question, private, model_id))
+        def answer_locally(root, collection, question, *, private, model_id, toolset="all"):
+            seen.append((collection, question, private, model_id, toolset))
             if isinstance(final, Exception):
                 raise final
             return final
@@ -112,7 +112,7 @@ def test_the_reply_is_a_dict(answerer):
 def test_in_process_asks_the_collection_as_the_question_says(in_process):
     ask, seen = in_process({"answer": "x"})
     ask(Q)
-    assert seen == [("missions", "Which rocket launched Juno?", True, "fake-model")]
+    assert seen == [("missions", "Which rocket launched Juno?", True, "fake-model", "all")]
 
 
 def test_in_process_opens_the_lake_from_its_uri(tmp_path):
