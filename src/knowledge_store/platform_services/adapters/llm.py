@@ -212,9 +212,9 @@ def to_messages_request(modelId: str, messages: list[dict], system: list[dict] |
         req["system"] = sys_blocks
     if rejects_sampling(req["model"]):
         pass  # the callers' temperature 0 is for older models; newer ones take no sampling settings
-    elif "temperature" in inf:
+    elif "temperature" in inf and sdk_takes("temperature"):
         req["temperature"] = inf["temperature"]
-    elif "topP" in inf:
+    elif "topP" in inf and sdk_takes("top_p"):
         req["top_p"] = inf["topP"]
     if inf.get("stopSequences"):
         req["stop_sequences"] = inf["stopSequences"]
