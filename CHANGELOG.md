@@ -4,6 +4,19 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 From 0.2.0 on, releases are made by Release Please from the pull requests merged to `main`: a pull request's title is its line here, and the release pull request adds the next section, bumps the version and, when merged, tags `vX.Y.Z` and publishes the GitHub Release. The rules are in [CONTRIBUTING.md](CONTRIBUTING.md#releases). Do not add lines here by hand.
 
+## [0.6.0](https://github.com/patternode/knowledge-store/compare/v0.5.0...v0.6.0) (2026-10-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* **evaluation:** DeepEval as the evaluation framework, a runner and a model grader beside the deterministic score ([#110](https://github.com/patternode/knowledge-store/issues/110))
+
+### Added
+
+* **evaluation:** DeepEval as the evaluation framework, a runner and a model grader beside the deterministic score ([#110](https://github.com/patternode/knowledge-store/issues/110)) ([e62d472](https://github.com/patternode/knowledge-store/commit/e62d47235dffbc51e2af712e0a809f8df7522ca9))
+* **evaluation:** grade another system's answers with DeepEval, and judge completeness ([#113](https://github.com/patternode/knowledge-store/issues/113)) ([5b9fa9d](https://github.com/patternode/knowledge-store/commit/5b9fa9d4960c22ea72b1e321b458b703835cf43b))
+* **examples:** an EnterpriseRAG-Bench slice and its 490 questions as a testbed for graph extraction ([#109](https://github.com/patternode/knowledge-store/issues/109)) ([7e17ed1](https://github.com/patternode/knowledge-store/commit/7e17ed1d974e15c63b9a06b4a5e6a67c16e0ad56))
+
 ## [0.5.0](https://github.com/patternode/knowledge-store/compare/v0.4.1...v0.5.0) (2026-10-20)
 
 

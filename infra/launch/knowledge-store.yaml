@@ -70,7 +70,7 @@ Parameters:
     Description: When false, deleting the stack keeps the data lake bucket and everything in it.
   SourceUrl:
     Type: String
-    Default: https://github.com/patternode/knowledge-store/archive/refs/tags/v0.5.0.zip # x-release-please-version
+    Default: https://github.com/patternode/knowledge-store/archive/refs/tags/v0.6.0.zip # x-release-please-version
     AllowedPattern: "^(https|s3)://[^\\s]+$"
     ConstraintDescription: an https:// or s3:// URL
     Description: >-
