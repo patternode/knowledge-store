@@ -248,10 +248,20 @@ def from_graph(g: Graph, *, also: tuple[str, ...] = ()) -> OntologySpec:
     def mine(s) -> bool:
         return isinstance(s, URIRef) and str(s).startswith(namespaces) and not g.value(s, OWL.deprecated)
 
-    def put(bucket: dict, local: str, term) -> None:
+    def foundation(term) -> bool:
+        return any(term.iri.startswith(a) for a in also)
+
+    def put(bucket: dict, local: str, term, *, strict: bool = False) -> None:
+        """Two terms with one local name are refused, except that a domain property keeps its name
+        over an imported one: a domain's own `duration` or `unit` beside the measures ontology's.
+        Classes stay strict, since a draft must point at Metric, Quantity, Instant and Period,
+        never redeclare them."""
         held = bucket.get(local)
         if held is not None and held.iri != term.iri:
-            raise ValueError(f"ontology local names must be unique across classes and properties: {local}")
+            if strict or not (foundation(term) or foundation(held)):
+                raise ValueError(f"ontology local names must be unique across classes and properties: {local}")
+            if foundation(term):
+                return
         bucket[local] = term
 
     def base(s) -> dict:
@@ -263,7 +273,7 @@ def from_graph(g: Graph, *, also: tuple[str, ...] = ()) -> OntologySpec:
     for s in set(g.subjects(RDF.type, OWL.Class)):
         if mine(s):
             parents = tuple(sorted(local_name(o) for o in g.objects(s, RDFS.subClassOf) if mine(o)))
-            put(spec.classes, local_name(s), ClassTerm(**base(s), parents=parents))
+            put(spec.classes, local_name(s), ClassTerm(**base(s), parents=parents), strict=True)
     for s in set(g.subjects(RDF.type, OWL.ObjectProperty)):
         if mine(s):
             put(spec.relations, local_name(s), PropertyTerm(
@@ -278,6 +288,11 @@ def from_graph(g: Graph, *, also: tuple[str, ...] = ()) -> OntologySpec:
                 **base(s), kind="attribute",
                 domain=tuple(sorted(local_name(o) for o in g.objects(s, RDFS.domain) if mine(o))),
                 range=(_XSD_KIND.get(rng, "string"),), unit=unit))
+    for a in (spec.relations, spec.attributes):
+        for b in (spec.classes, spec.relations, spec.attributes):
+            if a is not b:
+                for local in [n for n in set(a) & set(b) if foundation(a[n]) and not foundation(b[n])]:
+                    del a[local]  # an imported property yields its name to a domain term of another kind too
     clash = set(spec.classes) & (set(spec.relations) | set(spec.attributes)) | set(spec.relations) & set(spec.attributes)
     if clash:
         raise ValueError(f"ontology local names must be unique across classes and properties: {sorted(clash)}")

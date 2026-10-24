@@ -74,3 +74,40 @@ def test_a_domain_class_that_reuses_a_measure_name_is_refused():
 def test_discovery_is_told_to_use_the_measures_classes_and_not_to_redeclare_them():
     assert "measures ontology" in DEFINE_SYSTEM
     assert "Do not declare them again" in DEFINE_SYSTEM
+
+
+def test_a_domain_property_keeps_a_name_a_measures_property_also_uses():
+    ttl = """
+    @prefix o: <https://example.org/ops#> .
+    @prefix owl: <http://www.w3.org/2002/07/owl#> .
+    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+    @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+    @prefix km: <https://w3id.org/knowledge-store/measures#> .
+    <https://example.org/ops> a owl:Ontology ; owl:versionInfo "1.0.0" ;
+        owl:imports <https://w3id.org/knowledge-store/measures> .
+    o:Incident a owl:Class .
+    o:duration a owl:DatatypeProperty ; rdfs:domain o:Incident ; rdfs:range xsd:string .
+    o:at a owl:ObjectProperty ; rdfs:domain o:Incident ; rdfs:range km:Instant .
+    o:end a owl:DatatypeProperty ; rdfs:domain o:Incident ; rdfs:range xsd:date .
+    """
+    spec = load(data=ttl)
+    assert spec.attributes["duration"].iri == "https://example.org/ops#duration"
+    assert spec.relations["at"].iri == "https://example.org/ops#at" and spec.relations["at"].range == ("Instant",)
+    assert spec.attributes["end"].iri == "https://example.org/ops#end" and "end" not in spec.relations
+    assert {"Incident", "Period", "Quantity"} <= set(spec.classes)
+    assert spec.attributes["numericValue"].iri.startswith(MEASURES_NS)
+
+
+def test_two_domain_terms_with_one_name_are_still_refused():
+    ttl = """
+    @prefix o: <https://example.org/ops#> .
+    @prefix owl: <http://www.w3.org/2002/07/owl#> .
+    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+    @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+    <https://example.org/ops> a owl:Ontology ; owl:versionInfo "1.0.0" ;
+        owl:imports <https://w3id.org/knowledge-store/measures> .
+    o:Incident a owl:Class .
+    o:Incident a owl:DatatypeProperty ; rdfs:range xsd:string .
+    """
+    with pytest.raises(ValueError, match="Incident"):
+        load(data=ttl)
