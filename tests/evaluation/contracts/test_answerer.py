@@ -158,3 +158,47 @@ def test_http_accepts_https_and_this_machine(url):
 
 def test_the_adapters_module_needs_no_sdk():
     assert "boto3" not in answerers.__dict__
+
+
+# --- another system's answers, from a file ---------------------------------------------------------
+
+from knowledge_store.evaluation import FileAnswerer, load_answer_index  # noqa: E402
+
+ROWS = [
+    {"question_id": "q1", "answer": "Juno launched on an Atlas V 551.", "document_ids": ["dsid_a", "dsid_b"]},
+    {"question_id": "q2", "answer": "", "document_ids": []},
+]
+
+
+def _answers(tmp_path, rows=ROWS):
+    p = tmp_path / "answers.jsonl"
+    p.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+    return p
+
+
+def test_a_file_answer_is_read_with_its_documents_as_sources(tmp_path):
+    (tmp_path / "docs" / "missions").mkdir(parents=True)
+    (tmp_path / "docs" / "missions" / "juno.json").write_text("The probe launched on an Atlas V 551.", encoding="utf-8")
+    ask = FileAnswerer(_answers(tmp_path), index={"dsid_a": "missions/juno.json"}, documents=tmp_path / "docs")
+    r = ask(Q)
+    assert r["answer"] == "Juno launched on an Atlas V 551." and not r["abstained"] and r["claims"] == []
+    assert r["sources"] == [
+        {"n": 1, "name": "missions/juno.json", "doc": "dsid_a", "text": "The probe launched on an Atlas V 551."},
+        {"n": 2, "name": "dsid_b", "doc": "dsid_b"},
+    ]
+
+
+def test_an_empty_file_answer_is_an_abstention_and_a_missing_one_an_error(tmp_path):
+    ask = FileAnswerer(_answers(tmp_path))
+    assert ask(Question(id="q2", question="?"))["abstained"] is True
+    assert ask(Question(id="q9", question="?")) == {"error": "not in the answers file", "abstained": True}
+
+
+def test_an_answer_index_is_a_json_object_or_lines(tmp_path):
+    obj = tmp_path / "uuid_index.json"
+    obj.write_text(json.dumps({"dsid_a": "missions/juno.json"}), encoding="utf-8")
+    lines = tmp_path / "documents.jsonl"
+    lines.write_text('{"doc_id": "dsid_a", "path": "missions/juno.json"}\n{"id": "dsid_b", "file": "b.txt"}\n',
+                     encoding="utf-8")
+    assert load_answer_index(obj) == {"dsid_a": "missions/juno.json"}
+    assert load_answer_index(lines) == {"dsid_a": "missions/juno.json", "dsid_b": "b.txt"}

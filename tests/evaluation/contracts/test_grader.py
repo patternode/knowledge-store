@@ -95,3 +95,32 @@ def test_json_object_takes_the_object_out_of_a_reply():
     assert json.loads(json_object('Here it is:\n```json\n{"a": {"b": 1}}\n```')) == {"a": {"b": 1}}
     with pytest.raises(ValueError):
         json_object("no object")
+
+
+def test_completeness_is_judged_over_the_answer_facts_alone():
+    client = ScriptedClient(score=5)
+    q = Question(id="f", question="Which rocket?", expected="Atlas V", judged=True,
+                 context={"answer_facts": ["The rocket was an Atlas V.", "It launched in 2011."]})
+    g = grader(client, faithfulness=False).grade(q, {"answer": "Atlas V", "sources": SOURCES})
+    assert set(g["metrics"]) == {"correctness", "completeness"}
+    assert g["metrics"]["completeness"]["score"] == pytest.approx(0.5) and g["metrics"]["completeness"]["passed"]
+    assert all(title == "ReasonScore" for _, title, _ in client.calls)
+
+
+def test_no_answer_facts_means_no_completeness_metric():
+    g = grader(ScriptedClient(), faithfulness=False).grade(Q, {"answer": "Atlas V", "sources": SOURCES})
+    assert set(g["metrics"]) == {"correctness"}
+
+
+def test_the_judge_makes_the_platform_client_on_first_use_and_answers_asynchronously(monkeypatch):
+    import asyncio
+    import knowledge_store.platform_services as ps
+
+    class Plain:
+        def converse(self, modelId, messages, inferenceConfig):
+            return {"output": {"message": {"content": [{"text": f"ok {modelId}"}]}}}
+
+    monkeypatch.setattr(ps, "runtime_client", lambda: Plain(), raising=False)
+    j = judge("judge-model")
+    assert j.generate("hello") == "ok judge-model"
+    assert asyncio.run(j.a_generate("hello")) == "ok judge-model"

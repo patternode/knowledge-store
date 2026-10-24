@@ -32,6 +32,7 @@ the pinned commit always fetches the same files. It needs PyYAML, which Knowledg
 | `documents/<source>/…json` | Upload to `landing/redwood/` (or the collection you name with `--collection`). Each file keeps its path in the benchmark |
 | `reference/` | Do not upload. The company the corpus was generated from, to check extracted people, projects and initiatives against |
 | `enterprise-rag-bench.yaml` | The evaluation set |
+| `documents.jsonl` | The slice's document ids and paths, the `--answers-index` for grading another system's answers |
 
 The documents are JSON records (a Jira issue, a Confluence page with its author, reviewers and
 labels). The JSON parser reads each field as a labelled line, so the metadata reaches extraction
@@ -54,8 +55,23 @@ collections = {
 ## Evaluate
 
 ```bash
-python -m knowledge_store.apps.evaluate examples/enterprise-rag-bench/data/enterprise-rag-bench.yaml --lake <lake> --model <model id> --yes
+python -m knowledge_store.apps.evaluate examples/enterprise-rag-bench/data/enterprise-rag-bench.yaml --lake <lake> --model <model id> \
+  --runner deepeval --grader deepeval --judge-model <judge model id> --yes
 ```
+
+The grader judges each answer against the benchmark's gold answer (correctness), its answer facts
+(completeness, the share stated) and the passages it cited (faithfulness). To compare Knowledge
+Store with another system on the same questions and the same judge, write that system's answers
+as the benchmark's harness takes them, one JSON object a line with `question_id`, `answer` and
+`document_ids`, and grade the file; `--documents` lets faithfulness read what it cited:
+
+```bash
+python -m knowledge_store.apps.evaluate examples/enterprise-rag-bench/data/enterprise-rag-bench.yaml \
+  --answers onyx.jsonl --answers-index examples/enterprise-rag-bench/data/documents.jsonl \
+  --documents examples/enterprise-rag-bench/data/documents --grader deepeval --judge-model <judge model id> --yes
+```
+
+`fetch.py` writes `documents.jsonl`, the id-to-path index of the slice, beside the set.
 
 The set has the benchmark's questions except its 10 `high_level` ones, which have no gold
 documents and summarise the whole corpus. Its types map to this repository's kinds:

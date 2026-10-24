@@ -108,3 +108,55 @@ def test_stores_by_destination(tmp_path, monkeypatch):
     monkeypatch.setattr(ps, "store_from_uri", lambda uri: ("store", uri), raising=False)
     s = evaluate.store_for("s3://bucket")
     assert isinstance(s, LakeRunStore) and s.store == ("store", "s3://bucket")
+
+
+def test_another_systems_answers_are_scored_from_a_file(set_file, answers, tmp_path, capsys):
+    rows = [{"question_id": "q1", "answer": "Juno launched on an Atlas V.", "document_ids": ["dsid_j"]},
+            {"question_id": "q2", "answer": "Lockheed Martin built it.", "document_ids": []}]
+    (tmp_path / "onyx.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+    (tmp_path / "index.json").write_text(json.dumps({"dsid_j": "missions/juno.json"}), encoding="utf-8")
+    assert evaluate.main([set_file, "--answers", str(tmp_path / "onyx.jsonl"), "--answers-index",
+                          str(tmp_path / "index.json"), "--documents", str(tmp_path), "--out",
+                          str(tmp_path / "out")]) == 2
+    assert "about 0.00 USD" in capsys.readouterr().out
+    code = evaluate.main([set_file, "--answers", str(tmp_path / "onyx.jsonl"), "--answers-index",
+                          str(tmp_path / "index.json"), "--out", str(tmp_path / "out"), "--yes"])
+    assert code == 0 and answers[1].made == []
+    run = json.loads(next((tmp_path / "out").rglob("results.json")).read_text(encoding="utf-8"))
+    assert run["summary"]["all"]["correct"] == 2
+    assert run["results"][0]["result"]["sources"][0]["name"] == "missions/juno.json"
+
+
+def test_the_grader_needs_a_judge_model_when_no_answering_model_is_named(set_file, answers, capsys, monkeypatch):
+    monkeypatch.setenv("KS_TOKEN", "tok")
+    assert evaluate.main([set_file, "--api", "https://x", "--grader", "deepeval", "--yes"]) == 2
+    assert "give --judge-model" in capsys.readouterr().out and answers[1].made == []
+
+
+def test_the_deepeval_runner_and_grader_are_wired_in(set_file, answers, tmp_path, monkeypatch):
+    import knowledge_store.evaluation as evaluation
+    made = {}
+
+    class Runner:
+        def __init__(self, results_dir, *, identifier=None, upload=False):
+            made["runner"] = (results_dir, identifier, upload)
+
+        def __call__(self, questions, ask, score_one):
+            return [(q, res, score_one(q, res)) for q in questions for res in [ask(q)]]
+
+    class Grader:
+        def __init__(self, model_id):
+            made["grader"] = model_id
+
+        def grade(self, q, res):
+            return {"verdict": "pass", "explanation": "", "metrics": {}, "model": made["grader"]}
+
+    monkeypatch.setattr(evaluation, "DeepEvalRunner", Runner, raising=False)
+    monkeypatch.setattr(evaluation, "DeepEvalGrader", Grader, raising=False)
+    out = tmp_path / "eval"
+    assert evaluate.main([set_file, "--lake", "l", "--model", "m", "--out", str(out), "--runner", "deepeval",
+                          "--grader", "deepeval", "--judge-model", "judge", "--yes"]) == 0
+    assert made == {"runner": (str(out / "deepeval"), "tiny", False), "grader": "judge"}
+    run_dir = next(p for p in out.iterdir() if p.name.startswith("tiny-"))
+    rows = json.loads((run_dir / "results.json").read_text())["rows"]
+    assert all(r["grade"]["verdict"] == "pass" for r in rows)
