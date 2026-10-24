@@ -4,6 +4,13 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 From 0.2.0 on, releases are made by Release Please from the pull requests merged to `main`: a pull request's title is its line here, and the release pull request adds the next section, bumps the version and, when merged, tags `vX.Y.Z` and publishes the GitHub Release. The rules are in [CONTRIBUTING.md](CONTRIBUTING.md#releases). Do not add lines here by hand.
 
+## [0.7.0](https://github.com/patternode/knowledge-store/compare/v0.6.0...v0.7.0) (2026-10-24)
+
+
+### Added
+
+* **ontology:** conform literals before chunking, and add the value kinds and measures ontologies ([#111](https://github.com/patternode/knowledge-store/issues/111)) ([f1e1bd9](https://github.com/patternode/knowledge-store/commit/f1e1bd9fa8367f0e513d1f55ac3b3ca64e9cae17))
+
 ## [0.6.0](https://github.com/patternode/knowledge-store/compare/v0.5.0...v0.6.0) (2026-10-24)
 
 
