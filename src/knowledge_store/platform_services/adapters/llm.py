@@ -68,6 +68,14 @@ def _version(name: str) -> tuple[str, int, int] | None:
     return (m["family"], int(m["major"]), int(m["minor"] or 0)) if m else None
 
 
+def sdk_takes(param: str) -> bool:
+    """Whether the installed Anthropic SDK still has `param` on messages.stream (1.17 dropped the
+    sampling settings from its signature, so passing one is a TypeError before any request)."""
+    import inspect
+    from anthropic.resources.messages import AsyncMessages
+    return param in inspect.signature(AsyncMessages.stream).parameters
+
+
 def rejects_sampling(name: str) -> bool:
     """Claude Opus 4.7 and later, Sonnet 5 and later, and Fable/Mythos reject temperature,
     top_p and top_k with a 400. Unknown names are left alone."""
@@ -286,8 +294,9 @@ def strands_model(model_id: str, temperature: float = 0, max_tokens: int | None 
     if provider() == ANTHROPIC:
         from strands.models.anthropic import AnthropicModel
         name = model_name(model_id)
+        sampling = {} if rejects_sampling(name) or not sdk_takes("temperature") else {"temperature": temperature}
         return AnthropicModel(client_args={"api_key": api_key()}, model_id=name, max_tokens=max_tokens or 8000,
-                              params={} if rejects_sampling(name) else {"temperature": temperature})
+                              params=sampling)
     from strands.models import BedrockModel
     return BedrockModel(model_id=model_id, temperature=temperature, **({"max_tokens": max_tokens} if max_tokens else {}))
 

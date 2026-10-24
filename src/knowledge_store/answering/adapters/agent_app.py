@@ -196,9 +196,15 @@ def _cost(rec: "workbench.Recorder", usage) -> dict | None:
 
 
 def bedrock_model(model_id: str | None = None):
+    """The agent's model: Bedrock, or the Anthropic API when LLM_PROVIDER says so (the local runs and the
+    evaluation, which share the platform's provider switch). Without LLM_PROVIDER it is Bedrock, as the
+    Runtime container runs it."""
+    model_id = model_id or os.environ["AGENT_MODEL_ID"]
+    if os.environ.get("LLM_PROVIDER"):
+        from knowledge_store.platform_services import strands_model
+        return strands_model(model_id, temperature=0, max_tokens=valves.MAX_OUTPUT_TOKENS)
     from strands.models import BedrockModel
-    return BedrockModel(model_id=model_id or os.environ["AGENT_MODEL_ID"], temperature=0,
-                        max_tokens=valves.MAX_OUTPUT_TOKENS)
+    return BedrockModel(model_id=model_id, temperature=0, max_tokens=valves.MAX_OUTPUT_TOKENS)
 
 
 def _read(tools, collection: str, ids: list[str]) -> dict[str, dict]:

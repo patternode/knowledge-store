@@ -305,3 +305,16 @@ def test_the_passages_prompt_names_only_the_passage_tools():
     text = app.PASSAGES_SYSTEM.format(collection="m")
     assert "search_passages" in text and "read_passages" in text
     assert not any(t in text for t in ("search_entities", "neighbourhood", "lookup_rows", "ontology"))
+
+
+def test_the_agent_model_follows_the_platform_provider_switch(monkeypatch):
+    pytest.importorskip("strands")
+    from strands.models import BedrockModel
+    from strands.models.anthropic import AnthropicModel
+    monkeypatch.delenv("LLM_PROVIDER", raising=False)
+    assert isinstance(app.bedrock_model("us.anthropic.claude-sonnet-4-5-20250929-v1:0"), BedrockModel)
+    monkeypatch.setenv("LLM_PROVIDER", "anthropic")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-test")
+    assert isinstance(app.bedrock_model("us.anthropic.claude-sonnet-4-5-20250929-v1:0"), AnthropicModel)
+    monkeypatch.setenv("LLM_PROVIDER", "bedrock")
+    assert isinstance(app.bedrock_model("us.anthropic.claude-sonnet-4-5-20250929-v1:0"), BedrockModel)

@@ -22,6 +22,7 @@ _EXPORTS: dict[str, str] = {
     "load_sources": "slices.config",
     "put_json": "ports",
     "runtime_client": "adapters.llm",
+    "strands_model": "adapters.llm",
     "store_from_uri": "adapters.store",
 }
 

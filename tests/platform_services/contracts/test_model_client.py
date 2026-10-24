@@ -255,3 +255,16 @@ def test_json_of_the_wrong_shape_is_left_alone():
 
 def test_a_value_without_a_schema_is_left_alone():
     assert llm.decode_tool_input("[1]", None) == "[1]"
+
+
+def test_the_strands_model_sends_no_sampling_setting_the_sdk_dropped(monkeypatch):
+    pytest.importorskip("strands")
+    monkeypatch.setenv("LLM_PROVIDER", "anthropic")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-test")
+    monkeypatch.setattr(llm, "sdk_takes", lambda param: False)
+    m = llm.strands_model("us.anthropic.claude-sonnet-4-5-20250929-v1:0", temperature=0)
+    assert "temperature" not in (m.config.get("params") or {})
+    monkeypatch.setattr(llm, "sdk_takes", lambda param: True)
+    m = llm.strands_model("us.anthropic.claude-sonnet-4-5-20250929-v1:0", temperature=0)
+    assert m.config["params"] == {"temperature": 0}
+    assert isinstance(llm.sdk_takes("max_tokens"), bool)
