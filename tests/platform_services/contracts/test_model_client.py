@@ -92,7 +92,8 @@ def _tool(name="record"):
     return {"toolSpec": {"name": name, "description": "d", "inputSchema": {"json": {"type": "object"}}}}
 
 
-def test_a_converse_request_becomes_a_messages_request():
+def test_a_converse_request_becomes_a_messages_request(monkeypatch):
+    monkeypatch.setattr(llm, "sdk_takes", lambda param: True)
     req = llm.to_messages_request(
         modelId="us.anthropic.claude-sonnet-4-5-20250929-v1:0",
         messages=[{"role": "user", "content": [{"text": "hi"}, {"cachePoint": {}}]}],
@@ -110,9 +111,16 @@ def test_max_tokens_defaults_to_4096():
     assert llm.to_messages_request(modelId="claude-haiku-4-5", messages=[])["max_tokens"] == 4096
 
 
-def test_top_p_is_sent_when_there_is_no_temperature():
+def test_top_p_is_sent_when_there_is_no_temperature(monkeypatch):
+    monkeypatch.setattr(llm, "sdk_takes", lambda param: True)
     req = llm.to_messages_request(modelId="claude-haiku-4-5", messages=[], inferenceConfig={"topP": 0.9})
     assert req["top_p"] == 0.9 and "temperature" not in req
+
+
+def test_sampling_settings_are_dropped_when_the_sdk_no_longer_takes_them(monkeypatch):
+    monkeypatch.setattr(llm, "sdk_takes", lambda param: False)
+    req = llm.to_messages_request(modelId="claude-haiku-4-5", messages=[], inferenceConfig={"temperature": 0, "topP": 0.9})
+    assert "temperature" not in req and "top_p" not in req
 
 
 def test_sampling_settings_are_dropped_for_models_that_reject_them():
@@ -255,3 +263,16 @@ def test_json_of_the_wrong_shape_is_left_alone():
 
 def test_a_value_without_a_schema_is_left_alone():
     assert llm.decode_tool_input("[1]", None) == "[1]"
+
+
+def test_the_strands_model_sends_no_sampling_setting_the_sdk_dropped(monkeypatch):
+    pytest.importorskip("strands")
+    monkeypatch.setenv("LLM_PROVIDER", "anthropic")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-test")
+    monkeypatch.setattr(llm, "sdk_takes", lambda param: False)
+    m = llm.strands_model("us.anthropic.claude-sonnet-4-5-20250929-v1:0", temperature=0)
+    assert "temperature" not in (m.config.get("params") or {})
+    monkeypatch.setattr(llm, "sdk_takes", lambda param: True)
+    m = llm.strands_model("us.anthropic.claude-sonnet-4-5-20250929-v1:0", temperature=0)
+    assert m.config["params"] == {"temperature": 0}
+    assert isinstance(llm.sdk_takes("max_tokens"), bool)

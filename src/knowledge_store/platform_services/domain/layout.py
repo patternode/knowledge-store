@@ -42,6 +42,7 @@ SEEN = "bronze/_seen"
 SILVER_DOCS = "silver/documents"
 SILVER_PASSAGES = "silver/passages"
 SILVER_SKIPPED = "silver/skipped"
+SILVER_VECTORS = "silver/vectors/passages.jsonl"   # every silver passage with its embedding, for search without a Knowledge Base
 GOLD = "gold"
 ONTOLOGY_VERSIONS = "ontology/versions"
 ONTOLOGY_ACTIVE = "ontology/active.json"

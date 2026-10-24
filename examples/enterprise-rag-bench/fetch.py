@@ -127,7 +127,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("out", nargs="?", default=str(Path(__file__).parent / "data"))
     ap.add_argument("--distractors", type=int, default=1, help="documents per gold document from its folder")
-    ap.add_argument("--collection", default="redwood")
+    ap.add_argument("--collection", default="enterprise-rag")
     args = ap.parse_args()
     out = Path(args.out)
 

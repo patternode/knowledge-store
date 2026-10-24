@@ -86,3 +86,14 @@ def test_candidates_without_an_active_ontology_refuses(lake, capsys):
 def test_an_unknown_command_refuses(lake):
     with pytest.raises(SystemExit):
         cli.main(["--lake", lake, "explode"])
+
+
+def test_embed_writes_vectors_for_every_passage(lake, capsys, monkeypatch):
+    from test_embed import FakeEmbedder
+    emb = FakeEmbedder()
+    monkeypatch.setattr(cli, "_embedder", lambda model_id: emb)
+    assert cli.main(["--lake", lake, "-c", "m", "ingest"]) == 0 and out_of(capsys)
+    assert cli.main(["--lake", lake, "-c", "m", "refine"]) == 0 and out_of(capsys)
+    assert cli.main(["--lake", lake, "-c", "m", "embed", "--workers", "2"]) == 0
+    stats = out_of(capsys)
+    assert stats["embedded"] == stats["passages"] > 0 and stats["model"] == "fake-embed"
