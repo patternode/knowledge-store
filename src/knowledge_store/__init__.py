@@ -5,4 +5,4 @@ Layers of the lake (see layout.py): landing -> bronze -> silver -> gold, with th
 as a versioned, governed artefact beside them. See the README for the lifecycle.
 """
 
-__version__ = "0.7.0"  # x-release-please-version
+__version__ = "0.7.1"  # x-release-please-version
