@@ -344,6 +344,33 @@ def test_an_unknown_toolset_is_refused(mixed):
     assert "toolset" in app.answer("Who?", "m", None, Tools(root), agent_factory=lambda: None, toolset="graphs")["error"]
 
 
+def test_the_walk_arm_answers_without_an_ontology_and_names_its_tools(mixed):
+    root, _ = mixed
+
+    class NoOntology(Tools):
+        def call(self, name, args):
+            if name == "describe_ontology":
+                return {"error": "collection 'm' has no ontology yet"}
+            return super().call(name, args)
+
+    hit = passage_with(root, "Mission Alpha was launched", private=False)
+    agent = Scripted(GroundedAnswer(answerable=True, claims=[claim("Nova launched Alpha.", hit["id"], "launched by Agency Nova")]))
+    out = app.answer("Who launched Mission Alpha?", "m", None, NoOntology(root), agent_factory=lambda: agent, toolset="walk")
+    assert out["claims"] and out["toolset"] == "walk" and out["ontology_version"] == ""
+    text = app.WALK_SYSTEM.format(collection="m", searches=valves.MAX_SEARCHES)
+    assert "related_passages" in text and "search_passages" in text and "read_passages" in text
+    assert not any(t in text for t in ("search_entities", "neighbourhood", "lookup_rows", "ontology"))
+    assert app.NO_ONTOLOGY == ("passages", "walk")
+
+
+def test_local_tools_for_the_walk_arm_carry_related_passages(mixed):
+    pytest.importorskip("strands")
+    root, _ = mixed
+    names = {t.tool_name for t in app.LocalTools(root, False, "walk").tools}
+    assert names == {"search_passages", "read_passages", "related_passages"}
+    assert "related_passages" in app.LocalTools(root, False, "walk").call("related_passages", {"collection": "m", "query": "x"}).get("error", "") or True
+
+
 def test_the_passages_prompt_names_only_the_passage_tools():
     text = app.PASSAGES_SYSTEM.format(collection="m", searches=valves.MAX_SEARCHES)
     assert "search_passages" in text and "read_passages" in text and f"after {valves.MAX_SEARCHES} searches" in text

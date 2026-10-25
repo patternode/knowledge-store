@@ -162,6 +162,14 @@ def test_the_deepeval_runner_and_grader_are_wired_in(set_file, answers, tmp_path
     assert all(r["grade"]["verdict"] == "pass" for r in rows)
 
 
+def test_the_walk_arm_is_asked_for_in_process(set_file, answers, tmp_path):
+    _, fake = answers
+    fake.made.clear()
+    assert evaluate.main([set_file, "--lake", "l", "--model", "m", "--out", str(tmp_path / "w"), "--tools", "walk",
+                          "--yes"]) == 0
+    assert fake.made[-1] == (("l", "missions", "m"), {"toolset": "walk"})
+
+
 def test_the_passages_arm_is_asked_for_in_process(set_file, answers, tmp_path):
     _, fake = answers
     fake.made.clear()

@@ -3,6 +3,8 @@
     knowledge-store run                          the full sweep (what the triggers run)
     knowledge-store ingest | refine | extract | project
     knowledge-store embed [--embedding-model amazon.titan-embed-text-v2:0]   vectors for passage search without a Knowledge Base
+    knowledge-store facts [--limit N --redo]                                  open facts (schema-free triples) from every passage
+    knowledge-store walk [--embedding-model ... --threshold 0.8]             the walk over the open facts, for related_passages
     knowledge-store discover [--sample 20 --resamples 2]
     knowledge-store ontology versions | active
     knowledge-store ontology pull <draft-id|version> <dir>   copy a draft or version into git to curate
@@ -72,6 +74,14 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("project")
     p = sub.add_parser("embed")
     p.add_argument("--embedding-model", default=os.environ.get("EMBEDDING_MODEL_ID"))
+    p.add_argument("--workers", type=int, default=4)
+    p = sub.add_parser("facts")
+    p.add_argument("--limit", type=int)
+    p.add_argument("--workers", type=int, default=4)
+    p.add_argument("--redo", action="store_true")
+    p = sub.add_parser("walk")
+    p.add_argument("--embedding-model", default=os.environ.get("EMBEDDING_MODEL_ID"))
+    p.add_argument("--threshold", type=float, default=0.8)
     p.add_argument("--workers", type=int, default=4)
     p = sub.add_parser("discover")
     p.add_argument("--sample", type=int, default=20)
@@ -145,6 +155,13 @@ def main(argv: list[str] | None = None) -> int:
     elif args.cmd == "embed":
         from knowledge_store.knowledge_graph.slices import embed
         _print(embed.embed_passages(lake, _embedder(args.embedding_model), workers=args.workers))
+    elif args.cmd == "facts":
+        from knowledge_store.extraction.slices import open_facts
+        r = open_facts.extract_open_facts(lake, _client(), args.model, workers=args.workers, limit=args.limit, redo=args.redo)
+        _print({**r, "rows": [{k: x.get(k) for k in ("doc_id", "status", "facts", "grounded", "dropped", "error")} for x in r["rows"][:50]]})
+    elif args.cmd == "walk":
+        from knowledge_store.knowledge_graph.slices import walk
+        _print(walk.build_walk(lake, _embedder(args.embedding_model), threshold=args.threshold, workers=args.workers))
     elif args.cmd == "discover":
         r = discover.discover(_client(), args.model, lake, load_profile(lake), sample=args.sample,
                               resamples=args.resamples, seed=args.seed, target_classes=args.target)

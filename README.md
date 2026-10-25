@@ -292,6 +292,8 @@ passage (Titan Text Embeddings V2 on Bedrock, the Knowledge Base's model) to
 
 ```bash
 knowledge-store --lake <lake> -c <collection> embed
+knowledge-store --lake <lake> -c <collection> facts   # open facts: schema-free triples from every passage, a small model
+knowledge-store --lake <lake> -c <collection> walk    # the graph related_passages spreads over, from the facts and vectors
 python -m knowledge_store.apps.evaluate examples/evals/space-missions.yaml --lake <lake> --model <model id> \
   --tools passages --grader deepeval --judge-model <judge model id> --yes
 ```

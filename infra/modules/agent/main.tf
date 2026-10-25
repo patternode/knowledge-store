@@ -31,7 +31,7 @@ variable "package_root" {
 }
 variable "tool_schema_dir" {
   type        = string
-  description = "src/knowledge_store/knowledge_graph/adapters: schema-graph.json and schema-passages.json, kept in step with the code by a test"
+  description = "src/knowledge_store/knowledge_graph/adapters: schema-graph.json and schema-walk.json (the passage tools and related_passages), kept in step with the code by a test"
 }
 variable "lake_bucket" { type = string }
 variable "lake_bucket_arn" { type = string }
@@ -165,7 +165,7 @@ locals {
   passages_layers = ["gold", "silver", "ontology", "config"] # the index reads ontology/active.json first
   targets = {
     graph    = { schema = "${var.tool_schema_dir}/schema-graph.json", lambda = aws_lambda_function.graph.arn }
-    passages = { schema = "${var.tool_schema_dir}/schema-passages.json", lambda = aws_lambda_function.passages.arn }
+    passages = { schema = "${var.tool_schema_dir}/schema-walk.json", lambda = aws_lambda_function.passages.arn }
   }
 }
 
@@ -286,7 +286,7 @@ resource "aws_lambda_function" "passages" {
   timeout          = 60
   memory_size      = 1024
   environment {
-    variables = merge({ LAKE_BUCKET = var.lake_bucket, TOOLSET = "passages" },
+    variables = merge({ LAKE_BUCKET = var.lake_bucket, TOOLSET = "walk" },
     var.knowledge_base != null ? { KNOWLEDGE_BASE_ID = var.knowledge_base.id } : {})
   }
   tags = var.tags

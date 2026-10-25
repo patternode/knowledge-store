@@ -43,6 +43,10 @@ SILVER_DOCS = "silver/documents"
 SILVER_PASSAGES = "silver/passages"
 SILVER_SKIPPED = "silver/skipped"
 SILVER_VECTORS = "silver/vectors/passages.jsonl"   # every silver passage with its embedding, for search without a Knowledge Base
+SILVER_FACTS = "silver/facts"                     # silver/facts/<doc id>.json: the open (schema-free) facts of a document, one row a triple,
+                                                  # each naming the passage it was read from; written by extraction, read by the walk
+WALK_GRAPH = "silver/walk/graph.json"             # the association graph the walk spreads over: phrase and passage nodes, weighted edges
+WALK_VECTORS = "silver/walk/vectors.jsonl"        # the embedded facts and phrases behind it, header row first
 GOLD = "gold"
 ONTOLOGY_VERSIONS = "ontology/versions"
 ONTOLOGY_ACTIVE = "ontology/active.json"

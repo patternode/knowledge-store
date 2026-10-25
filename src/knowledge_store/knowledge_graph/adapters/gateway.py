@@ -11,6 +11,9 @@ Two toolsets, one per Lambda (TOOLSET), because they need different networks:
                (knowledge_graph/adapters/sparql.py), so this Lambda runs in the VPC beside it, with no route out.
     passages   search_passages, read_passages. Search goes to the Knowledge Base when
                KNOWLEDGE_BASE_ID is set (knowledge_graph/adapters/passages.py), so this Lambda runs outside the VPC.
+    walk       the passage tools and related_passages, which spreads over the walk the lake holds
+               (knowledge_graph/slices/walk.py) with the embedder, and says so when the collection has no
+               walk yet. The deployed passages Lambda serves this set.
 
 Without NEPTUNE_ENDPOINT the graph tools answer from the in-memory projection, and without
 KNOWLEDGE_BASE_ID passage search is by keyword: the same tools for a local run, a test, or
@@ -81,6 +84,12 @@ TOOLS = {
                       "citing it.",
                       {"collection": {"type": "string"}, "ids": {"type": "array", "items": {"type": "string"}}},
                       ["collection", "ids"]),
+    "related_passages": ("The passages most connected to the question through the facts every document states, "
+                         "across documents: in one call it finds the passages behind each step of a multi-step "
+                         "question, which a search for the question's words misses. Returns each passage's text, id "
+                         "and document, and the facts that led there. Read a passage before citing it.",
+                         {"collection": {"type": "string"}, "query": {"type": "string"}, "limit": {"type": "integer"}},
+                         ["collection", "query"]),
     "describe_structured": ("The mapped tables and named metrics of a collection: each type, its key, its columns, "
                             "its source and the snapshot it is bound to. Read it before a filter or a total.",
                             {"collection": {"type": "string"}}, ["collection"]),
@@ -105,7 +114,8 @@ TOOLSETS = {
               "neighbourhood", "find_paths", "describe_structured", "lookup_rows", "aggregate"],
     "passages": ["search_passages", "read_passages"],
 }
-TOOLSETS["all"] = TOOLSETS["graph"] + TOOLSETS["passages"]
+TOOLSETS["walk"] = TOOLSETS["passages"] + ["related_passages"]   # the passage tools with the walk over open facts
+TOOLSETS["all"] = TOOLSETS["graph"] + TOOLSETS["walk"]
 
 CALLER_ARG = {"caller_private": {"type": "boolean",
                                  "description": "set by the gateway from the caller's token; any value you send is replaced"}}
@@ -168,7 +178,13 @@ def call(root, name: str, args: dict) -> dict:
                                op=args.get("op") or "", attribute=args.get("attribute") or "",
                                group_by=args.get("group_by") or "", filters=args.get("filters") or [],
                                private=private, snapshot=args.get("snapshot") or "")
-    if name in TOOLSETS["passages"]:
+    if name == "related_passages":
+        from knowledge_store.knowledge_graph.slices import walk
+        if not walk.has_walk(store):
+            return {"error": f"collection {cid!r} has no walk yet; use search_passages"}
+        return walk.related(store, args.get("query", ""), embedder=passages.embedder_from_env(), private=private,
+                            limit=int(args.get("limit") or 8))
+    if name in TOOLSETS["walk"]:
         idx = index.load(store, cid)
         if name == "read_passages":
             return {"passages": passages.read(store, idx, args.get("ids") or [], private=private)}
