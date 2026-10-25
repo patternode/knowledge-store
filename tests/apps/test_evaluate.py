@@ -34,8 +34,8 @@ def answers(monkeypatch):
     class Fake:
         made = []
 
-        def __init__(self, *args):
-            Fake.made.append(args)
+        def __init__(self, *args, **kw):
+            Fake.made.append((args, kw))
 
         def __call__(self, q):
             return {"answer": replies[q.question], "abstained": False, "usage": {"inputTokens": 5, "outputTokens": 1}}
@@ -53,7 +53,7 @@ def test_a_run_answers_scores_and_writes_its_report(set_file, answers, tmp_path,
     assert "| Correct | 2 of 2" in printed and "written to" in printed
     run_dir = next(p for p in out.iterdir() if p.name.startswith("tiny-"))
     assert json.loads((run_dir / "results.json").read_text())["summary"]["all"]["correct"] == 2
-    assert answers[1].made == [("lake", "missions", "m")]
+    assert answers[1].made == [(("lake", "missions", "m"), {"toolset": "all"})]
 
 
 def test_the_gate_keeps_a_first_baseline_and_fails_a_regression(set_file, answers, tmp_path, capsys):
@@ -78,7 +78,7 @@ def test_a_question_that_fails_makes_the_exit_code_one(set_file, answers, tmp_pa
 def test_against_the_api_it_asks_as_the_tokens_person(set_file, answers, tmp_path, monkeypatch):
     monkeypatch.setenv("KS_TOKEN", "tok")
     assert evaluate.main([set_file, "--api", "https://ks.example", "--out", str(tmp_path), "--yes"]) == 0
-    assert answers[1].made == [("https://ks.example", "tok", "missions")]
+    assert answers[1].made == [(("https://ks.example", "tok", "missions"), {})]
 
 
 def test_nothing_runs_without_yes_and_the_estimate_is_printed(set_file, answers, capsys):
@@ -160,3 +160,11 @@ def test_the_deepeval_runner_and_grader_are_wired_in(set_file, answers, tmp_path
     run_dir = next(p for p in out.iterdir() if p.name.startswith("tiny-"))
     rows = json.loads((run_dir / "results.json").read_text())["rows"]
     assert all(r["grade"]["verdict"] == "pass" for r in rows)
+
+
+def test_the_passages_arm_is_asked_for_in_process(set_file, answers, tmp_path):
+    _, fake = answers
+    fake.made.clear()
+    assert evaluate.main([set_file, "--lake", "l", "--model", "m", "--out", str(tmp_path / "e"), "--tools", "passages",
+                          "--yes"]) == 0
+    assert fake.made[-1] == (("l", "missions", "m"), {"toolset": "passages"})

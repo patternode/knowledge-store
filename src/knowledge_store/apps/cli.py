@@ -2,6 +2,7 @@
 
     knowledge-store run                          the full sweep (what the triggers run)
     knowledge-store ingest | refine | extract | project
+    knowledge-store embed [--embedding-model amazon.titan-embed-text-v2:0]   vectors for passage search without a Knowledge Base
     knowledge-store discover [--sample 20 --resamples 2]
     knowledge-store ontology versions | active
     knowledge-store ontology pull <draft-id|version> <dir>   copy a draft or version into git to curate
@@ -42,6 +43,11 @@ def _client():
     return runtime_client(read_timeout=600)
 
 
+def _embedder(model_id: str | None):
+    from knowledge_store.knowledge_graph.adapters.embeddings import TitanEmbedder, DEFAULT_MODEL
+    return TitanEmbedder(model_id or DEFAULT_MODEL)
+
+
 def _print(obj) -> None:
     print(json.dumps(obj, indent=2, default=str))
 
@@ -64,6 +70,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--retry-rejected", action="store_true")
     p.add_argument("--all-delta", action="store_true")
     sub.add_parser("project")
+    p = sub.add_parser("embed")
+    p.add_argument("--embedding-model", default=os.environ.get("EMBEDDING_MODEL_ID"))
+    p.add_argument("--workers", type=int, default=4)
     p = sub.add_parser("discover")
     p.add_argument("--sample", type=int, default=20)
     p.add_argument("--resamples", type=int, default=2)
@@ -133,6 +142,9 @@ def main(argv: list[str] | None = None) -> int:
                 for r in rows])
     elif args.cmd == "project":
         _print(project.project(lake))
+    elif args.cmd == "embed":
+        from knowledge_store.knowledge_graph.slices import embed
+        _print(embed.embed_passages(lake, _embedder(args.embedding_model), workers=args.workers))
     elif args.cmd == "discover":
         r = discover.discover(_client(), args.model, lake, load_profile(lake), sample=args.sample,
                               resamples=args.resamples, seed=args.seed, target_classes=args.target)

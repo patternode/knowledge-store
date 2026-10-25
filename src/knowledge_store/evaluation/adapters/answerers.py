@@ -25,13 +25,17 @@ from knowledge_store.evaluation.domain.sets import Question
 
 
 class InProcessAnswerer:
-    def __init__(self, lake_uri: str, collection: str, model_id: str | None):
+    """toolset "all" is the agent as deployed; "passages" answers from passage search alone, the arm
+    the graph is compared against."""
+
+    def __init__(self, lake_uri: str, collection: str, model_id: str | None, toolset: str = "all"):
         from knowledge_store.platform_services import store_from_uri
-        self.root, self.collection, self.model_id = store_from_uri(lake_uri), collection, model_id
+        self.root, self.collection, self.model_id, self.toolset = store_from_uri(lake_uri), collection, model_id, toolset
 
     def __call__(self, q: Question) -> dict:
         from knowledge_store.answering import answer_locally
-        return answer_locally(self.root, self.collection, q.question, private=q.private, model_id=self.model_id)
+        return answer_locally(self.root, self.collection, q.question, private=q.private, model_id=self.model_id,
+                              toolset=self.toolset)
 
 
 class FileAnswerer:

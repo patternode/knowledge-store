@@ -14,7 +14,7 @@ USES = {
     "ontology": ["Profile", "Store", "decode_tool_input", "layout", "put_json"],
     "extraction": ["Profile", "Store", "layout", "ledger", "put_json"],
     "knowledge_graph": ["S3Store", "Store", "collections", "get_json", "layout", "load_profile", "load_sources", "put_json"],
-    "answering": ["layout", "ledger", "llm"],
+    "answering": ["layout", "ledger", "llm", "strands_model"],
     "evaluation": ["store_from_uri"],
 }
 

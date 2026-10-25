@@ -73,6 +73,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--model", default=os.environ.get("AGENT_MODEL_ID"))
     ap.add_argument("--out", default="build/eval")
     ap.add_argument("--only")
+    ap.add_argument("--tools", default="all", choices=["all", "passages"],
+                    help="in process: every tool (the graph, the tables, the passages), or passage search alone")
     ap.add_argument("--verifier", default="lexical", choices=["lexical", "hhem", "guardrail", "none"])
     ap.add_argument("--runner", default="plain", choices=["plain", "deepeval"])
     ap.add_argument("--grader", default="none", choices=["none", "deepeval"])
@@ -112,7 +114,7 @@ def main(argv: list[str] | None = None) -> int:
         if not a.model:
             print("give --model (or set AGENT_MODEL_ID)")
             return 2
-        ask = InProcessAnswerer(a.lake, ev.collection, a.model)
+        ask = InProcessAnswerer(a.lake, ev.collection, a.model, toolset=a.tools)
     store = store_for(a.out)
     runner = grader = None
     if a.runner == "deepeval":

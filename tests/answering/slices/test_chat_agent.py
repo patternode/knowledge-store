@@ -255,3 +255,66 @@ def test_streamed_runs_report_steps_then_the_result():
     def broken(on_step):
         raise RuntimeError("boom at neptune.internal:8182")
     assert list(app.streamed(broken))[-1]["result"]["error"] == app.FAILED
+
+
+# --- the passages-only toolset: the arm the graph is compared against ------------------------------
+
+
+def test_local_tools_can_be_limited_to_the_passage_tools(mixed):
+    pytest.importorskip("strands")
+    root, _ = mixed
+    t = app.LocalTools(root, private=False, toolset="passages")
+    assert sorted(x.tool_name for x in t.tools) == ["read_passages", "search_passages"]
+    assert t.call("describe_ontology", {"collection": "m"})["version"]   # call() still reaches every tool
+
+
+def test_the_passages_arm_answers_without_the_graph_or_the_tables(mixed):
+    root, _ = mixed
+    hit = passage_with(root, "Mission Alpha was launched", private=False)
+    tools = Tools(root)
+    agent = Scripted(GroundedAnswer(answerable=True, claims=[claim("Nova launched Alpha.", hit["id"], "launched by Agency Nova")]))
+    out = app.answer("Who launched Mission Alpha?", "m", None, tools, agent_factory=lambda: agent, toolset="passages")
+    assert out["toolset"] == "passages" and out["claims"] and out["ontology_version"]
+    assert "describe_structured" not in tools.calls
+
+
+def test_the_passages_arm_does_not_need_an_ontology(mixed):
+    root, _ = mixed
+
+    class NoOntology(Tools):
+        def call(self, name, args):
+            if name == "describe_ontology":
+                self.calls.append(name)
+                return {"error": "collection 'm' has no ontology yet"}
+            return super().call(name, args)
+
+    hit = passage_with(root, "Mission Alpha was launched", private=False)
+    agent = Scripted(GroundedAnswer(answerable=True, claims=[claim("Nova launched Alpha.", hit["id"], "launched by Agency Nova")]))
+    out = app.answer("Who launched Mission Alpha?", "m", None, NoOntology(root), agent_factory=lambda: agent, toolset="passages")
+    assert out["claims"] and out["ontology_version"] == ""
+    full = app.answer("Who launched Mission Alpha?", "m", None, NoOntology(root), agent_factory=lambda: agent)
+    assert "no ontology" in full["error"]
+
+
+def test_an_unknown_toolset_is_refused(mixed):
+    root, _ = mixed
+    assert "toolset" in app.answer("Who?", "m", None, Tools(root), agent_factory=lambda: None, toolset="graphs")["error"]
+
+
+def test_the_passages_prompt_names_only_the_passage_tools():
+    text = app.PASSAGES_SYSTEM.format(collection="m")
+    assert "search_passages" in text and "read_passages" in text
+    assert not any(t in text for t in ("search_entities", "neighbourhood", "lookup_rows", "ontology"))
+
+
+def test_the_agent_model_follows_the_platform_provider_switch(monkeypatch):
+    pytest.importorskip("strands")
+    from strands.models import BedrockModel
+    from strands.models.anthropic import AnthropicModel
+    monkeypatch.delenv("LLM_PROVIDER", raising=False)
+    assert isinstance(app.bedrock_model("us.anthropic.claude-sonnet-4-5-20250929-v1:0"), BedrockModel)
+    monkeypatch.setenv("LLM_PROVIDER", "anthropic")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-test")
+    assert isinstance(app.bedrock_model("us.anthropic.claude-sonnet-4-5-20250929-v1:0"), AnthropicModel)
+    monkeypatch.setenv("LLM_PROVIDER", "bedrock")
+    assert isinstance(app.bedrock_model("us.anthropic.claude-sonnet-4-5-20250929-v1:0"), BedrockModel)
