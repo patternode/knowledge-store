@@ -1,0 +1,11 @@
+{
+ "vpc": "vpc-<the labs account's default VPC>",
+ "subnet": "subnet-<a public subnet in it>",
+ "sg": "sg-<a group with no inbound rule>",
+ "ami_x86": "ami-<current Amazon Linux 2023, x86_64>",
+ "ami_arm": "ami-<current Amazon Linux 2023, arm64>",
+ "bucket": "<the baseline bucket: input/, runner/, control/ and output/ prefixes>",
+ "role": "onyx-erb-baseline",
+ "account": "<the labs account id>",
+ "region": "us-east-1"
+}
