@@ -261,15 +261,18 @@ variable "guardrail" {
 variable "valves" {
   description = <<-EOT
     Limits around every question (daily_questions per person is a variable of its own):
-      max_tool_calls, max_model_calls, max_output_tokens   per question, in the agent
+      max_tool_calls, max_searches, max_model_calls, max_output_tokens   per question, in the agent
+      reserved_model_calls   model calls kept for the answer once the tools are refused
       grounding_repairs   times the agent is shown its failed citations and asked again
       chat_concurrency    the chat API's reserved concurrency (-1 none, 0 turns the chat off)
   EOT
   type = object({
-    max_tool_calls    = optional(number, 16)
-    max_model_calls   = optional(number, 14)
-    max_output_tokens = optional(number, 4000)
-    grounding_repairs = optional(number, 1)
+    max_tool_calls       = optional(number, 12)
+    max_searches         = optional(number, 8)
+    max_model_calls      = optional(number, 14)
+    reserved_model_calls = optional(number, 4)
+    max_output_tokens    = optional(number, 8000)
+    grounding_repairs    = optional(number, 1)
     chat_concurrency  = optional(number, 20)
   })
   default = {}

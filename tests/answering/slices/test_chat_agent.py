@@ -185,7 +185,7 @@ def test_question_limits():
 
 def test_tool_and_model_budgets():
     counts, before_tool, before_model = app.limit_hooks()
-    tool_ev, model_ev = SimpleNamespace(cancel_tool=False), SimpleNamespace(cancel=False)
+    tool_ev, model_ev = SimpleNamespace(cancel_tool=False, tool_use={"name": "read_passages"}), SimpleNamespace(cancel=False)
     for _ in range(valves.MAX_TOOL_CALLS):
         before_tool(tool_ev)
     assert tool_ev.cancel_tool is False
@@ -196,9 +196,38 @@ def test_tool_and_model_budgets():
     assert model_ev.cancel and counts["model_calls"] == valves.MAX_MODEL_CALLS + 1
 
 
+def test_searches_run_out_before_the_tools_and_reads_still_run():
+    counts, before_tool, _ = app.limit_hooks()
+    search = SimpleNamespace(cancel_tool=False, tool_use={"name": "search_passages"})
+    for _ in range(valves.MAX_SEARCHES):
+        before_tool(search)
+    assert search.cancel_tool is False and counts["searches"] == valves.MAX_SEARCHES
+    before_tool(search)
+    assert search.cancel_tool == valves.SEARCH_BUDGET_SPENT and "Do not search again" in search.cancel_tool
+    read = SimpleNamespace(cancel_tool=False, tool_use={"name": "read_passages"})
+    before_tool(read)
+    assert read.cancel_tool is False   # a read of what was found is still allowed
+    assert counts["tools_refused"] == 1 and valves.MAX_SEARCHES < valves.MAX_TOOL_CALLS
+
+
+def test_the_last_model_calls_are_kept_for_the_answer():
+    counts, before_tool, before_model = app.limit_hooks()
+    model_ev = SimpleNamespace(cancel=False)
+    for _ in range(valves.MAX_MODEL_CALLS - valves.RESERVED_MODEL_CALLS):
+        before_model(model_ev)
+    read = SimpleNamespace(cancel_tool=False, tool_use={"name": "read_passages"})
+    before_tool(read)
+    assert read.cancel_tool is False and not model_ev.cancel
+    before_model(model_ev)                 # the first of the reserved calls
+    before_tool(read)
+    assert read.cancel_tool == valves.TOOL_BUDGET_SPENT and "answerable to false" in read.cancel_tool
+    assert not model_ev.cancel            # the model may still answer
+    assert valves.tools_allowed({}) == "" and valves.RESERVED_MODEL_CALLS >= 3  # text answer, structured answer, one repair
+
+
 def test_limits_attach_to_a_strands_agent():
     strands = pytest.importorskip("strands")
-    assert app.add_limits(strands.Agent(callback_handler=None)) == {"tool_calls": 0, "model_calls": 0, "tools_refused": 0}
+    assert app.add_limits(strands.Agent(callback_handler=None)) == {"tool_calls": 0, "model_calls": 0, "searches": 0, "tools_refused": 0}
     from knowledge_store.answering.slices import workbench
     rec = workbench.Recorder()
     app.add_limits(strands.Agent(callback_handler=None), rec)
@@ -302,8 +331,8 @@ def test_an_unknown_toolset_is_refused(mixed):
 
 
 def test_the_passages_prompt_names_only_the_passage_tools():
-    text = app.PASSAGES_SYSTEM.format(collection="m")
-    assert "search_passages" in text and "read_passages" in text
+    text = app.PASSAGES_SYSTEM.format(collection="m", searches=valves.MAX_SEARCHES)
+    assert "search_passages" in text and "read_passages" in text and f"after {valves.MAX_SEARCHES} searches" in text
     assert not any(t in text for t in ("search_entities", "neighbourhood", "lookup_rows", "ontology"))
 
 

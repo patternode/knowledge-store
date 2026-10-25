@@ -116,10 +116,12 @@ variable "guardrail" {
 }
 variable "valves" {
   type = object({
-    max_tool_calls    = optional(number, 16)
-    max_model_calls   = optional(number, 14)
-    max_output_tokens = optional(number, 4000)
-    grounding_repairs = optional(number, 1)
+    max_tool_calls       = optional(number, 12)
+    max_searches         = optional(number, 8)
+    max_model_calls      = optional(number, 14)
+    reserved_model_calls = optional(number, 4)
+    max_output_tokens    = optional(number, 8000)
+    grounding_repairs    = optional(number, 1)
   })
   default = {}
 }
@@ -493,13 +495,15 @@ resource "aws_bedrockagentcore_agent_runtime" "agent" {
     max_lifetime                 = 28800 # the longest AgentCore allows; idle timeout ends a session first
   }
   environment_variables = merge({
-    GATEWAY_MCP_URL   = aws_bedrockagentcore_gateway.this.gateway_url
-    AGENT_MODEL_ID    = var.agent_model_id
-    AWS_REGION        = local.region
-    MAX_TOOL_CALLS    = tostring(var.valves.max_tool_calls)
-    MAX_MODEL_CALLS   = tostring(var.valves.max_model_calls)
-    MAX_OUTPUT_TOKENS = tostring(var.valves.max_output_tokens)
-    GROUNDING_REPAIRS = tostring(var.valves.grounding_repairs)
+    GATEWAY_MCP_URL      = aws_bedrockagentcore_gateway.this.gateway_url
+    AGENT_MODEL_ID       = var.agent_model_id
+    AWS_REGION           = local.region
+    MAX_TOOL_CALLS       = tostring(var.valves.max_tool_calls)
+    MAX_SEARCHES         = tostring(var.valves.max_searches)
+    MAX_MODEL_CALLS      = tostring(var.valves.max_model_calls)
+    RESERVED_MODEL_CALLS = tostring(var.valves.reserved_model_calls)
+    MAX_OUTPUT_TOKENS    = tostring(var.valves.max_output_tokens)
+    GROUNDING_REPAIRS    = tostring(var.valves.grounding_repairs)
     }, var.guardrail.enabled ? {
     GUARDRAIL_ID      = aws_bedrock_guardrail.this[0].guardrail_id
     GUARDRAIL_VERSION = aws_bedrock_guardrail_version.this[0].version
