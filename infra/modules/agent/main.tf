@@ -31,7 +31,16 @@ variable "package_root" {
 }
 variable "tool_schema_dir" {
   type        = string
-  description = "src/knowledge_store/knowledge_graph/adapters: schema-graph.json and schema-walk.json (the passage tools and related_passages), kept in step with the code by a test"
+  description = "src/knowledge_store/knowledge_graph/adapters: schema-graph.json, schema-passages.json and schema-walk.json, kept in step with the code by a test"
+}
+variable "passage_toolset" {
+  type        = string
+  default     = "passages"
+  description = "what the passages target serves: \"passages\" (search_passages, read_passages) or \"walk\" (those and related_passages, the walk over open facts, once knowledge-store facts and walk have run for the collections). The deployed agent evolves to the walk by this switch, not by a release."
+  validation {
+    condition     = contains(["passages", "walk"], var.passage_toolset)
+    error_message = "passage_toolset is \"passages\" or \"walk\"."
+  }
 }
 variable "lake_bucket" { type = string }
 variable "lake_bucket_arn" { type = string }
@@ -165,7 +174,7 @@ locals {
   passages_layers = ["gold", "silver", "ontology", "config"] # the index reads ontology/active.json first
   targets = {
     graph    = { schema = "${var.tool_schema_dir}/schema-graph.json", lambda = aws_lambda_function.graph.arn }
-    passages = { schema = "${var.tool_schema_dir}/schema-walk.json", lambda = aws_lambda_function.passages.arn }
+    passages = { schema = "${var.tool_schema_dir}/schema-${var.passage_toolset}.json", lambda = aws_lambda_function.passages.arn }
   }
 }
 
@@ -286,7 +295,7 @@ resource "aws_lambda_function" "passages" {
   timeout          = 60
   memory_size      = 1024
   environment {
-    variables = merge({ LAKE_BUCKET = var.lake_bucket, TOOLSET = "walk" },
+    variables = merge({ LAKE_BUCKET = var.lake_bucket, TOOLSET = var.passage_toolset },
     var.knowledge_base != null ? { KNOWLEDGE_BASE_ID = var.knowledge_base.id } : {})
   }
   tags = var.tags

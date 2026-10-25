@@ -79,9 +79,7 @@ Method:
    list_entities. Read them with get_entity; follow relations with neighbourhood or find_paths.
 3. Every fact in the graph lists the passages it was extracted from. Read those passages with read_passages
    before you rely on a fact. A table fact cites a cell, not a passage.
-4. Use related_passages to find the passages connected to a question across documents when the graph does not
-   hold its terms, and search_passages for anything else the graph and the tables do not hold, and to find the
-   passage behind a fact.
+4. {walk}Use search_passages for anything the graph and the tables do not hold, and to find the passage behind a fact.
 5. Stop searching once you have what the question asks for, and after {searches} searches at most. A search
    that finds nothing new is a reason to answer, not to rephrase. A question the collection does not answer is
    a normal outcome: after three searches with no relevant passage, set answerable to false.
@@ -143,11 +141,20 @@ TOOLSETS = ("all", "passages", "walk")   # all: the graph, the tables and the pa
 NO_ONTOLOGY = ("passages", "walk")       # the arms that answer without the graph or the ontology in the prompt
 
 
-def prompt_for(collection: str, version: str, ontology: str, described: dict | None) -> str:
-    """The system prompt, including the catalog questions this collection's tables can answer."""
-    return SYSTEM.format(collection=collection, version=version, ontology=ontology,
-                         searches=valves.MAX_SEARCHES) + valves.table_query_note(
-        valves.table_questions(described))
+WALK_NOTE = ("Use related_passages to find the passages connected to a question across documents when the graph "
+             "does not hold its terms. ")
+
+
+def prompt_for(collection: str, version: str, ontology: str, described: dict | None, *, walk: bool = False) -> str:
+    """The system prompt, including the catalog questions this collection's tables can answer, and the
+    walk's tool only when the toolset carries it (the deployed passages target serves it when its
+    Terraform variable says so, so the deployed agent evolves to the walk on purpose)."""
+    return SYSTEM.format(collection=collection, version=version, ontology=ontology, searches=valves.MAX_SEARCHES,
+                         walk=WALK_NOTE if walk else "") + valves.table_query_note(valves.table_questions(described))
+
+
+def has_tool(tools, name: str) -> bool:
+    return any(getattr(t, "tool_name", None) == name for t in getattr(tools, "tools", None) or [])
 
 
 def history_messages(history: list[dict] | None) -> list[dict]:
@@ -343,7 +350,8 @@ def answer(question: str, collection: str, history: list[dict] | None, tools, *,
         system = PASSAGES_SYSTEM.format(collection=collection, searches=valves.MAX_SEARCHES)
     else:
         described = tools.call("describe_structured", {"collection": collection})
-        system = prompt_for(collection, version, onto["ontology"], described if isinstance(described, dict) else None)
+        system = prompt_for(collection, version, onto["ontology"], described if isinstance(described, dict) else None,
+                            walk=has_tool(tools, "related_passages"))
         if valves.table_questions(described if isinstance(described, dict) else None):
             rec.tool("describe_structured", {"collection": collection}, described)
     if agent_factory is None:

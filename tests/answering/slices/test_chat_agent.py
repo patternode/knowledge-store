@@ -371,6 +371,15 @@ def test_local_tools_for_the_walk_arm_carry_related_passages(mixed):
     assert "related_passages" in app.LocalTools(root, False, "walk").call("related_passages", {"collection": "m", "query": "x"}).get("error", "") or True
 
 
+def test_the_graph_prompt_names_the_walk_only_when_its_tool_is_there():
+    plain = app.prompt_for("m", "1.0.0", "ontology text", None)
+    walking = app.prompt_for("m", "1.0.0", "ontology text", None, walk=True)
+    assert "related_passages" not in plain and "related_passages" in walking and "search_passages" in plain
+    assert not app.has_tool(SimpleNamespace(tools=[SimpleNamespace(tool_name="search_passages")]), "related_passages")
+    assert app.has_tool(SimpleNamespace(tools=[SimpleNamespace(tool_name="related_passages")]), "related_passages")
+    assert not app.has_tool(None, "related_passages")
+
+
 def test_the_passages_prompt_names_only_the_passage_tools():
     text = app.PASSAGES_SYSTEM.format(collection="m", searches=valves.MAX_SEARCHES)
     assert "search_passages" in text and "read_passages" in text and f"after {valves.MAX_SEARCHES} searches" in text
