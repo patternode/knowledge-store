@@ -210,6 +210,20 @@ def test_searches_run_out_before_the_tools_and_reads_still_run():
     assert counts["tools_refused"] == 1 and valves.MAX_SEARCHES < valves.MAX_TOOL_CALLS
 
 
+def test_the_structured_answer_is_never_counted_or_refused():
+    counts, before_tool, _ = app.limit_hooks()
+    read = SimpleNamespace(cancel_tool=False, tool_use={"name": "read_passages"})
+    for _ in range(valves.MAX_TOOL_CALLS + 1):
+        before_tool(read)
+    assert read.cancel_tool == valves.TOOL_BUDGET_SPENT
+    for name in app.ANSWER_TOOLS:
+        answer = SimpleNamespace(cancel_tool=False, tool_use={"name": name})
+        before_tool(answer)
+        assert answer.cancel_tool is False
+    assert counts["tool_calls"] == valves.MAX_TOOL_CALLS + 1 and counts["tools_refused"] == 1
+    assert app.ANSWER_TOOLS == ("GroundedAnswer", "GapReport")
+
+
 def test_the_last_model_calls_are_kept_for_the_answer():
     counts, before_tool, before_model = app.limit_hooks()
     model_ev = SimpleNamespace(cancel=False)

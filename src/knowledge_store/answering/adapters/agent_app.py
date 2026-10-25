@@ -133,13 +133,22 @@ def history_messages(history: list[dict] | None) -> list[dict]:
     return out
 
 
+ANSWER_TOOLS = (GroundedAnswer.__name__, GapReport.__name__)   # strands delivers the structured answer as a tool call
+
+
 def limit_hooks() -> tuple[dict, object, object]:
-    """Counters, and the hooks that refuse tools past MAX_TOOL_CALLS and stop past MAX_MODEL_CALLS."""
+    """Counters, and the hooks that refuse tools past the valves and stop past MAX_MODEL_CALLS.
+
+    The structured answer arrives through the same hook, as a call of a tool named after its model.
+    It is never counted or refused: refusing it is what spent the budget in the first EnterpriseRAG
+    run, where the agent answered four times after the tools were refused and was refused each time."""
     counts = {"tool_calls": 0, "model_calls": 0, "searches": 0, "tools_refused": 0}
 
     def before_tool(event) -> None:
-        counts["tool_calls"] += 1
         name = (getattr(event, "tool_use", None) or {}).get("name", "")
+        if name in ANSWER_TOOLS:
+            return
+        counts["tool_calls"] += 1
         if name in valves.SEARCH_TOOLS:
             counts["searches"] += 1
         refusal = valves.tools_allowed(counts, name)
