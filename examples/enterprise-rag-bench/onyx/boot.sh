@@ -44,6 +44,8 @@ echo "=== slice and sample"
 aws s3 cp s3://$B/input/erb-slice.tar.gz /opt/erb/erb-slice.tar.gz --quiet && tar -xzf /opt/erb/erb-slice.tar.gz -C /opt/erb && rm /opt/erb/erb-slice.tar.gz
 aws s3 cp s3://$B/input/enterprise-rag-bench.sample.yaml /opt/erb/enterprise-rag-bench.yaml --quiet && grep -c "^- id:" /opt/erb/enterprise-rag-bench.yaml
 aws s3 cp s3://$B/runner/onyx_baseline.py /opt/erb/onyx_baseline.py --quiet
+# Resume: answers already saved from an earlier host are skipped by the runner
+aws s3 cp s3://$B/input/onyx-answers.jsonl /opt/erb/onyx-answers.jsonl --quiet 2>/dev/null && echo "resuming after $(wc -l < /opt/erb/onyx-answers.jsonl) saved answers"
 echo "=== runner"
 S3_BUCKET=$B MODEL_ID=$MODEL_ID BEDROCK_REGION=us-west-2 python3 /opt/erb/onyx_baseline.py >> /var/log/erb-runner.log 2>&1
 echo "runner exit $?"; ship
