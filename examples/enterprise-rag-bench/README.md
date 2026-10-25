@@ -96,3 +96,15 @@ match, so every answerable question is `judged: true`: the score checks that the
 cited one of the expected documents (`sources`), and that its claims pass the verifier. The gold
 answer is in `expected` and the answer facts in `context`, for a grader that reads them. An
 unanswerable question was judged absent from the whole corpus, so it is absent from the slice too.
+
+## The Onyx baseline
+
+`onyx/` runs the same questions through a self-hosted Onyx on one EC2 host and writes the answers
+file the command above grades: `launch.py` starts the host from `launch.json`, `boot.sh` is its
+user data (Onyx in Standard mode, the slice ingested through the ingestion API, the placeholder
+connector that makes Onyx's search tool available), `onyx_baseline.py` runs on the host and
+`watch.py` follows it from the workstation. `sample-120-ids.json` is the 120-question sample both
+systems were compared on (seed 42: 90 lookup, 20 multi-hop, 5 list, 5 unanswerable), for
+`--only`. `merge_reports.py` merges a run split into lanes into one report and prints two
+systems side by side. The reports of the first comparison and Onyx's answers are in
+`results/2026-10-25/`; the results and the procedure are in `docs/_handover-2026-10-25-baselines.md`.
