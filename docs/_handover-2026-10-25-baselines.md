@@ -46,6 +46,21 @@ Onyx spends its tokens in several steps a question: `select_sections_for_expansi
 
 The Knowledge Store report is `enterprise-rag-bench-sample120` run 2026-10-25T00:31:03Z, merged from four lanes and two retry lanes with `examples/enterprise-rag-bench/merge_reports.py`. The Onyx report is the merge of two graded halves (60 lookups on the first host, the other 60 on a second host that resumed from the saved answers).
 
+## The stop rule, fixed and re-run (later on 25 October)
+
+The thirteen errors had one cause, found in the step traces: strands delivers the structured answer as a tool call named `GroundedAnswer`, and the budget hook refused it like any other tool once the tool budget was spent. The agent answered, was refused, answered again, up to four times, until the model calls ran out. Pull request #119 (merged) fixes it: the answer tools are exempt from the counters and the refusals, and the valves run out in order, searches first (8 a question), then tools (12), with the last 4 model calls reserved for the answer; output tokens rise to 8,000; the prompts say an unanswerable question is a normal outcome.
+
+The 30 non-lookup questions were re-run three ways, same model and judge. "Right" counts a grader pass on an answerable question and a decline on an unanswerable one.
+
+| Run | Right of 30 | Grader on the 25 answerable | Unanswerable declined (5) | Declined though answerable | Errors | Model cost |
+|---|---|---|---|---|---|---|
+| Baseline run (before) | 19 | pass 17, partial 4, error 4 | 2 (3 errors) | 1 | 7 | about 12.6 dollars |
+| Valves reordered only | 20 | pass 15, partial 2, fail 1, error 7 | 5 | 1 | 7 | 16.5 dollars |
+| Both fixes | 22 | pass 17, partial 6, fail 2 | 5 | 4 | 0 | 11.4 dollars |
+| Onyx, for reference | 26 | pass 22, partial 2, fail 1 | 4 (1 fail) | 0 | 0 | about 7.5 dollars |
+
+Reading. The stop rule now does its job: every question ends in an answer or a decline, the five unanswerable questions are all declined, and the run costs less than before. It did not make the hard answerable questions right more often: 17 passes before and after. The seven errors became four partial answers, one failure and two declines of answerable questions, and two more answerable questions were declined (four in all, two multi-hop and two list) where the agent gave up after its eight searches. The gap to Onyx is now entirely multi-hop and list retrieval (15 against 20 multi-hop passes), which is the next item below. The report is `examples/enterprise-rag-bench/results/2026-10-25/ks-passages-stop-rule-30.md`.
+
 ## Where everything is
 
 | Thing | Where |
@@ -118,7 +133,8 @@ Onyx runs on one EC2 host (m7i.2xlarge, 0.408 dollars an hour) in the labs accou
 | Onyx, a question | about 0.23 dollars: 0.21 on lookups, 0.25 on multi-hop, list and unanswerable (about 72,000 input and 910 output tokens, Sonnet 4.5 on Bedrock, measured from its `user_usage` table) |
 | Extraction for the graph arm | about 0.11 dollars a document, so about 80 dollars for the 722 |
 | EC2 for Onyx | 0.408 dollars an hour; the two hosts that answered ran 1.3 hours each (install, Standard switch, ingestion and indexing take about 45 minutes before the first question). Two earlier hosts, stopped by the guard's false readings, are in the 79 dollars below |
-| Whole stage | about 110 dollars against the final 110 cap: 79 up to 01:05 UTC (the Knowledge Store arm, the embeddings, the earlier Onyx hosts), 13.6 for Onyx's first 64 Bedrock answers, 15.1 for the other 60, 1.1 of EC2 and about 1.2 of grading |
+| Stop rule re-runs | about 29 dollars: 17 for the first re-run of the 30, 11.4 for the second, grading under 1 |
+| Whole stage | about 139 dollars in all; the two baselines about 110 against their final 110 cap: 79 up to 01:05 UTC (the Knowledge Store arm, the embeddings, the earlier Onyx hosts), 13.6 for Onyx's first 64 Bedrock answers, 15.1 for the other 60, 1.1 of EC2 and about 1.2 of grading |
 
 ## What is left
 
@@ -126,7 +142,7 @@ In this order.
 
 1. The phase-two platform pull request: set `agent.runtime = true` in `deployments/knowledge-store/main.tf` once `master: patternode-platform` says the v0.8.0 agent image is in ECR. Then the master session promotes `deploy` and Dermot applies.
 2. Multi-hop. Onyx passed all 20 and Knowledge Store 16, with correctness 0.83 against 0.63. Read the four partial answers against Onyx's, then try one change at a time: a wider first retrieval (Onyx hands the model about 40 sections at once), a `read_document` tool so the agent sees a whole document when a passage is a fragment, and prompt caching so the growing context stops being the cost.
-3. The stop rule. Eleven of the thirteen Knowledge Store errors were a spent call budget: six lookups, four of the five list questions and three of the five unanswerable. The agent should decline after a bounded number of empty searches and answer with what it has when the budget nears its end; the list questions need a tool that lists by keyword or reads a whole document. Re-run the 30 non-lookup questions after the change. This alone closes most of the gap to Onyx.
+3. Done in pull request #119 (above): the stop rule. What remains of it is the four declines of answerable questions after eight searches, which the multi-hop work should absorb, since a wider first retrieval needs fewer searches.
 4. Cost. Prompt caching on the system prompt and the tool results, and a measurement of tokens a question before and after, before any 722-document run.
 5. The graph arm: extract the 722 documents (about 80 dollars), write a graph-shaped question set (the benchmark's questions are passage-shaped), run `--tools all`, and compare against both baselines on the same judge.
 6. Onyx with its own knowledge graph beta switched on, as the fourth arm, if the graph arm shows a gap worth chasing.
