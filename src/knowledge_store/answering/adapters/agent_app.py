@@ -80,7 +80,9 @@ Method:
 3. Every fact in the graph lists the passages it was extracted from. Read those passages with read_passages
    before you rely on a fact. A table fact cites a cell, not a passage.
 4. Use search_passages for anything the graph and the tables do not hold, and to find the passage behind a fact.
-5. Stop searching once you have what the question asks for.
+5. Stop searching once you have what the question asks for, and after {searches} searches at most. A search
+   that finds nothing new is a reason to answer, not to rephrase. A question the collection does not answer is
+   a normal outcome: after three searches with no relevant passage, set answerable to false.
 
 Rules:
 - Answer only from passages you have read, or from cells and figures the table tools returned, in this conversation.
@@ -100,7 +102,9 @@ Method:
 1. Search the passages with search_passages: first with the question's own words, then with other phrasings
    and with the names, codes, dates and figures it mentions. Search again when the first hits do not answer it.
 2. Read the hits you rely on with read_passages, and a passage's neighbours when a hit is cut short.
-3. Stop searching once you have what the question asks for.
+3. Stop searching once you have what the question asks for, and after {searches} searches at most. A search
+   that finds nothing new is a reason to answer, not to rephrase. A question the collection does not answer is
+   a normal outcome: after three searches with no relevant passage, set answerable to false.
 
 Rules:
 - Answer only from passages you have read in this conversation.
@@ -115,7 +119,8 @@ TOOLSETS = ("all", "passages")   # all: the graph, the tables and the passages; 
 
 def prompt_for(collection: str, version: str, ontology: str, described: dict | None) -> str:
     """The system prompt, including the catalog questions this collection's tables can answer."""
-    return SYSTEM.format(collection=collection, version=version, ontology=ontology) + valves.table_query_note(
+    return SYSTEM.format(collection=collection, version=version, ontology=ontology,
+                         searches=valves.MAX_SEARCHES) + valves.table_query_note(
         valves.table_questions(described))
 
 
@@ -128,15 +133,28 @@ def history_messages(history: list[dict] | None) -> list[dict]:
     return out
 
 
+ANSWER_TOOLS = (GroundedAnswer.__name__, GapReport.__name__)   # strands delivers the structured answer as a tool call
+
+
 def limit_hooks() -> tuple[dict, object, object]:
-    """Counters, and the hooks that refuse tools past MAX_TOOL_CALLS and stop past MAX_MODEL_CALLS."""
-    counts = {"tool_calls": 0, "model_calls": 0, "tools_refused": 0}
+    """Counters, and the hooks that refuse tools past the valves and stop past MAX_MODEL_CALLS.
+
+    The structured answer arrives through the same hook, as a call of a tool named after its model.
+    It is never counted or refused: refusing it is what spent the budget in the first EnterpriseRAG
+    run, where the agent answered four times after the tools were refused and was refused each time."""
+    counts = {"tool_calls": 0, "model_calls": 0, "searches": 0, "tools_refused": 0}
 
     def before_tool(event) -> None:
+        name = (getattr(event, "tool_use", None) or {}).get("name", "")
+        if name in ANSWER_TOOLS:
+            return
         counts["tool_calls"] += 1
-        if counts["tool_calls"] > valves.MAX_TOOL_CALLS:
+        if name in valves.SEARCH_TOOLS:
+            counts["searches"] += 1
+        refusal = valves.tools_allowed(counts, name)
+        if refusal:
             counts["tools_refused"] += 1
-            event.cancel_tool = valves.TOOL_BUDGET_SPENT
+            event.cancel_tool = refusal
 
     def before_model(event) -> None:
         counts["model_calls"] += 1
@@ -294,7 +312,7 @@ def answer(question: str, collection: str, history: list[dict] | None, tools, *,
         return {"error": onto["error"], "steps": rec.steps}
     version = onto.get("version") or ""
     if toolset == "passages":
-        system = PASSAGES_SYSTEM.format(collection=collection)
+        system = PASSAGES_SYSTEM.format(collection=collection, searches=valves.MAX_SEARCHES)
     else:
         described = tools.call("describe_structured", {"collection": collection})
         system = prompt_for(collection, version, onto["ontology"], described if isinstance(described, dict) else None)
@@ -328,6 +346,9 @@ def answer(question: str, collection: str, history: list[dict] | None, tools, *,
             rec.step("repair", f"{len(failures)} citation{'s' if len(failures) != 1 else ''} failed the check; asking for a repair",
                      "; ".join(str(f.get("reason", "")) for f in failures[:4] if isinstance(f, dict)) or None)
             again = agent(grounding.repair_prompt(failures)).structured_output
+            if again is None:   # the repair call was refused or did not parse: keep the answer we have
+                report["repair_failed"] = True
+                break
             passages.update(_read(tools, collection, [i for i in grounding.cited_ids(again) if i not in passages]))
             cells.update(_cells(tools, collection, [i for i in grounding.cited_cells(again) if i not in cells]))
             metrics.update(_metrics(tools, collection, again, checked))

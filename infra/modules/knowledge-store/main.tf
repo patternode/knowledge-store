@@ -251,10 +251,12 @@ module "agent" {
   knowledge_base = var.knowledge_base.enabled ? { id = local.knowledge_base.id, arn = local.knowledge_base.arn } : null
   guardrail      = var.guardrail
   valves = {
-    max_tool_calls    = var.valves.max_tool_calls
-    max_model_calls   = var.valves.max_model_calls
-    max_output_tokens = var.valves.max_output_tokens
-    grounding_repairs = var.valves.grounding_repairs
+    max_tool_calls       = var.valves.max_tool_calls
+    max_searches         = var.valves.max_searches
+    max_model_calls      = var.valves.max_model_calls
+    reserved_model_calls = var.valves.reserved_model_calls
+    max_output_tokens    = var.valves.max_output_tokens
+    grounding_repairs    = var.valves.grounding_repairs
   }
   log_retention_days   = local.logs
   permissions_boundary = local.boundary
