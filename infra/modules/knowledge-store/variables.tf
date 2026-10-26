@@ -274,7 +274,7 @@ variable "valves" {
     reserved_model_calls = optional(number, 4)
     max_output_tokens    = optional(number, 8000)
     grounding_repairs    = optional(number, 1)
-    chat_concurrency  = optional(number, 20)
+    chat_concurrency     = optional(number, 20)
   })
   default = {}
 }
