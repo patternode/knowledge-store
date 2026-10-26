@@ -288,17 +288,35 @@ class AnthropicConverse:
         return to_converse_response(msg)
 
 
+def prompt_caching() -> bool:
+    """Whether the agent's model calls cache their prompt (PROMPT_CACHE, on unless set to 0, false or off)."""
+    return os.environ.get("PROMPT_CACHE", "1").strip().lower() not in ("0", "false", "off", "no")
+
+
+def cache_config():
+    """The one caching configuration both providers take: the system prompt, the tool definitions and
+    the last user message (so the tool results read so far) are marked as cache points. Strands writes
+    them as cachePoint blocks for Bedrock and cache_control for the Anthropic API; "auto" applies them
+    to Claude models only. Caching changes the price of repeated input, not the answer: a question of
+    eight calls resends its growing context eight times, and the cached share costs a tenth."""
+    from strands.models.model import CacheConfig
+    return CacheConfig(strategy="auto", tools_ttl=True) if prompt_caching() else None
+
+
 def strands_model(model_id: str, temperature: float = 0, max_tokens: int | None = None):
-    """The Strands model for the agent, for the configured provider. `max_tokens` caps each model
-    call's output (the chat's per-question limits); without it Anthropic gets 8000."""
-    if provider() == ANTHROPIC:
+    """The Strands model for the agent, for the configured provider, with prompt caching unless
+    PROMPT_CACHE turns it off. `max_tokens` caps each model call's output (the chat's per-question
+    limits); without it Anthropic gets 8000."""
+    cache = {"cache_config": cache_config()} if prompt_caching() else {}
+    if (os.environ.get("LLM_PROVIDER") or BEDROCK).strip().lower() == ANTHROPIC:   # unset means Bedrock, as the Runtime runs
         from strands.models.anthropic import AnthropicModel
         name = model_name(model_id)
         sampling = {} if rejects_sampling(name) or not sdk_takes("temperature") else {"temperature": temperature}
         return AnthropicModel(client_args={"api_key": api_key()}, model_id=name, max_tokens=max_tokens or 8000,
-                              params=sampling)
+                              params=sampling, **cache)
     from strands.models import BedrockModel
-    return BedrockModel(model_id=model_id, temperature=temperature, **({"max_tokens": max_tokens} if max_tokens else {}))
+    return BedrockModel(model_id=model_id, temperature=temperature, **({"max_tokens": max_tokens} if max_tokens else {}),
+                        **cache)
 
 
 def decode_tool_input(value, schema: dict):

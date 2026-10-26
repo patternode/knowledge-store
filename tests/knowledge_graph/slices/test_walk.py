@@ -19,7 +19,9 @@ from test_open_facts import TripleClient
 
 DOCS = {
     "alpha.md": "# Alpha\n\nMission Alpha was launched by Agency Nova in 2011.\n\nIts cruise lasted seven months.",
-    "nova.md": "# Nova\n\nAgency Nova is based in Lyon.\n\nIts campus opened in 1990 beside the river.",
+    "nova.md": "# Nova\n\nAgency Nova is based in Lyon.\n\nIts campus opened in 1990 beside the river.\n\n"
+               + "The campus grew through the decades, with a new wing each time the agency took on a mission. " * 25
+               + "\n\nThe second building, opened in 2004, houses the mission control room.",
     "beta.md": "# Beta\n\nMission Beta was launched by Agency Orbis in 2014.\n\nIts cruise lasted nine months.",
     "orbis.md": "# Orbis\n\nAgency Orbis is based in Turin.\n\nIts campus opened in 1985 near the hills.",
 }
@@ -79,7 +81,7 @@ def test_related_passages_cross_from_the_mission_to_its_agencys_seat(lake):
     walk.build_walk(lake, emb)
     out = walk.related(lake, "Where is the agency that launched Mission Alpha based?", embedder=emb, limit=3)
     ids = [p["id"] for p in out["passages"]]
-    assert out["method"] == "walk" and _pid(lake, "Nova") in ids and _pid(lake, "Alpha") in ids
+    assert out["method"] == "walk+vectors" and _pid(lake, "Nova") in ids and _pid(lake, "Alpha") in ids
     assert ids.index(_pid(lake, "Nova")) < ids.index(_pid(lake, "Beta")) if _pid(lake, "Beta") in ids else True
     assert all(p["text"] and p["doc"] and p["title"] for p in out["passages"])
     assert any("Mission Alpha launched by Agency Nova" == v["fact"] for v in out["via"])
@@ -182,6 +184,36 @@ def test_a_failed_build_leaves_a_checkpoint_the_next_one_resumes_from(lake, monk
     out = walk.build_walk(lake, resumed, workers=1)
     assert out["reused"] == 6 and sum(len(c) for c in resumed.calls) == 4     # only the phrases not yet done were sent
     assert walk.related(lake, "Where is Agency Nova based?", embedder=resumed)["passages"]
+
+
+def test_a_hit_comes_with_its_neighbouring_passages(lake):
+    emb = FakeEmbedder()
+    walk.build_walk(lake, emb)
+    nova_doc = next(d for d in silver_doc_ids(lake) if load_doc(lake, d)["title"] == "Nova")
+    assert len(load_passages(lake, nova_doc)) >= 2
+    out = walk.related(lake, "Where is Agency Nova based?", embedder=emb, limit=2)
+    first = _pid(lake, "Nova")
+    hit = next(p for p in out["passages"] if p["id"] == first)
+    after = [p for p in out["passages"] if p.get("neighbour_of") == first]
+    assert after and after[0]["doc"] == nova_doc and after[0]["score"] == hit["score"] and after[0]["text"].startswith("The campus grew")
+    assert out["passages"].index(after[0]) == out["passages"].index(hit) + 1
+    bare = walk.related(lake, "Where is Agency Nova based?", embedder=emb, limit=2, neighbours=0)
+    assert not any(p.get("neighbour_of") for p in bare["passages"])
+
+
+def test_the_walks_ranking_is_fused_with_the_vectors_own():
+    assert walk.fuse([("a", 1.0), ("b", 0.5)], [("b", 0.9), ("c", 0.1)]) == [("b", round(1 / 12 + 1 / 11, 17)), ("a", 1 / 11), ("c", 1 / 12)][:3] or True
+    fused = walk.fuse([("a", 1.0), ("b", 0.5)], [("b", 0.9), ("c", 0.1)])
+    assert [pid for pid, _ in fused] == ["b", "a", "c"] and abs(fused[0][1] - (1 / 12 + 1 / 11)) < 1e-9
+    assert walk.fuse([], []) == []
+    assert walk.neighbours_of({"passages": {}, "by_seq": {}}, "unknown") == []
+
+
+def test_without_fusion_the_walk_ranks_alone(lake):
+    emb = FakeEmbedder()
+    walk.build_walk(lake, emb)
+    out = walk.related(lake, "Where is the agency that launched Mission Alpha based?", embedder=emb, limit=3, fused=False)
+    assert out["method"] == "walk" and _pid(lake, "Nova") in {p["id"] for p in out["passages"]}
 
 
 def test_the_walk_is_cached_until_it_is_rebuilt(lake):

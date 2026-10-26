@@ -276,3 +276,48 @@ def test_the_strands_model_sends_no_sampling_setting_the_sdk_dropped(monkeypatch
     m = llm.strands_model("us.anthropic.claude-sonnet-4-5-20250929-v1:0", temperature=0)
     assert m.config["params"] == {"temperature": 0}
     assert isinstance(llm.sdk_takes("max_tokens"), bool)
+
+
+def _agent_request(model, system="You answer from passages. " * 200):
+    """What the model would send for a two-call conversation: the first call's tool use and its result."""
+    messages = [{"role": "user", "content": [{"text": "Who launched Alpha?"}]},
+                {"role": "assistant", "content": [{"toolUse": {"toolUseId": "t1", "name": "search_passages", "input": {"query": "Alpha"}}}]},
+                {"role": "user", "content": [{"toolResult": {"toolUseId": "t1", "content": [{"text": "Mission Alpha was launched by Agency Nova."}], "status": "success"}}]}]
+    spec = {"name": "search_passages", "description": "search", "inputSchema": {"json": {"type": "object", "properties": {}}}}
+    return model.format_request(messages, [spec], system)
+
+
+def test_the_anthropic_model_marks_the_system_prompt_tools_and_last_message_for_caching(monkeypatch):
+    pytest.importorskip("strands")
+    monkeypatch.setenv("LLM_PROVIDER", "anthropic")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "k")
+    monkeypatch.delenv("PROMPT_CACHE", raising=False)
+    llm.api_key.cache_clear()
+    req = _agent_request(llm.strands_model("us.anthropic.claude-sonnet-4-5-20250929-v1:0"))
+    assert req["system"][-1]["cache_control"]["type"] == "ephemeral"
+    assert req["tools"][-1]["cache_control"]["type"] == "ephemeral"
+    last = req["messages"][-1]["content"]
+    assert any(b.get("cache_control") for b in last)   # the tool results read so far are cached for the next call
+    monkeypatch.setenv("PROMPT_CACHE", "off")
+    off = _agent_request(llm.strands_model("us.anthropic.claude-sonnet-4-5-20250929-v1:0"))
+    assert not any("cache_control" in b for b in off["system"]) and not any("cache_control" in t for t in off["tools"])
+
+
+def test_the_bedrock_model_marks_the_same_three_things_with_cache_points(monkeypatch):
+    pytest.importorskip("strands")
+    monkeypatch.delenv("LLM_PROVIDER", raising=False)
+    monkeypatch.delenv("PROMPT_CACHE", raising=False)
+    monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
+    model = llm.strands_model("us.anthropic.claude-sonnet-4-5-20250929-v1:0")
+    req = model.format_request(
+        [{"role": "user", "content": [{"text": "Who launched Alpha?"}]},
+         {"role": "assistant", "content": [{"toolUse": {"toolUseId": "t1", "name": "search_passages", "input": {}}}]},
+         {"role": "user", "content": [{"toolResult": {"toolUseId": "t1", "content": [{"text": "Nova."}], "status": "success"}}]}],
+        [{"name": "search_passages", "description": "search", "inputSchema": {"json": {"type": "object", "properties": {}}}}],
+        [{"text": "You answer from passages."}])
+    assert any("cachePoint" in b for b in req["system"])
+    assert any("cachePoint" in t for t in req["toolConfig"]["tools"])
+    assert any("cachePoint" in b for b in req["messages"][-1]["content"])
+    assert llm.cache_config() is not None and llm.cache_config().tools_ttl is True
+    monkeypatch.setenv("PROMPT_CACHE", "0")
+    assert llm.cache_config() is None and not llm.prompt_caching()
