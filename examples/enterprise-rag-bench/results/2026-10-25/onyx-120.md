@@ -1,15 +1,15 @@
 # Evaluation: enterprise-rag-bench-sample120 (enterprise-rag)
 
-Run 2026-10-25T04:16:37+00:00.
+Run 2026-10-25T06:48:13+00:00.
 
 | Measure | Value |
 |---|---|
-| Correct | 60 of 60 (1.0; 95% interval 0.94 to 1.0) |
-| Mean score | 1.0 |
+| Correct | 115 of 120 (0.958; 95% interval 0.906 to 0.982) |
+| Mean score | 0.958 |
 | Grounded (claims that passed the agent's own citation checks) | None |
-| Cited an expected source | 0.933 |
-| Citation precision, recall | 0.899, 0.933 |
-| False answers: stated a fact for an unanswerable question | 0 |
+| Cited an expected source | 0.904 |
+| Citation precision, recall | 0.885, 0.88 |
+| False answers: stated a fact for an unanswerable question | 5 |
 | False abstentions: declined an answerable question | 0 |
 | Unsupported claims: rejected by the claim verifier | 0 of 0 |
 | Errors | 0 |
@@ -19,8 +19,11 @@ Run 2026-10-25T04:16:37+00:00.
 
 | Kind | Questions | Correct | Mean score | Grounded |
 |---|---|---|---|---|
-| judged | 60 | 60 | 1.0 | None |
-| lookup | 60 | 60 | 1.0 | None |
+| judged | 115 | 115 | 1.0 | None |
+| lookup | 90 | 90 | 1.0 | None |
+| list | 5 | 5 | 1.0 | None |
+| multi-hop | 20 | 20 | 1.0 | None |
+| unanswerable | 5 | 0 | 0.0 | None |
 
 ## Grader
 
@@ -28,8 +31,9 @@ A model's judgement, reported beside the score and never folded into it.
 
 | Verdict | Questions |
 |---|---|
-| partial | 3 |
-| pass | 57 |
+| fail | 4 |
+| partial | 10 |
+| pass | 106 |
 
 ## Questions
 
@@ -95,3 +99,63 @@ A model's judgement, reported beside the score and never folded into it.
 | qst_0238 | lookup | yes | 1.0 | None | 0 | no |  | pass |
 | qst_0241 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
 | qst_0244 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0248 | lookup | yes | 1.0 | None | 0 | yes |  | partial |
+| qst_0251 | lookup | yes | 1.0 | None | 0 | no |  | partial |
+| qst_0252 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0257 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0262 | lookup | yes | 1.0 | None | 0 | no |  | fail |
+| qst_0263 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0268 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0270 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0273 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0276 | lookup | yes | 1.0 | None | 0 | no |  | pass |
+| qst_0282 | lookup | yes | 1.0 | None | 0 | no |  | partial |
+| qst_0285 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0291 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0292 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0295 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0297 | lookup | yes | 1.0 | None | 0 | no |  | partial |
+| qst_0299 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0300 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0313 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0316 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0319 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0321 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0323 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0325 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0330 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0332 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0342 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0351 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0352 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0359 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0366 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0367 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0368 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0369 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0370 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0372 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0376 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0377 | multi-hop | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0384 | lookup | yes | 1.0 | None | 0 | yes |  | partial |
+| qst_0404 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0406 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0409 | lookup | yes | 1.0 | None | 0 | no |  | fail |
+| qst_0411 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0420 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0423 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0428 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0439 | list | yes | 1.0 | None | 0 | yes |  | partial |
+| qst_0442 | list | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0448 | list | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0449 | list | yes | 1.0 | None | 0 | no |  | fail |
+| qst_0450 | list | yes | 1.0 | None | 0 | yes |  | partial |
+| qst_0459 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0460 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0462 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0470 | lookup | yes | 1.0 | None | 0 | yes |  | pass |
+| qst_0484 | unanswerable | no | 0.0 | None | 0 |  | false answer | pass |
+| qst_0488 | unanswerable | no | 0.0 | None | 0 |  | false answer | fail |
+| qst_0489 | unanswerable | no | 0.0 | None | 0 |  | false answer | pass |
+| qst_0492 | unanswerable | no | 0.0 | None | 0 |  | false answer | pass |
+| qst_0500 | unanswerable | no | 0.0 | None | 0 |  | false answer | pass |
