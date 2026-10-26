@@ -20,6 +20,7 @@ import json
 import operator
 import os
 import re
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 
@@ -29,6 +30,8 @@ from knowledge_store.knowledge_graph.slices.embed import read_vectors
 from knowledge_store.platform_services import layout
 
 BATCH = 16
+EMBED_ATTEMPTS = 6         # a batch is retried on any error, with backoff: Titan returns transient model errors
+CHECKPOINT_EVERY = 2000    # new embeddings between writes of the vectors file, so a failed build resumes
 SYNONYM_THRESHOLD = 0.8
 MAX_SYNONYMS = 5           # synonym edges a phrase keeps, its closest
 TOP_FACTS = 10             # facts retrieved for the question before seeding
@@ -40,16 +43,54 @@ def fact_text(f: dict) -> str:
     return f"{f['s']} {f['p']} {f['o']}"
 
 
-def _embed_all(embedder, texts: list[str], workers: int) -> list[list[float]]:
-    out: list[list[float] | None] = [None] * len(texts)
+def _embed_batch(embedder, batch: list[str]) -> list[list[float]]:
+    for attempt in range(EMBED_ATTEMPTS):
+        try:
+            return embedder.embed(batch)
+        except Exception:
+            if attempt == EMBED_ATTEMPTS - 1:
+                raise
+            time.sleep(min(60, 2 ** attempt))
+    raise RuntimeError("unreachable: the last attempt raises")   # pragma: no cover
+
+
+def _embed_all(embedder, texts: list[str], workers: int, *, known: dict[str, list[float]] | None = None,
+               checkpoint=None) -> list[list[float]]:
+    """A vector a text. Texts in known keep their vector and are not sent; checkpoint(vectors_so_far),
+    when given, is called every CHECKPOINT_EVERY new embeddings so a build that fails resumes."""
+    known = known or {}
+    out: list[list[float] | None] = [known.get(x) for x in texts]
+    todo = [i for i, v in enumerate(out) if v is None]
+    lock = threading.Lock()
+    done = {"n": 0, "at": 0}
 
     def run(start: int) -> None:
-        for i, vec in enumerate(embedder.embed(texts[start:start + BATCH])):
-            out[start + i] = [round(x, 6) for x in vec]
+        idx = todo[start:start + BATCH]
+        for i, vec in zip(idx, _embed_batch(embedder, [texts[i] for i in idx])):
+            out[i] = [round(x, 6) for x in vec]
+        with lock:
+            done["n"] += len(idx)
+            if checkpoint is not None and done["n"] - done["at"] >= CHECKPOINT_EVERY:
+                done["at"] = done["n"]
+                checkpoint({texts[i]: v for i, v in enumerate(out) if v is not None})
 
     with ThreadPoolExecutor(max(1, workers)) as ex:
-        list(ex.map(run, range(0, len(texts), BATCH)))
+        list(ex.map(run, range(0, len(todo), BATCH)))
     return [v or [] for v in out]
+
+
+def _known_vectors(lake, embedder) -> dict[str, list[float]]:
+    """Text -> vector from a vectors file an earlier build (or checkpoint) wrote with the same model."""
+    if not lake.exists(layout.WALK_VECTORS):
+        return {}
+    rows = [json.loads(line) for line in lake.get(layout.WALK_VECTORS).decode().splitlines() if line.strip()]
+    if not rows or rows[0].get("model") != embedder.model or rows[0].get("dim") != embedder.dimensions:
+        return {}
+    out = {}
+    for r in rows[1:]:
+        if r.get("vec"):
+            out[fact_text(r) if r.get("kind") == "fact" else r.get("text", "")] = r["vec"]
+    return out
 
 
 def synonym_pairs(keys: list[str], vecs: list[list[float]], *, threshold: float = SYNONYM_THRESHOLD,
@@ -102,8 +143,17 @@ def build_walk(lake, embedder, *, threshold: float = SYNONYM_THRESHOLD, workers:
             if k:
                 phrases.setdefault(k, text)
     keys = sorted(phrases)
-    fact_vecs = _embed_all(embedder, [fact_text(f) for f in facts], workers)
-    phrase_vecs = _embed_all(embedder, [phrases[k] for k in keys], workers)
+    known = _known_vectors(lake, embedder)
+    reused = sum(1 for x in [fact_text(f) for f in facts] + [phrases[k] for k in keys] if x in known)
+    partial = {"model": embedder.model, "dim": embedder.dimensions, "checkpoint": True}
+
+    def checkpoint(vectors: dict[str, list[float]]) -> None:
+        rows = [{"kind": "checkpoint", "text": x, "vec": v} for x, v in vectors.items()]
+        lake.put(layout.WALK_VECTORS, ("\n".join(json.dumps(x) for x in [partial, *rows]) + "\n").encode(),
+                 "application/x-ndjson")
+    fact_vecs = _embed_all(embedder, [fact_text(f) for f in facts], workers, known=known, checkpoint=checkpoint)
+    known.update(zip([fact_text(f) for f in facts], fact_vecs))
+    phrase_vecs = _embed_all(embedder, [phrases[k] for k in keys], workers, known=known, checkpoint=checkpoint)
     synonyms = synonym_pairs(keys, phrase_vecs, threshold=threshold)
     g = graph.build_graph(facts, synonyms)
     head = {"model": embedder.model, "dim": embedder.dimensions, "facts": len(facts), "phrases": len(keys),
@@ -115,7 +165,7 @@ def build_walk(lake, embedder, *, threshold: float = SYNONYM_THRESHOLD, workers:
     lake.put(layout.WALK_VECTORS, ("\n".join(json.dumps(x) for x in [head, *rows]) + "\n").encode(), "application/x-ndjson")
     lake.put(layout.WALK_GRAPH, json.dumps({**head, **g}).encode(), "application/json")
     _cache.clear()
-    return {k: head[k] for k in ("facts", "phrases", "synonyms", "passages", "model", "dim")}
+    return {**{k: head[k] for k in ("facts", "phrases", "synonyms", "passages", "model", "dim")}, "reused": reused}
 
 
 def has_walk(lake) -> bool:

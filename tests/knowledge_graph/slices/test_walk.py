@@ -128,6 +128,50 @@ def test_synonym_pairs_link_close_phrases_with_or_without_numpy(monkeypatch):
     assert walk.synonym_pairs(["a"], [[1.0]]) == []
 
 
+def test_a_second_build_reuses_the_vectors_of_the_first(lake):
+    emb = FakeEmbedder()
+    first = walk.build_walk(lake, emb)
+    assert first["reused"] == 0 and sum(len(c) for c in emb.calls) == 10
+    again = walk.build_walk(lake, emb)
+    assert again["reused"] == 10 and sum(len(c) for c in emb.calls) == 10   # nothing was sent again
+    other = FakeEmbedder(model="other-model")
+    assert walk.build_walk(lake, other)["reused"] == 0                      # a new model embeds everything
+
+
+def test_a_failed_build_leaves_a_checkpoint_the_next_one_resumes_from(lake, monkeypatch):
+    monkeypatch.setattr(walk, "CHECKPOINT_EVERY", 1)
+    monkeypatch.setattr(walk.time, "sleep", lambda s: None)
+
+    class Flaky(FakeEmbedder):
+        """Fails its first call, then works: the batch is retried and the build completes."""
+        failures = 0
+
+        def embed(self, texts):
+            if self.failures < 1:
+                self.failures += 1
+                raise RuntimeError("ModelErrorException: try again")
+            return super().embed(texts)
+    emb = Flaky()
+    assert walk.build_walk(lake, emb, workers=1)["facts"] == 4 and emb.failures == 1
+
+    class DiesOnPhrases(FakeEmbedder):
+        """Embeds the facts, then dies: the checkpoint holds the facts' vectors."""
+        def embed(self, texts):
+            if any(" " in x and x.split()[0] == "Mission" or x.startswith("Agency") for x in texts) and len(self.calls) >= 1:
+                raise RuntimeError("down")
+            return super().embed(texts)
+    monkeypatch.setattr(walk, "EMBED_ATTEMPTS", 2)
+    lake.delete(layout.WALK_VECTORS)
+    with pytest.raises(RuntimeError):
+        walk.build_walk(lake, DiesOnPhrases(), workers=1)
+    rows = [json.loads(l) for l in lake.get(layout.WALK_VECTORS).decode().splitlines()]
+    assert rows[0]["checkpoint"] and len(rows) - 1 == 4 and all(r["kind"] == "checkpoint" for r in rows[1:])
+    resumed = FakeEmbedder()
+    out = walk.build_walk(lake, resumed, workers=1)
+    assert out["reused"] == 4 and sum(len(c) for c in resumed.calls) == 6     # only the phrases were sent
+    assert walk.related(lake, "Where is Agency Nova based?", embedder=resumed)["passages"]
+
+
 def test_the_walk_is_cached_until_it_is_rebuilt(lake):
     emb = FakeEmbedder()
     walk.build_walk(lake, emb)
