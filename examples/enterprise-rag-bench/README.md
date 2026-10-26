@@ -86,6 +86,10 @@ python -m knowledge_store.apps.evaluate examples/enterprise-rag-bench/data/enter
   --model <model id> --tools walk --runner deepeval --grader deepeval --judge-model <judge model id> --yes
 ```
 
+`walk_grid.py` measures the walk's retrieval against vector search on a set of question ids with no
+model cost, and was used to tune its defaults. `results/2026-10-26/` holds the walk arm's report on
+the sample's 23 multi-document questions and their ids.
+
 To compare the graph with passage search alone, run the same agent with `--tools passages` after
 `knowledge-store -c enterprise-rag embed` has written the lake's vectors (README, "Evaluate"):
 
