@@ -34,7 +34,10 @@ EMBED_ATTEMPTS = 6         # a batch is retried on any error, with backoff: Tita
 CHECKPOINT_EVERY = 2000    # new embeddings between writes of the vectors file, so a failed build resumes
 SYNONYM_THRESHOLD = 0.8
 MAX_SYNONYMS = 5           # synonym edges a phrase keeps, its closest
-TOP_FACTS = 10             # facts retrieved for the question before seeding
+TOP_FACTS = 20             # facts retrieved for the question before seeding
+PASSAGE_WEIGHT = 1.0       # a passage's own similarity to the question, beside the facts' phrases. HippoRAG 2 uses
+                           # 0.05; on EnterpriseRAG's 23 multi-document questions 1.0 found every expected
+                           # document for 11 against 9 at 0.05 and 7 for vector search alone (walk_grid, 26 Oct 2026)
 CACHE_S = 60
 _cache: dict[tuple, tuple[float, dict]] = {}
 
@@ -194,23 +197,27 @@ def _dot(a: list[float], b: list[float]) -> float:
 
 
 def related(lake, query: str, *, embedder, limit: int = 8, private: bool = False, keep=None,
-            top_facts: int = TOP_FACTS) -> dict:
-    """The passages most connected to the question, best first, with the facts that seeded the walk."""
+            top_facts: int = TOP_FACTS, passage_weight: float = PASSAGE_WEIGHT, damping: float = graph.DAMPING,
+            grounded_only: bool = False) -> dict:
+    """The passages most connected to the question, best first, with the facts that seeded the walk.
+    passage_weight sets how much a passage's own similarity to the question counts beside the facts'
+    phrases; damping how far the activation spreads; grounded_only seeds from grounded facts alone."""
     if not has_walk(lake):
         return {"error": "this collection has no walk yet: run `knowledge-store facts` then `knowledge-store walk`"}
     held = load_walk(lake)
     passages = held["passages"]
     visible = {pid for pid, r in passages.items() if private or r.get("scope", "public") == "public"}
     q = embedder.embed([(query or "")[:1000]])[0]
-    scored = sorted(((_dot(q, f["vec"]), f) for f in held["facts"] if f["pid"] in visible),
+    scored = sorted(((_dot(q, f["vec"]), f) for f in held["facts"]
+                     if f["pid"] in visible and (f.get("grounded", True) or not grounded_only)),
                     key=lambda x: x[0], reverse=True)[:top_facts]
     hits = [(f, s) for s, f in scored if s > 0]
     if keep is not None and hits:
         kept = keep(query, [f for f, _ in hits])
         hits = [h for h, k in zip(hits, kept) if k] or hits
     passage_hits = [(pid, _dot(q, r["vec"])) for pid, r in passages.items() if pid in visible]
-    seeds = graph.seeds_from(hits, passage_hits)
-    scores = graph.personalized_pagerank(held["graph"]["edges"], seeds)
+    seeds = graph.seeds_from(hits, passage_hits, passage_weight=passage_weight)
+    scores = graph.personalized_pagerank(held["graph"]["edges"], seeds, damping=damping)
     top = graph.rank_passages(scores, allowed=visible, limit=max(1, min(int(limit or 8), 15)))
     out = []
     for pid, score in top:
