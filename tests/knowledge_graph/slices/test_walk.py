@@ -166,9 +166,21 @@ def test_a_failed_build_leaves_a_checkpoint_the_next_one_resumes_from(lake, monk
         walk.build_walk(lake, DiesOnPhrases(), workers=1)
     rows = [json.loads(l) for l in lake.get(layout.WALK_VECTORS).decode().splitlines()]
     assert rows[0]["checkpoint"] and len(rows) - 1 == 4 and all(r["kind"] == "checkpoint" for r in rows[1:])
+
+    class DiesLate(FakeEmbedder):
+        """Embeds the facts and some phrases, then dies: the checkpoint keeps the facts too."""
+        def embed(self, texts):
+            if len(self.calls) >= 1 and any(x in ("Lyon", "Turin") for x in texts):
+                raise RuntimeError("down")
+            return super().embed(texts)
+    monkeypatch.setattr(walk, "BATCH", 2)
+    with pytest.raises(RuntimeError):
+        walk.build_walk(lake, DiesLate(), workers=1)
+    rows = [json.loads(l) for l in lake.get(layout.WALK_VECTORS).decode().splitlines()]
+    assert len(rows) - 1 > 4   # the facts' vectors and the phrases done so far
     resumed = FakeEmbedder()
     out = walk.build_walk(lake, resumed, workers=1)
-    assert out["reused"] == 4 and sum(len(c) for c in resumed.calls) == 6     # only the phrases were sent
+    assert out["reused"] == 6 and sum(len(c) for c in resumed.calls) == 4     # only the phrases not yet done were sent
     assert walk.related(lake, "Where is Agency Nova based?", embedder=resumed)["passages"]
 
 

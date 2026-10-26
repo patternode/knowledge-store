@@ -148,7 +148,7 @@ def build_walk(lake, embedder, *, threshold: float = SYNONYM_THRESHOLD, workers:
     partial = {"model": embedder.model, "dim": embedder.dimensions, "checkpoint": True}
 
     def checkpoint(vectors: dict[str, list[float]]) -> None:
-        rows = [{"kind": "checkpoint", "text": x, "vec": v} for x, v in vectors.items()]
+        rows = [{"kind": "checkpoint", "text": x, "vec": v} for x, v in {**known, **vectors}.items()]
         lake.put(layout.WALK_VECTORS, ("\n".join(json.dumps(x) for x in [partial, *rows]) + "\n").encode(),
                  "application/x-ndjson")
     fact_vecs = _embed_all(embedder, [fact_text(f) for f in facts], workers, known=known, checkpoint=checkpoint)
