@@ -4,6 +4,8 @@ The reasoning behind the architecture, written as it was worked out and kept as 
 
 | Note | What it covers | Catalogue entries |
 |---|---|---|
+| [Answering, as built](answering-as-built.md) | The design as it runs on 26 October 2026: the layers the pipeline builds, the three ways to find a passage (vectors, the walk over open facts, the typed graph), the agent's arms, valves, checks, caching and scope, the evaluation, the deployment switches, and what is not built | ADR-002, ADR-004, ADR-013; the handover `docs/_handover-2026-10-25-baselines.md` for the measurements |
+| [Changes since 0.4](changes-since-0.4.md) | What changed from release 0.4.0 to today, release by release and unreleased, with the reason for each | the changelog; ADR-011, ADR-012, ADR-013 |
 | [Knowledge Store on AWS](aws/aws.md) | The reference architecture's narrative: ingestion, chat, grounding, valves, evaluation, costs, the two applies | RA-001 is its register form; the cost table is RA-001's cost model |
 | [Graph and document backends](aws/backends.md) | Optional Neo4j, Apache AGE and MongoDB projections behind the same API | ADR-008, SBB-011 |
 | [Structured lookup](aws/structured.md) | A mapped table beside the documents, so an answer can cite a cell | ADR-009, CN-003 |

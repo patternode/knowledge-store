@@ -97,9 +97,11 @@ says the sources cannot answer the question, and lists what was missing. The che
 |---|---|---|
 | Questions per person per day | 30 | `daily_questions` (the chat API, DynamoDB) |
 | Questions answered at once | 20 | `valves.chat_concurrency` (the chat API Lambda's reserved concurrency; 0 turns chat off) |
-| Tool calls per question | 16 | `valves.max_tool_calls`; past it, tools refuse and the agent answers from the passages, cells and figures it already has |
-| Model calls per question | 14 | `valves.max_model_calls` |
-| Output tokens per model call | 4000 | `valves.max_output_tokens` |
+| Searches per question | 8 | `valves.max_searches`; past it, a search is refused and the agent is told to answer or decline, while reads still run |
+| Tool calls per question | 12 | `valves.max_tool_calls`; past it, tools refuse and the agent answers from the passages, cells and figures it already has |
+| Model calls kept for the answer | 4 | `valves.reserved_model_calls`; once only these remain, every tool is refused so the answer is made |
+| Model calls per question | 14 | `valves.max_model_calls`, the hard stop |
+| Output tokens per model call | 8000 | `valves.max_output_tokens` |
 | Repair turns | 1 | `valves.grounding_repairs` |
 | Question length, history | 2000 characters, 6 turns | the agent |
 | Guardrail | on | `guardrail`: prompt attacks and harmful content in questions; grounding of each claim against the passage, cell, or figure it cites |
