@@ -120,7 +120,8 @@ Collection: {collection}
 
 Method:
 1. Call related_passages with the question. It returns the passages most connected to the question through
-   the facts every document states, across documents: the passages behind each step of a multi-step question.
+   the facts every document states, across documents: the passages behind each step of a multi-step question,
+   each with the passage before and after it in its document (marked neighbour_of).
 2. Read the ones you rely on with read_passages, and a passage's neighbours when a hit is cut short.
 3. Use search_passages for what related_passages missed: other phrasings, and the names, codes, dates and
    figures the question mentions. Stop searching once you have what the question asks for, and after
@@ -249,13 +250,10 @@ def _cost(rec: "workbench.Recorder", usage) -> dict | None:
 def bedrock_model(model_id: str | None = None):
     """The agent's model: Bedrock, or the Anthropic API when LLM_PROVIDER says so (the local runs and the
     evaluation, which share the platform's provider switch). Without LLM_PROVIDER it is Bedrock, as the
-    Runtime container runs it."""
+    Runtime container runs it. Either way the prompt is cached (platform_services.llm.cache_config)."""
     model_id = model_id or os.environ["AGENT_MODEL_ID"]
-    if os.environ.get("LLM_PROVIDER"):
-        from knowledge_store.platform_services import strands_model
-        return strands_model(model_id, temperature=0, max_tokens=valves.MAX_OUTPUT_TOKENS)
-    from strands.models import BedrockModel
-    return BedrockModel(model_id=model_id, temperature=0, max_tokens=valves.MAX_OUTPUT_TOKENS)
+    from knowledge_store.platform_services import strands_model
+    return strands_model(model_id, temperature=0, max_tokens=valves.MAX_OUTPUT_TOKENS)   # Bedrock without LLM_PROVIDER
 
 
 def _read(tools, collection: str, ids: list[str]) -> dict[str, dict]:
