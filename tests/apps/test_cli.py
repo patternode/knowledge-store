@@ -88,6 +88,23 @@ def test_an_unknown_command_refuses(lake):
         cli.main(["--lake", lake, "explode"])
 
 
+def test_facts_and_walk_build_the_association_graph(lake, capsys, monkeypatch):
+    from test_embed import FakeEmbedder
+    from test_open_facts import TripleClient
+    emb = FakeEmbedder()
+    monkeypatch.setattr(cli, "_embedder", lambda model_id: emb)
+    monkeypatch.setattr(cli, "_client", lambda: TripleClient())
+    assert cli.main(["--lake", lake, "-c", "m", "ingest"]) == 0 and out_of(capsys)
+    assert cli.main(["--lake", lake, "-c", "m", "refine"]) == 0 and out_of(capsys)
+    assert cli.main(["--lake", lake, "-c", "m", "embed"]) == 0 and out_of(capsys)
+    assert cli.main(["--lake", lake, "-c", "m", "facts", "--workers", "1"]) == 0
+    out = out_of(capsys)
+    assert out["extracted"] == out["documents"] > 0 and out["rows"][0]["status"] == "extracted"
+    assert cli.main(["--lake", lake, "-c", "m", "walk", "--threshold", "0.9"]) == 0
+    stats = out_of(capsys)
+    assert stats["facts"] > 0 and stats["passages"] > 0 and stats["model"] == "fake-embed"
+
+
 def test_embed_writes_vectors_for_every_passage(lake, capsys, monkeypatch):
     from test_embed import FakeEmbedder
     emb = FakeEmbedder()

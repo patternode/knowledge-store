@@ -36,11 +36,13 @@ def test_every_tool_schema_declares_caller_private():
         assert "caller_private" in t["inputSchema"]["properties"] and t["inputSchema"]["type"] == "object"
 
 
-def test_the_two_toolsets_split_graph_and_passages():
+def test_the_toolsets_split_graph_passages_and_the_walk():
     graph = {t["name"] for t in gateway.tool_schema("graph")}
     passage = {t["name"] for t in gateway.tool_schema("passages")}
+    walk = {t["name"] for t in gateway.tool_schema("walk")}
     assert passage == {"search_passages", "read_passages"} and not graph & passage
-    assert graph | passage == {t["name"] for t in gateway.tool_schema("all")}
+    assert walk == passage | {"related_passages"} and not graph & walk
+    assert graph | walk == {t["name"] for t in gateway.tool_schema("all")}
 
 
 def test_the_tool_name_comes_from_the_gateways_context():

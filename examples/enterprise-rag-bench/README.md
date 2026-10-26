@@ -73,6 +73,23 @@ python -m knowledge_store.apps.evaluate examples/enterprise-rag-bench/data/enter
 
 `fetch.py` writes `documents.jsonl`, the id-to-path index of the slice, beside the set.
 
+The walk arm adds `related_passages` to the passage tools: the passages most connected to the
+question through the open facts every document states, found by spreading over a graph of phrases
+and passages (the HippoRAG 2 design) rather than by searching for the question's words. It needs the
+open facts and the walk built once:
+
+```bash
+knowledge-store -c enterprise-rag embed
+knowledge-store -c enterprise-rag facts --workers 12     # one small-model call a batch of passages
+knowledge-store -c enterprise-rag walk                   # embeds the facts and phrases, writes the graph
+python -m knowledge_store.apps.evaluate examples/enterprise-rag-bench/data/enterprise-rag-bench.yaml --lake <lake> \
+  --model <model id> --tools walk --runner deepeval --grader deepeval --judge-model <judge model id> --yes
+```
+
+`walk_grid.py` measures the walk's retrieval against vector search on a set of question ids with no
+model cost, and was used to tune its defaults. `results/2026-10-26/` holds the walk arm's report on
+the sample's 23 multi-document questions and their ids.
+
 To compare the graph with passage search alone, run the same agent with `--tools passages` after
 `knowledge-store -c enterprise-rag embed` has written the lake's vectors (README, "Evaluate"):
 

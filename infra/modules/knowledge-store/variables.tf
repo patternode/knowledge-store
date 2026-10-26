@@ -242,6 +242,7 @@ variable "agent" {
     model_id     = optional(string, "us.anthropic.claude-sonnet-5")
     # minutes a person's Runtime session stays warm after their last question (15 to 480)
     idle_session_minutes = optional(number, 120)
+    passage_toolset      = optional(string, "passages") # "walk" adds related_passages once facts and walk have run
     # Runtime invocations per person per day, counted by the agent itself (a person can call the
     # Runtime directly with their token); null for twice daily_questions, 0 for no limit
     daily_invocations = optional(number)
@@ -273,7 +274,7 @@ variable "valves" {
     reserved_model_calls = optional(number, 4)
     max_output_tokens    = optional(number, 8000)
     grounding_repairs    = optional(number, 1)
-    chat_concurrency  = optional(number, 20)
+    chat_concurrency     = optional(number, 20)
   })
   default = {}
 }

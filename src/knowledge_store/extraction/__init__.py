@@ -10,6 +10,7 @@ _EXPORTS: dict[str, str] = {
     "binding": "slices.bind_tables",
     "data_base": "domain.rdf",
     "mapped_doc_ids": "slices.bind_tables",
+    "open_fact_rows": "slices.open_facts",
     "published_mapping": "slices.bind_tables",
 }
 

@@ -262,6 +262,8 @@ variable "agent" {
     # Runtime invocations per person per day, counted by the agent itself (a person can call the
     # Runtime directly with their token); null for twice daily_questions, 0 for no limit
     daily_invocations = optional(number)
+    # "walk" makes the passages target serve related_passages too, once facts and walk have run
+    passage_toolset = optional(string, "passages")
   })
   default = {}
 }
@@ -290,7 +292,7 @@ variable "valves" {
     reserved_model_calls = optional(number, 4)
     max_output_tokens    = optional(number, 8000)
     grounding_repairs    = optional(number, 1)
-    chat_concurrency  = optional(number, 20)
+    chat_concurrency     = optional(number, 20)
   })
   default = {}
 }

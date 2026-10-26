@@ -58,7 +58,7 @@ def test_tools_honour_the_injected_scope(mixed, monkeypatch):  # noqa: F811
 
 
 @pytest.mark.parametrize("name,toolset", [("schema.json", "all"), ("schema-graph.json", "graph"),
-                                          ("schema-passages.json", "passages")])
+                                          ("schema-passages.json", "passages"), ("schema-walk.json", "walk")])
 def test_committed_tool_schemas_match_the_code(name, toolset):
     committed = json.loads((ROOT / "src/knowledge_store/knowledge_graph/adapters" / name).read_text())
     assert committed == gateway.tool_schema(toolset), f"regenerate src/knowledge_store/knowledge_graph/adapters/{name} from tool_schema()"

@@ -25,7 +25,8 @@ agent = ["boto3>=1.40", "strands-agents>=1.50", "bedrock-agentcore>=1.20", "mcp>
 # its metrics' prompts change between releases; HHEM-2.1-Open as a local claim verifier (CPU is enough).
 evals = ["deepeval==4.3.1", "pyyaml>=6"]
 verify = ["transformers>=4.44", "torch>=2.3"]
-dev = ["pytest>=8", "pytest-cov>=5", "moto>=5", "import-linter>=2.1", "knowledge-store[aws,mongo,neo4j,age,agent,evals]"]
+walk = ["numpy>=1.26"]   # the walk build compares phrase vectors in blocks; without it the build is pure Python, fine for a few thousand phrases
+dev = ["pytest>=8", "pytest-cov>=5", "moto>=5", "import-linter>=2.1", "knowledge-store[aws,mongo,neo4j,age,agent,evals,walk]"]
 
 [project.scripts]
 knowledge-store = "knowledge_store.apps.cli:main"

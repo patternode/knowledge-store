@@ -73,7 +73,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--model", default=os.environ.get("AGENT_MODEL_ID"))
     ap.add_argument("--out", default="build/eval")
     ap.add_argument("--only")
-    ap.add_argument("--tools", default="all", choices=["all", "passages"],
+    ap.add_argument("--tools", default="all", choices=["all", "passages", "walk"],
                     help="in process: every tool (the graph, the tables, the passages), or passage search alone")
     ap.add_argument("--verifier", default="lexical", choices=["lexical", "hhem", "guardrail", "none"])
     ap.add_argument("--runner", default="plain", choices=["plain", "deepeval"])

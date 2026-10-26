@@ -234,6 +234,7 @@ module "agent" {
   prod_version         = var.agent.prod_version
   agent_model_id       = var.agent.model_id
   idle_session_minutes = var.agent.idle_session_minutes
+  passage_toolset      = var.agent.passage_toolset
   # The portal's chat state table (modules/portal names it "<name>-chat"); the agent keeps its own
   # count there under agent#, above the portal's daily_questions so a retry is not refused.
   invocation_quota = {
