@@ -24,7 +24,7 @@ consequences:
     - "DeepEval is pinned; its metrics' prompts change between releases, so a bump is a recalibration"
     - "A grade costs about five judge calls a question"
     - "Inspect AI's runner and its log viewer are gone"
-change_type: supersede
+change_type: replace
 affects_artefacts: [BC-007, SV-009, ABB-021, SBB-019]
 resolves: []
 provenance:

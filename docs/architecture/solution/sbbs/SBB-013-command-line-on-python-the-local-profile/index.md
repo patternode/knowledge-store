@@ -11,15 +11,15 @@ owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-028]
 realised_by_services: [knowledge-store-cli]
-products:
+technologies:
   - { name: "Python 3.12", vendor: "PSF", licensing: "PSF licence" }
   - { name: "rdflib, pySHACL, pypdf, PyYAML", vendor: "open source", licensing: "permissive" }
   - { name: "The Anthropic API or AWS credentials for Bedrock", vendor: "Anthropic or AWS", licensing: "per token" }
 product_mapping:
-  - { abb_component: "Pipeline in process", sbb_product: "The knowledge-store run command over a folder lake with the in-memory projection and in-process tools" }
-  - { abb_component: "Ontology release", sbb_product: "knowledge-store ontology pull, diff, publish, activate; candidates --propose" }
-  - { abb_component: "Ledger report", sbb_product: "knowledge-store ledger" }
-  - { abb_component: "Local portal", sbb_product: "knowledge-store serve: the page and the API from the machine" }
+  - { abb_component: "Pipeline in process", technology: "The knowledge-store run command over a folder lake with the in-memory projection and in-process tools" }
+  - { abb_component: "Ontology release", technology: "knowledge-store ontology pull, diff, publish, activate; candidates --propose" }
+  - { abb_component: "Ledger report", technology: "knowledge-store ledger" }
+  - { abb_component: "Local portal", technology: "knowledge-store serve: the page and the API from the machine" }
 cloud_provider: none
 deployment_model: self-hosted
 provenance:

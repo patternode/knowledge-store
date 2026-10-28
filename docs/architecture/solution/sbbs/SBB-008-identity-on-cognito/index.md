@@ -11,12 +11,12 @@ owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-020]
 realised_by_services: []
-products:
+technologies:
   - { name: "Amazon Cognito user pools", vendor: "AWS", licensing: "per monthly active user" }
 product_mapping:
-  - { abb_component: "People", sbb_product: "Admin-created users, a twelve-character password policy, optional TOTP, email recovery; the private-readers group" }
-  - { abb_component: "Clients", sbb_product: "A public web client with code flow and PKCE, sixty-minute tokens; in site mode a resource server with agent.invoke, tools.public and tools.private scopes and two client-credentials clients" }
-  - { abb_component: "Authorisers", sbb_product: "The pool as issuer for API Gateway, the Runtime and the Gateway" }
+  - { abb_component: "People", technology: "Admin-created users, a twelve-character password policy, optional TOTP, email recovery; the private-readers group" }
+  - { abb_component: "Clients", technology: "A public web client with code flow and PKCE, sixty-minute tokens; in site mode a resource server with agent.invoke, tools.public and tools.private scopes and two client-credentials clients" }
+  - { abb_component: "Authorisers", technology: "The pool as issuer for API Gateway, the Runtime and the Gateway" }
 cloud_provider: aws
 deployment_model: managed
 provenance:

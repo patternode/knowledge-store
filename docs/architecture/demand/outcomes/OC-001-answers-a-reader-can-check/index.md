@@ -23,6 +23,7 @@ realised_by_use_cases: [UC-001, UC-006, UC-007]
 provenance:
   origin: ai-generated
   review_state: ai-raw
+supported_by_use_cases: [UC-001, UC-006, UC-007]
 ---
 
 # OC-001 Answers a reader can check

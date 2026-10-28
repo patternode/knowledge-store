@@ -7,38 +7,20 @@ bindingsVersion = "1.0"
 # continuum's spaces, demand, solution and runtime, plus decisions. docs/architecture/README.md
 # is the map.
 
-[suite.aaa-continuum]
-# The whole architecture, checked against the continuum: node .agents/skills/aaa-continuum/bin/continuum.mjs check
-root = "../docs/architecture"
-
-[suite.aaa-create-strategy]
-outcomeDir = "../docs/architecture/demand/outcomes"
-useCaseDir = "../docs/architecture/demand/use-cases"
-
-[suite.aaa-create-platform]
-platformDir = "../docs/architecture"
-
-[suite.aaa-create-capability]
-capabilityDir = "../docs/architecture/demand/capabilities"
-platformDir   = "../docs/architecture"
-
-[suite.aaa-create-context]
-contextDir  = "../docs/architecture/solution/contexts"
-platformDir = "../docs/architecture"
-
-[suite.aaa-create-abb]
-abbDir = "../docs/architecture/solution/abbs"
-
-[suite.aaa-create-sbb]
-sbbDir = "../docs/architecture/solution/sbbs"
-
-[suite.aaa-create-service]
-serviceDir = "../docs/architecture/runtime/services"
-
-[suite.aaa-rung]
+[suite.architecture]
+# The architecture skill (it replaced the aaa-* skills in architecture-continuum 0.6.0): the whole
+# architecture, checked against the continuum with npm run check:architecture, and where each kind
+# of page is created. The assessment flows use the criteria the skill ships; bind assessment to an
+# organisation's criteria folder to use its own.
+root             = "../docs/architecture"
+outcomeDir       = "../docs/architecture/demand/outcomes"
+useCaseDir       = "../docs/architecture/demand/use-cases"
+platformDir      = "../docs/architecture"
 capabilityDir    = "../docs/architecture/demand/capabilities"
+contextDir       = "../docs/architecture/solution/contexts"
 abbDir           = "../docs/architecture/solution/abbs"
 sbbDir           = "../docs/architecture/solution/sbbs"
+serviceDir       = "../docs/architecture/runtime/services"
 decisionDir      = "../docs/architecture/decisions"
 considerationDir = "../docs/architecture/decisions"
 patternDir       = "../docs/architecture/solution/patterns"

@@ -11,13 +11,13 @@ owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-025]
 realised_by_services: [tools-passages]
-products:
+technologies:
   - { name: "AWS Lambda", vendor: "AWS", licensing: "pay per request" }
   - { name: "Amazon Bedrock AgentCore Gateway (as the front)", vendor: "AWS", licensing: "pay per use" }
 product_mapping:
-  - { abb_component: "Search", sbb_product: "Retrieve on the Knowledge Base with the collection filter; keyword search over silver when the index is absent; the method returned" }
-  - { abb_component: "Read", sbb_product: "read_passages by id from silver, up to ten" }
-  - { abb_component: "Visibility", sbb_product: "caller_private honoured on every passage" }
+  - { abb_component: "Search", technology: "Retrieve on the Knowledge Base with the collection filter; keyword search over silver when the index is absent; the method returned" }
+  - { abb_component: "Read", technology: "read_passages by id from silver, up to ten" }
+  - { abb_component: "Visibility", technology: "caller_private honoured on every passage" }
 cloud_provider: aws
 deployment_model: managed
 provenance:

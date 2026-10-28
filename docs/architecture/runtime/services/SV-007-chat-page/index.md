@@ -18,7 +18,7 @@ repo: { url: "https://github.com/patternode/knowledge-store", path: "." }
 module_path: "chat/"
 packages: []
 deployed_to: [DN-009]
-run_by: "PRD-001"
+run_by: [PRD-001]
 provenance:
   origin: ai-generated
   review_state: ai-raw

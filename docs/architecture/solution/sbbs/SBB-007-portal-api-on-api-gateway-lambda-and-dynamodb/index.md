@@ -11,19 +11,19 @@ owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-019]
 realised_by_services: [portal-api]
-products:
+technologies:
   - { name: "Amazon API Gateway (HTTP API)", vendor: "AWS", licensing: "pay per request" }
   - { name: "AWS Lambda", vendor: "AWS", licensing: "pay per request" }
   - { name: "Amazon DynamoDB", vendor: "AWS", licensing: "pay per request" }
   - { name: "AWS Secrets Manager", vendor: "AWS", licensing: "per secret" }
 product_mapping:
-  - { abb_component: "Routes", sbb_product: "ANY /api/{proxy+} on the HTTP API, throttle 20 a second burst 50, access log per request" }
-  - { abb_component: "Dispatch", sbb_product: "Self-invocation of the function for asynchronous answering; the result polled" }
-  - { abb_component: "Chat state port", sbb_product: "The <name>-chat table with TTLs (ST-011); MongoDB or memory as alternatives" }
-  - { abb_component: "Quota", sbb_product: "quota#<sub>#<day> rows taken before dispatch" }
-  - { abb_component: "Workbench endpoints and links", sbb_product: "Index-backed views from gold; presigned links into the lake" }
-  - { abb_component: "Site grant and secrets", sbb_product: "The service clients' secrets and the origin secret in Secrets Manager (ST-014)" }
-  - { abb_component: "Function", sbb_product: "python3.12, 1024 MB, 600 s, reserved concurrency, outside the VPC" }
+  - { abb_component: "Routes", technology: "ANY /api/{proxy+} on the HTTP API, throttle 20 a second burst 50, access log per request" }
+  - { abb_component: "Dispatch", technology: "Self-invocation of the function for asynchronous answering; the result polled" }
+  - { abb_component: "Chat state port", technology: "The <name>-chat table with TTLs (ST-011); MongoDB or memory as alternatives" }
+  - { abb_component: "Quota", technology: "quota#<sub>#<day> rows taken before dispatch" }
+  - { abb_component: "Workbench endpoints and links", technology: "Index-backed views from gold; presigned links into the lake" }
+  - { abb_component: "Site grant and secrets", technology: "The service clients' secrets and the origin secret in Secrets Manager (ST-014)" }
+  - { abb_component: "Function", technology: "python3.12, 1024 MB, 600 s, reserved concurrency, outside the VPC" }
 cloud_provider: aws
 deployment_model: managed
 provenance:

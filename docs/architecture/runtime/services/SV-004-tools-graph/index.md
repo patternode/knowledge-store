@@ -18,7 +18,7 @@ repo: { url: "https://github.com/patternode/knowledge-store", path: "." }
 module_path: "src/knowledge_store/knowledge_graph/adapters/gateway.py"
 packages: ["knowledge_store.knowledge_graph"]
 deployed_to: [DN-007, DN-006]
-run_by: "PRD-001; called by the Gateway"
+run_by: [PRD-001]  # called by the Gateway
 provenance:
   origin: ai-generated
   review_state: ai-raw

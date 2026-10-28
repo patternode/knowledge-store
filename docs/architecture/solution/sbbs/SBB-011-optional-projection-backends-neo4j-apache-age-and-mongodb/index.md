@@ -11,14 +11,14 @@ owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-011]
 realised_by_services: []
-products:
+technologies:
   - { name: "Neo4j or AuraDB", vendor: "Neo4j", licensing: "instance" }
   - { name: "PostgreSQL with Apache AGE", vendor: "PostgreSQL and Apache", licensing: "server" }
   - { name: "MongoDB or a wire-compatible service", vendor: "MongoDB", licensing: "instance" }
 product_mapping:
-  - { abb_component: "Graph backend", sbb_product: "GRAPH_BACKEND neo4j or age: a graph per load keyed by collection, version and build, filled by the load stage; traversals run on the backend's two primitives" }
-  - { abb_component: "Document projection", sbb_product: "PROJECTION_STORE mongodb: entities, passages and documents with multikey indexes; the portal holds nothing in memory" }
-  - { abb_component: "Chat state", sbb_product: "MongoDB may also hold the Chat API's state (ST-011), a detail of SBB-007" }
+  - { abb_component: "Graph backend", technology: "GRAPH_BACKEND neo4j or age: a graph per load keyed by collection, version and build, filled by the load stage; traversals run on the backend's two primitives" }
+  - { abb_component: "Document projection", technology: "PROJECTION_STORE mongodb: entities, passages and documents with multikey indexes; the portal holds nothing in memory" }
+  - { abb_component: "Chat state", technology: "MongoDB may also hold the Chat API's state (ST-011), a detail of SBB-007" }
 cloud_provider: multi
 deployment_model: hybrid
 provenance:

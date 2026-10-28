@@ -18,7 +18,7 @@ repo: { url: "https://github.com/patternode/knowledge-store", path: "." }
 module_path: "src/knowledge_store/apps/sweep.py"
 packages: ["knowledge_store.apps.sweep", "knowledge_store.ingestion", "knowledge_store.ontology", "knowledge_store.extraction", "knowledge_store.knowledge_graph", "knowledge_store.platform_services"]
 deployed_to: [DN-004]
-run_by: "PRD-001; started by uploads and a schedule"
+run_by: [PRD-001]  # started by uploads and a schedule
 provenance:
   origin: ai-generated
   review_state: ai-raw

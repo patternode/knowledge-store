@@ -23,6 +23,7 @@ realised_by_use_cases: [UC-002, UC-008, UC-009]
 provenance:
   origin: ai-generated
   review_state: ai-raw
+supported_by_use_cases: [UC-002, UC-008, UC-009]
 ---
 
 # OC-003 A store the organisation runs itself, at a cost it can see

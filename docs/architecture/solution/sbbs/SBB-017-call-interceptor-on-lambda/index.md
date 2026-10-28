@@ -11,11 +11,11 @@ owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-027]
 realised_by_services: [agent-interceptor]
-products:
+technologies:
   - { name: "AWS Lambda", vendor: "AWS", licensing: "pay per request" }
 product_mapping:
-  - { abb_component: "Scope rule", sbb_product: "access/adapters/gateway_interceptor.py: sub and cognito:groups, or the site grant's roles, to caller_private" }
-  - { abb_component: "Marking", sbb_product: "The argument written into the forwarded call" }
+  - { abb_component: "Scope rule", technology: "access/adapters/gateway_interceptor.py: sub and cognito:groups, or the site grant's roles, to caller_private" }
+  - { abb_component: "Marking", technology: "The argument written into the forwarded call" }
 cloud_provider: aws
 deployment_model: managed
 provenance:

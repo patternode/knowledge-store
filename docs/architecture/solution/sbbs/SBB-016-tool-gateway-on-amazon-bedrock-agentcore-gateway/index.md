@@ -11,12 +11,12 @@ owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-026]
 realised_by_services: []
-products:
+technologies:
   - { name: "Amazon Bedrock AgentCore Gateway", vendor: "AWS", licensing: "pay per use" }
 product_mapping:
-  - { abb_component: "Authoriser", sbb_product: "A Cognito JWT authoriser with the tools scope" }
-  - { abb_component: "Targets", sbb_product: "The graph and passages Lambdas with their uploaded schemas" }
-  - { abb_component: "Interception", sbb_product: "The interceptor Lambda on every call" }
+  - { abb_component: "Authoriser", technology: "A Cognito JWT authoriser with the tools scope" }
+  - { abb_component: "Targets", technology: "The graph and passages Lambdas with their uploaded schemas" }
+  - { abb_component: "Interception", technology: "The interceptor Lambda on every call" }
 cloud_provider: aws
 deployment_model: managed
 provenance:

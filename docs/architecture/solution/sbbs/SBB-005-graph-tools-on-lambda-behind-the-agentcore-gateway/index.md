@@ -11,15 +11,15 @@ owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-012]
 realised_by_services: [tools-graph]
-products:
+technologies:
   - { name: "AWS Lambda", vendor: "AWS", licensing: "pay per request" }
   - { name: "Amazon Bedrock AgentCore Gateway (as the front)", vendor: "AWS", licensing: "pay per use" }
 product_mapping:
-  - { abb_component: "Collections and ontology", sbb_product: "The toolset's list and describe tools over the lake's config and ontology prefixes" }
-  - { abb_component: "Entities", sbb_product: "search, list and get over the gold index, cached sixty seconds" }
-  - { abb_component: "Traversal", sbb_product: "neighbours over SPARQL to Neptune with SigV4, thirty-second timeout" }
-  - { abb_component: "Structured", sbb_product: "describe, lookup_rows and aggregate over the snapshots in gold" }
-  - { abb_component: "Visibility", sbb_product: "caller_private honoured on every result" }
+  - { abb_component: "Collections and ontology", technology: "The toolset's list and describe tools over the lake's config and ontology prefixes" }
+  - { abb_component: "Entities", technology: "search, list and get over the gold index, cached sixty seconds" }
+  - { abb_component: "Traversal", technology: "neighbours over SPARQL to Neptune with SigV4, thirty-second timeout" }
+  - { abb_component: "Structured", technology: "describe, lookup_rows and aggregate over the snapshots in gold" }
+  - { abb_component: "Visibility", technology: "caller_private honoured on every result" }
 cloud_provider: aws
 deployment_model: managed
 provenance:

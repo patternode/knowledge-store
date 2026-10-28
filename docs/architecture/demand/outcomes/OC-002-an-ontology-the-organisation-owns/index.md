@@ -23,6 +23,7 @@ realised_by_use_cases: [UC-003, UC-004, UC-005]
 provenance:
   origin: ai-generated
   review_state: ai-raw
+supported_by_use_cases: [UC-003, UC-004, UC-005]
 ---
 
 # OC-002 An ontology the organisation owns

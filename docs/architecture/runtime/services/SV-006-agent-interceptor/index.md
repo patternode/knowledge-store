@@ -18,7 +18,7 @@ repo: { url: "https://github.com/patternode/knowledge-store", path: "." }
 module_path: "src/knowledge_store/access/adapters/gateway_interceptor.py"
 packages: ["knowledge_store.access.adapters.gateway_interceptor", "knowledge_store.access.domain.claims"]
 deployed_to: [DN-007]
-run_by: "PRD-001; run by the Gateway on every call"
+run_by: [PRD-001]  # run by the Gateway on every call
 provenance:
   origin: ai-generated
   review_state: ai-raw

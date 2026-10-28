@@ -11,19 +11,19 @@ owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-014]
 realised_by_services: [chat-agent]
-products:
+technologies:
   - { name: "Amazon Bedrock AgentCore Runtime", vendor: "AWS", licensing: "pay per use" }
   - { name: "Strands Agents", vendor: "AWS (open source)", licensing: "Apache-2.0" }
   - { name: "Amazon Bedrock models (Claude)", vendor: "AWS and Anthropic", licensing: "per token" }
   - { name: "Amazon Bedrock Guardrails", vendor: "AWS", licensing: "per text unit" }
 product_mapping:
-  - { abb_component: "Admission and prompt", sbb_product: "The Runtime's Cognito JWT authoriser; the agent rendition read from the lake" }
-  - { abb_component: "Tool loop", sbb_product: "Strands with BedrockModel, hooks for the valves and the recorder, structured output for claims" }
-  - { abb_component: "Re-read and repair", sbb_product: "grounding.py in the image, re-reading as the caller through the gateway" }
-  - { abb_component: "Guardrail", sbb_product: "ApplyGuardrail with contextual grounding on the question and each claim" }
-  - { abb_component: "Valves", sbb_product: "valves.py hooks on tool calls, model calls, output tokens and repairs" }
-  - { abb_component: "Recorder and pricing", sbb_product: "Every step with duration, usage and price; the ledger client" }
-  - { abb_component: "Streaming", sbb_product: "Server-sent events of steps then the result" }
+  - { abb_component: "Admission and prompt", technology: "The Runtime's Cognito JWT authoriser; the agent rendition read from the lake" }
+  - { abb_component: "Tool loop", technology: "Strands with BedrockModel, hooks for the valves and the recorder, structured output for claims" }
+  - { abb_component: "Re-read and repair", technology: "grounding.py in the image, re-reading as the caller through the gateway" }
+  - { abb_component: "Guardrail", technology: "ApplyGuardrail with contextual grounding on the question and each claim" }
+  - { abb_component: "Valves", technology: "valves.py hooks on tool calls, model calls, output tokens and repairs" }
+  - { abb_component: "Recorder and pricing", technology: "Every step with duration, usage and price; the ledger client" }
+  - { abb_component: "Streaming", technology: "Server-sent events of steps then the result" }
 cloud_provider: aws
 deployment_model: managed
 provenance:

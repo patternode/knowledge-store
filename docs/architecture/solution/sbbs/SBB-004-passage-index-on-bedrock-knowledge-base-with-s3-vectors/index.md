@@ -11,14 +11,14 @@ owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-013]
 realised_by_services: []
-products:
+technologies:
   - { name: "Amazon Bedrock Knowledge Bases", vendor: "AWS", licensing: "pay per use" }
   - { name: "Amazon S3 Vectors", vendor: "AWS", licensing: "storage and queries" }
   - { name: "Amazon Titan Text Embeddings v2", vendor: "AWS", licensing: "per token" }
 product_mapping:
-  - { abb_component: "Index", sbb_product: "A vector bucket with a passages index, 1,024 dimensions, cosine; chunking off so one passage is one vector" }
-  - { abb_component: "Data source", sbb_product: "The lake's kb/passages prefix with metadata sidecars; an ingestion job per change" }
-  - { abb_component: "Retrieve", sbb_product: "The passage tools Lambda calls Retrieve with collection and scope filters" }
+  - { abb_component: "Index", technology: "A vector bucket with a passages index, 1,024 dimensions, cosine; chunking off so one passage is one vector" }
+  - { abb_component: "Data source", technology: "The lake's kb/passages prefix with metadata sidecars; an ingestion job per change" }
+  - { abb_component: "Retrieve", technology: "The passage tools Lambda calls Retrieve with collection and scope filters" }
 cloud_provider: aws
 deployment_model: managed
 provenance:

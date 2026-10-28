@@ -18,7 +18,7 @@ repo: { url: "https://github.com/patternode/knowledge-store", path: "." }
 module_path: "src/knowledge_store/apps/evaluate.py"
 packages: ["knowledge_store.apps.evaluate", "knowledge_store.evaluation", "knowledge_store.answering (answer_locally)"]
 deployed_to: [DN-014]
-run_by: "evaluators"
+run_by: [PRD-001]  # used by evaluators
 provenance:
   origin: ai-generated
   review_state: ai-raw

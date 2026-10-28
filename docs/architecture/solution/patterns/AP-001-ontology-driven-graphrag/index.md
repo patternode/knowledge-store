@@ -11,7 +11,7 @@ last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 author: "Patternode (Dermot O'Brien)"
 realises: [CAP-003, CAP-004, CAP-005, CAP-006, CAP-007, CAP-008, CAP-009]
-serves: [UC-001, UC-002, UC-003, UC-004, UC-005, UC-006, UC-007, UC-008]
+serves: [UC-001, UC-002, UC-003, UC-004, UC-005, UC-006, UC-007, UC-008, UC-009]
 implemented_by: [RA-001]
 model:
   diagram: components.drawio

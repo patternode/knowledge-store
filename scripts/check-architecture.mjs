@@ -8,9 +8,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const skill = path.join(root, ".agents", "skills", "aaa-continuum", "bin", "continuum.mjs");
+const skill = path.join(root, ".agents", "skills", "architecture", "bin", "continuum.mjs");
 if (!existsSync(skill)) {
-  console.error("architecture check skipped: the aaa-continuum skill is not installed (run `npm run skills` to install the architecture skills)");
+  console.error("architecture check skipped: the architecture skill is not installed (run `npm run skills` to install the architecture skills)");
   process.exit(0);
 }
 const r = spawnSync(process.execPath, [skill, "check", "--strict", ...process.argv.slice(2)], { cwd: root, stdio: "inherit" });

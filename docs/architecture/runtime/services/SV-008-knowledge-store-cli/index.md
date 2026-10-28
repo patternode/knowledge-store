@@ -18,7 +18,7 @@ repo: { url: "https://github.com/patternode/knowledge-store", path: "." }
 module_path: "src/knowledge_store/apps/cli.py"
 packages: ["knowledge_store.apps.cli"]
 deployed_to: [DN-004, DN-014]
-run_by: "operators and curators"
+run_by: [PRD-001]  # used by operators and curators
 provenance:
   origin: ai-generated
   review_state: ai-raw

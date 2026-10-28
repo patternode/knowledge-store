@@ -11,13 +11,13 @@ owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-018]
 realised_by_services: [chat-page]
-products:
+technologies:
   - { name: "Amazon CloudFront", vendor: "AWS", licensing: "pay per request" }
   - { name: "Amazon S3 (the site bucket)", vendor: "AWS", licensing: "pay per use" }
 product_mapping:
-  - { abb_component: "Chat, workbench panel, ontology page, common", sbb_product: "index.html, app.js, common.js, ontology.html, ontology.js, styles.css and config.json as objects in the private site bucket (ST-012)" }
-  - { abb_component: "Sign-in and embed", sbb_product: "A public Cognito client with PKCE, or the host's grant with frame-ancestors naming the host (CT-016)" }
-  - { abb_component: "Edge", sbb_product: "A distribution, PriceClass_100, origin access control, the origin secret header to the API, managed security headers, an optional custom domain and web ACL (DN-009)" }
+  - { abb_component: "Chat, workbench panel, ontology page, common", technology: "index.html, app.js, common.js, ontology.html, ontology.js, styles.css and config.json as objects in the private site bucket (ST-012)" }
+  - { abb_component: "Sign-in and embed", technology: "A public Cognito client with PKCE, or the host's grant with frame-ancestors naming the host (CT-016)" }
+  - { abb_component: "Edge", technology: "A distribution, PriceClass_100, origin access control, the origin secret header to the API, managed security headers, an optional custom domain and web ACL (DN-009)" }
 cloud_provider: aws
 deployment_model: managed
 provenance:

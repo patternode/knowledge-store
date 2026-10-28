@@ -11,14 +11,14 @@ owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-021]
 realised_by_services: [evaluation-runner]
-products:
+technologies:
   - { name: "Python 3.12", vendor: "PSF", licensing: "PSF licence" }
   - { name: "DeepEval 4.3.1", vendor: "Confident AI", licensing: "Apache-2.0" }
 product_mapping:
-  - { abb_component: "Set loader and scorer", sbb_product: "evaluation/domain/score.py and run.py in the package" }
-  - { abb_component: "Targets", sbb_product: "In process against a folder lake, or POST /api/chat with a person's token" }
-  - { abb_component: "Grader", sbb_product: "DeepEval G-Eval and faithfulness through the platform's model client (evaluation/adapters/deepeval_grader.py)" }
-  - { abb_component: "Run record", sbb_product: "A DeepEval test run (evaluation/adapters/deepeval_runner.py)" }
+  - { abb_component: "Set loader and scorer", technology: "evaluation/domain/score.py and run.py in the package" }
+  - { abb_component: "Targets", technology: "In process against a folder lake, or POST /api/chat with a person's token" }
+  - { abb_component: "Grader", technology: "DeepEval G-Eval and faithfulness through the platform's model client (evaluation/adapters/deepeval_grader.py)" }
+  - { abb_component: "Run record", technology: "A DeepEval test run (evaluation/adapters/deepeval_runner.py)" }
 cloud_provider: none
 deployment_model: self-hosted
 provenance:

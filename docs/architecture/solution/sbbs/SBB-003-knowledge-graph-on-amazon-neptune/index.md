@@ -11,12 +11,12 @@ owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-011]
 realised_by_services: []
-products:
+technologies:
   - { name: "Amazon Neptune Database", vendor: "AWS", licensing: "instance hours, or Serverless NCUs" }
 product_mapping:
-  - { abb_component: "Named graphs", sbb_product: "One per document per version plus the T-Box, loaded by DROP and INSERT per graph with per-graph hashes" }
-  - { abb_component: "Query", sbb_product: "SPARQL over HTTPS with SigV4; fixed queries from the ontology" }
-  - { abb_component: "Placement", sbb_product: "Private subnets, IAM authentication, port 8182 open to the graph tools and the pipeline only" }
+  - { abb_component: "Named graphs", technology: "One per document per version plus the T-Box, loaded by DROP and INSERT per graph with per-graph hashes" }
+  - { abb_component: "Query", technology: "SPARQL over HTTPS with SigV4; fixed queries from the ontology" }
+  - { abb_component: "Placement", technology: "Private subnets, IAM authentication, port 8182 open to the graph tools and the pipeline only" }
 cloud_provider: aws
 deployment_model: managed
 provenance:

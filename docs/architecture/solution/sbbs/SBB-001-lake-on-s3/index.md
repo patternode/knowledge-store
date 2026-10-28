@@ -11,12 +11,12 @@ owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-002]
 realised_by_services: []
-products:
+technologies:
   - { name: "Amazon S3", vendor: "AWS", licensing: "pay per use" }
 product_mapping:
-  - { abb_component: "Store port", sbb_product: "S3Store over boto3; LocalStore for a folder" }
-  - { abb_component: "Layout", sbb_product: "One bucket <name>-lake-<account>, collections under collections/<id>/, landing, kb, locks, config and usage at the root" }
-  - { abb_component: "Conditional write", sbb_product: "S3 IfNoneMatch for the sweep lock" }
+  - { abb_component: "Store port", technology: "S3Store over boto3; LocalStore for a folder" }
+  - { abb_component: "Layout", technology: "One bucket <name>-lake-<account>, collections under collections/<id>/, landing, kb, locks, config and usage at the root" }
+  - { abb_component: "Conditional write", technology: "S3 IfNoneMatch for the sweep lock" }
 cloud_provider: aws
 deployment_model: managed
 provenance:

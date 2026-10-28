@@ -11,18 +11,18 @@ owner: "Patternode (Dermot O'Brien)"
 lifecycle_state: baseline
 realises: [ABB-024]
 realised_by_services: [pipeline]
-products:
+technologies:
   - { name: "Amazon ECS on AWS Fargate", vendor: "AWS", licensing: "pay per task" }
   - { name: "Amazon EventBridge, EventBridge Pipes and Scheduler", vendor: "AWS", licensing: "pay per event" }
   - { name: "Amazon SQS", vendor: "AWS", licensing: "pay per request" }
   - { name: "rdflib, pySHACL, pypdf, PyYAML, boto3", vendor: "open source", licensing: "permissive" }
   - { name: "Claude through the model client", vendor: "AWS Bedrock or Anthropic", licensing: "per token" }
 product_mapping:
-  - { abb_component: "Stages in order", sbb_product: "The knowledge_store package in the image: adapters, refine, ontology discovery, review and versions, extract, structured binding, project, graph loaders, the passage sync, the ledger client" }
-  - { abb_component: "Lock and rounds", sbb_product: "locks/pipeline.json by conditional write; rounds until nothing changes" }
-  - { abb_component: "Triggers", sbb_product: "An object-created rule on landing/ and ontology/active.json to a queue with a dead-letter queue, a Pipe to RunTask; a rate(6 hours) schedule as the safety net (DN-016)" }
-  - { abb_component: "Compute", sbb_product: "A Fargate task, 1 vCPU, 4 GB, 30 GB ephemeral, arm64 or x86 as built, in the private subnets (DN-004)" }
-  - { abb_component: "Model", sbb_product: "Bedrock in the region with grants scoped to the configured ids, or the Anthropic API with its key from the secret store; prices from the ledger's table" }
+  - { abb_component: "Stages in order", technology: "The knowledge_store package in the image: adapters, refine, ontology discovery, review and versions, extract, structured binding, project, graph loaders, the passage sync, the ledger client" }
+  - { abb_component: "Lock and rounds", technology: "locks/pipeline.json by conditional write; rounds until nothing changes" }
+  - { abb_component: "Triggers", technology: "An object-created rule on landing/ and ontology/active.json to a queue with a dead-letter queue, a Pipe to RunTask; a rate(6 hours) schedule as the safety net (DN-016)" }
+  - { abb_component: "Compute", technology: "A Fargate task, 1 vCPU, 4 GB, 30 GB ephemeral, arm64 or x86 as built, in the private subnets (DN-004)" }
+  - { abb_component: "Model", technology: "Bedrock in the region with grants scoped to the configured ids, or the Anthropic API with its key from the secret store; prices from the ledger's table" }
 cloud_provider: aws
 deployment_model: managed
 provenance:

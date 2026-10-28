@@ -18,7 +18,7 @@ repo: { url: "https://github.com/patternode/knowledge-store", path: "." }
 module_path: "src/knowledge_store/apps/portal_api.py"
 packages: ["knowledge_store.apps.portal_api", "knowledge_store.access", "knowledge_store.answering", "knowledge_store.knowledge_graph"]
 deployed_to: [DN-007, DN-008]
-run_by: "PRD-001"
+run_by: [PRD-001]
 provenance:
   origin: ai-generated
   review_state: ai-raw

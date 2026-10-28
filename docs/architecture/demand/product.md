@@ -9,6 +9,7 @@ last_modified: 2026-10-16
 owner: "Patternode (Dermot O'Brien)"
 platform: PL-001
 team: "Patternode"
+runs: [pipeline, chat-agent, portal-api, tools-graph, tools-passages, agent-interceptor, chat-page, knowledge-store-cli, evaluation-runner]
 ---
 
 # PRD-001 Knowledge Store
