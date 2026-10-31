@@ -10,7 +10,7 @@ If the agent image changed, a deployment that moves its pin leaves `agent.runtim
 one apply, then sets it `true` once the image is in ECR (`knowledge-store-agent`). The steps are
 in the [deployment guide](docs/deploy/aws/README.md).
 
-<!-- playbook:begin 1.0.0: generated from patternode-architecture governance/playbook/agents-block.md by playbook.mjs sync. Do not edit here. -->
+<!-- playbook:begin 1.0.1: generated from patternode-architecture governance/playbook/agents-block.md by playbook.mjs sync. Do not edit here. -->
 
 ## The Patternode playbook
 
@@ -26,7 +26,7 @@ This repository's facts (its trunk, who merges, who releases, where its procedur
 
 Even before you have read it:
 
-- Trunk-based development, never Git Flow. No release, hotfix or long-lived feature branches. Branch from the remote trunk named in `.agents/playbook.yaml`. In patternode-platform the trunk is called `develop` for history only, and `deploy` is a production pointer, never a branch to work on.
+- Trunk-based development, never Git Flow. No release, hotfix or long-lived feature branches. Branch from the remote trunk named in `.agents/playbook.yaml`. A branch called `develop`, `deploy` or `master` does not mean Git Flow: the profile says which branch is the trunk, and a production pointer or mirror is never a branch to work on.
 - One change, one short-lived branch, one pull request into the trunk, citing its reason (`IMP-NNN`, an issue, a thread, an ADR, or `No reference:` and why). Push before your session ends.
 - Merge, deploy, release or apply infrastructure only if `.agents/playbook.yaml` names your role. Otherwise send the ready note to the role that does, and stop.
 - Units meet only through contracts. A contract change is its own pull request in the provider's repository, before any code that uses it, and never breaks a consumer.
