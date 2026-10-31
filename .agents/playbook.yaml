@@ -1,0 +1,14 @@
+# This repository's facts for the Patternode playbook
+# (patternode-architecture governance/playbook/references/repository-profile.md).
+# Facts only: the rules are the playbook's. No master session is named for this repository yet.
+repository: knowledge-store
+playbook: "1.0"
+trunk: main
+production_pointer: none
+merge_role: Dermot O'Brien
+release_role: "Dermot O'Brien, by merging the Release Please pull request"
+merge_publishes: the documentation site (deploy-pages.yml on every push to main)
+owner: Dermot O'Brien
+unit_tags: v<version>, created by the Release Please workflow only
+procedures: CONTRIBUTING.md (Releases), docs/deploy/
+checks: ci.yml, pr-check.yml
