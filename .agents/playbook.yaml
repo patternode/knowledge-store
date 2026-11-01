@@ -2,7 +2,7 @@
 # (patternode-architecture governance/playbook/references/repository-profile.md).
 # Facts only: the rules are the playbook's. No master session is named for this repository yet.
 repository: knowledge-store
-playbook: "1.0"
+playbook: "1.1"
 trunk: main
 production_pointer: none
 merge_role: Dermot O'Brien

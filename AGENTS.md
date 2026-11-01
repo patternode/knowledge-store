@@ -10,7 +10,7 @@ If the agent image changed, a deployment that moves its pin leaves `agent.runtim
 one apply, then sets it `true` once the image is in ECR (`knowledge-store-agent`). The steps are
 in the [deployment guide](docs/deploy/aws/README.md).
 
-<!-- playbook:begin 1.0.1: generated from patternode-architecture governance/playbook/agents-block.md by playbook.mjs sync. Do not edit here. -->
+<!-- playbook:begin 1.1.0 sha256:44aae636393c49d7: generated from patternode-architecture governance/playbook/agents-block.md by playbook.mjs sync. Do not edit here. -->
 
 ## The Patternode playbook
 
