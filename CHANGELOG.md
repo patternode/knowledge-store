@@ -4,6 +4,26 @@ Notable changes are recorded here. The format follows [Keep a Changelog](https:/
 
 From 0.2.0 on, releases are made by Release Please from the pull requests merged to `main`: a pull request's title is its line here, and the release pull request adds the next section, bumps the version and, when merged, tags `vX.Y.Z` and publishes the GitHub Release. The rules are in [CONTRIBUTING.md](CONTRIBUTING.md#releases). Do not add lines here by hand.
 
+## [0.9.0](https://github.com/patternode/knowledge-store/compare/v0.8.0...v0.9.0) (2026-11-01)
+
+
+### Added
+
+* **knowledge_graph:** open facts and the walk, the passages connected to a question across documents ([#122](https://github.com/patternode/knowledge-store/issues/122)) ([ced2f9f](https://github.com/patternode/knowledge-store/commit/ced2f9fcba70ba7adde6174c4c4fc11d29fe3c40))
+
+
+### Fixed
+
+* **answering:** let the searches run out before the model calls, so a question ends in an answer ([#119](https://github.com/patternode/knowledge-store/issues/119)) ([94c1551](https://github.com/patternode/knowledge-store/commit/94c1551bbe2bbdeda32cc3799fec45838bba5a8e))
+
+
+### Documentation
+
+* **agents:** follow the Patternode playbook ([#130](https://github.com/patternode/knowledge-store/issues/130)) ([fa1a7b6](https://github.com/patternode/knowledge-store/commit/fa1a7b6293ef405600d39e59122f92b2e62c45f0))
+* **agents:** the Patternode playbook 1.0.1 block ([#131](https://github.com/patternode/knowledge-store/issues/131)) ([f4b24e9](https://github.com/patternode/knowledge-store/commit/f4b24e954d7c9b327b58891a0c8537cfa20f10fe))
+* **examples:** the Onyx baseline and the first comparison with the passage arm ([#118](https://github.com/patternode/knowledge-store/issues/118)) ([9f84274](https://github.com/patternode/knowledge-store/commit/9f84274d907ba6b7b9f5a3d40abf120bdf683478))
+* **examples:** the Onyx baseline on all 120 questions and the stop-rule re-run ([#121](https://github.com/patternode/knowledge-store/issues/121)) ([b60d865](https://github.com/patternode/knowledge-store/commit/b60d865347d49642e394475384cbec88904cb736))
+
 ## [0.8.0](https://github.com/patternode/knowledge-store/compare/v0.7.0...v0.8.0) (2026-10-25)
 
 
