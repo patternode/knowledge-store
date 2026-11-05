@@ -10,13 +10,13 @@ If the agent image changed, a deployment that moves its pin leaves `agent.runtim
 one apply, then sets it `true` once the image is in ECR (`knowledge-store-agent`). The steps are
 in the [deployment guide](docs/deploy/aws/README.md).
 
-<!-- playbook:begin 1.1.0 sha256:44aae636393c49d7: generated from patternode-architecture governance/playbook/agents-block.md by playbook.mjs sync. Do not edit here. -->
+<!-- playbook:begin 1.2.0 sha256:583cfe5af12fd011: generated from patternode-architecture governance/playbook/agents-block.md by playbook.mjs sync. Do not edit here. -->
 
 ## The Patternode playbook
 
-One playbook governs how change moves in every Patternode repository: improvements, branches, commits, pull requests, merging, contracts, versions, releases, deploys, and who may do what. It wins over every other page on those topics, this file included. A repository's own documents add facts and procedures only.
+One playbook governs how change moves in every Patternode repository: improvements, branches, commits, pull requests, merging, contracts, versions, releases, deploys, and who may do what. It also holds Patternode's architecture principles (modularity, bounded contexts, contracts, independent deployment, data kept once), in its `references/principles.md`. It wins over every other page on those topics, this file included. A repository's own documents add facts and procedures only.
 
-Read it before you branch, open or merge a pull request, change a contract, release or deploy. It is the same file in three places; use the first you can reach:
+Read it before you branch, open or merge a pull request, change a contract, release or deploy, and its principles before you cut, split or join a context or service. When someone mentions the playbook or the principles, this is what they mean. It is the same file in three places; use the first you can reach:
 
 1. `.agents/skills/patternode-playbook/SKILL.md`, the installed copy.
 2. `../patternode-architecture/governance/playbook/SKILL.md`, a sibling clone.
