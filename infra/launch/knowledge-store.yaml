@@ -15,7 +15,7 @@ Metadata:
       - Label: { default: "Knowledge graph and chat agent" }
         Parameters: [EnableKnowledgeGraph, EnableKnowledgeBase, EnableAgentRuntime]
       - Label: { default: "Deployment" }
-        Parameters: [DeploymentName, DeleteDataOnStackDelete, SourceUrl, SourceSha256, TerraformVersion]
+        Parameters: [DeploymentName, DeleteDataOnStackDelete, SourceUrl, SourceSha256, AllowUnverifiedSource, TerraformVersion]
     ParameterLabels:
       AdminEmail: { default: "Admin email (receives the portal's temporary password)" }
       CollectionsJson: { default: "Collections (JSON)" }
@@ -81,8 +81,16 @@ Parameters:
     Default: ""
     AllowedPattern: "^([0-9a-f]{64})?$"
     Description: >-
-      sha256 of the release zip; the build refuses a zip that does not match. Optional, but
-      recommended: without it the build runs whatever the URL serves.
+      sha256 of the release zip; the build refuses a zip that does not match, and refuses to run
+      without one unless AllowUnverifiedSource is true. The template attached to each GitHub
+      release has this filled in for that release.
+  AllowUnverifiedSource:
+    Type: String
+    Default: "false"
+    AllowedValues: ["true", "false"]
+    Description: >-
+      true lets the build run a zip with no SourceSha256 to check it against. The build runs with
+      administrator rights, so leave this false unless you built the zip yourself.
   TerraformVersion:
     Type: String
     Default: 1.14.3
@@ -186,7 +194,14 @@ Resources:
                     https://*) curl -fsSL --proto '=https' --proto-redir '=https' -o source.zip "$SOURCE_URL" ;;
                     *) echo "SOURCE_URL must be an https:// or s3:// URL" >&2; exit 1 ;;
                   esac
-                - if [ -n "${SOURCE_SHA256:-}" ]; then echo "$SOURCE_SHA256  source.zip" | sha256sum -c -; fi
+                - |
+                  if [ -n "${SOURCE_SHA256:-}" ]; then
+                    echo "$SOURCE_SHA256  source.zip" | sha256sum -c -
+                  elif [ "${ALLOW_UNVERIFIED:-false}" != "true" ]; then
+                    echo "SourceSha256 is empty: refusing to run an unverified zip with administrator rights." >&2
+                    echo "Use the template attached to a GitHub release, which names its zip and hash, or set AllowUnverifiedSource." >&2
+                    exit 1
+                  fi
                 - rm -rf src && mkdir src && unzip -q source.zip -d src
                 - STACK_DIR=$(dirname "$(find src -path '*/infra/stack/versions.tf' | head -1)") && test -n "$STACK_DIR" && echo "$STACK_DIR" > /tmp/stackdir
                 - cd "$STACK_DIR"
@@ -252,11 +267,12 @@ Resources:
 
           PASS = ["AdminEmail", "DeploymentName", "CollectionsJson", "OntologyMode", "ModelId", "EnableKnowledgeGraph",
                   "EnableKnowledgeBase", "EnableAgentRuntime", "DeleteDataOnStackDelete", "SourceUrl",
-                  "SourceSha256", "TerraformVersion"]
+                  "SourceSha256", "AllowUnverifiedSource", "TerraformVersion"]
           ENV = {"AdminEmail": "ADMIN_EMAIL", "DeploymentName": "DEPLOYMENT_NAME", "CollectionsJson": "COLLECTIONS_JSON",
                  "OntologyMode": "ONTOLOGY_MODE", "ModelId": "MODEL_ID", "EnableKnowledgeGraph": "KNOWLEDGE_GRAPH",
                  "EnableAgentRuntime": "AGENT_RUNTIME", "EnableKnowledgeBase": "KNOWLEDGE_BASE",
                  "DeleteDataOnStackDelete": "DELETE_DATA", "SourceUrl": "SOURCE_URL", "SourceSha256": "SOURCE_SHA256",
+                 "AllowUnverifiedSource": "ALLOW_UNVERIFIED",
                  "TerraformVersion": "TF_VERSION"}
 
           def respond(event, status, reason):
@@ -296,6 +312,7 @@ Resources:
       DeleteDataOnStackDelete: !Ref DeleteDataOnStackDelete
       SourceUrl: !Ref SourceUrl
       SourceSha256: !Ref SourceSha256
+      AllowUnverifiedSource: !Ref AllowUnverifiedSource
       TerraformVersion: !Ref TerraformVersion
 
 Outputs:

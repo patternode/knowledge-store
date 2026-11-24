@@ -28,6 +28,12 @@ Terraform in a CodeBuild project, `<DeploymentName>-deploy`, whose service role 
 (`aws:SourceAccount` and `aws:SourceArn`). A Lambda function (`Starter`) starts the project for
 each CloudFormation request.
 
+The build runs only a zip it can verify. Each GitHub release carries a zip built from its tag and a
+copy of the launch template whose `SourceUrl` and `SourceSha256` name that zip and its sha256, so a
+stack launched from that copy runs exactly that release, whatever happens to the tag later. The
+template in the repository has no hash and refuses to run unless `AllowUnverifiedSource` is set,
+which is for a zip you built yourself.
+
 **Treat the deploy project and the Starter function as administrator-equivalent.** CodeBuild's
 `StartBuild` accepts a different buildspec, source and environment for one build, and Starter
 passes on whatever source URL it is invoked with, so anyone who may start or change either one can

@@ -44,8 +44,12 @@ All three deploy the same Terraform.
 
 Nothing to install locally.
 
-1. In the CloudFormation console for your region, choose Create stack, With new resources, and
-   upload [`infra/launch/knowledge-store.yaml`](infra/launch/knowledge-store.yaml).
+1. Download `knowledge-store.yaml` from the latest release's assets on the
+   [Releases page](https://github.com/patternode/knowledge-store/releases). That copy names the
+   release's zip and its sha256, so the build runs exactly that release. In the CloudFormation
+   console for your region, choose Create stack, With new resources, and upload it. The copy in
+   the repository, [`infra/launch/knowledge-store.yaml`](infra/launch/knowledge-store.yaml), has no
+   hash and refuses to run unless you set AllowUnverifiedSource.
 2. Enter your email as AdminEmail. Leave the rest for a first install. (ModelId is the inference
    profile id from step 2 above.)
 3. Acknowledge that the stack creates IAM resources, and create it.

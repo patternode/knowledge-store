@@ -62,9 +62,31 @@ jobs:
           echo "created=true" >> "$GITHUB_OUTPUT"
 
       - name: Release Please
+        id: rp
         if: steps.baseline.outputs.created != 'true'
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         with:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      # The launch stack runs the release with administrator rights, so each release carries a zip
+      # built from its tag and a copy of the launch template that names that zip and its sha256.
+      # Adopters launch from that copy; the one in the repository refuses to run without a hash.
+      - name: Attach the release zip and a launch template that verifies it
+        if: steps.baseline.outputs.created == 'true' || steps.rp.outputs.release_created == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version=$(python3 -c 'import json; print(json.load(open(".release-please-manifest.json"))["."])')
+          tag="v$version"
+          git fetch --tags --force origin
+          zip="knowledge-store-$tag.zip"
+          git archive --format=zip --prefix="knowledge-store-$version/" -o "$RUNNER_TEMP/$zip" "$tag"
+          sha=$(sha256sum "$RUNNER_TEMP/$zip" | cut -d' ' -f1)
+          url="https://github.com/${{ github.repository }}/releases/download/$tag/$zip"
+          git show "$tag:infra/launch/knowledge-store.yaml" > "$RUNNER_TEMP/knowledge-store.yaml"
+          python3 scripts/release_template.py "$RUNNER_TEMP/knowledge-store.yaml" "$url" "$sha"
+          gh release upload "$tag" "$RUNNER_TEMP/$zip" "$RUNNER_TEMP/knowledge-store.yaml" --clobber
+          echo "attached $zip (sha256 $sha) and its launch template to $tag"

@@ -102,3 +102,21 @@ def test_stack_root_passes_every_module_input():
     for root_dir in ("infra/stack", "examples/deployment"):
         outputs = set(re.findall(r'^output "([a-z_]+)"', (ROOT / root_dir / "outputs.tf").read_text(), re.M))
         assert outputs == module_outputs, root_dir
+
+
+def test_the_build_refuses_an_unverified_zip_unless_allowed():
+    template = (LAUNCH / "knowledge-store.yaml").read_text()
+    assert 'elif [ "${ALLOW_UNVERIFIED:-false}" != "true" ]' in template and "refusing to run an unverified zip" in template
+    assert re.search(r'AllowUnverifiedSource:\n    Type: String\n    Default: "false"', template)
+
+
+def test_a_release_template_names_its_zip_and_hash():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("release_template", ROOT / "scripts/release_template.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    template = (LAUNCH / "knowledge-store.yaml").read_text()
+    out = mod.fill(template, "https://example.org/ks.zip", "a" * 64)
+    assert "Default: https://example.org/ks.zip" in out and f'Default: "{"a" * 64}"' in out
+    with pytest.raises(ValueError):
+        mod.fill(template, "https://example.org/ks.zip", "not-a-hash")
