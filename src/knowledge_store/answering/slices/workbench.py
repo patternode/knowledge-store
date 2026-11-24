@@ -101,7 +101,9 @@ def retrieved_ids(tool: str, out: dict) -> list[dict]:
             if isinstance(item, dict):
                 ref = next((item[f] for f in ID_FIELDS if item.get(f)), None)
                 if ref:
-                    found.append({"tool": tool, "kind": key, "rank": len(found) + 1, "id": str(ref)})
+                    doc = item.get("doc") or item.get("name") or item.get("source")
+                    found.append({"tool": tool, "kind": key, "rank": len(found) + 1, "id": str(ref),
+                                  **({"doc": str(doc)} if doc else {})})
     if not found and out.get("id"):
         found.append({"tool": tool, "kind": "item", "rank": 1, "id": str(out["id"])})
     return found

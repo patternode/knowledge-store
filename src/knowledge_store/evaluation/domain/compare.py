@@ -17,6 +17,7 @@ class Rules:
     allow_regressions: int = 0              # questions right in the baseline and wrong now
     max_false_answer_rise: int = 0
     max_unsupported_rise: int = 0
+    max_recall_drop: float = 0.0            # absolute, on mean recall at 10, where both runs measured it
 
 
 @dataclass
@@ -47,6 +48,8 @@ def compare(run: dict, baseline: dict, rules: Rules | None = None) -> Gate:
               "false_abstentions": (a.get("false_abstentions") or 0) - (b.get("false_abstentions") or 0)}
     if a.get("unsupported_claims") is not None and b.get("unsupported_claims") is not None:
         deltas["unsupported_claims"] = a["unsupported_claims"] - b["unsupported_claims"]
+    if a.get("recall_at_10") is not None and b.get("recall_at_10") is not None:
+        deltas["recall_at_10"] = round(a["recall_at_10"] - b["recall_at_10"], 3)
     failures = []
     if len(regressions) > rules.allow_regressions:
         failures.append(f"{len(regressions)} question(s) right in the baseline are wrong now: {', '.join(regressions)}")
@@ -54,6 +57,8 @@ def compare(run: dict, baseline: dict, rules: Rules | None = None) -> Gate:
         failures.append(f"accuracy fell by {-deltas['accuracy']:.3f} on the {len(shared)} shared questions")
     if deltas["false_answers"] > rules.max_false_answer_rise:
         failures.append(f"false answers rose by {deltas['false_answers']}")
+    if -deltas.get("recall_at_10", 0.0) > rules.max_recall_drop + 1e-9:
+        failures.append(f"retrieval recall at 10 fell by {-deltas['recall_at_10']:.3f}")
     if deltas.get("unsupported_claims", 0) > rules.max_unsupported_rise:
         failures.append(f"unsupported claims rose by {deltas['unsupported_claims']}")
     missing = sorted(set(then) - set(now))

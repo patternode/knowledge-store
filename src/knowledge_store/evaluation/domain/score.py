@@ -40,6 +40,7 @@ import re
 from pathlib import Path
 
 from knowledge_store.evaluation.domain import numeric
+from knowledge_store.evaluation.domain import retrieval
 from knowledge_store.evaluation.domain.sets import KINDS, EvalSet, Question, parse  # noqa: F401  (re-exported)
 
 _DASHES = re.compile("[‐-―−]")
@@ -136,6 +137,11 @@ def score(q: Question, result: dict, verdicts: list[dict] | None = None) -> dict
             "declined": did_decline, "grounded": grounded, "source_hit": source_hit, "citation_precision": precision,
             "citation_recall": recall, "claims": claims, "unsupported": unsupported, "supported_share": supported_share,
             "error": result.get("error"), "judged": q.judged}
+    if "retrieved" in result and (q.sources or q.passages or q.relevance):
+        cited_units = cited | {x.get("passage_id") for c in result.get("claims") or [] for x in c.get("citations") or []
+                               if x.get("passage_id")}
+        base.update(retrieval.measures(q.passages or q.sources, q.relevance, result.get("retrieved") or [],
+                                       {c for c in cited_units if c}, by_passage=bool(q.passages)))
     if not q.answerable:
         # A decline that goes on to claim what the verifier cannot find is a guess, not a decline.
         # Without a verifier, a decline that still shows claims is flagged for review, not failed:
@@ -196,6 +202,9 @@ def families(rows: list[dict]) -> dict:
             "split": sorted(k for k, v in multi.items() if len(set(v)) > 1)}
 
 
+RETRIEVAL_MEANS = ("recall_at_5", "recall_at_10", "precision_at_5", "precision_at_10", "reciprocal_rank", "ndcg_at_10")
+
+
 def summarise(rows: list[dict]) -> dict:
     def block(sel: list[dict]) -> dict:
         n = len(sel)
@@ -214,7 +223,10 @@ def summarise(rows: list[dict]) -> dict:
                 "claims_verified": sum(r.get("claims") or 0 for r in verified) if verified else None,
                 "unsupported_claims": sum(r["unsupported"] for r in verified) if verified else None,
                 "supported_share": _mean([r.get("supported_share") for r in verified]) if verified else None,
-                "errors": sum(1 for r in sel if r.get("error"))}
+                "errors": sum(1 for r in sel if r.get("error")),
+                **{m: _mean([r.get(m) for r in sel]) for m in RETRIEVAL_MEANS if any(m in r for r in sel)},
+                **({"retrieved_not_cited": sum(len(r.get("retrieved_not_cited") or []) for r in sel)}
+                   if any("retrieved_not_cited" in r for r in sel) else {})}
     out = {"all": block(rows)}
     judged = [r for r in rows if r.get("judged")]
     if judged:

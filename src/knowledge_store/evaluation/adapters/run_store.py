@@ -21,6 +21,16 @@ class DirRunStore:
     def _baseline(self, set_name: str) -> Path:
         return self.root / "baselines" / f"{set_name}.json"
 
+    def runs(self) -> list[dict]:
+        """Every run kept here, for the trend page."""
+        out = []
+        for f in sorted(self.root.glob("*/results.json")):
+            try:
+                out.append(json.loads(f.read_text(encoding="utf-8")))
+            except ValueError:
+                continue
+        return out
+
     def baseline(self, set_name: str) -> dict | None:
         p = self._baseline(set_name)
         return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None

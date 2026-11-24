@@ -18,6 +18,12 @@ def report(out: dict, gate=None) -> str:
              f"| Citation precision, recall | {s.get('citation_precision')}, {s.get('citation_recall')} |",
              f"| False answers: stated a fact for an unanswerable question | {s['false_answers']} |",
              f"| False abstentions: declined an answerable question | {s['false_abstentions']} |"]
+    if s.get("recall_at_10") is not None:
+        lines += [f"| Retrieval recall at 5, at 10 | {s.get('recall_at_5')}, {s.get('recall_at_10')} |",
+                  f"| Retrieval precision at 5, reciprocal rank | {s.get('precision_at_5')}, {s.get('reciprocal_rank')} |",
+                  f"| Expected sources retrieved but not cited | {s.get('retrieved_not_cited')} |"]
+        if s.get("ndcg_at_10") is not None:
+            lines.append(f"| nDCG at 10 (graded relevance) | {s['ndcg_at_10']} |")
     if s.get("unsupported_claims") is not None:
         lines.append(f"| Unsupported claims: rejected by the claim verifier | {s['unsupported_claims']} of {s['claims_verified']} |")
     fam = out["summary"].get("families")

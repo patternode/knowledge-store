@@ -15,6 +15,8 @@ The format, as YAML:
       figures: [{value: 2.2e9}]          numbers the answer has to state, each within the rounding the
                                          answer states it at, or within `tolerance` (relative) if given
       sources: [outer-planets/juno.json] documents (file names) the answer should cite; any one counts
+      passages: [p-7f3a]                 passage ids retrieval should find, where documents are too coarse
+      relevance: {p-7f3a: 2, p-19c0: 1}  graded relevance of passages or documents (0, 1 or 2), for nDCG
       answerable: true                   false: the sources do not answer it, and the agent must say so
       private: false                     ask as a caller who may read private sources
       family: juno-rocket                questions that ask the same thing in other words share a family
@@ -43,6 +45,8 @@ class Question:
     first: list[str] = field(default_factory=list)
     figures: list[dict] = field(default_factory=list)
     sources: list[str] = field(default_factory=list)
+    passages: list[str] = field(default_factory=list)
+    relevance: dict = field(default_factory=dict)
     answerable: bool = True
     private: bool = False
     family: str = ""
@@ -82,6 +86,9 @@ def parse(data: dict, name: str = "") -> EvalSet:
             raise ValueError(f"{q.id}: an answerable question needs at least one fact in must or figures, or judged: true")
         if q.first and len(q.first) != 2:
             raise ValueError(f"{q.id}: first names two candidates, the correct one first")
+        for unit, grade in q.relevance.items():
+            if grade not in (0, 1, 2):
+                raise ValueError(f"{q.id}: relevance of {unit} must be 0, 1 or 2")
         for f in q.figures:
             if not isinstance(f.get("value"), (int, float)):
                 raise ValueError(f"{q.id}: each figure needs a numeric value")

@@ -38,6 +38,27 @@ class InProcessAnswerer:
                               toolset=self.toolset)
 
 
+class NoContextAnswerer:
+    """The same model with no tools and no sources: the baseline that shows what the context adds.
+    Its answers cite nothing, so they are scored on what they state, and retrieval is empty."""
+
+    PROMPT = "Answer the question in one or two sentences. If you do not know, say so plainly."
+
+    def __init__(self, model_id: str | None, client=None):
+        if client is None:
+            from knowledge_store.platform_services import runtime_client
+            client = runtime_client()
+        self.client, self.model_id = client, model_id
+
+    def __call__(self, q: Question) -> dict:
+        resp = self.client.converse(modelId=self.model_id, system=[{"text": self.PROMPT}],
+                                    messages=[{"role": "user", "content": [{"text": q.question}]}],
+                                    inferenceConfig={"maxTokens": 400})
+        text = "".join(b.get("text", "") for b in resp["output"]["message"]["content"]).strip()
+        return {"answer": text, "claims": [], "sources": [], "retrieved": [], "outcome": "answered",
+                "usage": resp.get("usage"), "context": "none"}
+
+
 class FileAnswerer:
     """Another system's answers. `index` maps its document ids to the set's source names (the
     benchmark's uuid_index.json, or a documents.jsonl); `documents` is the folder holding those

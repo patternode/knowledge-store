@@ -73,7 +73,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--model", default=os.environ.get("AGENT_MODEL_ID"))
     ap.add_argument("--out", default="build/eval")
     ap.add_argument("--only")
-    ap.add_argument("--tools", default="all", choices=["all", "passages", "walk"],
+    ap.add_argument("--tools", default="all", choices=["all", "passages", "walk", "none"],
                     help="in process: every tool (the graph, the tables, the passages), or passage search alone")
     ap.add_argument("--verifier", default="lexical", choices=["lexical", "hhem", "guardrail", "none"])
     ap.add_argument("--runner", default="plain", choices=["plain", "deepeval"])
@@ -85,6 +85,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--max-accuracy-drop", type=float, default=0.0)
     ap.add_argument("--max-tokens", type=int)
     ap.add_argument("--yes", action="store_true")
+    ap.add_argument("--trend", action="store_true", help="also write trend.html across the runs kept in --out")
     a = ap.parse_args(argv)
     ev = load_set(a.set)
     only = a.only.split(",") if a.only else None
@@ -114,7 +115,11 @@ def main(argv: list[str] | None = None) -> int:
         if not a.model:
             print("give --model (or set AGENT_MODEL_ID)")
             return 2
-        ask = InProcessAnswerer(a.lake, ev.collection, a.model, toolset=a.tools)
+        if a.tools == "none":
+            from knowledge_store.evaluation.adapters.answerers import NoContextAnswerer
+            ask = NoContextAnswerer(a.model)  # the baseline: what the model says with no context at all
+        else:
+            ask = InProcessAnswerer(a.lake, ev.collection, a.model, toolset=a.tools)
     store = store_for(a.out)
     runner = grader = None
     if a.runner == "deepeval":
@@ -131,6 +136,11 @@ def main(argv: list[str] | None = None) -> int:
     where = store.save(f"{ev.name}-{out['when'][:19].replace(':', '')}", out, text)
     print(text)
     print(f"written to {where}")
+    if a.trend and hasattr(store, "runs"):
+        from knowledge_store.evaluation.adapters.trend import trend_html
+        page = Path(a.out) / "trend.html"
+        page.write_text(trend_html(store.runs()), encoding="utf-8")
+        print(f"trend written to {page}")
     if result is not None and not result.passed:
         return 3
     return 0 if out["summary"]["all"]["errors"] == 0 else 1
