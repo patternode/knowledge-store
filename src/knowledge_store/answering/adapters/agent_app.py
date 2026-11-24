@@ -53,6 +53,7 @@ import time
 
 from knowledge_store.answering.slices import workbench
 from knowledge_store.answering.domain import grounding
+from knowledge_store.answering.domain import support
 from knowledge_store.access import agent_quota as quotas
 from knowledge_store.answering.domain import valves
 from knowledge_store.answering.adapters.bedrock_guardrail import Guardrail
@@ -235,6 +236,28 @@ def _failure(counts: dict) -> str:
     return BUDGET_SPENT if counts.get("model_calls", 0) > valves.MAX_MODEL_CALLS else FAILED
 
 
+def _support(question: str, kept: list, passages: dict, cells: dict, metrics: dict, report: dict, rec) -> tuple[list, dict]:
+    """The support check on every claim that passed the quote check: supported, unsupported, or
+    unchecked when it cites nothing with text to check against. An unsupported claim is shown with
+    its label, or removed when valves.DROP_UNSUPPORTED is on."""
+    verifier, labels, survivors = support.LexicalVerifier(), {}, []
+    for c in kept:
+        texts = [s for x in c.citations if (s := grounding.guardrail_source(x, passages, cells, metrics))]
+        if not texts:
+            labels[id(c)] = {"support": "unchecked"}
+            survivors.append(c)
+            continue
+        ok, score = verifier.grounded(question, c.text, texts)
+        labels[id(c)] = {"support": "supported" if ok else "unsupported", "verifier": "lexical", "support_score": score}
+        if ok or not valves.DROP_UNSUPPORTED:
+            survivors.append(c)
+        else:
+            report["unsupported_dropped"].append({"text": c.text, "score": score})
+    if len(survivors) < len(kept):
+        rec.step("support", f"The support check removed {len(kept) - len(survivors)} claim(s) their sources do not support")
+    return survivors, labels
+
+
 def _accumulated(agent) -> dict | None:
     metrics = getattr(getattr(agent, "event_loop_metrics", None), "accumulated_usage", None)
     return dict(metrics) if metrics else None
@@ -364,7 +387,7 @@ def answer(question: str, collection: str, history: list[dict] | None, tools, *,
                          callback_handler=None)
     agent = agent_factory()
     counts = add_limits(agent, rec) if hasattr(agent, "add_hook") else {}
-    report: dict = {"repairs": 0, "failures": [], "guardrail_dropped": []}
+    report: dict = {"repairs": 0, "failures": [], "guardrail_dropped": [], "unsupported_dropped": []}
     try:
         result = agent(f"Question about collection {collection!r}: {question}").structured_output
         rec.backfill(getattr(agent, "messages", []) or [])
@@ -407,17 +430,22 @@ def answer(question: str, collection: str, history: list[dict] | None, tools, *,
                 "steps": rec.steps, "ontology_hits": rec.hits(), "cost": _cost(rec, spent)}
     if not result.answerable:
         kept = []
+    kept, labels = _support(question, kept, passages, cells, metrics, report, rec)
     if guardrail and kept:
         survivors = []
         for c in kept:
             texts = [s for x in c.citations if (s := grounding.guardrail_source(x, passages, cells, metrics))]
             ok, score = guardrail.grounded(question, c.text, texts)
             (survivors if ok else report["guardrail_dropped"]).append(c if ok else {"text": c.text, "score": score})
+            if ok:
+                labels[id(c)] = {**labels.get(id(c), {}), "verifier": "guardrail", "support_score": score}
         if len(survivors) < len(kept):
             rec.step("guardrail", f"The grounding guardrail removed {len(kept) - len(survivors)} claim(s)")
         kept = survivors
     out = grounding.render(kept, passages, list(result.gaps), cells, metrics)
     out["outcome"] = "declined" if out.get("abstained") else "answered"
+    for shown, c in zip(out.get("claims") or [], kept):
+        shown.update(labels.get(id(c), {"support": "unchecked"}))
     rec.cite([x.passage_id for c in kept for x in c.citations])
     report.update(claims_proposed=len(result.claims), claims_shown=len(kept))
     if kept:

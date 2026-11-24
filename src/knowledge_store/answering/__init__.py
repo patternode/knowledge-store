@@ -10,6 +10,7 @@ _EXPORTS: dict[str, str] = {
     "FAILED": "adapters.agent_app",
     "GatewayTools": "adapters.agent_app",
     "Guardrail": "adapters.bedrock_guardrail",
+    "LexicalVerifier": "domain.support",
     "QuestionScreen": "ports",
     "agent_client": "@adapters.agent_client",
     "answer_locally": "adapters.agent_app",

@@ -19,6 +19,8 @@ against the cell or the figure.
                                 for the structured answer, and one repair still fits
     MAX_OUTPUT_TOKENS     8000  per model call
     GROUNDING_REPAIRS     1     times the agent is shown its failed citations and asked again
+    DROP_UNSUPPORTED      0     0: a claim the support check rejects is shown, labelled
+                                unsupported; 1: it is removed. Off until a deployment turns it on
 
 The order matters: the searches run out first, then the tools, and the model calls last, so that a
 question that keeps searching still ends in an answer or a plain "not in the sources" rather than in
@@ -57,6 +59,7 @@ MAX_MODEL_CALLS = limit("MAX_MODEL_CALLS", 14)
 RESERVED_MODEL_CALLS = limit("RESERVED_MODEL_CALLS", 4)
 MAX_OUTPUT_TOKENS = limit("MAX_OUTPUT_TOKENS", 8000)
 GROUNDING_REPAIRS = limit("GROUNDING_REPAIRS", 1)
+DROP_UNSUPPORTED = limit("DROP_UNSUPPORTED", 0)
 
 TOOL_BUDGET_SPENT = (
     "Tool budget for this question is spent. Answer now from the passages you have read, "
