@@ -30,3 +30,9 @@ coverage.json
 
 # DeepEval writes its last run here when no cache folder is set
 .deepeval/
+
+# Local settings that can hold secrets: never committed
+*.auto.tfvars
+*.tfvars.json
+.env
+.env.*
