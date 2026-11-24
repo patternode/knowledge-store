@@ -5,7 +5,7 @@ last_modified: 2026-10-26
 
 # How Knowledge Store answers a question, as built on 26 October 2026
 
-This note describes the design as it is in `main` today, from a document arriving to an answer with its citations, including what was added in October 2026: the passage vectors, the open facts and the walk over them, the reordered valves, and prompt caching. It is the record of what runs; the reasoning behind the older parts is in [Knowledge Store on AWS](aws/aws.md) and the decisions it cites, and the measurements behind the new parts are in the handover `docs/_handover-2026-10-25-baselines.md`. Where this note and the catalogue disagree, the catalogue is corrected.
+This note describes the design as it is in `main` today, from a document arriving to an answer with its citations, including what was added in October 2026: the passage vectors, the open facts and the walk over them, the reordered valves, and prompt caching. It is the record of what runs; the reasoning behind the older parts is in [Knowledge Store on AWS](aws/aws.md) and the decisions it cites, and the measurements behind the new parts are in the baselines handover of 25 October 2026, kept privately. Where this note and the catalogue disagree, the catalogue is corrected.
 
 ## One sentence
 
