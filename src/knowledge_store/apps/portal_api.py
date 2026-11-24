@@ -54,6 +54,7 @@ from __future__ import annotations
 import datetime as dt
 import hmac
 import json
+import re
 import logging
 import os
 import time
@@ -73,6 +74,7 @@ from knowledge_store.answering import fallback_chat as chat
 from knowledge_store.knowledge_graph import index
 from knowledge_store.access.adapters import state as chat_state
 
+SAFE_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,199}")  # a document or draft id: no separators, no ".."
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
@@ -169,7 +171,7 @@ def document_link(lk, doc_id: str, private: bool) -> dict | None:
     """Where a person can open a source document: its own URL when it came from the web, else a
     short-lived link to the copy in the lake. None if there is no such document in their scope."""
     from knowledge_store.ingestion import load_doc
-    if not doc_id or "/" in doc_id or not lk.exists(layout.doc_key(doc_id)):
+    if not doc_id or not SAFE_ID.fullmatch(doc_id) or not lk.exists(layout.doc_key(doc_id)):
         return None
     doc = load_doc(lk, doc_id)
     if not (private or doc.get("scope", "public") == "public"):
@@ -373,7 +375,7 @@ def handler(event, context):
             return reply(200, {"drafts": sorted(out, key=lambda d: d["draft_id"], reverse=True)})
         if path == "/draft":
             key = f"{layout.ONTOLOGY_DRAFTS}/{qs.get('id', '')}/ontology.ttl"
-            if not qs.get("id") or "/" in qs["id"] or not lk.exists(key):
+            if not qs.get("id") or not SAFE_ID.fullmatch(qs["id"]) or not lk.exists(key):
                 return reply(404, {"error": "no such draft"})
             return reply(200, {"id": qs["id"], "ttl": lk.get(key).decode()})
         if path == "/table":

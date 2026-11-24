@@ -23,7 +23,13 @@ class LocalStore:
         self.root = Path(root)
 
     def _p(self, key: str) -> Path:
-        return self.root / key
+        """The file for a key, refused if the key would leave the root (an absolute key, "..", or a
+        backslash that Windows reads as a separator)."""
+        p = (self.root / key).resolve()
+        root = self.root.resolve()
+        if "\\" in key or (p != root and root not in p.parents):
+            raise ValueError(f"key outside the store: {key!r}")
+        return p
 
     def put(self, key, body, content_type="application/octet-stream"):
         p = self._p(key)
