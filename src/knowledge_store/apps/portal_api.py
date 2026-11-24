@@ -458,11 +458,11 @@ def handler(event, context):
             q = q.strip() if isinstance(q, str) else ""
             if not q or len(q) > valves.MAX_QUESTION_CHARS:
                 return reply(400, {"error": f"ask a question of up to {valves.MAX_QUESTION_CHARS} characters"})
-            if not take_quota(sub):
-                return reply(429, {"error": "You have reached today's question limit."})
             mode = body.get("mode") or "ask"
             if mode not in ("ask", "gaps"):
                 return reply(400, {"error": "mode is ask or gaps"})
+            if not take_quota(sub):  # only a question that will run counts against the day's limit
+                return reply(429, {"error": "You have reached today's question limit."})
             job = {"id": uuid.uuid4().hex, "sub": sub, "private": private, "question": q, "collection": cid,
                    "mode": mode, "about": about_of(body),
                    "history": history_of(body)}
