@@ -524,6 +524,7 @@ resource "aws_lambda_function" "api" {
   environment {
     variables = merge({
       TRACE_SALT      = var.name
+      TELEMETRY_EMF   = "1"
       LAKE_BUCKET     = var.lake_bucket
       CHAT_TABLE      = aws_dynamodb_table.chat.name
       LLM_PROVIDER    = var.llm_provider

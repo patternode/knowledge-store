@@ -257,14 +257,16 @@ def _trace_fallback(job: dict, cid: str, out: dict) -> None:
         import os as _os
         import knowledge_store
         from knowledge_store.answering import trace
-        from knowledge_store.platform_services import traces
-        traces.record(trace.build(
+        from knowledge_store.platform_services import telemetry, traces
+        t = trace.build(
             answer_id=job["id"], at=_dt.datetime.now(_dt.UTC).isoformat(timespec="seconds"),
             question=str(job.get("question", ""))[:2000], collection=cid, out=out,
             caller=trace.caller_hash(job.get("sub"), _os.environ.get("TRACE_SALT", "")),
             scopes=["private"] if job.get("private") else ["public"], model=_os.environ.get("CHAT_MODEL_ID"),
-            prompt_version=_os.environ.get("PROMPT_VERSION"), release=knowledge_store.__version__))
+            prompt_version=_os.environ.get("PROMPT_VERSION"), release=knowledge_store.__version__)
+        traces.record(t)
         traces.flush()
+        telemetry.emit(t)
     except Exception:
         log.exception("trace not recorded")
 

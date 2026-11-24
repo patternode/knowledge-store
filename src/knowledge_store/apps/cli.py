@@ -54,6 +54,19 @@ def _print(obj) -> None:
     print(json.dumps(obj, indent=2, default=str))
 
 
+def traces_report(root, since: str | None = None) -> dict:
+    """The production measures over the answer traces kept in a lake or a folder."""
+    import json as _json
+    from knowledge_store.platform_services import observe
+    rows = []
+    for key in root.list("usage/traces/"):
+        day = key.split("dt=", 1)[1][:10] if "dt=" in key else ""
+        if since and day and day < since:
+            continue
+        rows += [_json.loads(line) for line in root.get(key).decode().splitlines() if line.strip()]
+    return observe.summarise(rows)
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="knowledge-store", description=__doc__.split("\n\n")[0])
     ap.add_argument("--lake", default=os.environ.get("LAKE_URI"))
@@ -110,6 +123,9 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("candidates")
     p.add_argument("--min-docs", type=int, default=2)
     p.add_argument("--propose", action="store_true")
+    tr = sub.add_parser("traces").add_subparsers(dest="tcmd", required=True)
+    p = tr.add_parser("report", help="answers, latency, cost, empty retrievals and unsupported claims, from the traces")
+    p.add_argument("--since", help="first day, YYYY-MM-DD (default: all)")
     sub.add_parser("status")
     sub.add_parser("collections")
     args = ap.parse_args(argv)
@@ -134,7 +150,9 @@ def main(argv: list[str] | None = None) -> int:
     from knowledge_store.ingestion.slices import refine
     from knowledge_store.apps import sweep as run
 
-    if args.cmd == "run":
+    if args.cmd == "traces":
+        _print(traces_report(root, args.since))
+    elif args.cmd == "run":
         _print(run.run(root, _client, args.model, [args.collection] if args.collection else None))
     elif args.cmd == "ingest":
         out = {}

@@ -16,7 +16,7 @@ import uuid
 from knowledge_store.access import agent_quota as quotas
 import knowledge_store
 from knowledge_store.answering import FAILED, Guardrail, GatewayTools, run, streamed, trace
-from knowledge_store.platform_services import traces
+from knowledge_store.platform_services import telemetry, traces
 
 log = logging.getLogger("agent")
 
@@ -46,13 +46,15 @@ def record_trace(payload: dict, out: dict, token: str) -> None:
         claims = _claims(token)
         scopes = claims.get("scope", "")
         scopes = scopes.split() if isinstance(scopes, str) else list(scopes or [])
-        traces.record(trace.build(
+        t = trace.build(
             answer_id=uuid.uuid4().hex, at=dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
             question=str(payload.get("question", ""))[:2000], collection=payload.get("collection", ""), out=out,
             caller=trace.caller_hash(claims.get("sub"), os.environ.get("TRACE_SALT", "")), scopes=scopes,
             model=os.environ.get("AGENT_MODEL_ID"), prompt_version=os.environ.get("PROMPT_VERSION"),
-            release=knowledge_store.__version__))
+            release=knowledge_store.__version__)
+        traces.record(t)
         traces.flush()
+        telemetry.emit(t)
     except Exception:
         log.exception("trace not recorded")
 
