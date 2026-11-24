@@ -38,6 +38,8 @@ CASES = [
     ("near miss asserted", JUNO, reply("An Atlas V and a Delta II."), None, False),
     ("comparison reversed", ORDER, reply("Voyager 1 launched before Voyager 2."), None, False),
     ("answered an unanswerable question", FUNDING, reply("NASA funded it."), None, False),
+    ("cited answer to an unanswerable question, with a gap listed", FUNDING,
+     reply("NASA funded it.", claims=[{"text": "NASA funded it"}], gaps=["the grant's amount"]), None, False),
     # right replies and right declines: each must stay right
     ("plain answer", JUNO, reply("An Atlas V 551."), None, True),
     ("near miss ruled out", JUNO, reply("An Atlas V, not a Delta II."), None, True),
@@ -54,6 +56,9 @@ CASES = [
      reply("The sources do not say who funded it. They do say it launched in 2011.",
            claims=[{"text": "it launched in 2011"}]), [{"supported": True}], True),
     ("comparison in order", ORDER, reply("Voyager 2 launched before Voyager 1."), None, True),
+    ("full answer with a gap listed", JUNO,
+     reply("An Atlas V 551.", claims=[{"text": "An Atlas V 551"}], gaps=["the launch time"]), None, True),
+    ("gaps and no claims is a decline", FUNDING, reply("", claims=[], gaps=["who funded the probe"]), None, True),
 ]
 
 

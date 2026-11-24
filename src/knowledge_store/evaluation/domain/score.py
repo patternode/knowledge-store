@@ -89,11 +89,16 @@ def asserted(text: str, spellings: list[str]) -> int | None:
 
 
 def declined(result: dict) -> bool:
-    """The agent declined: it abstained, or it answered only with what the sources lack."""
+    """The agent declined: it abstained, or it answered only with what the sources lack.
+
+    Gaps listed beside claims are an answer with gaps, not a decline. The agent lists gaps with every
+    reply and shows claims only when it judged the question answerable, so a reply with both has
+    answered: on an unanswerable question that is a false answer, however many gaps it lists. A
+    reply with no gaps field (another answerer's) is judged by its wording, as before."""
     if result.get("abstained"):
         return True
     if result.get("gaps"):
-        return True
+        return not result.get("claims")
     return "gaps" not in result and bool(_DECLINES.search(result.get("answer") or ""))
 
 
