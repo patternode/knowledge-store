@@ -1,4 +1,5 @@
-"""Grounding: no answer reaches a person unless every statement in it is shown in a source.
+"""Grounding: every claim shown cites a passage, a cell or a figure, and carries the verdict of the
+check that tested whether its source supports it (supported, unsupported or unchecked).
 
 The agent answers as a list of claims, each citing passages with a verbatim quote. Before the
 answer is shown, code (not the model) checks every citation:
@@ -6,6 +7,9 @@ answer is shown, code (not the model) checks every citation:
     the passage exists and the caller may read it     read back through read_passages, as the caller
     the quote is in the passage                       after normalising case, spacing, quotes and dashes
     the quote is long enough to say something         MIN_QUOTE_CHARS
+    the source supports the claim                     answering.domain.support, on every claim,
+                                                       deterministic; a rejected claim is labelled,
+                                                       and removed when DROP_UNSUPPORTED is on
     the claim follows from its source (optional)      a Bedrock Guardrail contextual grounding check
                                                        against the passage, the cell or the figure
 

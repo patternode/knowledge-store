@@ -150,11 +150,32 @@ def test_guardrail_blocks_a_question_before_any_model_call(mixed):
 def test_guardrail_drops_a_claim_its_quote_does_not_support(mixed):
     root, _ = mixed
     p = passage_with(root, "Mission Alpha was launched by Agency Nova", private=False)
-    stretch = "Agency Nova is the only agency that launches missions."
+    stretch = "Mission Alpha was launched by Agency Nova in a hurry."  # passes the lexical floor; the guardrail rejects it
     out, _ = ask(root, GroundedAnswer(answerable=True, claims=[
         claim("Agency Nova launched Mission Alpha.", p["id"], "Mission Alpha was launched by Agency Nova"),
         claim(stretch, p["id"], "Mission Alpha was launched by Agency Nova")]), guardrail=FakeGuardrail(ungrounded=[stretch]))
     assert stretch not in out["answer"] and out["grounding"]["guardrail_dropped"][0]["text"] == stretch
+    assert out["claims"][0]["verifier"] == "guardrail"
+
+
+def test_the_support_check_drops_a_claim_its_quote_does_not_support(mixed, monkeypatch):
+    root, _ = mixed
+    monkeypatch.setattr(app.valves, "DROP_UNSUPPORTED", 1)
+    p = passage_with(root, "Mission Alpha was launched by Agency Nova", private=False)
+    stretch = "Agency Nova is the only agency that launches missions."
+    out, _ = ask(root, GroundedAnswer(answerable=True, claims=[
+        claim("Agency Nova launched Mission Alpha.", p["id"], "Mission Alpha was launched by Agency Nova"),
+        claim(stretch, p["id"], "Mission Alpha was launched by Agency Nova")]))
+    assert stretch not in out["answer"] and out["grounding"]["unsupported_dropped"][0]["text"] == stretch
+    assert [c["support"] for c in out["claims"]] == ["supported"]
+
+
+def test_by_default_an_unsupported_claim_is_shown_with_its_label(mixed):
+    root, _ = mixed
+    p = passage_with(root, "Mission Alpha was launched by Agency Nova", private=False)
+    stretch = "Agency Nova is the only agency that launches missions."
+    out, _ = ask(root, GroundedAnswer(answerable=True, claims=[claim(stretch, p["id"], "Mission Alpha was launched by Agency Nova")]))
+    assert out["claims"][0]["support"] == "unsupported" and not out["grounding"]["unsupported_dropped"]
 
 
 def test_a_failing_agent_claims_nothing(mixed):
