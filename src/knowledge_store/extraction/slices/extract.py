@@ -6,9 +6,11 @@ Which work a document needs depends on the active version's kind and on what gol
     held at a base version, active additive  -> delta extraction of the added terms, if selected
     held at a base version, active descriptive -> nothing (labels changed, facts did not)
 
-A document is done at a version when gold/<version>/extractions/<doc>.json exists, whatever
-its status (extracted, rejected, not_selected), so a sweep never pays for the same document
-twice. --retry-rejected and --reselect redo those deliberately.
+A document is done at a version when gold/<version>/extractions/<doc>.json exists with status
+extracted, rejected or not_selected, so a sweep never pays for the same document twice.
+--retry-rejected and --reselect redo those deliberately. A document whose extraction failed for a
+transient reason (throttling, a timeout, an expired credential) is deferred, not done: the next
+sweep tries it again, up to failures.ATTEMPTS times, and only then rejects it.
 
 Delta selection is a heuristic, and the README says so: a document is selected when its
 candidates name a new term, when its passages contain a new term's label or synonym, or when
@@ -30,6 +32,7 @@ from knowledge_store.platform_services import layout
 from knowledge_store.platform_services import ledger
 from knowledge_store.platform_services import Profile
 from knowledge_store.extraction.slices.extractor import ExtractionOutcome, Extractor, run_record
+from knowledge_store.extraction.domain import failures
 from knowledge_store.extraction.domain.rdf import Iris, to_nquads
 from knowledge_store.ontology import model
 from knowledge_store.ontology import versions
@@ -90,7 +93,7 @@ def select_for_delta(lake: Store, spec: model.OntologySpec, delta_terms: list[st
 
 
 def extract_one(lake: Store, extractor: Extractor, version: str, doc_id: str, run: dict,
-                known: dict[str, dict] | None = None) -> dict:
+                known: dict[str, dict] | None = None, attempts: int = 0) -> dict:
     doc = load_doc(lake, doc_id)
     passages = load_passages(lake, doc_id)
     ids = Iris(extractor.spec)
@@ -98,7 +101,14 @@ def extract_one(lake: Store, extractor: Extractor, version: str, doc_id: str, ru
         try:
             out: ExtractionOutcome = extractor.extract(doc, passages, run, known=known)
         except Exception as e:
-            row = {"doc_id": doc_id, "status": "rejected", "error": repr(e)[:1000], "run_id": run["run_id"]}
+            tries = attempts + 1
+            if failures.is_transient(e) and tries < failures.ATTEMPTS:
+                row = {"doc_id": doc_id, "status": "deferred", "error": repr(e)[:1000], "attempts": tries,
+                       "run_id": run["run_id"]}
+                put_json(lake, layout.extraction_key(version, doc_id), row)
+                return row
+            row = {"doc_id": doc_id, "status": "rejected", "error": repr(e)[:1000], "attempts": tries,
+                   "run_id": run["run_id"]}
             put_json(lake, layout.rejected_key(version, doc_id), row)
             put_json(lake, layout.extraction_key(version, doc_id), row)
             return row
@@ -133,17 +143,18 @@ def extract_all(lake: Store, client, model_id: str, profile: Profile, *, workers
     from knowledge_store.extraction.slices.bind_tables import mapped_doc_ids
     mapped = mapped_doc_ids(lake)
 
-    todo: list[tuple[str, dict | None, dict]] = []
+    todo: list[tuple[str, dict | None, dict, int]] = []
     rows: list[dict] = []
     for doc_id in silver_doc_ids(lake):
         if doc_id in mapped:
             continue
         prior = _done(lake, version, doc_id)
-        if prior and not (retry_rejected and prior["status"] == "rejected"):
+        attempts = prior.get("attempts", 0) if prior and prior["status"] == "deferred" else 0
+        if prior and prior["status"] != "deferred" and not (retry_rejected and prior["status"] == "rejected"):
             continue
         held = held_at(lake, bases, doc_id)
         if not held:
-            todo.append((doc_id, None, run_record(run_id, model_id, version)))
+            todo.append((doc_id, None, run_record(run_id, model_id, version), attempts))
         elif delta is None:
             row = {"doc_id": doc_id, "status": "not_selected", "reason": f"{m['kind']} version: no new terms"}
             put_json(lake, layout.extraction_key(version, doc_id), row)
@@ -152,7 +163,8 @@ def extract_all(lake: Store, client, model_id: str, profile: Profile, *, workers
             why = "all" if all_delta else select_for_delta(lake, spec, m["delta_terms"], chain, doc_id, held)
             if why:
                 known = known_entities(lake, spec, held, doc_id)
-                todo.append((doc_id, known, {**run_record(run_id, model_id, version, delta=True), "selected": why}))
+                todo.append((doc_id, known, {**run_record(run_id, model_id, version, delta=True), "selected": why},
+                             attempts))
             else:
                 row = {"doc_id": doc_id, "status": "not_selected", "reason": "no sign of the new terms"}
                 put_json(lake, layout.extraction_key(version, doc_id), row)
@@ -161,8 +173,9 @@ def extract_all(lake: Store, client, model_id: str, profile: Profile, *, workers
             break
     log.info("extract %s at %s (%s): %d documents to extract", run_id, version, m["kind"], len(todo))
     with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
-        futs = [pool.submit(extract_one, lake, delta if known is not None else full, version, doc_id, run, known)
-                for doc_id, known, run in todo]
+        futs = [pool.submit(extract_one, lake, delta if known is not None else full, version, doc_id, run, known,
+                            attempts)
+                for doc_id, known, run, attempts in todo]
         for f in as_completed(futs):
             row = f.result()
             rows.append(row)

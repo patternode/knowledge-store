@@ -150,6 +150,7 @@ def sweep_once(lake: Store, client_factory, model_id: str, cfg: dict) -> dict:
     rows = extract_all(lake, client_factory(), model_id, profile, workers=cfg["extraction_workers"])
     stats["extracted"] = sum(1 for r in rows if r["status"] == "extracted")
     stats["rejected"] = sum(1 for r in rows if r["status"] == "rejected")
+    stats["deferred"] = sum(1 for r in rows if r["status"] == "deferred")
     from knowledge_store.extraction.slices.bind_tables import bind
     stats["bind"] = bind(lake)
     if rows or stats["bind"].get("written") or not lake.exists(layout.index_key(versions.active_version(lake), "summary")):
@@ -164,7 +165,8 @@ def sweep_once(lake: Store, client_factory, model_id: str, cfg: dict) -> dict:
         except Exception as e:  # the portal answers from memory until a load succeeds; the next sweep retries
             log.exception("%s load failed", name)
             stats[f"{name}_error"] = repr(e)[:300]
-    write_status(lake, "ready", {"last_run": stats})
+    # Deferred documents are not in the graph yet: say so, so "ready" never hides missing work.
+    write_status(lake, "incomplete" if stats["deferred"] else "ready", {"last_run": stats, "deferred": stats["deferred"]})
     return stats
 
 

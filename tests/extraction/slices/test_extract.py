@@ -104,6 +104,40 @@ def test_a_failed_document_is_rejected_and_retried_only_when_asked(lake, tmp_pat
     assert {r["status"] for r in again} == {"extracted"}
 
 
+class Throttled:
+    def __init__(self):
+        self.calls = 0
+
+    def converse(self, **kw):
+        self.calls += 1
+        raise RuntimeError("ThrottlingException: Rate exceeded")
+
+
+@pytest.fixture
+def no_backoff(monkeypatch):
+    from knowledge_store.extraction.slices import extractor
+    monkeypatch.setattr(extractor.time, "sleep", lambda s: None)
+
+
+def test_a_throttled_document_is_deferred_and_tried_again_by_the_next_sweep(lake, tmp_path, no_backoff):
+    _publish(lake, tmp_path)
+    rows = extract.extract_all(lake, Throttled(), "fake", PROFILE)
+    assert {r["status"] for r in rows} == {"deferred"} and rows[0]["attempts"] == 1
+    assert not lake.exists(layout.rejected_key("0.1.0", rows[0]["doc_id"]))
+    again = extract.extract_all(lake, FakeClient(), "fake", PROFILE)
+    assert {r["status"] for r in again} == {"extracted"}
+
+
+def test_a_document_throttled_every_time_is_rejected_after_its_attempts(lake, tmp_path, no_backoff):
+    _publish(lake, tmp_path)
+    for n in range(1, extract.failures.ATTEMPTS):
+        rows = extract.extract_all(lake, Throttled(), "fake", PROFILE)
+        assert {r["status"] for r in rows} == {"deferred"} and rows[0]["attempts"] == n
+    rows = extract.extract_all(lake, Throttled(), "fake", PROFILE)
+    assert {r["status"] for r in rows} == {"rejected"} and rows[0]["attempts"] == extract.failures.ATTEMPTS
+    assert extract.extract_all(lake, FakeClient(), "fake", PROFILE) == []
+
+
 def test_the_limit_caps_the_documents_extracted(lake, tmp_path):
     _publish(lake, tmp_path)
     assert len(extract.extract_all(lake, FakeClient(), "fake", PROFILE, limit=1)) == 1

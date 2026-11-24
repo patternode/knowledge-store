@@ -253,6 +253,7 @@
     awaiting_curation: ['Awaiting curation', 'A draft ontology is waiting for a person to review and publish it. Nothing is extracted until a version is published, so a person decides the vocabulary the graph uses. The drafts are listed below and in Emerging terms.'],
     extracting: ['Extracting', 'Documents are being read against the active ontology. Entities and facts are recorded with the passages they were found in, so every fact can be traced to its source.'],
     ready: ['Ready', 'The graph is up to date with the documents and the active ontology.'],
+    incomplete: ['Incomplete', (s) => `${plural(s.deferred || 0, 'document')} could not be read this time, for a reason that usually passes (the model provider was busy or timed out). The next run tries again; the graph is up to date with everything else.`],
     failed: ['Failed', (s) => `The last pipeline run failed${s.error ? ': ' + trunc(s.error, 300) : '.'} Running the pipeline again redoes only the work that is missing.`],
   };
   function stageText(s) {
