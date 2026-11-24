@@ -98,7 +98,7 @@ layers = ["knowledge_store.access.adapters", "knowledge_store.access.domain"]
 [[tool.importlinter.contracts]]
 name = "evaluation: adapters, slices, ports, domain, in that order"
 type = "layers"
-layers = ["knowledge_store.evaluation.adapters", "knowledge_store.evaluation.domain"]
+layers = ["knowledge_store.evaluation.adapters", "knowledge_store.evaluation.slices", "knowledge_store.evaluation.ports", "knowledge_store.evaluation.domain"]
 
 [[tool.importlinter.contracts]]
 name = "platform_services: adapters, slices, ports, domain, in that order"
@@ -151,7 +151,7 @@ allow_indirect_imports = true
 name = "evaluation: other contexts use only its contract"
 type = "forbidden"
 source_modules = ["knowledge_store.ingestion", "knowledge_store.ontology", "knowledge_store.extraction", "knowledge_store.knowledge_graph", "knowledge_store.answering", "knowledge_store.access", "knowledge_store.platform_services", "knowledge_store.kernel"]
-forbidden_modules = ["knowledge_store.evaluation.adapters", "knowledge_store.evaluation.domain"]
+forbidden_modules = ["knowledge_store.evaluation.adapters", "knowledge_store.evaluation.slices", "knowledge_store.evaluation.ports", "knowledge_store.evaluation.domain"]
 allow_indirect_imports = true
 
 [[tool.importlinter.contracts]]

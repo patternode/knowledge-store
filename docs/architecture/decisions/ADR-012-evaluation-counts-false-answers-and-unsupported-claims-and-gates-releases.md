@@ -33,6 +33,8 @@ provenance:
 
 # ADR-012 Evaluation counts false answers and unsupported claims, and gates releases on a baseline
 
+Amended by [ADR-013](ADR-013-deepeval-is-the-evaluation-framework-beside-the-deterministic-score.md) on 22 October 2026: DeepEval replaced Inspect AI as the optional runner, and added a grader beside the score. Everything else here stands.
+
 Status: active. This is Knowledge Store's application of patternode-architecture ADR-048 (the evaluation framework), made on 20 October 2026.
 
 ## Context

@@ -180,4 +180,4 @@ None.
 ### Exceptions
 
 - The model client port (`platform_services.ports.ModelClient`) still speaks Bedrock's Converse shape (ADR-011 records it as a follow-up).
-- The plug-in entry point group for source adapters stays `knowledge_store.adapters`, a published name, not a module path.
+- The plug-in entry point group for source adapters stays `knowledge_store.adapters`, a published name, not a module path ([ADR-014](architecture/decisions/ADR-014-the-source-adapter-entry-point-group-keeps-its-published-name.md)).
