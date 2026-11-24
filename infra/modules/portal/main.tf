@@ -470,6 +470,8 @@ resource "aws_iam_role_policy" "api" {
     # workbench (knowledge_store.answering.slices.workbench), which the candidate register reads.
     { Sid = "KeepRequests", Effect = "Allow", Action = "s3:PutObject",
     Resource = "${var.lake_bucket_arn}/collections/*/ontology/requests/*.json" },
+    # And the answer traces of questions the portal answers with its own loop (no agent Runtime).
+    { Sid = "AnswerTraces", Effect = "Allow", Action = "s3:PutObject", Resource = "${var.lake_bucket_arn}/usage/traces/*" },
     { Sid = "Chat", Effect = "Allow", Action = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem"],
     Resource = aws_dynamodb_table.chat.arn },
     { Sid = "Models", Effect = "Allow", Action = ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"],
@@ -521,6 +523,7 @@ resource "aws_lambda_function" "api" {
   reserved_concurrent_executions = var.reserved_concurrency
   environment {
     variables = merge({
+      TRACE_SALT      = var.name
       LAKE_BUCKET     = var.lake_bucket
       CHAT_TABLE      = aws_dynamodb_table.chat.name
       LLM_PROVIDER    = var.llm_provider

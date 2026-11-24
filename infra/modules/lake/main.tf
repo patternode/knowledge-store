@@ -28,6 +28,11 @@ variable "ontology_files" {
   default     = {}
   description = "provided ontologies: \"<collection>/<file>\" => local path, uploaded to collections/<id>/config/ontology/"
 }
+variable "trace_retention_days" {
+  type        = number
+  default     = 90
+  description = "Days an answer trace is kept. A trace holds the question asked, so it is deleted after this."
+}
 variable "force_destroy" {
   type        = bool
   default     = false
@@ -95,6 +100,13 @@ resource "aws_s3_bucket_lifecycle_configuration" "lake" {
     filter {}
     noncurrent_version_expiration { noncurrent_days = 30 }
     abort_incomplete_multipart_upload { days_after_initiation = 7 }
+  }
+  rule {
+    id     = "expire-answer-traces"
+    status = "Enabled"
+    filter { prefix = "usage/traces/" }
+    expiration { days = var.trace_retention_days }
+    noncurrent_version_expiration { noncurrent_days = 1 }
   }
 }
 

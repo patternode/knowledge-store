@@ -24,6 +24,7 @@ _EXPORTS: dict[str, str] = {
     "runtime_client": "adapters.llm",
     "strands_model": "adapters.llm",
     "store_from_uri": "adapters.store",
+    "traces": "@adapters.traces",
 }
 
 __getattr__, __dir__ = lazy(__name__, _EXPORTS)

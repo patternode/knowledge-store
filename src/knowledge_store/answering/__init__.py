@@ -17,6 +17,7 @@ _EXPORTS: dict[str, str] = {
     "fallback_chat": "@adapters.fallback_chat",
     "run": "adapters.agent_app",
     "streamed": "adapters.agent_app",
+    "trace": "@domain.trace",
     "valves": "@domain.valves",
     "workbench": "@slices.workbench",
 }

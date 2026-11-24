@@ -425,7 +425,7 @@ def answer(question: str, collection: str, history: list[dict] | None, tools, *,
         spent = _accumulated(agent)
         # A failure is an outcome of its own, never an abstention: "the sources do not say" would be
         # a claim about the sources that nobody checked, and the evaluation would score it as one.
-        return {**FAILED_OUTCOME, "error": _failure(counts), "grounding": report,
+        return {**FAILED_OUTCOME, "error": _failure(counts), "grounding": report, "retrieved": rec.retrieved,
                 "limits": counts, "usage": spent, "ms": round(1000 * (time.monotonic() - started)),
                 "steps": rec.steps, "ontology_hits": rec.hits(), "cost": _cost(rec, spent)}
     if not result.answerable:
@@ -459,6 +459,7 @@ def answer(question: str, collection: str, history: list[dict] | None, tools, *,
              for m in msgs for b in m.get("content", []) if isinstance(b, dict) and "toolUse" in b]
     spent = _accumulated(agent)
     return {**out, "grounding": report, "ontology_version": version, "collection": collection, "toolset": toolset,
+            "retrieved": rec.retrieved,
             "tool_calls": trace, "limits": counts, "usage": spent,
             "ms": round(1000 * (time.monotonic() - started)), "steps": rec.steps, "ontology_hits": rec.hits(),
             "cost": _cost(rec, spent)}

@@ -87,6 +87,26 @@ def _parse(out) -> dict:
     return out if isinstance(out, dict) else {}
 
 
+RETRIEVED_KEYS = ("passages", "items", "rows", "cells", "nodes", "results", "hits")
+ID_FIELDS = ("passage_id", "cell_id", "id", "iri", "entity")
+
+
+def retrieved_ids(tool: str, out: dict) -> list[dict]:
+    """The ids a tool result holds, in the order returned, with their rank within the call."""
+    found: list[dict] = []
+    if not isinstance(out, dict) or out.get("error"):
+        return found
+    for key in RETRIEVED_KEYS:
+        for item in out.get(key) or []:
+            if isinstance(item, dict):
+                ref = next((item[f] for f in ID_FIELDS if item.get(f)), None)
+                if ref:
+                    found.append({"tool": tool, "kind": key, "rank": len(found) + 1, "id": str(ref)})
+    if not found and out.get("id"):
+        found.append({"tool": tool, "kind": "item", "rank": 1, "id": str(out["id"])})
+    return found
+
+
 class Recorder:
     """Collects the steps of one question and the ontology terms they touch. emit, if given, is
     called with each step as it is recorded (the agent streams them; the portal stores them)."""
@@ -97,6 +117,7 @@ class Recorder:
         self.steps: list[dict] = []
         self.terms: dict[str, dict[str, set[str]]] = {k: {lv: set() for lv in LEVELS} for k in KINDS}
         self.by_passage: dict[str, set[tuple[str, str]]] = {}  # passage id -> {(kind, term)}
+        self.retrieved: list[dict] = []  # what the tools returned, in order: the answer trace's retrieved
         self.tool_calls = 0
         self.model_calls = 0
         self.live = False  # set when hooks report the agent's calls as they happen
@@ -139,11 +160,12 @@ class Recorder:
         if priced:
             target["usd"] = priced["usd"]
 
-    def tool(self, name: str, args: dict | None, out, ms: int | None = None) -> dict:
+    def tool(self, name: str, args: dict | None, out, ms: int | None = None) -> dict:  # noqa: C901
         name, args, out = bare(name), dict(args or {}), _parse(out)
         args.pop("caller_private", None)
         self.tool_calls += 1
         touched = self._touch(name, args, out)
+        self.retrieved += retrieved_ids(name, out)
         title, detail, count = describe(name, args, out)
         return self.step("tool", title, detail, tool=name, input={k: v for k, v in args.items() if k != "collection"},
                          source=query_source(name, out),

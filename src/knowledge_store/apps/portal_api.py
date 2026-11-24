@@ -249,6 +249,26 @@ def record_usage(cid: str, out: dict) -> None:
         log.exception("usage write failed")
 
 
+def _trace_fallback(job: dict, cid: str, out: dict) -> None:
+    """The answer trace for a question the portal answered with its own loop (no agent Runtime);
+    the agent records its own. Never fails the answer."""
+    try:
+        import datetime as _dt
+        import os as _os
+        import knowledge_store
+        from knowledge_store.answering import trace
+        from knowledge_store.platform_services import traces
+        traces.record(trace.build(
+            answer_id=job["id"], at=_dt.datetime.now(_dt.UTC).isoformat(timespec="seconds"),
+            question=str(job.get("question", ""))[:2000], collection=cid, out=out,
+            caller=trace.caller_hash(job.get("sub"), _os.environ.get("TRACE_SALT", "")),
+            scopes=["private"] if job.get("private") else ["public"], model=_os.environ.get("CHAT_MODEL_ID"),
+            prompt_version=_os.environ.get("PROMPT_VERSION"), release=knowledge_store.__version__))
+        traces.flush()
+    except Exception:
+        log.exception("trace not recorded")
+
+
 def answer_job(job: dict) -> None:
     """The asynchronous half of POST /api/chat: the chat agent on AgentCore Runtime, as the person
     asking, when AGENT_RUNTIME_ARN is set; otherwise the portal's own tool loop (chat.py)."""
@@ -279,6 +299,7 @@ def answer_job(job: dict) -> None:
                     raise Failed(out["error"])
             else:
                 out = chat.ask(idx, job["question"], job.get("history"), private=job["private"], on_step=progress)
+                _trace_fallback(job, cid, out)
         item = {"status": "done", "mode": mode, **out}
         if mode == "ask":
             record_usage(cid, out)

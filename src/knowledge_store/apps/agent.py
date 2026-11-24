@@ -6,11 +6,17 @@ Gateway's MCP tools, all as the caller. Configuration is read here.
 
 from __future__ import annotations
 
+import base64
+import datetime as dt
+import json
 import logging
 import os
+import uuid
 
 from knowledge_store.access import agent_quota as quotas
-from knowledge_store.answering import FAILED, Guardrail, GatewayTools, run, streamed
+import knowledge_store
+from knowledge_store.answering import FAILED, Guardrail, GatewayTools, run, streamed, trace
+from knowledge_store.platform_services import traces
 
 log = logging.getLogger("agent")
 
@@ -20,6 +26,35 @@ def _bearer(context) -> str | None:
         if k.lower() == "authorization":
             return v.split(" ", 1)[1] if v.lower().startswith("bearer ") else v
     return os.environ.get("DEV_BEARER_TOKEN")
+
+
+def _claims(token: str) -> dict:
+    """The token's claims, unverified: the Gateway verifies the token; here they only name the
+    caller for the trace (by a keyed hash) and its scopes."""
+    try:
+        part = token.split(".")[1]
+        return json.loads(base64.urlsafe_b64decode(part + "=" * (-len(part) % 4)))
+    except Exception:
+        return {}
+
+
+def record_trace(payload: dict, out: dict, token: str) -> None:
+    """One answer trace per question asked (not for a gaps report). Never fails the answer."""
+    if payload.get("mode") == "gaps" or not isinstance(out, dict):
+        return
+    try:
+        claims = _claims(token)
+        scopes = claims.get("scope", "")
+        scopes = scopes.split() if isinstance(scopes, str) else list(scopes or [])
+        traces.record(trace.build(
+            answer_id=uuid.uuid4().hex, at=dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
+            question=str(payload.get("question", ""))[:2000], collection=payload.get("collection", ""), out=out,
+            caller=trace.caller_hash(claims.get("sub"), os.environ.get("TRACE_SALT", "")), scopes=scopes,
+            model=os.environ.get("AGENT_MODEL_ID"), prompt_version=os.environ.get("PROMPT_VERSION"),
+            release=knowledge_store.__version__))
+        traces.flush()
+    except Exception:
+        log.exception("trace not recorded")
 
 
 def admit(token: str | None, quota: "quotas.AgentQuota | None") -> str | None:
@@ -52,7 +87,9 @@ def make_app(quota: "quotas.AgentQuota | None" = None):
 
         def work(on_step=None):
             with GatewayTools(os.environ["GATEWAY_MCP_URL"], token) as tools:
-                return run(payload, tools, guardrail=Guardrail.from_env(), on_step=on_step)
+                out = run(payload, tools, guardrail=Guardrail.from_env(), on_step=on_step)
+            record_trace(payload, out, token)
+            return out
 
         if payload.get("stream"):
             return streamed(work)  # a generator: the runtime sends it as server-sent events

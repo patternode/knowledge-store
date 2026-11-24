@@ -473,6 +473,8 @@ resource "aws_iam_role_policy" "runtime" {
     { Sid = "Traces", Effect = "Allow", Action = ["xray:PutTraceSegments", "xray:PutTelemetryRecords", "xray:GetSamplingRules", "xray:GetSamplingTargets"], Resource = "*" },
     { Sid = "Metrics", Effect = "Allow", Action = "cloudwatch:PutMetricData", Resource = "*",
     Condition = { StringEquals = { "cloudwatch:namespace" = "bedrock-agentcore" } } },
+    # The agent's one write to the lake: one answer trace per question (answering.domain.trace).
+    { Sid = "AnswerTraces", Effect = "Allow", Action = "s3:PutObject", Resource = "${var.lake_bucket_arn}/usage/traces/*" },
     ], var.guardrail.enabled ? [
     { Sid = "Guardrail", Effect = "Allow", Action = "bedrock:ApplyGuardrail", Resource = aws_bedrock_guardrail.this[0].guardrail_arn },
     ] : [], local.quota ? [
@@ -506,6 +508,8 @@ resource "aws_bedrockagentcore_agent_runtime" "agent" {
   environment_variables = merge({
     GATEWAY_MCP_URL      = aws_bedrockagentcore_gateway.this.gateway_url
     AGENT_MODEL_ID       = var.agent_model_id
+    LAKE_URI             = "s3://${var.lake_bucket}"
+    TRACE_SALT           = var.name
     AWS_REGION           = local.region
     MAX_TOOL_CALLS       = tostring(var.valves.max_tool_calls)
     MAX_SEARCHES         = tostring(var.valves.max_searches)
