@@ -39,6 +39,13 @@ def report(out: dict, gate=None) -> str:
         lines += ["", "## Grader", "", "A model's judgement, reported beside the score and never folded into it.", "",
                   "| Verdict | Questions |", "|---|---|"]
         lines += [f"| {v} | {n} |" for v, n in graded.items()]
+        judge = out.get("judge") or {}
+        if judge:
+            lines += ["", f"Judge: {judge.get('model')}; model under test: {judge.get('model_under_test')}"
+                      + (" (the same model: the grade is the model marking its own work)" if judge.get("same") else "") + "."]
+            agr = judge.get("agreement")
+            lines.append(f"Agreement with hand labels: {agr['agree']} of {agr['labelled']} ({agr['share']})." if agr
+                         else "Agreement with hand labels: not measured. Do not publish the grade until it is.")
     head = "| Id | Kind | Correct | Score | Grounded | Unsupported | Source | Missing or forbidden |"
     lines += ["", "## Questions", "", head + (" Grade |" if graded else ""), "|---" * (9 if graded else 8) + "|"]
     for r in out["rows"]:

@@ -28,6 +28,7 @@ in the call ledger.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from pathlib import Path
@@ -79,6 +80,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--runner", default="plain", choices=["plain", "deepeval"])
     ap.add_argument("--grader", default="none", choices=["none", "deepeval"])
     ap.add_argument("--judge-model", default=os.environ.get("JUDGE_MODEL_ID"))
+    ap.add_argument("--allow-same-judge", action="store_true",
+                    help="let the grader's judge be the model under test (ADR-048 point 8 asks for another)")
+    ap.add_argument("--hand-labels", help="a JSON object of question id to a person's verdict, to report the "
+                                          "grader's agreement with them")
     ap.add_argument("--upload-to-confident", action="store_true")
     ap.add_argument("--gate", action="store_true")
     ap.add_argument("--keep-baseline", action="store_true")
@@ -94,9 +99,14 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{n} questions, each a model run of several calls: about {n * per:.2f} USD "
               f"at {per} USD a question. Re-run with --yes to go ahead.")
         return 2
-    judge_model = a.judge_model or a.model
+    judge_model = a.judge_model
     if a.grader == "deepeval" and not judge_model:
-        print("give --judge-model (or set JUDGE_MODEL_ID) for the grader")
+        print("give --judge-model (or set JUDGE_MODEL_ID) for the grader: a model of another family, or a newer "
+              "one, than the model under test (ADR-048 point 8)")
+        return 2
+    if a.grader == "deepeval" and judge_model == a.model and not a.allow_same_judge:
+        print(f"the judge ({judge_model}) is the model under test; name another with --judge-model, "
+              "or pass --allow-same-judge to accept that the grade is the model marking its own work")
         return 2
     if a.answers:
         index = load_answer_index(a.answers_index) if a.answers_index else None
@@ -126,6 +136,12 @@ def main(argv: list[str] | None = None) -> int:
         grader = DeepEvalGrader(judge_model)
     out = run(ev, ask, only=only, verifier=verifier_for(a.verifier), grader=grader, runner=runner,
               max_tokens=a.max_tokens)
+    if grader is not None:
+        from knowledge_store.evaluation.domain.score import agreement
+        out["judge"] = {"model": judge_model, "model_under_test": a.model, "same": judge_model == a.model}
+        if a.hand_labels:
+            labels = json.loads(Path(a.hand_labels).read_text(encoding="utf-8"))
+            out["judge"]["agreement"] = agreement(out["rows"], labels)
     result = gate(out, store, Rules(max_accuracy_drop=a.max_accuracy_drop), keep=a.keep_baseline) if a.gate else None
     text = report(out, result)
     where = store.save(f"{ev.name}-{out['when'][:19].replace(':', '')}", out, text)

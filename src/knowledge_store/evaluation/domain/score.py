@@ -166,6 +166,17 @@ def score(q: Question, result: dict, verdicts: list[dict] | None = None) -> dict
             "order_ok": order_ok, "false_answer": False, "false_abstention": abstained and not result.get("error")}
 
 
+def agreement(rows: list[dict], labels: dict) -> dict | None:
+    """How often the grader's verdict matches a person's, on the questions a person labelled. A
+    model-graded score is published only beside this (patternode-architecture ADR-048 point 8)."""
+    pairs = [(str((r.get("grade") or {}).get("verdict")), str(labels[r["id"]])) for r in rows
+             if r["id"] in labels and r.get("grade")]
+    if not pairs:
+        return None
+    agree = sum(g == h for g, h in pairs)
+    return {"labelled": len(pairs), "agree": agree, "share": round(agree / len(pairs), 3), "ci95": wilson(agree, len(pairs))}
+
+
 def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float] | None:
     """The 95% Wilson interval for k right out of n: small sets move a lot on one question."""
     if not n:
