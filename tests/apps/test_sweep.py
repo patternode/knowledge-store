@@ -105,6 +105,25 @@ def test_a_stale_lock_is_taken_over(root):
     assert sweep.acquire(root, "me") and json.loads(root.get(layout.PIPELINE_LOCK))["owner"] == "me"
 
 
+def test_only_one_sweep_takes_over_a_stale_lock(root):
+    root.put(layout.PIPELINE_LOCK, json.dumps({"owner": "dead", "at": time.time() - sweep.LOCK_TTL_S - 1}).encode())
+    stale = root.get(layout.PIPELINE_LOCK)
+    assert sweep.acquire(root, "first")
+    root.put(layout.PIPELINE_LOCK, stale)  # a second sweep read the same stale lock before the first wrote
+    assert not sweep.acquire(root, "second")
+
+
+def test_a_sweep_that_was_taken_over_leaves_its_successors_lock(root):
+    assert sweep.acquire(root, "slow")
+    held = json.loads(root.get(layout.PIPELINE_LOCK))
+    root.put(layout.PIPELINE_LOCK, json.dumps({**held, "at": time.time() - sweep.LOCK_TTL_S - 1}).encode())
+    assert sweep.acquire(root, "next")
+    sweep.release(root, "slow")
+    assert json.loads(root.get(layout.PIPELINE_LOCK))["owner"] == "next"
+    sweep.release(root, "next")
+    assert not root.exists(layout.PIPELINE_LOCK)
+
+
 def test_an_unreadable_lock_is_respected(root):
     root.put(layout.PIPELINE_LOCK, b"not json")
     assert not sweep.acquire(root, "me")

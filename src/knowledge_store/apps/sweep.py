@@ -69,21 +69,39 @@ def settings(lake: Store) -> dict:
 
 
 def acquire(lake: Store, owner: str) -> bool:
-    body = json.dumps({"owner": owner, "at": time.time()}).encode()
+    """Take the pipeline lock. A lock older than LOCK_TTL_S is stale and may be taken over, but only
+    by one sweep: each lock carries a generation, and taking over generation n means creating the
+    marker <lock>.takeover-<n> first, which only one writer can do (put_if_absent). The winner writes
+    generation n + 1; every other sweep that saw the same stale lock loses and does nothing."""
+    body = json.dumps({"owner": owner, "at": time.time(), "generation": 0}).encode()
     if lake.put_if_absent(layout.PIPELINE_LOCK, body):
         return True
     try:
         held = json.loads(lake.get(layout.PIPELINE_LOCK))
     except Exception:
         return False
-    if time.time() - float(held.get("at", 0)) > LOCK_TTL_S:
-        log.warning("taking over a stale lock held by %s", held.get("owner"))
-        lake.delete(layout.PIPELINE_LOCK)
-        return lake.put_if_absent(layout.PIPELINE_LOCK, body)
-    return False
+    if time.time() - float(held.get("at", 0)) <= LOCK_TTL_S:
+        return False
+    generation = int(held.get("generation", 0))
+    marker = json.dumps({"owner": owner, "at": time.time(), "from": held.get("owner")}).encode()
+    if not lake.put_if_absent(f"{layout.PIPELINE_LOCK}.takeover-{generation}", marker):
+        return False  # another sweep took this stale lock over first
+    log.warning("taking over a stale lock held by %s", held.get("owner"))
+    lake.put(layout.PIPELINE_LOCK, json.dumps({"owner": owner, "at": time.time(),
+                                               "generation": generation + 1}).encode())
+    return True
 
 
-def release(lake: Store) -> None:
+def release(lake: Store, owner: str | None = None) -> None:
+    """Give the lock up. A sweep passes its owner, and the lock is deleted only while it still
+    holds it: a sweep that ran past LOCK_TTL_S and was taken over must not delete its successor's."""
+    if owner is not None:
+        try:
+            if json.loads(lake.get(layout.PIPELINE_LOCK)).get("owner") != owner:
+                log.warning("the lock was taken over while %s ran; leaving it to its new owner", owner)
+                return
+        except Exception:
+            return
     lake.delete(layout.PIPELINE_LOCK)
 
 
@@ -201,4 +219,4 @@ def run(root: Store, client_factory, model_id: str, only: list[str] | None = Non
             out[cid] = run_collection(collections.scoped(root, cid), client_factory, model_id)
         return out
     finally:
-        release(root)
+        release(root, owner)
