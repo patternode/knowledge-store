@@ -99,8 +99,7 @@ def propose_revision(client, model_id: str, lake: Store, profile: Profile, *, mi
                                       + [f"asked: {q}" for q in t.get("questions", [])[:2]], "nearest": t["nearest"]})
     defn, usage = discover.consolidate(client, model_id, agg, profile, prior=prior,
                                        target_classes=len(prior.classes) + 5)
-    major, minor, _ = map(int, active.split("."))
-    version = f"{major}.{minor + 1}.0"
+    version = next_minor(active, versions.published_versions(lake))
     ttl = writer.ontology_ttl(defn, namespace=prior.namespace, version=version, label=prior.label or profile.name,
                               comment=f"Revision proposed {dt.date.today().isoformat()} from {len(keep)} candidate "
                                       f"terms seen in at least {min_docs} documents or asked for in an ontology request. "
@@ -148,3 +147,12 @@ def requested_terms(lake) -> list[dict]:
                 if rec.get("question") and len(t["questions"]) < 5:
                     t["questions"].append(rec["question"])
     return sorted(terms.values(), key=lambda t: (-t["asked"], t["kind"], t["term"]))
+
+
+def next_minor(active: str, published: list[str]) -> str:
+    """The version a revision draft proposes: the next minor after the highest published version,
+    not after the active one, so a draft never names a version that is already published."""
+    def key(v: str) -> tuple[int, int, int]:
+        return tuple(int(x) for x in v.split(".")[:3])
+    major, minor, _ = max([key(active)] + [key(v) for v in published if v.count(".") == 2])
+    return f"{major}.{minor + 1}.0"
