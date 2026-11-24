@@ -226,6 +226,7 @@ def add_limits(agent, recorder: "workbench.Recorder | None" = None) -> dict:
 
 FAILED = "The question could not be answered. Try again later."
 BUDGET_SPENT = "The model call budget for this question was spent before an answer."
+FAILED_OUTCOME = {"answer": "", "abstained": False, "outcome": "failed", "claims": [], "sources": [], "gaps": []}
 
 
 def _failure(counts: dict) -> str:
@@ -398,9 +399,10 @@ def answer(question: str, collection: str, history: list[dict] | None, tools, *,
         log.exception("agent failed")
         rec.backfill(getattr(agent, "messages", []) or [])
         rec.step("error", "The agent stopped before answering", _failure(counts))
-        out = grounding.render([], {}, [])
         spent = _accumulated(agent)
-        return {**out, "error": _failure(counts), "grounding": report,
+        # A failure is an outcome of its own, never an abstention: "the sources do not say" would be
+        # a claim about the sources that nobody checked, and the evaluation would score it as one.
+        return {**FAILED_OUTCOME, "error": _failure(counts), "grounding": report,
                 "limits": counts, "usage": spent, "ms": round(1000 * (time.monotonic() - started)),
                 "steps": rec.steps, "ontology_hits": rec.hits(), "cost": _cost(rec, spent)}
     if not result.answerable:
@@ -415,6 +417,7 @@ def answer(question: str, collection: str, history: list[dict] | None, tools, *,
             rec.step("guardrail", f"The grounding guardrail removed {len(kept) - len(survivors)} claim(s)")
         kept = survivors
     out = grounding.render(kept, passages, list(result.gaps), cells, metrics)
+    out["outcome"] = "declined" if out.get("abstained") else "answered"
     rec.cite([x.passage_id for c in kept for x in c.citations])
     report.update(claims_proposed=len(result.claims), claims_shown=len(kept))
     if kept:

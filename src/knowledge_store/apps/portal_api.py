@@ -262,6 +262,8 @@ def answer_job(job: dict) -> None:
                                            "history": job.get("history"), "about": job.get("about")},
                                    session_id=agent_client.session_for(job["sub"], job["private"]),
                                    on_step=progress)
+            if out.get("outcome") == "failed":  # the agent's own failure: its message is one of its fixed texts
+                raise Failed(out.get("error") or "The question could not be answered. Try again later.")
             if out.get("error") and not (out.get("answer") or out.get("report")):
                 raise RuntimeError(f"the agent failed: {out['error']}")  # its text can carry internals: logged only
             if mode == "gaps" and not out.get("report"):  # an agent built before the workbench answers instead

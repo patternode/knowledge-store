@@ -137,6 +137,19 @@ def test_a_failed_question_does_not_leak_internals(mixed, monkeypatch):
     assert item["status"] == "failed" and "internals" not in item["error"]
 
 
+def test_an_agent_failure_is_stored_as_failed_not_as_an_abstention(mixed, monkeypatch):
+    state = State()
+    monkeypatch.setattr(handler, "_state", state)
+    monkeypatch.setenv("AGENT_RUNTIME_ARN", "arn:aws:bedrock-agentcore:eu-west-2:123456789012:runtime/chat-x")
+    monkeypatch.setattr(agent_client, "service_token", lambda private: "t")
+    monkeypatch.setattr(agent_client, "ask", lambda *a, **k: {
+        "answer": "", "abstained": False, "outcome": "failed", "claims": [], "sources": [], "gaps": [],
+        "error": "The model call budget for this question was spent before an answer."})
+    handler.answer_job({"id": "j", "sub": "u", "private": False, "question": "Q?", "collection": "m"})
+    item = state.get_chat("j")["body"]
+    assert item["status"] == "failed" and "budget" in item["error"] and "abstained" not in item
+
+
 def test_a_deliberate_failure_is_told(mixed, monkeypatch):
     state = State()
     monkeypatch.setattr(handler, "_state", state)

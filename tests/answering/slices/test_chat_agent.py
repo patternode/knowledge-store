@@ -166,7 +166,8 @@ def test_a_failing_agent_claims_nothing(mixed):
         def __call__(self, prompt):
             raise RuntimeError("AccessDenied on arn:aws:s3:::secret-bucket")
     out = app.answer("Who launched Mission Alpha?", "m", None, Tools(root), agent_factory=Broken)
-    assert out["abstained"] and out["error"] == app.FAILED  # the exception is logged, not returned
+    assert out["outcome"] == "failed" and out["error"] == app.FAILED  # the exception is logged, not returned
+    assert not out["abstained"] and out["answer"] == "" and out["claims"] == []  # a failure is never "not in the sources"
     assert "arn:" not in json.dumps(out) and "RuntimeError" not in json.dumps(out)
 
 
