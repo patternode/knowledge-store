@@ -116,3 +116,14 @@ def rank_passages(scores: dict[str, float], *, allowed=None, limit: int = 8) -> 
         out = [(pid, s) for pid, s in out if pid in allowed]
     out.sort(key=lambda x: (-x[1], x[0]))
     return out[:limit]
+
+
+def visible_edges(edges: dict[str, dict[str, float]], visible: set[str]) -> dict[str, dict[str, float]]:
+    """The walk's graph as a caller who may read only the visible passages sees it: hidden passages
+    removed, and phrases left with no visible passage removed too, so activation never flows
+    through private text to rank a public passage (the rule traverse.py keeps for the graph tools)."""
+    keep_passage = {PASSAGE + pid for pid in visible}
+    phrase_ok = {n for n, nbrs in edges.items() if not n.startswith(PASSAGE)
+                 and any(m in keep_passage for m in nbrs)}
+    allowed = keep_passage | phrase_ok
+    return {n: {m: w for m, w in nbrs.items() if m in allowed} for n, nbrs in edges.items() if n in allowed}

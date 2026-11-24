@@ -217,7 +217,8 @@ def related(lake, query: str, *, embedder, limit: int = 8, private: bool = False
         hits = [h for h, k in zip(hits, kept) if k] or hits
     passage_hits = [(pid, _dot(q, r["vec"])) for pid, r in passages.items() if pid in visible]
     seeds = graph.seeds_from(hits, passage_hits, passage_weight=passage_weight)
-    scores = graph.personalized_pagerank(held["graph"]["edges"], seeds, damping=damping)
+    edges = held["graph"]["edges"] if private else graph.visible_edges(held["graph"]["edges"], visible)
+    scores = graph.personalized_pagerank(edges, seeds, damping=damping)
     top = graph.rank_passages(scores, allowed=visible, limit=max(1, min(int(limit or 8), 15)))
     out = []
     for pid, score in top:
