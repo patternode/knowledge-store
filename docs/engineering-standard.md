@@ -55,7 +55,7 @@ This standard says how code is cut, organised, deployed and tested in every Patt
 
 1. Imports run one way: adapters may use slices, slices may use ports, ports may use the domain. Never the reverse.
 2. Another context imports only from the contract: `from <package>.<context> import Name`. Never from its `domain`, `slices`, `ports` or `adapters`.
-3. A context's contract lists every name it publishes and the module it lives in. Add a name when another context needs it; remove one only after its last user has moved (expand, then contract).
+3. A context's contract lists every name it publishes and the module it lives in. Add a name when another context needs it; remove one only after its last user has moved (expand, then contract). A contract may publish a name implemented in an adapter (a client class, a factory) when another context's composition root needs it, but it publishes the name, never a whole adapter module, so the contract stays a list of names and the adapter's other code stays private.
 4. Contexts depend on each other without a cycle. When two contexts need each other, one of them owns the shared language and the other conforms, or the shared part moves to the kernel as a vocabulary. Record the relationship (customer and supplier, conformist, published language, open host, anti-corruption layer) on both context pages.
 5. A foreign model (a vendor API, a broker, a regulator's filings) enters through an anti-corruption layer in an adapter. The domain never sees the foreign shape.
 6. Configuration is read once, in a composition root or an adapter, and passed in. Time comes from an injected clock.

@@ -6,6 +6,10 @@ This module is the context's contract: other contexts import only the names belo
 from knowledge_store.kernel.contract import lazy
 
 _EXPORTS: dict[str, str] = {
+    "AgentQuota": "adapters.agent_quota",
+    "LIMIT_REACHED": "adapters.agent_quota",
+    # Deprecated: the whole adapter module, published before the standard said names only. Nothing
+    # here imports it any more; it is removed once no consumer does (expand, then contract).
     "agent_quota": "@adapters.agent_quota",
 }
 

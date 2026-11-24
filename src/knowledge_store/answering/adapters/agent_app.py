@@ -53,7 +53,6 @@ import time
 
 from knowledge_store.answering.slices import workbench
 from knowledge_store.answering.domain import grounding
-from knowledge_store.access import agent_quota as quotas
 from knowledge_store.answering.domain import valves
 from knowledge_store.answering.adapters.bedrock_guardrail import Guardrail
 from knowledge_store.answering.ports import Guard

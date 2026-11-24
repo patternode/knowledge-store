@@ -25,3 +25,8 @@ def test_a_caller_with_no_subject_is_refused():
 
 def test_the_limit_message_is_published():
     assert access.agent_quota.LIMIT_REACHED
+
+
+def test_the_quota_is_published_by_name():
+    published("access", ["AgentQuota", "LIMIT_REACHED"])
+    assert access.AgentQuota is access.agent_quota.AgentQuota

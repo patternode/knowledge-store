@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 import os
 
-from knowledge_store.access import agent_quota as quotas
+from knowledge_store.access import AgentQuota
 from knowledge_store.answering import FAILED, Guardrail, GatewayTools, run, streamed
 
 log = logging.getLogger("agent")
@@ -22,7 +22,7 @@ def _bearer(context) -> str | None:
     return os.environ.get("DEV_BEARER_TOKEN")
 
 
-def admit(token: str | None, quota: "quotas.AgentQuota | None") -> str | None:
+def admit(token: str | None, quota: "AgentQuota | None") -> str | None:
     """None if the caller may ask now, else why not. Counts the invocation against the caller's
     daily limit (access/adapters/agent_quota.py), which holds even when the Runtime is called without the portal.
     A limit that cannot be checked refuses: the limit is the only bound on a direct caller's spend."""
@@ -35,10 +35,10 @@ def admit(token: str | None, quota: "quotas.AgentQuota | None") -> str | None:
         return "the daily limit could not be checked; try again shortly"
 
 
-def make_app(quota: "quotas.AgentQuota | None" = None):
+def make_app(quota: "AgentQuota | None" = None):
     from bedrock_agentcore.runtime import BedrockAgentCoreApp
     app = BedrockAgentCoreApp()
-    quota = quota if quota is not None else quotas.AgentQuota.from_env()
+    quota = quota if quota is not None else AgentQuota.from_env()
 
     @app.entrypoint
     def invoke(payload: dict, context=None):
