@@ -3,7 +3,7 @@
 # anonymous pull limits in CodeBuild.
 # Pinned to the multi-arch index digest of python:3.12-slim (amd64 and arm64) so that a build
 # pulls exactly the image that was reviewed. Update the tag and the digest together.
-FROM public.ecr.aws/docker/library/python:3.15-slim@sha256:2da676046630d7bf14c6764ae1143dc7fa0377a53f94bf5a642f0b214aca5bce
+FROM public.ecr.aws/docker/library/python:3.12-slim@sha256:191083cdf6c7bda8c76158983163ead5d5cf7b77cf3033e805bb0f5296f51b4b
 
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
 WORKDIR /app
