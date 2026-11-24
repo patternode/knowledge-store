@@ -25,7 +25,7 @@ question that keeps searching still ends in an answer or a plain "not in the sou
 a spent budget. The structured answer itself is a tool call in strands and is exempt from all of
 these (agent_app.limit_hooks). The first EnterpriseRAG run had neither rule: 11 of 120 questions
 ended in no answer, each having answered after the tool refusal only to have the answer refused
-as one more tool call (docs/_handover-2026-10-25-baselines.md).
+as one more tool call (the baselines handover of 25 October 2026, kept privately).
 
 and, with GUARDRAIL_ID set, a Bedrock Guardrail applied twice (ApplyGuardrail, outside the model
 call so that passages and cells read by tools are never screened as if they were the person's input):

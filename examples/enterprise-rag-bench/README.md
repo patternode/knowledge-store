@@ -124,4 +124,4 @@ connector that makes Onyx's search tool available), `onyx_baseline.py` runs on t
 systems were compared on (seed 42: 90 lookup, 20 multi-hop, 5 list, 5 unanswerable), for
 `--only`. `merge_reports.py` merges a run split into lanes into one report and prints two
 systems side by side. The reports of the first comparison and Onyx's answers are in
-`results/2026-10-25/`; the results and the procedure are in `docs/_handover-2026-10-25-baselines.md`.
+`results/2026-10-25/`; the results are there, and the procedure was recorded in a handover kept privately.
